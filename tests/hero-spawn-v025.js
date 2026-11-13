@@ -31,15 +31,21 @@
  }
  reset();
  const t=siteOf(1);
- const adjacent=dirs.map(([dx,dy])=>tileAt(t.x+dx,t.y+dy)).find(n=>walkable(n)&&canOccupy(game.hero,center(n).x,center(n).y));
- if(!adjacent)throw new Error('测试地图没有合法相邻地块');
- Object.assign(game.hero,center(adjacent));game.hero.goal=[center(t)];game.heroGoalTile=t;chooseSite(1);
+ const startTile=game.tiles
+  .filter(n=>walkable(n)&&Math.abs(n.x-t.x)+Math.abs(n.y-t.y)>=2)
+  .sort((a,b)=>(Math.abs(a.x-t.x)+Math.abs(a.y-t.y))-(Math.abs(b.x-t.x)+Math.abs(b.y-t.y)))
+  .find(n=>findPath(n,t,walkable));
+ if(!startTile)throw new Error('测试地图没有通往城址的远端起点');
+ Object.assign(game.hero,center(startTile));
+ setDestination(t);
+ check('建城前领主确实在前往城址的路上',!!game.hero.goal?.length&&game.heroGoalTile===t);
+ chooseSite(1);
  const end=game.hero.goal?.[game.hero.goal.length-1];
  check('未抵达城址时确认建城会自动改道',!!game.castle&&!!end&&
   !(Math.abs(end.x-(t.x+.5))<1e-6&&Math.abs(end.y-(t.y+.5))<1e-6)&&
   walkable(tileAt(Math.floor(end.x),Math.floor(end.y))));
  const start={x:game.hero.x,y:game.hero.y};
- for(let n=0;n<50&&game.hero.goal?.length;n++)moveHero(.05);
+ for(let n=0;n<120&&game.hero.goal?.length;n++)moveHero(.05);
  check('改道后的领主移动不会进入城堡实体',safe(t)&&Math.hypot(game.hero.x-start.x,game.hero.y-start.y)>.08);
  reset();
  const far=siteOf(0),before={x:game.hero.x,y:game.hero.y};chooseSite(0);
