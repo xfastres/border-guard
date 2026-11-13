@@ -1,0 +1,17 @@
+{
+  "perf": {
+    "viewport": [
+      1440,
+      900
+    ],
+    "dpr": 1,
+    "liveEnemies": 40,
+    "projectiles": 0,
+    "effects": 0,
+    "floats": 0,
+    "drawMedianMs": 4.1,
+    "drawP95Ms": 7.3,
+    "drawMaxMs": 8.9
+  },
+  "hardware": "win32 / headless Chrome / --disable-gpu"
+}

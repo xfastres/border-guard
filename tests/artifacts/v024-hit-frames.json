@@ -1,0 +1,185 @@
+[
+  {
+    "step": 0,
+    "projectiles": 1,
+    "enemyHp": 9,
+    "enemyX": 8.1,
+    "effects": 0,
+    "floats": 0,
+    "corpses": 0,
+    "lastEvents": [
+      "launch"
+    ],
+    "phase": "night"
+  },
+  {
+    "step": 1,
+    "projectiles": 1,
+    "enemyHp": 9,
+    "enemyX": 8.1,
+    "effects": 0,
+    "floats": 0,
+    "corpses": 0,
+    "lastEvents": [
+      "launch"
+    ],
+    "phase": "night"
+  },
+  {
+    "step": 2,
+    "projectiles": 1,
+    "enemyHp": 9,
+    "enemyX": 8.1,
+    "effects": 0,
+    "floats": 0,
+    "corpses": 0,
+    "lastEvents": [
+      "launch"
+    ],
+    "phase": "night"
+  },
+  {
+    "step": 3,
+    "projectiles": 0,
+    "enemyHp": null,
+    "enemyX": null,
+    "effects": 9,
+    "floats": 3,
+    "corpses": 1,
+    "lastEvents": [
+      "hit",
+      "gold",
+      "xp",
+      "death"
+    ],
+    "phase": "night"
+  },
+  {
+    "step": 4,
+    "projectiles": 0,
+    "enemyHp": null,
+    "enemyX": null,
+    "effects": 9,
+    "floats": 3,
+    "corpses": 1,
+    "lastEvents": [
+      "hit",
+      "gold",
+      "xp",
+      "death"
+    ],
+    "phase": "night"
+  },
+  {
+    "step": 5,
+    "projectiles": 0,
+    "enemyHp": null,
+    "enemyX": null,
+    "effects": 9,
+    "floats": 3,
+    "corpses": 1,
+    "lastEvents": [
+      "hit",
+      "gold",
+      "xp",
+      "death"
+    ],
+    "phase": "night"
+  },
+  {
+    "step": 6,
+    "projectiles": 0,
+    "enemyHp": null,
+    "enemyX": null,
+    "effects": 9,
+    "floats": 3,
+    "corpses": 1,
+    "lastEvents": [
+      "hit",
+      "gold",
+      "xp",
+      "death"
+    ],
+    "phase": "night"
+  },
+  {
+    "step": 7,
+    "projectiles": 0,
+    "enemyHp": null,
+    "enemyX": null,
+    "effects": 9,
+    "floats": 3,
+    "corpses": 1,
+    "lastEvents": [
+      "hit",
+      "gold",
+      "xp",
+      "death"
+    ],
+    "phase": "night"
+  },
+  {
+    "step": 8,
+    "projectiles": 0,
+    "enemyHp": null,
+    "enemyX": null,
+    "effects": 9,
+    "floats": 3,
+    "corpses": 1,
+    "lastEvents": [
+      "hit",
+      "gold",
+      "xp",
+      "death"
+    ],
+    "phase": "night"
+  },
+  {
+    "step": 9,
+    "projectiles": 0,
+    "enemyHp": null,
+    "enemyX": null,
+    "effects": 9,
+    "floats": 3,
+    "corpses": 1,
+    "lastEvents": [
+      "hit",
+      "gold",
+      "xp",
+      "death"
+    ],
+    "phase": "night"
+  },
+  {
+    "step": 10,
+    "projectiles": 0,
+    "enemyHp": null,
+    "enemyX": null,
+    "effects": 9,
+    "floats": 3,
+    "corpses": 1,
+    "lastEvents": [
+      "hit",
+      "gold",
+      "xp",
+      "death"
+    ],
+    "phase": "night"
+  },
+  {
+    "step": 11,
+    "projectiles": 0,
+    "enemyHp": null,
+    "enemyX": null,
+    "effects": 9,
+    "floats": 3,
+    "corpses": 1,
+    "lastEvents": [
+      "hit",
+      "gold",
+      "xp",
+      "death"
+    ],
+    "phase": "night"
+  }
+]
