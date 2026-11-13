@@ -1,0 +1,2142 @@
+{
+  "out": {
+    "file": "Border-Guard-v0.22.html",
+    "hooks": {
+      "world": {
+        "total": 31,
+        "passed": 31,
+        "failed": []
+      },
+      "residents": {
+        "total": 30,
+        "passed": 30,
+        "failed": []
+      },
+      "gestures": {
+        "total": 10,
+        "passed": 10,
+        "failed": []
+      }
+    },
+    "nativeGestures": [
+      {
+        "name": "原生触屏短按移动",
+        "pass": true
+      },
+      {
+        "name": "原生长按350ms只打开面板",
+        "pass": true
+      },
+      {
+        "name": "原生拖拽只平移地图且关闭抽屉",
+        "pass": true
+      }
+    ],
+    "layouts": [
+      {
+        "viewport": {
+          "w": 1440,
+          "h": 900
+        },
+        "passed": 6,
+        "total": 6,
+        "failed": []
+      },
+      {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "passed": 6,
+        "total": 6,
+        "failed": []
+      },
+      {
+        "viewport": {
+          "w": 844,
+          "h": 390
+        },
+        "passed": 6,
+        "total": 6,
+        "failed": []
+      },
+      {
+        "viewport": {
+          "w": 932,
+          "h": 430
+        },
+        "passed": 6,
+        "total": 6,
+        "failed": []
+      },
+      {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "passed": 6,
+        "total": 6,
+        "failed": []
+      }
+    ],
+    "cameras": [
+      {
+        "viewport": "1440x900",
+        "passed": 8,
+        "total": 8,
+        "failed": []
+      },
+      {
+        "viewport": "1440x900@2x",
+        "passed": 1,
+        "total": 1,
+        "failed": []
+      },
+      {
+        "viewport": "1920x1080",
+        "passed": 8,
+        "total": 8,
+        "failed": []
+      },
+      {
+        "viewport": "844x390",
+        "passed": 8,
+        "total": 8,
+        "failed": []
+      },
+      {
+        "viewport": "932x430",
+        "passed": 8,
+        "total": 8,
+        "failed": []
+      },
+      {
+        "viewport": "390x844",
+        "passed": 8,
+        "total": 8,
+        "failed": []
+      }
+    ],
+    "pageErrors": []
+  },
+  "hooks": {
+    "world": {
+      "total": 31,
+      "passed": 31,
+      "results": [
+        {
+          "name": "种子1–100：城址/基础资源/秘点/河道/两侧入口全部可达",
+          "pass": true,
+          "detail": "[]"
+        },
+        {
+          "name": "连通性修复确实按种子做过确定性清理",
+          "pass": true,
+          "detail": "cleared 0..5"
+        },
+        {
+          "name": "同种子地图逐格一致且强化卡随机序列不变",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "修复逻辑不引用随机序列",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "修复不删除/不移动资源与秘点",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "修复幂等（二次调用不再改动地图）",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "两处城址起始圈保留四类基础资源",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "成片林地/岩石是整格实体",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "水域是实体",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "实体树石格中心放不下领主脚底圆",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "城堡实体格中心放不下领主脚底圆",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "城堡/营地服务位在实体外侧且可站",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "实体半径符合设计表",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "dt=0.016 连续冲刺不穿墙",
+          "pass": true,
+          "detail": "x=5.7320"
+        },
+        {
+          "name": "dt=0.045 连续冲刺不穿墙",
+          "pass": true,
+          "detail": "x=5.7600"
+        },
+        {
+          "name": "dt=0.2 连续冲刺不穿墙",
+          "pass": true,
+          "detail": "x=5.7000"
+        },
+        {
+          "name": "对角位移不超过同长度直线",
+          "pass": true,
+          "detail": "straight=0.3000 diag=0.3000"
+        },
+        {
+          "name": "窄走廊内对角移动不穿角、始终可站",
+          "pass": true,
+          "detail": "y=5.7400"
+        },
+        {
+          "name": "地图左边界考虑半径",
+          "pass": true,
+          "detail": "x=0.2826"
+        },
+        {
+          "name": "顶住墙且无位移时 moving=false",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "建造不许覆盖活体脚底圆，失败不扣资源/行动",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "合法建造成功并使导航版本递增",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "拆除同样使导航版本递增且不残留建筑",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "会围死领主的建造被拒绝",
+          "pass": true,
+          "detail": "reason=会堵死领主或居民的必经道路"
+        },
+        {
+          "name": "围死情形不扣资源/行动、不写建筑",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "点击寻路的每个路点都是可站格",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "WASD 与点击都走统一碰撞入口",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "敌军流场以目标实体外侧攻击位为源",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "流场不会把不可拆实体当通路",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "出生点有效且带脚底半径",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "营地入口距核心>=4且可站",
+          "pass": true,
+          "detail": ""
+        }
+      ]
+    },
+    "residents": {
+      "total": 30,
+      "passed": 30,
+      "results": [
+        {
+          "name": "开局两名居民在城堡外侧的合法站位",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "同一居民 ID 只出现一次",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "状态 home 有独立可见表现",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "状态 posted 有独立可见表现",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "状态 waiting 有独立可见表现",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "状态 hurt 有独立可见表现",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "dead 不再出现在地图",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "三种职业有可辨识的绘制分支",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "民兵只按真实数量绘制，不产生额外攻击单位",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "合法营地建立成功且核心成为实体",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "派驻从合法站位出发且路点全是可达服务位",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "派驻本身不提前支付维护",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "道路被封：原地等待、不瞬移、不提前到岗付费",
+          "pass": true,
+          "detail": "state=outbound blocked=true"
+        },
+        {
+          "name": "受阻时有明确的道路受阻提示",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "拆障碍后重算路线并真实到岗",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "同周期同人不重复支付维护",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "同一居民同夜受击4次只算1名伤员，受击次数另存",
+          "pass": true,
+          "detail": "hurt=1 hits=4"
+        },
+        {
+          "name": "两名居民受伤计为2，不按受击次数膨胀",
+          "pass": true,
+          "detail": "hurt=2"
+        },
+        {
+          "name": "阵亡按 ID 去重且不再继续受击",
+          "pass": true,
+          "detail": "dead=1"
+        },
+        {
+          "name": "维修统计来自真实修复事件",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "左右移动产生真实位移与 face 翻转",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "人物绘制读取 face / moving / 真实位移",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "渲染按脚底 Y 排序并支持树冠半透明",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "普通残敌不因清场超时消失",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "首领未被击杀不判胜",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "卡路敌人不被当作死亡删除",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "真实击杀首领且清完场才胜利",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "重开保留难度与自动攻击并解除暂停",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "重开清空旧局居民与敌人",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "富矿 / 铁矿 / 遗迹都有可达服务位（不再要求走进实体格中心）",
+          "pass": true,
+          "detail": ""
+        }
+      ]
+    },
+    "gestures": {
+      "total": 10,
+      "passed": 10,
+      "results": [
+        {
+          "name": "短按资源地只移动，不打开面板",
+          "pass": true
+        },
+        {
+          "name": "350ms长按只查看并高亮，无移动或重复click",
+          "pass": true
+        },
+        {
+          "name": "拖动取消长按与移动，同时关闭抽屉",
+          "pass": true
+        },
+        {
+          "name": "pointercancel清除长按定时器",
+          "pass": true
+        },
+        {
+          "name": "建造模式短按也不扣资源，只移动",
+          "pass": true
+        },
+        {
+          "name": "多指取消当前长按，不遗留定时器",
+          "pass": true
+        },
+        {
+          "name": "长按迷雾松手不会变短按移动",
+          "pass": true
+        },
+        {
+          "name": "第二指落在HUD也取消地图长按",
+          "pass": true
+        },
+        {
+          "name": "战役结束后释放旧触摸不再移动",
+          "pass": true
+        },
+        {
+          "name": "遮罩与下滑手柄都能关闭抽屉",
+          "pass": true
+        }
+      ]
+    }
+  },
+  "layouts": [
+    {
+      "viewport": {
+        "w": 1440,
+        "h": 900
+      },
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "board": {
+        "w": 1440,
+        "h": 900
+      }
+    },
+    {
+      "viewport": {
+        "w": 1920,
+        "h": 1080
+      },
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "board": {
+        "w": 1920,
+        "h": 1080
+      }
+    },
+    {
+      "viewport": {
+        "w": 844,
+        "h": 390
+      },
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "board": {
+        "w": 844,
+        "h": 390
+      }
+    },
+    {
+      "viewport": {
+        "w": 932,
+        "h": 430
+      },
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "board": {
+        "w": 932,
+        "h": 430
+      }
+    },
+    {
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "board": {
+        "w": 390,
+        "h": 844
+      }
+    }
+  ],
+  "cameras": [
+    {
+      "viewport": "1440x900",
+      "total": 8,
+      "passed": 8,
+      "results": [
+        {
+          "name": "跟随锚点对准安全中心",
+          "pass": true
+        },
+        {
+          "name": "直线、对角线和点击寻路保持居中",
+          "pass": true
+        },
+        {
+          "name": "四边四角仍居中且地图外点击落空",
+          "pass": true
+        },
+        {
+          "name": "世界屏幕往返不偏格",
+          "pass": true
+        },
+        {
+          "name": "地图小于视口时仍居中",
+          "pass": true
+        },
+        {
+          "name": "按下不追、拖图保持手动、新移动恢复跟随",
+          "pass": true
+        },
+        {
+          "name": "长按期间不追，关闭后面不强制改手动",
+          "pass": true
+        },
+        {
+          "name": "相机只写地图世界层",
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "viewport": {
+          "w": 1440,
+          "h": 900,
+          "dpr": 1
+        },
+        "css": {
+          "w": 1440,
+          "h": 900,
+          "internalW": 1472,
+          "internalH": 920
+        },
+        "rest": {
+          "error": 0,
+          "anchor": {
+            "x": 720,
+            "y": 500.5
+          },
+          "center": {
+            "x": 720,
+            "y": 500.5
+          }
+        },
+        "motion": {
+          "max": 0,
+          "samples": [
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            }
+          ]
+        },
+        "edges": [
+          {
+            "x": 0.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": 697.5,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": -697.5,
+            "outside": "15,0"
+          },
+          {
+            "x": 0.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": 697.5,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": -697.5,
+            "outside": "15,19"
+          },
+          {
+            "x": 16,
+            "y": 0.5,
+            "error": 0,
+            "tx": 0,
+            "outside": "0,0"
+          },
+          {
+            "x": 31.5,
+            "y": 10,
+            "error": 0,
+            "tx": -697.5,
+            "outside": "15,10"
+          },
+          {
+            "x": 0.5,
+            "y": 10,
+            "error": 0,
+            "tx": 697.5,
+            "outside": null
+          },
+          {
+            "x": 16,
+            "y": 19.5,
+            "error": 0,
+            "tx": 0,
+            "outside": "0,19"
+          }
+        ],
+        "roundtrip": {
+          "ok": 20,
+          "seen": [
+            {
+              "tile": "22,7",
+              "back": "22,7"
+            },
+            {
+              "tile": "0,16",
+              "back": "0,16"
+            },
+            {
+              "tile": "0,4",
+              "back": "0,4"
+            }
+          ],
+          "sx": 0.9783,
+          "sy": 0.9783
+        },
+        "small": {
+          "error": 0,
+          "cssW": 648,
+          "cssH": 405,
+          "anchor": {
+            "x": 720,
+            "y": 500.5
+          },
+          "center": {
+            "x": 720,
+            "y": 500.5
+          }
+        },
+        "hudAfterMove": {
+          "max": 0,
+          "detail": {
+            "title": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "status": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "reports": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "objective": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        }
+      },
+      "hud": {
+        "title": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 80
+        },
+        "status": {
+          "x": 24,
+          "y": 92,
+          "w": 1392,
+          "h": 92
+        },
+        "reports": {
+          "x": 18,
+          "y": 652.5,
+          "w": 370,
+          "h": 151.5
+        },
+        "objective": {
+          "x": 1082,
+          "y": 669.86,
+          "w": 340,
+          "h": 134.14
+        }
+      }
+    },
+    {
+      "viewport": "1440x900@2x",
+      "passed": 1,
+      "total": 1,
+      "results": [
+        {
+          "name": "DPR2 不影响 CSS 坐标往返",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "viewport": "1920x1080",
+      "total": 8,
+      "passed": 8,
+      "results": [
+        {
+          "name": "跟随锚点对准安全中心",
+          "pass": true
+        },
+        {
+          "name": "直线、对角线和点击寻路保持居中",
+          "pass": true
+        },
+        {
+          "name": "四边四角仍居中且地图外点击落空",
+          "pass": true
+        },
+        {
+          "name": "世界屏幕往返不偏格",
+          "pass": true
+        },
+        {
+          "name": "地图小于视口时仍居中",
+          "pass": true
+        },
+        {
+          "name": "按下不追、拖图保持手动、新移动恢复跟随",
+          "pass": true
+        },
+        {
+          "name": "长按期间不追，关闭后面不强制改手动",
+          "pass": true
+        },
+        {
+          "name": "相机只写地图世界层",
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080,
+          "dpr": 1
+        },
+        "css": {
+          "w": 1920,
+          "h": 1200,
+          "internalW": 1472,
+          "internalH": 920
+        },
+        "rest": {
+          "error": 0,
+          "anchor": {
+            "x": 960,
+            "y": 590.5
+          },
+          "center": {
+            "x": 960,
+            "y": 590.5
+          }
+        },
+        "motion": {
+          "max": 0,
+          "samples": [
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            }
+          ]
+        },
+        "edges": [
+          {
+            "x": 0.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": 930,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": -930,
+            "outside": "15,0"
+          },
+          {
+            "x": 0.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": 930,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": -930,
+            "outside": "15,19"
+          },
+          {
+            "x": 16,
+            "y": 0.5,
+            "error": 0,
+            "tx": 0,
+            "outside": "0,0"
+          },
+          {
+            "x": 31.5,
+            "y": 10,
+            "error": 0,
+            "tx": -930,
+            "outside": "15,10"
+          },
+          {
+            "x": 0.5,
+            "y": 10,
+            "error": 0,
+            "tx": 930,
+            "outside": null
+          },
+          {
+            "x": 16,
+            "y": 19.5,
+            "error": 0,
+            "tx": 0,
+            "outside": "0,19"
+          }
+        ],
+        "roundtrip": {
+          "ok": 20,
+          "seen": [
+            {
+              "tile": "22,7",
+              "back": "22,7"
+            },
+            {
+              "tile": "0,16",
+              "back": "0,16"
+            },
+            {
+              "tile": "0,4",
+              "back": "0,4"
+            }
+          ],
+          "sx": 1.3043,
+          "sy": 1.3043
+        },
+        "small": {
+          "error": 0,
+          "cssW": 864,
+          "cssH": 486,
+          "anchor": {
+            "x": 960,
+            "y": 590.5
+          },
+          "center": {
+            "x": 960,
+            "y": 590.5
+          }
+        },
+        "hudAfterMove": {
+          "max": 0,
+          "detail": {
+            "title": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "status": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "reports": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "objective": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        }
+      },
+      "hud": {
+        "title": {
+          "x": 0,
+          "y": 0,
+          "w": 1920,
+          "h": 80
+        },
+        "status": {
+          "x": 24,
+          "y": 92,
+          "w": 1872,
+          "h": 92
+        },
+        "reports": {
+          "x": 18,
+          "y": 832.5,
+          "w": 370,
+          "h": 151.5
+        },
+        "objective": {
+          "x": 1562,
+          "y": 849.86,
+          "w": 340,
+          "h": 134.14
+        }
+      }
+    },
+    {
+      "viewport": "844x390",
+      "total": 8,
+      "passed": 8,
+      "results": [
+        {
+          "name": "跟随锚点对准安全中心",
+          "pass": true
+        },
+        {
+          "name": "直线、对角线和点击寻路保持居中",
+          "pass": true
+        },
+        {
+          "name": "四边四角仍居中且地图外点击落空",
+          "pass": true
+        },
+        {
+          "name": "世界屏幕往返不偏格",
+          "pass": true
+        },
+        {
+          "name": "地图小于视口时仍居中",
+          "pass": true
+        },
+        {
+          "name": "按下不追、拖图保持手动、新移动恢复跟随",
+          "pass": true
+        },
+        {
+          "name": "长按期间不追，关闭后面不强制改手动",
+          "pass": true
+        },
+        {
+          "name": "相机只写地图世界层",
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "viewport": {
+          "w": 844,
+          "h": 390,
+          "dpr": 1
+        },
+        "css": {
+          "w": 1280,
+          "h": 800,
+          "internalW": 1472,
+          "internalH": 920
+        },
+        "rest": {
+          "error": 0,
+          "anchor": {
+            "x": 422,
+            "y": 191.25
+          },
+          "center": {
+            "x": 422,
+            "y": 191.25
+          }
+        },
+        "motion": {
+          "max": 0,
+          "samples": [
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            }
+          ]
+        },
+        "edges": [
+          {
+            "x": 0.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": 402,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": -838,
+            "outside": "21,0"
+          },
+          {
+            "x": 0.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": 402,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": -838,
+            "outside": "21,19"
+          },
+          {
+            "x": 16,
+            "y": 0.5,
+            "error": 0,
+            "tx": -218,
+            "outside": "5,0"
+          },
+          {
+            "x": 31.5,
+            "y": 10,
+            "error": 0,
+            "tx": -838,
+            "outside": "21,10"
+          },
+          {
+            "x": 0.5,
+            "y": 10,
+            "error": 0,
+            "tx": 402,
+            "outside": null
+          },
+          {
+            "x": 16,
+            "y": 19.5,
+            "error": 0,
+            "tx": -218,
+            "outside": "5,19"
+          }
+        ],
+        "roundtrip": {
+          "ok": 20,
+          "seen": [
+            {
+              "tile": "22,7",
+              "back": "22,7"
+            },
+            {
+              "tile": "0,16",
+              "back": "0,16"
+            },
+            {
+              "tile": "0,4",
+              "back": "0,4"
+            }
+          ],
+          "sx": 0.8696,
+          "sy": 0.8696
+        },
+        "small": {
+          "error": 0,
+          "cssW": 379,
+          "cssH": 175,
+          "anchor": {
+            "x": 422,
+            "y": 191.25
+          },
+          "center": {
+            "x": 422,
+            "y": 191.25
+          }
+        },
+        "hudAfterMove": {
+          "max": 0,
+          "detail": {
+            "title": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "status": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "reports": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "objective": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        }
+      },
+      "hud": {
+        "title": {
+          "x": 0,
+          "y": 0,
+          "w": 844,
+          "h": 44
+        },
+        "status": {
+          "x": 8,
+          "y": 48,
+          "w": 828,
+          "h": 55
+        },
+        "reports": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "objective": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      }
+    },
+    {
+      "viewport": "932x430",
+      "total": 8,
+      "passed": 8,
+      "results": [
+        {
+          "name": "跟随锚点对准安全中心",
+          "pass": true
+        },
+        {
+          "name": "直线、对角线和点击寻路保持居中",
+          "pass": true
+        },
+        {
+          "name": "四边四角仍居中且地图外点击落空",
+          "pass": true
+        },
+        {
+          "name": "世界屏幕往返不偏格",
+          "pass": true
+        },
+        {
+          "name": "地图小于视口时仍居中",
+          "pass": true
+        },
+        {
+          "name": "按下不追、拖图保持手动、新移动恢复跟随",
+          "pass": true
+        },
+        {
+          "name": "长按期间不追，关闭后面不强制改手动",
+          "pass": true
+        },
+        {
+          "name": "相机只写地图世界层",
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "viewport": {
+          "w": 932,
+          "h": 430,
+          "dpr": 1
+        },
+        "css": {
+          "w": 1280,
+          "h": 800,
+          "internalW": 1472,
+          "internalH": 920
+        },
+        "rest": {
+          "error": 0,
+          "anchor": {
+            "x": 466,
+            "y": 211.25
+          },
+          "center": {
+            "x": 466,
+            "y": 211.25
+          }
+        },
+        "motion": {
+          "max": 0,
+          "samples": [
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            }
+          ]
+        },
+        "edges": [
+          {
+            "x": 0.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": 446,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": -794,
+            "outside": "19,0"
+          },
+          {
+            "x": 0.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": 446,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": -794,
+            "outside": "19,19"
+          },
+          {
+            "x": 16,
+            "y": 0.5,
+            "error": 0,
+            "tx": -174,
+            "outside": "4,0"
+          },
+          {
+            "x": 31.5,
+            "y": 10,
+            "error": 0,
+            "tx": -794,
+            "outside": "19,10"
+          },
+          {
+            "x": 0.5,
+            "y": 10,
+            "error": 0,
+            "tx": 446,
+            "outside": null
+          },
+          {
+            "x": 16,
+            "y": 19.5,
+            "error": 0,
+            "tx": -174,
+            "outside": "4,19"
+          }
+        ],
+        "roundtrip": {
+          "ok": 20,
+          "seen": [
+            {
+              "tile": "22,7",
+              "back": "22,7"
+            },
+            {
+              "tile": "0,16",
+              "back": "0,16"
+            },
+            {
+              "tile": "0,4",
+              "back": "0,4"
+            }
+          ],
+          "sx": 0.8696,
+          "sy": 0.8696
+        },
+        "small": {
+          "error": 0,
+          "cssW": 419,
+          "cssH": 193,
+          "anchor": {
+            "x": 466,
+            "y": 211.25
+          },
+          "center": {
+            "x": 466,
+            "y": 211.25
+          }
+        },
+        "hudAfterMove": {
+          "max": 0,
+          "detail": {
+            "title": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "status": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "reports": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "objective": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        }
+      },
+      "hud": {
+        "title": {
+          "x": 0,
+          "y": 0,
+          "w": 932,
+          "h": 44
+        },
+        "status": {
+          "x": 8,
+          "y": 48,
+          "w": 916,
+          "h": 55
+        },
+        "reports": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "objective": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      }
+    },
+    {
+      "viewport": "390x844",
+      "total": 8,
+      "passed": 8,
+      "results": [
+        {
+          "name": "跟随锚点对准安全中心",
+          "pass": true
+        },
+        {
+          "name": "直线、对角线和点击寻路保持居中",
+          "pass": true
+        },
+        {
+          "name": "四边四角仍居中且地图外点击落空",
+          "pass": true
+        },
+        {
+          "name": "世界屏幕往返不偏格",
+          "pass": true
+        },
+        {
+          "name": "地图小于视口时仍居中",
+          "pass": true
+        },
+        {
+          "name": "按下不追、拖图保持手动、新移动恢复跟随",
+          "pass": true
+        },
+        {
+          "name": "长按期间不追，关闭后面不强制改手动",
+          "pass": true
+        },
+        {
+          "name": "相机只写地图世界层",
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "viewport": {
+          "w": 390,
+          "h": 844,
+          "dpr": 1
+        },
+        "css": {
+          "w": 1350,
+          "h": 844,
+          "internalW": 1472,
+          "internalH": 920
+        },
+        "rest": {
+          "error": 0,
+          "anchor": {
+            "x": 195,
+            "y": 425.15
+          },
+          "center": {
+            "x": 195,
+            "y": 425.15
+          }
+        },
+        "motion": {
+          "max": 0,
+          "samples": [
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            }
+          ]
+        },
+        "edges": [
+          {
+            "x": 0.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": 173.9,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": -1134.3,
+            "outside": "26,0"
+          },
+          {
+            "x": 0.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": 173.9,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": -1134.3,
+            "outside": "26,19"
+          },
+          {
+            "x": 16,
+            "y": 0.5,
+            "error": 0,
+            "tx": -480.2,
+            "outside": "11,0"
+          },
+          {
+            "x": 31.5,
+            "y": 10,
+            "error": 0,
+            "tx": -1134.3,
+            "outside": "26,10"
+          },
+          {
+            "x": 0.5,
+            "y": 10,
+            "error": 0,
+            "tx": 173.9,
+            "outside": null
+          },
+          {
+            "x": 16,
+            "y": 19.5,
+            "error": 0,
+            "tx": -480.2,
+            "outside": "11,19"
+          }
+        ],
+        "roundtrip": {
+          "ok": 20,
+          "seen": [
+            {
+              "tile": "22,7",
+              "back": "22,7"
+            },
+            {
+              "tile": "0,16",
+              "back": "0,16"
+            },
+            {
+              "tile": "0,4",
+              "back": "0,4"
+            }
+          ],
+          "sx": 0.9174,
+          "sy": 0.9174
+        },
+        "small": {
+          "error": 0,
+          "cssW": 175,
+          "cssH": 379,
+          "anchor": {
+            "x": 195,
+            "y": 425.15
+          },
+          "center": {
+            "x": 195,
+            "y": 425.15
+          }
+        },
+        "hudAfterMove": {
+          "max": 0,
+          "detail": {
+            "title": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "status": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "reports": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "objective": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        }
+      },
+      "hud": {
+        "title": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 44
+        },
+        "status": {
+          "x": 8,
+          "y": 48,
+          "w": 374,
+          "h": 68.8
+        },
+        "reports": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "objective": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      }
+    }
+  ]
+}
