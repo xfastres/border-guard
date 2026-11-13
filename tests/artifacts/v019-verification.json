@@ -1,0 +1,427 @@
+{
+  "file": "Border-Guard-v0.19.html",
+  "gameplay": {
+    "total": 20,
+    "passed": 20,
+    "results": [
+      {
+        "name": "普通残敌不因8秒清场超时消失",
+        "pass": true
+      },
+      {
+        "name": "首领未被击杀不判胜",
+        "pass": true
+      },
+      {
+        "name": "卡路敌人不被当作死亡删除",
+        "pass": true
+      },
+      {
+        "name": "真实击杀首领且清完场才胜利",
+        "pass": true
+      },
+      {
+        "name": "合法边缘营地出生点位于控制区外",
+        "pass": true
+      },
+      {
+        "name": "围墙不会让出生点回退到核心",
+        "pass": true
+      },
+      {
+        "name": "重开保留难度与自动攻击并解除暂停",
+        "pass": true
+      },
+      {
+        "name": "两城基础资源保留且特产不进免费起始圈",
+        "pass": true
+      },
+      {
+        "name": "东侧富矿南侧铁矿均可步行抵达",
+        "pass": true
+      },
+      {
+        "name": "营地预算显示运行净收益、待缴和结算次数",
+        "pass": true
+      },
+      {
+        "name": "新增待缴人员不提供产出加成",
+        "pass": true
+      },
+      {
+        "name": "终局与提前召唤不再承诺经济收获",
+        "pass": true
+      },
+      {
+        "name": "营地直接培养并派驻且费用不重复",
+        "pass": true
+      },
+      {
+        "name": "无路时快捷派驻不会先扣培养费",
+        "pass": true
+      },
+      {
+        "name": "天亮先产出再按人维护",
+        "pass": true
+      },
+      {
+        "name": "缺粮维护不扣金币，默认手动复产",
+        "pass": true
+      },
+      {
+        "name": "同周期重派驻不重复维护",
+        "pass": true
+      },
+      {
+        "name": "结转只在首次乘倍率且失守保留",
+        "pass": true
+      },
+      {
+        "name": "入夜同帧到岗不突袭新营地",
+        "pass": true
+      },
+      {
+        "name": "尚未实际离营仍承担营地失守",
+        "pass": true
+      }
+    ]
+  },
+  "gestures": {
+    "total": 10,
+    "passed": 10,
+    "results": [
+      {
+        "name": "短按资源地只移动，不打开面板",
+        "pass": true
+      },
+      {
+        "name": "350ms长按只查看并高亮，无移动或重复click",
+        "pass": true
+      },
+      {
+        "name": "拖动取消长按与移动，同时关闭抽屉",
+        "pass": true
+      },
+      {
+        "name": "pointercancel清除长按定时器",
+        "pass": true
+      },
+      {
+        "name": "建造模式短按也不扣资源，只移动",
+        "pass": true
+      },
+      {
+        "name": "多指取消当前长按，不遗留定时器",
+        "pass": true
+      },
+      {
+        "name": "长按迷雾松手不会变短按移动",
+        "pass": true
+      },
+      {
+        "name": "第二指落在HUD也取消地图长按",
+        "pass": true
+      },
+      {
+        "name": "战役结束后释放旧触摸不再移动",
+        "pass": true
+      },
+      {
+        "name": "遮罩与下滑手柄都能关闭抽屉",
+        "pass": true
+      }
+    ]
+  },
+  "nativeGestures": [
+    {
+      "name": "原生触屏短按移动",
+      "pass": true
+    },
+    {
+      "name": "原生长按保持面板且不移动",
+      "pass": true
+    },
+    {
+      "name": "实际遮罩点击关闭",
+      "pass": true
+    },
+    {
+      "name": "实际遮罩拖图关闭抽屉且不移动",
+      "pass": true
+    },
+    {
+      "name": "鼠标点击资源仍打开详情",
+      "pass": true
+    },
+    {
+      "name": "WASD移动业务保持可用",
+      "pass": true
+    }
+  ],
+  "layouts": [
+    {
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "viewport": {
+        "w": 1440,
+        "h": 900
+      },
+      "board": {
+        "w": 1440,
+        "h": 900
+      }
+    },
+    {
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "viewport": {
+        "w": 1920,
+        "h": 1080
+      },
+      "board": {
+        "w": 1920,
+        "h": 1080
+      }
+    },
+    {
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "viewport": {
+        "w": 844,
+        "h": 390
+      },
+      "board": {
+        "w": 844,
+        "h": 390
+      }
+    },
+    {
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "viewport": {
+        "w": 932,
+        "h": 430
+      },
+      "board": {
+        "w": 932,
+        "h": 430
+      }
+    },
+    {
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "board": {
+        "w": 390,
+        "h": 844
+      }
+    }
+  ],
+  "campaign": {
+    "won": true,
+    "nights": [
+      {
+        "night": 1,
+        "seconds": 7.38,
+        "phase": "day",
+        "hp": 160,
+        "kills": 6
+      },
+      {
+        "night": 2,
+        "seconds": 19.82,
+        "phase": "day",
+        "hp": 160,
+        "kills": 9
+      },
+      {
+        "night": 3,
+        "seconds": 33.5,
+        "phase": "day",
+        "hp": 160,
+        "kills": 15
+      },
+      {
+        "night": 4,
+        "seconds": 22.55,
+        "phase": "day",
+        "hp": 160,
+        "kills": 20
+      },
+      {
+        "night": 5,
+        "seconds": 33.22,
+        "phase": "won",
+        "hp": 160,
+        "kills": 26
+      }
+    ],
+    "resources": {
+      "gold": 39,
+      "material": 2,
+      "food": 10,
+      "rare": 0
+    },
+    "kills": 26,
+    "balanced": true
+  },
+  "victoryChecks": [
+    {
+      "name": "参考布局保留顶部HUD和左下战报",
+      "pass": true
+    },
+    {
+      "name": "主卡右下，库存只在顶部展示",
+      "pass": true
+    },
+    {
+      "name": "结算卡有界 1440x900",
+      "pass": true
+    },
+    {
+      "name": "结算卡有界 844x390",
+      "pass": true
+    },
+    {
+      "name": "战后原生触屏点击据点能只读查看",
+      "pass": true
+    },
+    {
+      "name": "结算卡有界 390x844",
+      "pass": true
+    }
+  ]
+}

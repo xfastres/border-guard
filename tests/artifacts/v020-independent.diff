@@ -1,0 +1,458 @@
+--- v0.19
+
++++ v0.20
+
+@@ -8,7 +8,7 @@
+
+ <style data-page-node-id="LDtGUdEk64GhHrs7HuN3Gr" data-pnid-children="9oGsstHDAYONF5WpdxJgyj">:root{color-scheme:dark;--bg:#141c17;--paper:#202b23;--line:#586448;--text:#f1ebd8;--muted:#c0c6af;--accent:#e8b76c;--ink:#251d13;--red:#ed9a7c}
+ *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;height:100dvh;overflow:hidden;overscroll-behavior:none}body{background:var(--bg);color:var(--text);font:15px/1.5 "Microsoft YaHei",system-ui,sans-serif}h1,h2,h3,p{margin:0}button{font:inherit;color:inherit;cursor:pointer;border:1px solid #667052;background:#27372eea;border-radius:9px;padding:9px 13px;line-height:1.25;touch-action:manipulation}button:hover:not(:disabled){background:#40503b;border-color:var(--accent)}button:focus-visible,canvas:focus-visible{outline:2px solid #ffd691;outline-offset:-3px}button:disabled{opacity:.5;cursor:default}button.gold{background:var(--accent);color:var(--ink);font-weight:800}button.quiet{background:#1c2b22bb}[hidden]{display:none!important}
+ .top{position:fixed;inset:0 0 auto;z-index:5;height:80px;display:flex;align-items:center;justify-content:space-between;padding:10px 24px;gap:12px;background:linear-gradient(#17231af5,#1d2c23d9);border-bottom:1px solid #8b7c50;pointer-events:auto}.identity,.header-actions{display:flex;align-items:center;gap:10px}h1{font:700 32px/1.1 "SimSun",serif;letter-spacing:.08em}.subtitle{font-size:12px;color:var(--muted);margin-top:5px}.header-actions button{min-height:44px}.crest{width:43px;height:50px;display:grid;place-items:center;background:#c3914e;clip-path:polygon(0 0,100% 0,100% 75%,50% 100%,0 75%)}.crest i{width:24px;height:28px;background:#233026;clip-path:polygon(0 0,20% 0,20% 20%,40% 20%,40% 0,60% 0,60% 20%,80% 20%,80% 0,100% 0,100% 45%,80% 45%,80% 100%,55% 100%,55% 70%,40% 70%,40% 100%,20% 100%,20% 45%,0 45%)}
+-main,.layout,.field{position:absolute;inset:0;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden}.field{border:0}.board{position:absolute;inset:0;overflow:auto;overscroll-behavior:contain;touch-action:none;scrollbar-width:thin;scrollbar-color:#7a815c55 transparent;background:#293b2b}#map{display:block;width:max(1280px,100vw,calc(100dvh * 1.6));max-width:none;height:auto;aspect-ratio:8/5;touch-action:none;cursor:crosshair}.field-heading{display:none}
++main,.layout,.field{position:absolute;inset:0;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden}.field{border:0}.board{position:absolute;inset:0;overflow:hidden;overscroll-behavior:contain;touch-action:none;scrollbar-width:thin;scrollbar-color:#7a815c55 transparent;background:#293b2b}#mapWorld{position:absolute;left:0;top:0;z-index:0}#map{display:block;width:max(1280px,100vw,calc(100dvh * 1.6));max-width:none;height:auto;aspect-ratio:8/5;touch-action:none;cursor:crosshair}.field-heading{display:none}
+ .status{position:fixed;z-index:4;top:92px;left:24px;right:24px;min-height:80px;display:flex;align-items:center;gap:20px;padding:12px 18px;background:#1c2d23c9;border:1px solid #71806466;border-radius:12px;backdrop-filter:blur(5px)}.time{display:flex;align-items:center;gap:14px;min-width:230px}.time strong{display:block;font-size:20px}.time small{display:block;color:var(--muted);font-size:12px}.phase-icon{width:45px;height:45px;border:1px solid #ab9158;border-radius:50%;display:grid;place-items:center;font-size:28px;color:var(--accent)}#clockReadout{color:#f5cb84;font-weight:bold}.stocks{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.stock{border-left:1px solid #74806666;padding-left:18px;min-width:0}.stock span{display:block;color:#d9d9bd;font-size:14px}.stock strong{display:block;font:700 26px/1.2 Georgia,serif}.stock i{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:2px;background:var(--t)}#actionCount{font-size:12px;color:#ead3a5;white-space:nowrap}#sourceBtn{font-size:12px;min-height:40px}#timeBar{position:absolute;left:0;right:0;bottom:0;height:3px;overflow:hidden;border-radius:0 0 12px 12px}#timeFill{display:block;height:100%;background:var(--accent)}
+ .side{position:fixed;inset:0;z-index:6;pointer-events:none}.panel{pointer-events:auto;background:#17291fdc;border:1px solid #9b915c;border-radius:15px;box-shadow:0 7px 22px #07140c66;padding:16px 18px;backdrop-filter:blur(7px);min-width:0}.panel h2{font-family:"SimSun",serif;font-size:22px;color:#f1dcae}.panel p{color:#d1d6bd;font-size:13px;line-height:1.55;margin-top:7px}.objective{position:absolute;right:18px;bottom:96px;width:min(340px,30vw);max-height:36vh;overflow:auto}.reports{position:absolute;left:18px;bottom:96px;width:min(370px,32vw);max-height:26vh;overflow:auto}.reports ol{list-style:none;margin:8px 0 0;padding:0;color:#d0d4bb;font-size:13px;max-height:15vh;overflow:auto}.reports li{padding:4px 0;border-top:1px solid #59674755}.reports li:first-child{color:#f0dfb7}.reports li:nth-child(n+4){display:none}.inspect{display:none;position:absolute;right:18px;top:192px;width:min(340px,34vw);max-height:calc(100dvh - 220px);overflow:auto}.side:has(#closeInspector:not([hidden])) .inspect{display:block}.side:has(#closeInspector:not([hidden])) .objective{display:none}.inspect-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.inspect-heading button{padding:7px 10px;font-size:12px}.section-caption{font-size:12px;color:#c6cbaf}.inspect h3{font-size:19px;color:#f5dcb0}.tile-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.tile-actions button{font-size:13px}.tile-actions small{display:block;font-size:11px;margin-top:3px;color:inherit;opacity:.85}.resident-row{margin-top:10px;padding-top:9px;border-top:1px solid #64735877}.march{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:10px}.march span{text-align:center;border:1px solid #626f53;border-radius:6px;padding:5px 0;font-size:12px}.march .current,.march .done{background:#4b5237;color:#f6d195;border-color:#c49c56}.primary-actions{display:grid;gap:6px;margin-top:10px}.primary-actions:empty{display:none}.diagnosis{display:none}
+ .command-bar{position:fixed;z-index:5;bottom:12px;left:18px;right:18px;display:flex;gap:7px;flex-wrap:nowrap;overflow-x:auto;padding:8px;background:#17261ed9;border:1px solid #74806477;border-radius:11px;scrollbar-width:thin}.command-bar button{flex:0 0 auto;min-height:44px;font-size:13px;white-space:nowrap}.command-bar small{display:block;font-size:11px;color:#c9cfb4;margin-top:3px}.command-bar .active{color:#ffd99b;border-color:var(--accent);background:#494831}#campList{left:auto;right:18px;bottom:auto;top:185px;max-width:40vw;max-height:60px;padding:5px}body:has(.inspect #closeInspector:not([hidden])) #campList{display:none}.legend{position:fixed;z-index:3;left:24px;bottom:82px;display:flex;gap:10px;align-items:center;pointer-events:none;font-size:12px;color:#d7d9bc}.legend i{display:inline-block;width:9px;height:9px;margin-right:4px;border-radius:2px}.owned{background:#caa763}.fog{background:#5e7169}.hostile{background:#c77961}.legend .res{margin-left:12px}.legend #legendControl{display:none}.group-tabs,#mobileDock,.sheet-bar{display:none}
+@@ -26,7 +26,7 @@
+
+ body.victory main{max-width:none;width:100%;height:100%;margin:0;padding:0;display:block}
+ body.victory .layout{display:block;height:100%;gap:0}
+ body.victory .field{height:100%;border:0;border-radius:0;background:#1a231d}
+-body.victory .board{height:100%;width:100%;overflow:auto;touch-action:none;cursor:grab}
++body.victory .board{height:100%;width:100%;overflow:hidden;touch-action:none;cursor:grab}
+ body.victory #map{width:1680px!important;height:1050px!important;max-width:none!important;aspect-ratio:auto!important}
+ #victoryHud{position:fixed;inset:0;z-index:12;pointer-events:none}
+ #victoryHud button,#victoryHud [role="tab"],#victoryCard,#victoryMenu,#victoryLegend,#victoryInspect{pointer-events:auto}
+@@ -68,7 +68,7 @@
+
+ <header data-page-node-id="r8IUVHvMbf3t1F2uzPD9UF" class="top">
+   <div data-page-node-id="gcqdBfFt4b3wPI9k5r2RRo" class="identity">
+     <div data-page-node-id="QYk5qxlI25RfxshXgw62Of" aria-hidden="true" class="crest"><i data-page-node-id="7YwhWqcOYbFP7YZIw0YtSw"></i></div>
+-    <div data-page-node-id="PlanZ6RVl4pSytUlQjTkb8"><h1 data-page-node-id="0H5yfzxn0fvG8JwHY3eI4X"><!--pnid:sQbbxZ65FYmNFKc9cOLin0-->边境守卫</h1><div data-page-node-id="cQ634pGqVr7kuQzqRegKPR" class="subtitle"><!--pnid:QrtrYCmrfYyEzH2gV2i8Ih-->全景地图 · 探索经营 · 昼夜守卫 · v0.19</div></div>
++    <div data-page-node-id="PlanZ6RVl4pSytUlQjTkb8"><h1 data-page-node-id="0H5yfzxn0fvG8JwHY3eI4X"><!--pnid:sQbbxZ65FYmNFKc9cOLin0-->边境守卫</h1><div data-page-node-id="cQ634pGqVr7kuQzqRegKPR" class="subtitle"><!--pnid:QrtrYCmrfYyEzH2gV2i8Ih-->全景地图 · 探索经营 · 昼夜守卫 · v0.20</div></div>
+   </div>
+   <div data-page-node-id="jcL1EDCXhPxpwKOLHQtEn2" class="header-actions">
+     <button data-page-node-id="SOYyp8A6zx82QObwFX4psz" class="quiet" id="pauseBtn"><!--pnid:V3ZQKydWxt1L5XSA9I8GtV-->暂停</button>
+@@ -88,7 +88,9 @@
+
+     <section data-page-node-id="qjzM7VMJS7H213WFIUS5pm" aria-label="领地图" class="field">
+       <div data-page-node-id="N9hSPPIiJnCjCorQD92HlA" class="field-heading"><div data-page-node-id="Uo9dvmh4OPPOQLwd4E7AQu"><h2 data-page-node-id="T54HwDWczPauNKTMngZifX"><!--pnid:1Vl3pA9BMQsF6mg9nwis61-->边境地图</h2><span data-page-node-id="voL28CX6sWaA2eg6uA0BtB" id="mapHint"><!--pnid:sVFn11QCFkJhBcs4hANSw2-->选中地图上的城址查看起始圈</span></div><div data-page-node-id="7g0t44uzpaWBlH7u0jxElr" id="actionCount"></div></div>
+       <div data-page-node-id="PTlQJQsSCQCVJR7JuiX5qe" class="board" id="board">
+-        <canvas data-page-node-id="pXjBZK5GAjTcnQq442c8aA" aria-label="边境地图。手机竖屏下自动跟随领主，可拖动查看别处。点空地移动，点资源或建筑从底部弹出决策面板，面板打开也能移动。夜间空格攻击。" height="920" id="map" tabindex="0" width="1472"></canvas>
++        <div id="mapWorld">
++        <canvas data-page-node-id="pXjBZK5GAjTcnQq442c8aA" aria-label="边境地图。电脑和手机都会跟随领主，可拖动查看别处。点空地移动，点资源或建筑打开决策面板，面板打开也能移动。夜间空格攻击。" height="920" id="map" tabindex="0" width="1472"></canvas>
++        </div>
+         <div data-page-node-id="AmTfjcDv2XipbktBlUKpS9" hidden id="battleHud"><span data-page-node-id="lFczJnC7gB7zXN4iEBBHLw" class="battle-dot"></span><span data-page-node-id="wqMEbNXbMp17dSH4BuuNUm" id="battleText"></span></div>
+       </div>
+       <div data-page-node-id="8l4nzjH7jPDaeBdNYHAU4H" class="legend"><span data-page-node-id="JOzVu7xKs1kQxL149SxeRX"><i data-page-node-id="yezURGXuuP6zqAzLItwrPH" class="owned"></i><!--pnid:Bb4BSO6CRuhd1kYvEdfbSr--> 领地</span><span data-page-node-id="TSrrVvZVSyvbxc4sjOQRmc"><i data-page-node-id="8CvmZPFL7NrKfOukVbQdYx" class="fog"></i><!--pnid:t46exO0CsUh4fxSepfby3G--> 未探索</span><span data-page-node-id="F3q8VLr9Wa7w79ziMNRyoA"><i data-page-node-id="0UzsSuDVVLQt4myekFXb4z" class="hostile"></i><!--pnid:AdoQv4Nu8JEiGqaL2CLo51--> 夜袭入口</span><span data-page-node-id="go3fdzLulDCmjjcQpP004j" id="legendControl"></span><span data-page-node-id="eVOyw5PlamgyGWxvuNQtZI" class="res"><!--pnid:x1jM0idsX4usi85TJn51Mz-->· 麦田=粮 / 松林=木 / 石堆=石 / 矿脉=金</span></div>
+@@ -599,7 +601,8 @@
+
+ const ctx = canvas.getContext('2d');
+ const WIDTH = 32, HEIGHT = 20, CELL = 46, LAST_NIGHT = 5;
+ // v0.13 竖屏状态：抽屉是否手动展开、玩家是否正在手动拖看地图
+-let manualSheetOpen = false, manualPan = false;
++let manualSheetOpen = false;
++let camera = {tx:0,ty:0,mode:'follow',hold:false,sheetLock:false,sheetWasOpen:false,vx:0,vy:0,vw:0,vh:0,safeX:0,safeY:0,sx:1,sy:1};
+ let victoryPointer=null, victorySuppressClick=false, victoryCardDrag=false;
+ // v0.14：首日宽限；开局对话框只弹一次
+ let introDone = false;
+@@ -996,6 +999,7 @@
+
+     list.append(b);
+   });
+   content.append(list);
++  cancelMapGesture();
+   if(!$('dialog').open)$('dialog').showModal();
+ }
+ /* v0.14 暂停 / 开局 / 新手三步 */
+@@ -1004,6 +1008,7 @@
+
+   const btn=$('pauseBtn');if(btn)btn.textContent=paused?'继续':'暂停';
+   const overlay=$('pauseOverlay');if(overlay)overlay.hidden=!paused;
+   keys.clear();lastFrame=0;
++  if(paused)cancelMapGesture();
+ }
+ function showIntro(){
+   if(introDone)return;
+@@ -1186,7 +1191,7 @@
+
+ function setDestination(t){
+   const route=findPath(tileOf(game.hero),t);
+   if(!route){toast('这里无法通行。');return;}
+-  game.hero.goal=route;manualPan=false;
++  game.hero.goal=route;setCameraMode('follow');
+ }
+ function moveHero(dt){
+   const h=game.hero;
+@@ -1201,7 +1206,7 @@
+
+   const dy=Number(keys.has('s')||keys.has('arrowdown'))-Number(keys.has('w')||keys.has('arrowup'));
+   const length=Math.hypot(dx,dy);
+   if(length){
+-    manualPan=false;
++    setCameraMode('follow');
+     h.goal=null;
+     if(dx)h.face=dx<0?-1:1;
+     const nx=h.x+dx/length*DEMO.walkSpeed*dt, ny=h.y+dy/length*DEMO.walkSpeed*dt;
+@@ -1769,7 +1774,7 @@
+
+   followHero();
+ }
+ 
+-/* v0.13 竖屏：视口自动跟随领主 + 决策抽屉。不动 draw 的坐标系与点击换算，靠容器滚动实现视口 */
++/* v0.20：地图相机只平移 #mapWorld。屏幕 UI 不参与 transform，边缘允许露出棋盘底色。 */
+ const MOBILE=()=>typeof window.matchMedia==='function'&&window.matchMedia('(any-pointer:coarse), (max-width:720px)').matches;
+ function syncSheet(){
+   const mobile=MOBILE();document.body.classList.toggle('touch-ui',mobile);
+@@ -1778,33 +1783,123 @@
+
+   if(side)side.classList.toggle('open',open);
+   if($('sheetShade'))$('sheetShade').hidden=!open;
+   document.body.classList.toggle('sheet-open',open);
+-}
+-function heroViewport(){
++  if(open&&!camera.sheetWasOpen)camera.sheetLock=true;
++  if(!open)camera.sheetLock=false;
++  camera.sheetWasOpen=open;
++  if(camera.seenMobile!==mobile||camera.seenOpen!==open){
++    camera.seenMobile=mobile;camera.seenOpen=open;measureCameraViewport();
++  }
++}
++function visibleBand(el){
++  if(!el||el.hidden)return null;
++  const cs=getComputedStyle(el);
++  if(cs.display==='none'||cs.visibility==='hidden')return null;
++  const r=el.getBoundingClientRect();
++  if(r.width<innerWidth*.5||r.height<8)return null;
++  return r;
++}
++function measureCameraViewport(){
+   const board=$('board');
+-  if(!board||!MOBILE())return null;
+-  const w=canvas.offsetWidth||1280, h=canvas.offsetHeight||800;
+-  const maxX=Math.max(0,w-board.clientWidth), maxY=Math.max(0,h-board.clientHeight);
+-  return {
+-    x:Math.max(0,Math.min(maxX,game.hero.x/WIDTH*w-board.clientWidth/2)),
+-    y:Math.max(0,Math.min(maxY,game.hero.y/HEIGHT*h-board.clientHeight/2))
+-  };
++  if(!board)return camera;
++  const rect=board.getBoundingClientRect();
++  const cs=getComputedStyle(board);
++  const bl=parseFloat(cs.borderLeftWidth)||0,bt=parseFloat(cs.borderTopWidth)||0;
++  const br=parseFloat(cs.borderRightWidth)||0,bb=parseFloat(cs.borderBottomWidth)||0;
++  camera.vx=rect.left+bl;camera.vy=rect.top+bt;
++  const viewLeft=Math.max(camera.vx,0),viewTop=Math.max(camera.vy,0);
++  const viewRight=Math.min(rect.right-br,innerWidth),viewBottom=Math.min(rect.bottom-bb,innerHeight);
++  camera.vw=Math.max(0,viewRight-viewLeft);camera.vh=Math.max(0,viewBottom-viewTop);
++  let safeTop=viewTop,safeBottom=viewBottom,safeLeft=viewLeft,safeRight=viewRight;
++  for(const el of [document.querySelector('.top'),document.querySelector('.status')]){
++    const band=visibleBand(el);
++    if(band&&band.bottom>safeTop&&band.top<viewBottom)safeTop=Math.max(safeTop,band.bottom);
++  }
++  for(const el of [$('commandBar'),$('mobileDock')]){
++    const band=visibleBand(el);
++    if(band&&band.top<safeBottom&&band.bottom>viewTop)safeBottom=Math.min(safeBottom,band.top);
++  }
++  if(safeBottom-safeTop<40||safeRight-safeLeft<40){
++    camera.safeX=(viewLeft+viewRight)/2-camera.vx;
++    camera.safeY=(viewTop+viewBottom)/2-camera.vy;
++  }else{
++    camera.safeX=(safeLeft+safeRight)/2-camera.vx;
++    camera.safeY=(safeTop+safeBottom)/2-camera.vy;
++  }
++  camera.sx=canvas.offsetWidth?canvas.offsetWidth/canvas.width:0;
++  camera.sy=canvas.offsetHeight?canvas.offsetHeight/canvas.height:0;
++  return camera;
++}
++function applyCamera(){
++  const board=$('board'),world=$('mapWorld');
++  if(board){board.scrollLeft=0;board.scrollTop=0;}
++  if(world)world.style.transform='translate3d('+camera.tx+'px,'+camera.ty+'px,0)';
++}
++function setCameraMode(mode,opts){
++  camera.mode=mode==='manual'?'manual':'follow';
++  camera.generation=(camera.generation||0)+1;
++  if(camera.mode==='follow'&&!opts?.keepLock)camera.sheetLock=false;
++}
++function panCameraBy(dx,dy){
++  camera.tx+=dx;camera.ty+=dy;applyCamera();
++}
++function worldToScreen(worldX,worldY){
++  if(!camera.sx)measureCameraViewport();
++  return {x:camera.vx+camera.tx+worldX*camera.sx,y:camera.vy+camera.ty+worldY*camera.sy};
++}
++function screenToWorld(clientX,clientY){
++  if(!camera.sx||!camera.sy)measureCameraViewport();
++  if(!camera.sx||!camera.sy)return {x:NaN,y:NaN};
++  return {x:(clientX-camera.vx-camera.tx)/camera.sx,y:(clientY-camera.vy-camera.ty)/camera.sy};
++}
++function screenToGrid(clientX,clientY){
++  const w=screenToWorld(clientX,clientY);
++  if(!Number.isFinite(w.x)||!Number.isFinite(w.y))return null;
++  if(!(w.x>=0&&w.y>=0&&w.x<canvas.width&&w.y<canvas.height))return null;
++  const gx=Math.floor(w.x/CELL),gy=Math.floor(w.y/CELL);
++  if(gx<0||gy<0||gx>=WIDTH||gy>=HEIGHT)return null;
++  return tileAt(gx,gy);
++}
++function snapCameraToHero(){
++  if(!game?.hero||!camera.sx||!camera.sy)return;
++  camera.tx=camera.safeX-game.hero.x*CELL*camera.sx;
++  camera.ty=camera.safeY-game.hero.y*CELL*camera.sy;
++  applyCamera();
+ }
+ function centerOnHero(){
+-  const board=$('board'),v=heroViewport();
+-  if(!board||!v)return;
+-  board.scrollLeft=v.x;board.scrollTop=v.y;manualPan=false;
+-}
+-function followHero(){
+-  if(!MOBILE()||game.phase==='won')return;
+-  // 手动拖看时视角留在原地；领主一开始移动，镜头立刻接回
+-  if(manualPan){
+-    return;
+-  }
+-  const board=$('board'),v=heroViewport();
+-  if(!board||!v)return;
+-  const dx=v.x-board.scrollLeft,dy=v.y-board.scrollTop;
+-  if(Math.abs(dx)<.6&&Math.abs(dy)<.6)return;
+-  board.scrollLeft+=dx*.2;board.scrollTop+=dy*.2;
++  if(game&&(game.phase==='won'||game.phase==='lost'))return;
++  camera.hold=false;setCameraMode('follow');measureCameraViewport();snapCameraToHero();
++}
++function updateCamera(){
++  if(!game||camera.hold||camera.sheetLock||paused||document.hidden||$('dialog').open)return;
++  if(game.phase==='won'||game.phase==='lost'||camera.mode!=='follow')return;
++  if(!camera.sx)measureCameraViewport();
++  snapCameraToHero();
++}
++function followHero(){updateCamera();}
++let cameraResizing=false;
++function resizeCamera(){
++  if(cameraResizing)return;
++  cameraResizing=true;
++  try{resizeCameraNow();}finally{cameraResizing=false;}
++}
++function resizeCameraNow(){
++  const sx=camera.sx||1,sy=camera.sy||1;
++  const worldX=(camera.safeX-camera.tx)/sx,worldY=(camera.safeY-camera.ty)/sy;
++  measureCameraViewport();
++  const follow=camera.mode==='follow'&&!camera.hold&&!camera.sheetLock&&game&&!['won','lost'].includes(game.phase)&&!paused&&!$('dialog').open;
++  if(follow)snapCameraToHero();
++  else if(camera.sx&&camera.sy){
++    camera.tx=camera.safeX-worldX*camera.sx;camera.ty=camera.safeY-worldY*camera.sy;applyCamera();
++  }
++}
++let cameraObserver=null;
++function bindCameraObservers(){
++  measureCameraViewport();
++  if(typeof ResizeObserver!=='function')return;
++  cameraObserver=new ResizeObserver(()=>resizeCamera());
++  for(const el of [$('board'),document.querySelector('.top'),document.querySelector('.status'),$('commandBar'),$('mobileDock')]){
++    if(el)cameraObserver.observe(el);
++  }
+ }
+ function makeMobileDock(){
+   if(!MOBILE()||document.getElementById('mobileDock'))return;
+@@ -1831,10 +1926,6 @@
+
+   handle.addEventListener('pointerdown',e=>{swipe={id:e.pointerId,y:e.clientY};});
+   window.addEventListener('pointerup',e=>{if(swipe&&swipe.id===e.pointerId){if(e.clientY-swipe.y>=50)closeTouchSheet();swipe=null;}});
+   window.addEventListener('pointercancel',()=>{swipe=null;});
+-  const board=$('board');
+-  // 只有真正拖动/滚轮才暂停跟随，轻点选地不算
+-  board.addEventListener('touchmove',()=>{manualPan=true;},{passive:true});
+-  board.addEventListener('wheel',()=>{manualPan=true;},{passive:true});
+ }
+ 
+ function closeTouchSheet(){
+@@ -1842,25 +1933,36 @@
+
+ }
+ let mapGesture=null, touchClickUntil=0, touchBlocked=false;
+ const touchPointers=new Set();
++function releaseCameraHold(g){
++  camera.hold=false;
++  if(g&&!g.dragged&&g.generation===camera.generation)setCameraMode(g.modeBefore,{keepLock:true});
++}
+ function cancelMapGesture(){
+-  if(mapGesture)clearTimeout(mapGesture.timer);
++  const g=mapGesture;
++  if(g)clearTimeout(g.timer);
++  releaseCameraHold(g);
+   mapGesture=null;touchPointers.clear();touchBlocked=false;
+ }
+ function bindMapGestures(){
+   const shade=document.createElement('div');shade.id='sheetShade';shade.hidden=true;
+   shade.setAttribute('aria-label','关闭地点面板');document.body.append(shade);
+   const down=e=>{
+-    if(e.pointerType==='mouse'||!['day','night'].includes(game.phase)||$('dialog').open)return;
++    if(e.pointerType==='mouse'||$('dialog').open)return;
++    const playing=['day','night'].includes(game.phase),browsing=game.phase==='lost';
++    if(!playing&&!browsing)return;
+     touchPointers.add(e.pointerId);touchClickUntil=performance.now()+900;
+-    if(touchPointers.size>1){if(mapGesture)clearTimeout(mapGesture.timer);mapGesture=null;touchBlocked=true;return;}
++    if(touchPointers.size>1){
++      if(mapGesture)clearTimeout(mapGesture.timer);
++      releaseCameraHold(mapGesture);mapGesture=null;touchBlocked=true;return;
++    }
+     const fromShade=e.currentTarget===shade;
+-    const g={id:e.pointerId,x:e.clientX,y:e.clientY,sx:$('board').scrollLeft,sy:$('board').scrollTop,tile:tileFromPointer(e),dragged:false,long:false,fromShade};
+-    mapGesture=g;
+-    if(!fromShade)g.timer=setTimeout(()=>{
++    const g={id:e.pointerId,x:e.clientX,y:e.clientY,sx:camera.tx,sy:camera.ty,modeBefore:camera.mode,generation:camera.generation||0,tile:tileFromPointer(e),dragged:false,long:false,fromShade};
++    mapGesture=g;camera.hold=true;
++    if(playing&&!fromShade)g.timer=setTimeout(()=>{
+       if(mapGesture!==g||g.dragged||touchBlocked||!['day','night'].includes(game.phase)||$('dialog').open)return;
+       g.long=true;
+       if(!g.tile?.visible){toast('先靠近探明这块地。');return;}
+-      game.hero.goal=null;keys.clear();openInspector(g.tile);sync();
++      game.hero.goal=null;keys.clear();openInspector(g.tile);sync();camera.sheetLock=true;
+     },350);
+     if(e.isTrusted)try{e.currentTarget.setPointerCapture(e.pointerId);}catch{}
+     e.preventDefault();
+@@ -1869,17 +1971,17 @@
+
+     const g=mapGesture;if(!g||g.id!==e.pointerId||touchBlocked)return;
+     const dx=e.clientX-g.x,dy=e.clientY-g.y;
+     if(!g.dragged&&Math.hypot(dx,dy)>10){
+-      g.dragged=true;clearTimeout(g.timer);manualPan=true;
++      g.dragged=true;clearTimeout(g.timer);setCameraMode('manual');
+       manualSheetOpen=false;game.panel=false;syncSheet();sync();
+     }
+-    if(g.dragged){$('board').scrollLeft=g.sx-dx;$('board').scrollTop=g.sy-dy;e.preventDefault();}
++    if(g.dragged){panCameraBy(g.sx+dx-camera.tx,g.sy+dy-camera.ty);e.preventDefault();}
+   };
+   const up=e=>{
+     if(!touchPointers.has(e.pointerId))return;
+     touchPointers.delete(e.pointerId);touchClickUntil=performance.now()+900;
+-    if(touchBlocked){if(!touchPointers.size)touchBlocked=false;return;}
++    if(touchBlocked){if(!touchPointers.size){touchBlocked=false;camera.hold=false;}return;}
+     const g=mapGesture;if(!g||g.id!==e.pointerId)return;
+-    clearTimeout(g.timer);mapGesture=null;
++    clearTimeout(g.timer);mapGesture=null;releaseCameraHold(g);
+     if(!['day','night'].includes(game.phase))return;
+     if(!g.dragged&&!g.long){
+       if(g.fromShade){closeTouchSheet();return;}
+@@ -1889,10 +1991,13 @@
+
+     }
+   };
+   window.addEventListener('pointerdown',e=>{
+-    if(!['day','night'].includes(game.phase))return;
++    if(!['day','night','lost'].includes(game.phase))return;
+     if(e.pointerType==='mouse'||(!mapGesture&&!touchPointers.size&&e.target!==canvas&&e.target!==shade))return;
+     touchPointers.add(e.pointerId);
+-    if(touchPointers.size>1){if(mapGesture)clearTimeout(mapGesture.timer);mapGesture=null;touchBlocked=true;}
++    if(touchPointers.size>1){
++      if(mapGesture)clearTimeout(mapGesture.timer);
++      releaseCameraHold(mapGesture);mapGesture=null;touchBlocked=true;
++    }
+   },true);
+   for(const target of [canvas,shade]){
+     target.addEventListener('pointerdown',down);
+@@ -2201,8 +2306,8 @@
+
+   return best;
+ }
+ function screenRectOfTile(t){
+-  const b=canvas.getBoundingClientRect();
+-  return {x:b.left+t.x/WIDTH*b.width,y:b.top+t.y/HEIGHT*b.height,w:b.width/WIDTH,h:b.height/HEIGHT};
++  const p=worldToScreen(t.x*CELL,t.y*CELL);
++  return {x:p.x,y:p.y,w:CELL*camera.sx,h:CELL*camera.sy};
+ }
+ function victoryBlocks(){
+   const blocks=[];
+@@ -2524,7 +2629,7 @@
+
+     if(game.phase!=='won'||event.button>0)return;
+     touchClickUntil=0;
+     victorySuppressClick=false;
+-    victoryPointer={id:event.pointerId,x:event.clientX,y:event.clientY,sx:$('board').scrollLeft,sy:$('board').scrollTop,moved:false};
++    victoryPointer={id:event.pointerId,x:event.clientX,y:event.clientY,sx:camera.tx,sy:camera.ty,moved:false};
+   });
+   canvas.addEventListener('pointermove',event=>{
+     const tip=$('victoryTip');
+@@ -2532,8 +2637,8 @@
+
+       const dx=event.clientX-victoryPointer.x, dy=event.clientY-victoryPointer.y;
+       if(Math.hypot(dx,dy)>8)victoryPointer.moved=true;
+       if(victoryPointer.moved){
+-        $('board').scrollLeft=victoryPointer.sx-dx;
+-        $('board').scrollTop=victoryPointer.sy-dy;
++        setCameraMode('manual');
++        panCameraBy(victoryPointer.sx+dx-camera.tx,victoryPointer.sy+dy-camera.ty);
+         if(tip)tip.hidden=true;
+       }
+       return;
+@@ -2679,7 +2784,7 @@
+
+   game=makeGame();
+   game.hard=settings.hard;game.autoAttack=settings.autoAttack;
+   game.started=introDone;
+-  manualSheetOpen=false;manualPan=false;
++  manualSheetOpen=false;camera.hold=false;camera.sheetLock=false;camera.sheetWasOpen=false;setCameraMode('follow');
+   victoryPointer=null;victorySuppressClick=false;victoryCardDrag=false;
+   clearTimeout(toastTimer);$('toast').hidden=true;
+   setPaused(false);
+@@ -2698,11 +2803,8 @@
+
+   $('stocks').append(item);
+ });
+ function tileFromPointer(event){
+-  const bounds=canvas.getBoundingClientRect();
+-  if(!bounds.width||!bounds.height)return null;
+-  const x=Math.max(0,Math.min(WIDTH-1,Math.floor((event.clientX-bounds.left)/bounds.width*WIDTH)));
+-  const y=Math.max(0,Math.min(HEIGHT-1,Math.floor((event.clientY-bounds.top)/bounds.height*HEIGHT)));
+-  return tileAt(x,y);
++  if(!canvas.offsetWidth||!canvas.offsetHeight)return null;
++  return screenToGrid(event.clientX,event.clientY);
+ }
+ canvas.addEventListener('click',event=>{
+   const fromTouch=event.pointerType==='touch'||event.sourceCapabilities?.firesTouchEvents||(!event.isTrusted&&!event.pointerType);
+@@ -2762,7 +2864,7 @@
+
+   '夜袭自动开始。夜里按空格、点敌人（在攻击范围内）或点「领主攻击」；手机上默认开启「自动攻击」，靠近即出手，可随时关闭。敌人身边出现淡红圈表示它正要打到你。',
+   '顶部「暂停」会停住时钟和战斗，切到后台也会自动暂停；所有弹窗同样不推进时间。状态条显示的是这个阶段还剩多久——白天时间才是主要约束，7 次行动通常够用。',
+   '建墙和建塔可以连续点空地放置，Esc 或再点一次按钮结束。试玩数值：首日白天 '+DEMO.firstDaySeconds+' 秒给新手读界面，之后 '+DEMO.daySeconds+' 秒；走路 '+DEMO.walkSpeed+' 格/秒，居民赶路 '+DEMO.dispatchSpeed+' 格/秒，停刷后必须清完残敌才天亮，地图 '+WIDTH+'×'+HEIGHT+'。袭击预告至少留 '+DEMO.raidReactSeconds+' 秒白天，来不及就改期。这些都还不是正式数值表。',
+-  '手机竖屏：页面不滚动，地图常驻并自动跟随领主；拖动画布可自由查看，视角会留在原地，领主一开始走镜头才接回。点地图对象会从底部弹出决策面板，点空地或「收起」即关。白天的按钮分成「建造 / 扩张」和「领主 / 经营」两组，页签上写了每组按钮数，有「!」表示这组有等你处理的事。底部「定位领主」「目标 / 战报」「资源来源」随时可翻。',
++  '页面不滚动。电脑和手机都会把领主保持在可视区域中心；拖动或滚轮查看别处时镜头留在原地，新的移动、回城或「定位领主」才回到领主。手机点地图对象会从底部弹出决策面板，点空地或「收起」即关。白天的按钮分成「建造 / 扩张」和「领主 / 经营」两组，页签上写了每组按钮数，有「!」表示这组有等你处理的事。底部「定位领主」「目标 / 战报」「资源来源」随时可翻。',
+   '地图上方的黄色 / 红色横条是常驻提醒：红色是今夜双线遇袭或袭击预告，黄色是有主城强化待选。按钮变灰时，副标题会写清是行动用完还是还差哪种资源。'
+ ]));
+ let lastHud=0, lastDraw=0, paused=false;
+@@ -2781,15 +2883,23 @@
+
+ }
+ bindMapGestures();
+ bindVictoryHud();
++$('board').addEventListener('wheel',event=>{
++  const unit=event.deltaMode===1?16:event.deltaMode===2?(camera.vh||innerHeight):1;
++  setCameraMode('manual');
++  panCameraBy(-event.deltaX*unit,-event.deltaY*unit);
++},{passive:true});
+ newRun();
+ makeMobileDock();
+ centerOnHero();
++bindCameraObservers();
+ if(!introDone)showIntro();
+ window.addEventListener('resize',()=>{
+   makeMobileDock();
+-  if(game?.phase==='won')clampVictoryCard();
+-  else centerOnHero();
++  const dock=$('mobileDock');
++  if(dock&&cameraObserver)cameraObserver.observe(dock);
++  resizeCamera();
+ });
++window.addEventListener('orientationchange',()=>resizeCamera());
+ requestAnimationFrame(frame);
+ window.FW={
+   get game(){return game;},
+@@ -2800,7 +2910,8 @@
+
+   settleCampDawn,startNight,postResident,chooseSite,createCamp,build,findPath,
+   tileAt,at,center,campTile,dispatchResident,updateResidents,returnResident,
+   campStaff,releaseEvacuee,noteRaidWindow,paintNode,newRun,sync,draw,
+-  syncSheet,centerOnHero,followHero,makeMobileDock,MOBILE,
++  syncSheet,centerOnHero,followHero,updateCamera,makeMobileDock,MOBILE,
++  camera,measureCameraViewport,worldToScreen,screenToWorld,screenToGrid,setCameraMode,panCameraBy,
+   report,announce,setPaused,showIntro,startRun(){game.started=true;},phaseLimit,tutorialStep,
+   forecastIncome,developedCount,resourceOutlook,showResourceSources,
+   campBudget,remainingHarvests,trainAndDispatch,

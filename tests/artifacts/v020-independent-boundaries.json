@@ -1,0 +1,68 @@
+{
+  "background": {
+    "before": {
+      "tx": 402,
+      "ty": 171.25,
+      "mode": "follow",
+      "target": "board"
+    },
+    "after": {
+      "tx": 502,
+      "ty": 171.25,
+      "mode": "manual",
+      "goal": null
+    },
+    "moved": true
+  },
+  "backgroundMode": {
+    "before": {
+      "mode": "wall",
+      "selected": 133,
+      "gold": 14
+    },
+    "after": {
+      "mode": null,
+      "selected": 133,
+      "gold": 14
+    }
+  },
+  "naturalResize": {
+    "wide": {
+      "x": 1022,
+      "y": 608,
+      "width": 400,
+      "height": 259.53125,
+      "top": 608,
+      "right": 1422,
+      "bottom": 867.53125,
+      "left": 1022
+    },
+    "narrow": {
+      "x": 8,
+      "y": 600,
+      "width": 374,
+      "height": 235.75,
+      "top": 600,
+      "right": 382,
+      "bottom": 835.75,
+      "left": 8
+    },
+    "visible": true
+  },
+  "fractional": {
+    "cssWidth": 1350.390625,
+    "integerWidth": 1350,
+    "point": {
+      "x": 216.049853515625,
+      "y": 300
+    },
+    "expected": {
+      "x": 20,
+      "y": 5
+    },
+    "actual": {
+      "x": 20,
+      "y": 5
+    }
+  }
+}

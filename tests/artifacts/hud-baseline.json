@@ -1,0 +1,8 @@
+{
+  "version": "v0.17",
+  "sha256": "B77290EB4F52AF26320CB69898743E8C8F794BC2488122B7ED116A51E511ED10",
+  "gameplayChecks": 20,
+  "mobileChecks": 6,
+  "cursorTask": "docs/Cursor-HUD-v0.18-执行方案.md",
+  "submissionStatus": "blocked: Cursor Agent not logged in; UI activation failed"
+}

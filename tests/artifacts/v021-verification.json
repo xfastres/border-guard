@@ -1,0 +1,195 @@
+{
+  "out": {
+    "file": "Border-Guard-v0.21.html",
+    "hooks": "45/45",
+    "failed": [],
+    "staticChecks": "8/8",
+    "staticFailed": []
+  },
+  "hooks": {
+    "total": 45,
+    "passed": 45,
+    "results": [
+      {
+        "name": "每天给出 2 条互不相同的军令候选",
+        "pass": true
+      },
+      {
+        "name": "同种子同天候选确定且可复现",
+        "pass": true
+      },
+      {
+        "name": "军令抽取不消耗随机序列（不扰动地图/强化卡）",
+        "pass": true
+      },
+      {
+        "name": "军令默认未选择，不阻塞开局",
+        "pass": true
+      },
+      {
+        "name": "可主动接下军令",
+        "pass": true
+      },
+      {
+        "name": "同一夜不能改选军令",
+        "pass": true
+      },
+      {
+        "name": "未接军令时结算不发放任何奖励，也不改资源",
+        "pass": true
+      },
+      {
+        "name": "军令结算有防重复保护",
+        "pass": true
+      },
+      {
+        "name": "达成军令：+1 战功 / +3 主城经验 / 下夜多一次号令",
+        "pass": true
+      },
+      {
+        "name": "军令奖励不发放资源，账本与库存一字不变",
+        "pass": true
+      },
+      {
+        "name": "达成记录写入本局日志",
+        "pass": true
+      },
+      {
+        "name": "未达成军令没有任何惩罚",
+        "pass": true
+      },
+      {
+        "name": "未达成也留下中性记录",
+        "pass": true
+      },
+      {
+        "name": "不落一砖：夜始完好时判定保持",
+        "pass": true
+      },
+      {
+        "name": "不落一砖：掉耐久后判定失败",
+        "pass": true
+      },
+      {
+        "name": "跳过军令不产生达成奖励",
+        "pass": true
+      },
+      {
+        "name": "发现秘点写入图鉴",
+        "pass": true
+      },
+      {
+        "name": "重复发现不重复计数",
+        "pass": true
+      },
+      {
+        "name": "集齐 6 处秘点给出额外战功",
+        "pass": true
+      },
+      {
+        "name": "未发现时只给方向提示、不剧透坐标",
+        "pass": true
+      },
+      {
+        "name": "走近点亮自动记入图鉴",
+        "pass": true
+      },
+      {
+        "name": "第 1 夜预告含入口方向与敌军规模",
+        "pass": true
+      },
+      {
+        "name": "第 5 夜预告写明首领夜",
+        "pass": true
+      },
+      {
+        "name": "预告是纯信息层，不创建战场",
+        "pass": true
+      },
+      {
+        "name": "场上无敌人时不消耗号令额度",
+        "pass": true
+      },
+      {
+        "name": "号令对全场敌人造成伤害并消耗 1 次",
+        "pass": true
+      },
+      {
+        "name": "号令不改动既有箭塔强化数值",
+        "pass": true
+      },
+      {
+        "name": "额度用尽后再次点击无效",
+        "pass": true
+      },
+      {
+        "name": "号令击杀仍走既有入账通道，账本闭合不被破坏",
+        "pass": true
+      },
+      {
+        "name": "通关累加局数",
+        "pass": true
+      },
+      {
+        "name": "通关累加胜场",
+        "pass": true
+      },
+      {
+        "name": "最佳夜次取真实通关夜（早于第 3 夜的无效记录被挡住）",
+        "pass": true
+      },
+      {
+        "name": "最佳击退取本局真实值",
+        "pass": true
+      },
+      {
+        "name": "最高战功取本局真实值",
+        "pass": true
+      },
+      {
+        "name": "败局只累加局数，不覆盖最佳记录",
+        "pass": true
+      },
+      {
+        "name": "胜利卡展示战功/军令/秘点/个人最佳/下局建议",
+        "pass": true
+      },
+      {
+        "name": "胜利卡不重复展示库存（沿用 v0.18 约定）",
+        "pass": true
+      },
+      {
+        "name": "战役浮层在游玩中常驻可见",
+        "pass": true
+      },
+      {
+        "name": "浮层显示今夜预告与图鉴进度",
+        "pass": true
+      },
+      {
+        "name": "未选军令时给出 2 个候选 + 跳过",
+        "pass": true
+      },
+      {
+        "name": "HUD 本体不吃指针事件，地图仍可拖动",
+        "pass": true
+      },
+      {
+        "name": "接下军令后候选收起、显示进度",
+        "pass": true
+      },
+      {
+        "name": "夜战显示常驻号令入口",
+        "pass": true
+      },
+      {
+        "name": "战役结束自动收起浮层",
+        "pass": true
+      },
+      {
+        "name": "不选军令时昼夜循环照常推进且无弹窗",
+        "pass": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "file": "Border-Guard-v0.18.html",
+  "gameplay": {
+    "total": 20,
+    "passed": 20,
+    "results": [
+      {
+        "name": "普通残敌不因8秒清场超时消失",
+        "pass": true
+      },
+      {
+        "name": "首领未被击杀不判胜",
+        "pass": true
+      },
+      {
+        "name": "卡路敌人不被当作死亡删除",
+        "pass": true
+      },
+      {
+        "name": "真实击杀首领且清完场才胜利",
+        "pass": true
+      },
+      {
+        "name": "合法边缘营地出生点位于控制区外",
+        "pass": true
+      },
+      {
+        "name": "围墙不会让出生点回退到核心",
+        "pass": true
+      },
+      {
+        "name": "重开保留难度与自动攻击并解除暂停",
+        "pass": true
+      },
+      {
+        "name": "两城基础资源保留且特产不进免费起始圈",
+        "pass": true
+      },
+      {
+        "name": "东侧富矿南侧铁矿均可步行抵达",
+        "pass": true
+      },
+      {
+        "name": "营地预算显示运行净收益、待缴和结算次数",
+        "pass": true
+      },
+      {
+        "name": "新增待缴人员不提供产出加成",
+        "pass": true
+      },
+      {
+        "name": "终局与提前召唤不再承诺经济收获",
+        "pass": true
+      },
+      {
+        "name": "营地直接培养并派驻且费用不重复",
+        "pass": true
+      },
+      {
+        "name": "无路时快捷派驻不会先扣培养费",
+        "pass": true
+      },
+      {
+        "name": "天亮先产出再按人维护",
+        "pass": true
+      },
+      {
+        "name": "缺粮维护不扣金币，默认手动复产",
+        "pass": true
+      },
+      {
+        "name": "同周期重派驻不重复维护",
+        "pass": true
+      },
+      {
+        "name": "结转只在首次乘倍率且失守保留",
+        "pass": true
+      },
+      {
+        "name": "入夜同帧到岗不突袭新营地",
+        "pass": true
+      },
+      {
+        "name": "尚未实际离营仍承担营地失守",
+        "pass": true
+      }
+    ]
+  },
+  "mobile": {
+    "passed": 6,
+    "total": 6,
+    "checks": [
+      {
+        "name": "竖屏视口已启用",
+        "pass": true
+      },
+      {
+        "name": "地图容器不撑出屏幕",
+        "pass": true
+      },
+      {
+        "name": "大地图在容器内部可横向滚动",
+        "pass": true
+      },
+      {
+        "name": "底部操作栏使用屏幕宽度",
+        "pass": true
+      },
+      {
+        "name": "长营地面板可以滚动",
+        "pass": true
+      },
+      {
+        "name": "查看地点时优先显示当前决策",
+        "pass": true
+      }
+    ]
+  },
+  "victory": {
+    "total": 6,
+    "passed": 6,
+    "results": [
+      {
+        "name": "四角评分避开重叠更大的候选",
+        "pass": true
+      },
+      {
+        "name": "分夜收支闭合且早期记录不被后续夜改写",
+        "pass": true
+      },
+      {
+        "name": "提前召唤显示真实夜次、库存和独立分夜",
+        "pass": true
+      },
+      {
+        "name": "城堡损伤、维修、毁墙、失守和居民按实际事件记账",
+        "pass": true
+      },
+      {
+        "name": "胜利地图可平移和只读查看，卡片拖动后不跳",
+        "pass": true
+      },
+      {
+        "name": "重开清除结算状态且下一局不继承",
+        "pass": true
+      }
+    ]
+  },
+  "desktop": {
+    "day": 5,
+    "kills": 43,
+    "text": "第 5 夜通关\n\n本局击退敌军：43 名\n\n城堡剩余耐久 160 / 160\n\n战后库存：金币64｜材料30｜粮食4"
+  },
+  "mobileShot": {
+    "day": 5,
+    "kills": 43,
+    "text": "第 5 夜通关\n\n本局击退敌军：43 名\n\n城堡剩余耐久 160 / 160\n\n战后库存：金币64｜材料30｜粮食4"
+  }
+}
