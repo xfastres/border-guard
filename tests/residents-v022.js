@@ -113,10 +113,12 @@
 
   // ---- E｜旧回归意图在新规则下仍成立（适配服务位半径） ----
   const survivor=(boss=false)=>{
-    game.phase='night';game.isBoss=boss;game.bossDefeated=false;game.clock=18;game.cleanup=0;game.spawnStopped=true;
-    const f=makeFront('home',null,0,0);
+    game.phase='night';game.isBoss=boss;game.bossDefeated=false;game.bossSpawned=!!boss;
+    game.clock=18;game.cleanup=0;game.spawnStopped=true;
+    const f=makeFront('home',null,createWavePlan(1,'home',false),[]);
+    for(const entry of f.schedule)entry.dispatched=true;
     const edge=game.tiles.filter(t=>t.x===WIDTH-1&&walkable(t)).sort((a,b)=>b.y-a.y)[0]||tileAt(WIDTH-1,HEIGHT-1);
-    f.gates=[edge];f.stopped=true;calculateRoutes(f,game.castle);game.fronts=[f];
+    f.gates=[edge];f.stopped=true;f.bossPending=false;calculateRoutes(f,game.castle);game.fronts=[f];
     const e={...center(edge),front:f,hp:100,max:100,speed:0,cooldown:0,flash:0,boss,
       radius:DEMO.radii.normal,next:null,routeRevision:navigationRevision()};
     game.enemies=[e];return e;
@@ -136,7 +138,7 @@
   fresh();
   e=survivor(true);
   damageEnemy(e,1000);
-  advanceBattle(.025);
+  for(let i=0;i<20&&game.phase!=='won';i++)advanceBattle(.1);
   check('真实击杀首领且清完场才胜利',game.phase==='won'&&game.kills===1);
   fresh();
   game.hard=true;game.autoAttack=true;introDone=true;setPaused(true);newRun();

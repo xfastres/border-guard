@@ -94,6 +94,9 @@ function connect(url) {
 
     const hooks = {};
     hooks.combat = await evaluate(source('combat-feedback-v024.js'));
+    hooks.experience = await evaluate(source('experience-audit-v024.js'));
+    hooks.collision = await evaluate(source('world-collision-v022.js'));
+    hooks.residents = await evaluate(source('residents-v022.js'));
     hooks.simEntry = await evaluate(source('campaign-sim-v023.js'));
     hooks.gestures = await evaluate(gestureHook());
 
@@ -183,6 +186,13 @@ function connect(url) {
         await client.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
       }
     }
+    const hudAudits=[];
+    for (const [width, height, mobile] of [[1050, 955, false], [1440, 900, false], [390, 844, true], [360, 800, true], [320, 568, true], [844, 390, true], [932, 430, true]]) {
+      await client.send('Emulation.setTouchEmulationEnabled', { enabled: mobile, maxTouchPoints: 5 });
+      await client.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile });
+      await evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
+      hudAudits.push(await evaluate('__auditHudBoxes()'));
+    }
     await client.send('Emulation.setTouchEmulationEnabled', { enabled: false });
     await client.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 
@@ -236,6 +246,7 @@ function connect(url) {
       campaigns: campaigns.map(c => ({ seed: c.seed, strategy: c.strategy, phase: c.final.phase,
         day: c.final.day, castle: c.final.castle, kills: c.final.kills })),
       noDefense: { phase: noDefense.final.phase, day: noDefense.final.day, castle: noDefense.final.castle },
+      hudAudits,
       layouts: layouts.map(l => ({ viewport: l.viewport, passed: l.passed, total: l.total })),
       cameras: cameras.map(c => ({ viewport: c.viewport, passed: c.passed, total: c.total,
         failed: (c.results || []).filter(r => !r.pass).map(r => r.name + (r.error ? ' :: ' + r.error : '')) })),
@@ -250,6 +261,21 @@ function connect(url) {
     assert.ok(frameCheck.pass, frameCheck.name + ' :: ' + frameCheck.detail);
     assert.ok(hudCheck.unchanged && hudCheck.menuHidden, 'HUD 被设置菜单或震屏改变');
     for (const l of layouts) assert.equal(l.passed, l.total, 'layout ' + JSON.stringify(l.viewport));
+    for (const h of hudAudits) {
+      assert.equal(h.overlap, 0, 'battle/alert overlap ' + h.viewport + ' ' + JSON.stringify(h));
+      assert.equal(h.questOverlap, 0, 'quest overlap ' + h.viewport);
+      assert.ok(h.overflow, 'overflow ' + h.viewport);
+      assert.ok(h.stocksOk, 'stocks ' + h.viewport);
+      assert.ok(h.battleOn && h.alertOn, 'hud visible ' + h.viewport);
+      assert.ok(h.loss && h.loss.commandHidden && /城堡|布防|入口/.test(h.loss.goal), 'loss summary ' + h.viewport);
+      assert.ok(h.loss.resetVisible, 'restart visible ' + h.viewport);
+      if (h.viewport.startsWith('320') || h.viewport.startsWith('360') || h.viewport.startsWith('390')) {
+        assert.ok(h.buttonMin >= 44, 'button size ' + h.viewport + ' ' + h.buttonMin);
+        assert.ok(h.loss.open && h.loss.closed && h.loss.reopened, 'touch loss sheet ' + h.viewport + ' ' + JSON.stringify(h.loss));
+      } else if (Number(h.viewport.split('x')[0]) >= 1000) {
+        assert.equal(h.loss.open, false, 'desktop loss keeps the side panel ' + h.viewport);
+      }
+    }
     for (const c of cameras) assert.equal(c.passed, c.total, 'camera ' + c.viewport + ' :: ' + JSON.stringify((c.results || []).filter(r => !r.pass)));
     assert.equal(out.pageErrors.length, 0, 'page errors: ' + out.pageErrors.join(' | '));
     await client.send('Browser.close');

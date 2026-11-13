@@ -167,7 +167,7 @@
   const startX=game.hero.x;
   keys.add('d');moveHero(.2);keys.clear();
   check('WASD 与点击都走统一碰撞入口',canOccupy(game.hero,game.hero.x,game.hero.y)&&game.hero.x>=startX);
-  const main=makeFront('home',null,0,3);main.gates=entrances(1);game.fronts=[main];calculateRoutes(main,game.castle);
+  const main=makeFront('home',null,createWavePlan(1,'home',false),[]);main.gates=entrances(1);game.fronts=[main];calculateRoutes(main,game.castle);
   check('敌军流场以目标实体外侧攻击位为源',(main.attackSlots||[]).length>0&&
     (main.attackSlots||[]).every(p=>canOccupy({radius:DEMO.radii.normal},p.x,p.y)));
   check('流场不会把不可拆实体当通路',(()=>{

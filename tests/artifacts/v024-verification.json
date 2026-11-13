@@ -7,6 +7,21 @@
         "passed": 42,
         "failed": []
       },
+      "experience": {
+        "total": 52,
+        "passed": 52,
+        "failed": []
+      },
+      "collision": {
+        "total": 31,
+        "passed": 31,
+        "failed": []
+      },
+      "residents": {
+        "total": 30,
+        "passed": 30,
+        "failed": []
+      },
       "simEntry": {
         "total": 1,
         "passed": 1,
@@ -59,19 +74,19 @@
           24,
           92,
           1392,
-          92
+          80
         ],
         [
-          18,
-          817,
-          1404,
-          71
+          0,
+          0,
+          0,
+          0
         ],
         [
-          24,
-          232,
-          360,
-          92.78
+          0,
+          0,
+          0,
+          0
         ]
       ],
       "open": [
@@ -85,19 +100,19 @@
           24,
           92,
           1392,
-          92
+          80
         ],
         [
-          18,
-          817,
-          1404,
-          71
+          0,
+          0,
+          0,
+          0
         ],
         [
-          24,
-          232,
-          360,
-          92.78
+          0,
+          0,
+          0,
+          0
         ]
       ],
       "shaken": [
@@ -111,19 +126,19 @@
           24,
           92,
           1392,
-          92
+          80
         ],
         [
-          18,
-          817,
-          1404,
-          71
+          0,
+          0,
+          0,
+          0
         ],
         [
-          24,
-          232,
-          360,
-          92.78
+          0,
+          0,
+          0,
+          0
         ]
       ]
     },
@@ -137,9 +152,9 @@
       "projectiles": 0,
       "effects": 0,
       "floats": 0,
-      "drawMedianMs": 4.1,
-      "drawP95Ms": 7.3,
-      "drawMaxMs": 8.9
+      "drawMedianMs": 2.8,
+      "drawP95Ms": 5,
+      "drawMaxMs": 5.7
     },
     "campaigns": [
       {
@@ -188,6 +203,182 @@
       "day": 2,
       "castle": 0
     },
+    "hudAudits": [
+      {
+        "viewport": "1050x955",
+        "overlap": 0,
+        "questOverlap": 0,
+        "battleOn": true,
+        "alertOn": true,
+        "overflow": true,
+        "stocksOk": true,
+        "buttonMin": 44,
+        "loss": {
+          "open": false,
+          "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
+          "resetVisible": true,
+          "reset": {
+            "left": 887.34375,
+            "top": 17.5,
+            "right": 975.34375,
+            "bottom": 61.5,
+            "width": 88,
+            "height": 44
+          },
+          "commandHidden": true
+        }
+      },
+      {
+        "viewport": "1440x900",
+        "overlap": 0,
+        "questOverlap": 0,
+        "battleOn": true,
+        "alertOn": true,
+        "overflow": true,
+        "stocksOk": true,
+        "buttonMin": 44,
+        "loss": {
+          "open": false,
+          "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
+          "resetVisible": true,
+          "reset": {
+            "left": 1277.34375,
+            "top": 17.5,
+            "right": 1365.34375,
+            "bottom": 61.5,
+            "width": 88,
+            "height": 44
+          },
+          "commandHidden": true
+        }
+      },
+      {
+        "viewport": "390x844",
+        "overlap": 0,
+        "questOverlap": 0,
+        "battleOn": true,
+        "alertOn": true,
+        "overflow": true,
+        "stocksOk": true,
+        "buttonMin": 44,
+        "loss": {
+          "open": true,
+          "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
+          "resetVisible": true,
+          "reset": {
+            "left": 265,
+            "top": 1.5,
+            "right": 331,
+            "bottom": 45.5,
+            "width": 66,
+            "height": 44
+          },
+          "commandHidden": true,
+          "closed": true,
+          "reopened": true
+        }
+      },
+      {
+        "viewport": "360x800",
+        "overlap": 0,
+        "questOverlap": 0,
+        "battleOn": true,
+        "alertOn": true,
+        "overflow": true,
+        "stocksOk": true,
+        "buttonMin": 44,
+        "loss": {
+          "open": true,
+          "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
+          "resetVisible": true,
+          "reset": {
+            "left": 248,
+            "top": 1.5,
+            "right": 306,
+            "bottom": 45.5,
+            "width": 58,
+            "height": 44
+          },
+          "commandHidden": true,
+          "closed": true,
+          "reopened": true
+        }
+      },
+      {
+        "viewport": "320x568",
+        "overlap": 0,
+        "questOverlap": 0,
+        "battleOn": true,
+        "alertOn": true,
+        "overflow": true,
+        "stocksOk": true,
+        "buttonMin": 44,
+        "loss": {
+          "open": true,
+          "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
+          "resetVisible": true,
+          "reset": {
+            "left": 208,
+            "top": 1.5,
+            "right": 266,
+            "bottom": 45.5,
+            "width": 58,
+            "height": 44
+          },
+          "commandHidden": true,
+          "closed": true,
+          "reopened": true
+        }
+      },
+      {
+        "viewport": "844x390",
+        "overlap": 0,
+        "questOverlap": 0,
+        "battleOn": true,
+        "alertOn": true,
+        "overflow": true,
+        "stocksOk": true,
+        "buttonMin": 44,
+        "loss": {
+          "open": true,
+          "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
+          "resetVisible": true,
+          "reset": {
+            "left": 719,
+            "top": 1.5,
+            "right": 785,
+            "bottom": 45.5,
+            "width": 66,
+            "height": 44
+          },
+          "commandHidden": true
+        }
+      },
+      {
+        "viewport": "932x430",
+        "overlap": 0,
+        "questOverlap": 0,
+        "battleOn": true,
+        "alertOn": true,
+        "overflow": true,
+        "stocksOk": true,
+        "buttonMin": 44,
+        "loss": {
+          "open": true,
+          "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
+          "resetVisible": true,
+          "reset": {
+            "left": 807,
+            "top": 1.5,
+            "right": 873,
+            "bottom": 45.5,
+            "width": 66,
+            "height": 44
+          },
+          "commandHidden": true
+        }
+      }
+    ],
     "layouts": [
       {
         "viewport": {
@@ -482,6 +673,589 @@
         },
         {
           "name": "伤害 / 奖励事件一条不丢",
+          "pass": true,
+          "detail": ""
+        }
+      ]
+    },
+    "experience": {
+      "total": 52,
+      "passed": 52,
+      "results": [
+        {
+          "name": "直线点地终点是目标格中心",
+          "pass": true,
+          "detail": "5.5,6.5"
+        },
+        {
+          "name": "目标格记录仍是被点中的格子",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "领主最终走进目标格",
+          "pass": true,
+          "detail": "5.50,6.50"
+        },
+        {
+          "name": "斜向点地终点仍是目标格中心",
+          "pass": true,
+          "detail": "5.5,8.5"
+        },
+        {
+          "name": "远处可通行格的终点就是该格中心",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "道路重算后终点仍不提前一格",
+          "pass": true,
+          "detail": "5.5,6.5"
+        },
+        {
+          "name": "回城停在城堡相邻服务位",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "箭塔交互停在相邻服务位",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "WASD 仍直接移动且取消点击路线",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "墙角护送能绕到跟随距离",
+          "pass": true,
+          "detail": "d=0.659 blocked=false state=escorted xy=8.11,5.51"
+        },
+        {
+          "name": "绕行没有误报安全回城",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "封死道路约 0.9 秒内进入受阻",
+          "pass": true,
+          "detail": "blocked=true"
+        },
+        {
+          "name": "拆障后护送继续且不误回城",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "四方向近战伤害仍各为 18",
+          "pass": true,
+          "detail": "18,18,18,18"
+        },
+        {
+          "name": "挥击只保留一套全向范围表现",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "两个目标同时命中且都记在挥击状态里",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "隔墙自动攻击不进入冷却、不挥击",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "通视恢复后自动攻击造成 18 伤害",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "手动隔墙攻击规则保持可空挥且不命中",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "玩家 100→96 只有一次受击反馈",
+          "pass": true,
+          "detail": "hp=96 events=1 cd0=0"
+        },
+        {
+          "name": "冷却未好时不重复扣血、不重复反馈",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "弹体先飞出",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "结算帧视觉终点跟着目标",
+          "pass": true,
+          "detail": "d=0.000"
+        },
+        {
+          "name": "每弹只结算一次",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "墙被扣血时有一次闪色和反馈",
+          "pass": true,
+          "detail": "hp=28 flash=0.2 ev=1 cd=0.85"
+        },
+        {
+          "name": "冷却中的墙不重复闪",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "墙被摧毁只报告一次",
+          "pass": true,
+          "detail": "building=false reports=1 hp=null"
+        },
+        {
+          "name": "零伤害时不落一砖成立",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "受伤后修满不能完成不落一砖",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "部分维修仍然失败",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "没有账本伤害但当前耐久更低也失败",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "没有账本时不落一砖保守失败",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "其他军令仍按原进度",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "夜间未接军令不留下可点的空按钮",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "白天仍可选择或跳过军令",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "满血急修和药剂不可点并写明原因",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "资源不足时按钮不可点并说明金币不足",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "受伤且资源足够时急修只扣一次",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "有损失时不再声称没有任何损失",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "没有损失时用中性说法且不发奖励",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "双线提示不再声称箭塔只守自己那一路",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "箭塔选敌规则没有改成按路线过滤",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "无布防失败建议提到城堡和布防",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "失败建议在秘点之外还给出败因",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "秘点数量和示例口径一致",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "塔被毁时给出不同建议",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "未失败时秘点提示仍含方向且不剧透坐标",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "任务栏秘点用总数加示例",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "失败页不留空命令条",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "点击居民能看到职业和状态",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "点击空地仍然移动",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "夜间点敌人仍优先攻击",
+          "pass": true,
+          "detail": ""
+        }
+      ]
+    },
+    "collision": {
+      "total": 31,
+      "passed": 31,
+      "results": [
+        {
+          "name": "种子1–100：城址/基础资源/秘点/河道/两侧入口全部可达",
+          "pass": true,
+          "detail": "[]"
+        },
+        {
+          "name": "连通性修复确实按种子做过确定性清理",
+          "pass": true,
+          "detail": "cleared 0..5"
+        },
+        {
+          "name": "同种子地图逐格一致且强化卡随机序列不变",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "修复逻辑不引用随机序列",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "修复不删除/不移动资源与秘点",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "修复幂等（二次调用不再改动地图）",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "两处城址起始圈保留四类基础资源",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "成片林地/岩石是整格实体",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "水域是实体",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "实体树石格中心放不下领主脚底圆",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "城堡实体格中心放不下领主脚底圆",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "城堡/营地服务位在实体外侧且可站",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "实体半径符合设计表",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "dt=0.016 连续冲刺不穿墙",
+          "pass": true,
+          "detail": "x=5.7320"
+        },
+        {
+          "name": "dt=0.045 连续冲刺不穿墙",
+          "pass": true,
+          "detail": "x=5.7600"
+        },
+        {
+          "name": "dt=0.2 连续冲刺不穿墙",
+          "pass": true,
+          "detail": "x=5.7000"
+        },
+        {
+          "name": "对角位移不超过同长度直线",
+          "pass": true,
+          "detail": "straight=0.3000 diag=0.3000"
+        },
+        {
+          "name": "窄走廊内对角移动不穿角、始终可站",
+          "pass": true,
+          "detail": "y=5.7400"
+        },
+        {
+          "name": "地图左边界考虑半径",
+          "pass": true,
+          "detail": "x=0.2826"
+        },
+        {
+          "name": "顶住墙且无位移时 moving=false",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "建造不许覆盖活体脚底圆，失败不扣资源/行动",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "合法建造成功并使导航版本递增",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "拆除同样使导航版本递增且不残留建筑",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "会围死领主的建造被拒绝",
+          "pass": true,
+          "detail": "reason=会堵死领主或居民的必经道路"
+        },
+        {
+          "name": "围死情形不扣资源/行动、不写建筑",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "点击寻路的每个路点都是可站格",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "WASD 与点击都走统一碰撞入口",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "敌军流场以目标实体外侧攻击位为源",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "流场不会把不可拆实体当通路",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "出生点有效且带脚底半径",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "营地入口距核心>=4且可站",
+          "pass": true,
+          "detail": ""
+        }
+      ]
+    },
+    "residents": {
+      "total": 30,
+      "passed": 30,
+      "results": [
+        {
+          "name": "开局两名居民在城堡外侧的合法站位",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "同一居民 ID 只出现一次",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "状态 home 有独立可见表现",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "状态 posted 有独立可见表现",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "状态 waiting 有独立可见表现",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "状态 hurt 有独立可见表现",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "dead 不再出现在地图",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "三种职业有可辨识的绘制分支",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "民兵只按真实数量绘制，不产生额外攻击单位",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "合法营地建立成功且核心成为实体",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "派驻从合法站位出发且路点全是可达服务位",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "派驻本身不提前支付维护",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "道路被封：原地等待、不瞬移、不提前到岗付费",
+          "pass": true,
+          "detail": "state=outbound blocked=true"
+        },
+        {
+          "name": "受阻时有明确的道路受阻提示",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "拆障碍后重算路线并真实到岗",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "同周期同人不重复支付维护",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "同一居民同夜受击4次只算1名伤员，受击次数另存",
+          "pass": true,
+          "detail": "hurt=1 hits=4"
+        },
+        {
+          "name": "两名居民受伤计为2，不按受击次数膨胀",
+          "pass": true,
+          "detail": "hurt=2"
+        },
+        {
+          "name": "阵亡按 ID 去重且不再继续受击",
+          "pass": true,
+          "detail": "dead=1"
+        },
+        {
+          "name": "维修统计来自真实修复事件",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "左右移动产生真实位移与 face 翻转",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "人物绘制读取 face / moving / 真实位移",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "渲染按脚底 Y 排序并支持树冠半透明",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "普通残敌不因清场超时消失",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "首领未被击杀不判胜",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "卡路敌人不被当作死亡删除",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "真实击杀首领且清完场才胜利",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "重开保留难度与自动攻击并解除暂停",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "重开清空旧局居民与敌人",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "富矿 / 铁矿 / 遗迹都有可达服务位（不再要求走进实体格中心）",
           "pass": true,
           "detail": ""
         }
@@ -877,6 +1651,17 @@
                 "x": 720,
                 "y": 500.5
               }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
             }
           ]
         },
@@ -1178,6 +1963,17 @@
                 "x": 960,
                 "y": 590.5
               }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
             }
           ]
         },
@@ -1382,11 +2178,11 @@
           "error": 0,
           "anchor": {
             "x": 422,
-            "y": 191.25
+            "y": 193.25
           },
           "center": {
             "x": 422,
-            "y": 191.25
+            "y": 193.25
           }
         },
         "motion": {
@@ -1396,77 +2192,88 @@
               "error": 0,
               "anchor": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
               },
               "center": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
               },
               "center": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
               },
               "center": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
               },
               "center": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
               },
               "center": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
               },
               "center": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
               },
               "center": {
                 "x": 422,
-                "y": 191.25
+                "y": 193.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 193.25
+              },
+              "center": {
+                "x": 422,
+                "y": 193.25
               }
             }
           ]
@@ -1554,11 +2361,11 @@
           "cssH": 175,
           "anchor": {
             "x": 422,
-            "y": 191.25
+            "y": 193.25
           },
           "center": {
             "x": 422,
-            "y": 191.25
+            "y": 193.25
           }
         },
         "hudAfterMove": {
@@ -1596,11 +2403,11 @@
           "x": 0,
           "y": 0,
           "w": 844,
-          "h": 44
+          "h": 48
         },
         "status": {
           "x": 8,
-          "y": 48,
+          "y": 52,
           "w": 828,
           "h": 55
         },
@@ -1672,11 +2479,11 @@
           "error": 0,
           "anchor": {
             "x": 466,
-            "y": 211.25
+            "y": 213.25
           },
           "center": {
             "x": 466,
-            "y": 211.25
+            "y": 213.25
           }
         },
         "motion": {
@@ -1686,77 +2493,88 @@
               "error": 0,
               "anchor": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
               },
               "center": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
               },
               "center": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
               },
               "center": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
               },
               "center": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
               },
               "center": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
               },
               "center": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
               },
               "center": {
                 "x": 466,
-                "y": 211.25
+                "y": 213.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 213.25
+              },
+              "center": {
+                "x": 466,
+                "y": 213.25
               }
             }
           ]
@@ -1844,11 +2662,11 @@
           "cssH": 193,
           "anchor": {
             "x": 466,
-            "y": 211.25
+            "y": 213.25
           },
           "center": {
             "x": 466,
-            "y": 211.25
+            "y": 213.25
           }
         },
         "hudAfterMove": {
@@ -1886,11 +2704,11 @@
           "x": 0,
           "y": 0,
           "w": 932,
-          "h": 44
+          "h": 48
         },
         "status": {
           "x": 8,
-          "y": 48,
+          "y": 52,
           "w": 916,
           "h": 55
         },
@@ -1962,11 +2780,11 @@
           "error": 0,
           "anchor": {
             "x": 195,
-            "y": 425.15
+            "y": 427.15
           },
           "center": {
             "x": 195,
-            "y": 425.15
+            "y": 427.15
           }
         },
         "motion": {
@@ -1976,77 +2794,88 @@
               "error": 0,
               "anchor": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
               },
               "center": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
               },
               "center": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
               },
               "center": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
               },
               "center": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
               },
               "center": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
               },
               "center": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
               }
             },
             {
               "error": 0,
               "anchor": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
               },
               "center": {
                 "x": 195,
-                "y": 425.15
+                "y": 427.15
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 427.15
+              },
+              "center": {
+                "x": 195,
+                "y": 427.15
               }
             }
           ]
@@ -2134,11 +2963,11 @@
           "cssH": 379,
           "anchor": {
             "x": 195,
-            "y": 425.15
+            "y": 427.15
           },
           "center": {
             "x": 195,
-            "y": 425.15
+            "y": 427.15
           }
         },
         "hudAfterMove": {
@@ -2176,11 +3005,11 @@
           "x": 0,
           "y": 0,
           "w": 390,
-          "h": 44
+          "h": 48
         },
         "status": {
           "x": 8,
-          "y": 48,
+          "y": 52,
           "w": 374,
           "h": 68.8
         },
