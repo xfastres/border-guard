@@ -1,0 +1,2387 @@
+{
+  "out": {
+    "file": "Border-Guard-v0.24.html",
+    "hooks": {
+      "combat": {
+        "total": 42,
+        "passed": 42,
+        "failed": []
+      },
+      "simEntry": {
+        "total": 1,
+        "passed": 1,
+        "failed": []
+      },
+      "gestures": {
+        "total": 10,
+        "passed": 10,
+        "failed": []
+      }
+    },
+    "campaignChecks": [
+      {
+        "name": "v0.24 至少一种正常预算策略五夜通关",
+        "pass": true
+      },
+      {
+        "name": "不布防仍受到可辨认损失",
+        "pass": true
+      },
+      {
+        "name": "所有分夜账本闭合",
+        "pass": true
+      },
+      {
+        "name": "无夜战死锁、无残留活敌",
+        "pass": true
+      },
+      {
+        "name": "无页面运行时异常",
+        "pass": true
+      }
+    ],
+    "frameCheck": {
+      "name": "连续帧记录覆盖 发出→飞行→命中→死亡",
+      "pass": true,
+      "detail": "[[0,1,9,0],[1,1,9,0],[2,1,9,0],[3,0,null,1],[4,0,null,1],[5,0,null,1],[6,0,null,1],[7,0,null,1],[8,0,null,1],[9,0,null,1],[10,0,null,1],[11,0,null,1]]"
+    },
+    "hudCheck": {
+      "unchanged": true,
+      "menuHidden": true,
+      "base": [
+        [
+          0,
+          0,
+          1440,
+          80
+        ],
+        [
+          24,
+          92,
+          1392,
+          92
+        ],
+        [
+          18,
+          817,
+          1404,
+          71
+        ],
+        [
+          24,
+          232,
+          360,
+          92.78
+        ]
+      ],
+      "open": [
+        [
+          0,
+          0,
+          1440,
+          80
+        ],
+        [
+          24,
+          92,
+          1392,
+          92
+        ],
+        [
+          18,
+          817,
+          1404,
+          71
+        ],
+        [
+          24,
+          232,
+          360,
+          92.78
+        ]
+      ],
+      "shaken": [
+        [
+          0,
+          0,
+          1440,
+          80
+        ],
+        [
+          24,
+          92,
+          1392,
+          92
+        ],
+        [
+          18,
+          817,
+          1404,
+          71
+        ],
+        [
+          24,
+          232,
+          360,
+          92.78
+        ]
+      ]
+    },
+    "perf": {
+      "viewport": [
+        1440,
+        900
+      ],
+      "dpr": 1,
+      "liveEnemies": 40,
+      "projectiles": 0,
+      "effects": 0,
+      "floats": 0,
+      "drawMedianMs": 3.8,
+      "drawP95Ms": 5.3,
+      "drawMaxMs": 7.6
+    },
+    "campaigns": [
+      {
+        "seed": 7,
+        "strategy": "tower",
+        "phase": "won",
+        "day": 5,
+        "castle": 136,
+        "kills": 163
+      },
+      {
+        "seed": 42,
+        "strategy": "tower",
+        "phase": "won",
+        "day": 5,
+        "castle": 146,
+        "kills": 163
+      },
+      {
+        "seed": 99,
+        "strategy": "tower",
+        "phase": "won",
+        "day": 5,
+        "castle": 160,
+        "kills": 163
+      },
+      {
+        "seed": 42,
+        "strategy": "camp",
+        "phase": "won",
+        "day": 5,
+        "castle": 160,
+        "kills": 166
+      },
+      {
+        "seed": 42,
+        "strategy": "lord",
+        "phase": "lost",
+        "day": 5,
+        "castle": 0,
+        "kills": 141
+      }
+    ],
+    "noDefense": {
+      "phase": "lost",
+      "day": 2,
+      "castle": 0
+    },
+    "layouts": [
+      {
+        "viewport": {
+          "w": 1440,
+          "h": 900
+        },
+        "passed": 6,
+        "total": 6
+      },
+      {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "passed": 6,
+        "total": 6
+      },
+      {
+        "viewport": {
+          "w": 844,
+          "h": 390
+        },
+        "passed": 6,
+        "total": 6
+      },
+      {
+        "viewport": {
+          "w": 932,
+          "h": 430
+        },
+        "passed": 6,
+        "total": 6
+      },
+      {
+        "viewport": {
+          "w": 390,
+          "h": 844
+        },
+        "passed": 6,
+        "total": 6
+      }
+    ],
+    "cameras": [
+      {
+        "viewport": "1440x900",
+        "passed": 8,
+        "total": 8,
+        "failed": []
+      },
+      {
+        "viewport": "1440x900@2x",
+        "passed": 1,
+        "total": 1,
+        "failed": []
+      },
+      {
+        "viewport": "1920x1080",
+        "passed": 8,
+        "total": 8,
+        "failed": []
+      },
+      {
+        "viewport": "844x390",
+        "passed": 8,
+        "total": 8,
+        "failed": []
+      },
+      {
+        "viewport": "932x430",
+        "passed": 8,
+        "total": 8,
+        "failed": []
+      },
+      {
+        "viewport": "390x844",
+        "passed": 8,
+        "total": 8,
+        "failed": []
+      }
+    ],
+    "pageErrors": []
+  },
+  "hooks": {
+    "combat": {
+      "total": 42,
+      "passed": 42,
+      "results": [
+        {
+          "name": "emitCombatEvent 只产出事件，不改血 / 不发奖励",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "命中事件驱动飘字 / 火花，且 x/y 与半径不变",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "单次命中只产生 1 个 hit 事件、闪白 0.08 秒",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "受击偏移只是视觉量，不改 x/y/半径，不改变碰撞结果",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "普通多段同目标伤害飘字合并为一条且数值累加",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "死亡只结算一次，重复伤害不再入账",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "已结算对象再次受伤不重复结算",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "死亡立即退出存活判定，残影不挡路不吃伤害",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "只有真正拿到奖励票据才发金 / 经验与对应飘字",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "没有票据的兵仍计真实击杀但不发资源",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "attack 只起手：0.48 秒周期、蓄势阶段不造成伤害",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "0.06 秒蓄势结束时仍未出手",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "0.16 秒挥击只触发一次伤害，最多 2 个目标，方向来自真实目标",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "收招阶段不再重复伤害",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "0.48 秒后挥击结束",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "挥击期间仍可移动",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "隔墙目标不会被近战命中",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "手动 / 自动 / 移动端攻击共用同一入口",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "箭塔先发弹，不立即扣血",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "弹体 ID 与目标单位 ID 稳定",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "弹体飞行中不结算伤害",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "目标已死则弹体消散，不转移伤害、不发奖励",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "源建筑被毁后已发射弹继续飞行并正常命中",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "resolveHit 每弹只结算一次",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "最后一发弹体飞行时不天亮",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "死亡残影不阻止天亮",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "暂停冻结弹体与特效",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "重新开局清空所有旧战斗表现",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "首领已死且清场后先进入 0.8 秒胜利表现，不立即结算",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "演出结束只结算一次、无普通天亮生产与额外维护",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "胜利账本只关闭一次且未标记天亮",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "重复推进不会二次结算",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "音频未解锁 / 不支持时 play 静默返回",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "静音开关只影响表现",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "同类声音限流",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "unlockAudio 幂等且不抛异常",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "标准模式震屏只作用于 Canvas，恢复 ctx 且不改相机 / HUD / 坐标往返",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "弱化模式关震屏并减少粒子",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "尊重 prefers-reduced-motion 接口",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "标准 / 弱化两种效果模式同种子业务结果完全一致",
+          "pass": true,
+          "detail": "{\"kills\":0,\"gold\":14,\"xp\":0,\"enemies\":3,\"castle\":160} vs {\"kills\":0,\"gold\":14,\"xp\":0,\"enemies\":3,\"castle\":160}"
+        },
+        {
+          "name": "表现预算上限 150，超出只丢弃次要特效",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "伤害 / 奖励事件一条不丢",
+          "pass": true,
+          "detail": ""
+        }
+      ]
+    },
+    "simEntry": {
+      "total": 1,
+      "passed": 1,
+      "results": [
+        {
+          "name": "正常预算模拟入口就绪",
+          "pass": true
+        }
+      ]
+    },
+    "gestures": {
+      "total": 10,
+      "passed": 10,
+      "results": [
+        {
+          "name": "短按资源地只移动，不打开面板",
+          "pass": true
+        },
+        {
+          "name": "350ms长按只查看并高亮，无移动或重复click",
+          "pass": true
+        },
+        {
+          "name": "拖动取消长按与移动，同时关闭抽屉",
+          "pass": true
+        },
+        {
+          "name": "pointercancel清除长按定时器",
+          "pass": true
+        },
+        {
+          "name": "建造模式短按也不扣资源，只移动",
+          "pass": true
+        },
+        {
+          "name": "多指取消当前长按，不遗留定时器",
+          "pass": true
+        },
+        {
+          "name": "长按迷雾松手不会变短按移动",
+          "pass": true
+        },
+        {
+          "name": "第二指落在HUD也取消地图长按",
+          "pass": true
+        },
+        {
+          "name": "战役结束后释放旧触摸不再移动",
+          "pass": true
+        },
+        {
+          "name": "遮罩与下滑手柄都能关闭抽屉",
+          "pass": true
+        }
+      ]
+    }
+  },
+  "layouts": [
+    {
+      "viewport": {
+        "w": 1440,
+        "h": 900
+      },
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "board": {
+        "w": 1440,
+        "h": 900
+      }
+    },
+    {
+      "viewport": {
+        "w": 1920,
+        "h": 1080
+      },
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "board": {
+        "w": 1920,
+        "h": 1080
+      }
+    },
+    {
+      "viewport": {
+        "w": 844,
+        "h": 390
+      },
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "board": {
+        "w": 844,
+        "h": 390
+      }
+    },
+    {
+      "viewport": {
+        "w": 932,
+        "h": 430
+      },
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "board": {
+        "w": 932,
+        "h": 430
+      }
+    },
+    {
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "total": 6,
+      "passed": 6,
+      "checks": [
+        {
+          "name": "地图容器覆盖可用视口",
+          "pass": true
+        },
+        {
+          "name": "页面没有外部溢出",
+          "pass": true
+        },
+        {
+          "name": "资源HUD位于视口内",
+          "pass": true
+        },
+        {
+          "name": "不再使用固定右侧列",
+          "pass": true
+        },
+        {
+          "name": "移动端识别覆盖横屏",
+          "pass": true
+        },
+        {
+          "name": "弹窗高度受视口约束",
+          "pass": true
+        }
+      ],
+      "board": {
+        "w": 390,
+        "h": 844
+      }
+    }
+  ],
+  "cameras": [
+    {
+      "viewport": "1440x900",
+      "total": 8,
+      "passed": 8,
+      "results": [
+        {
+          "name": "跟随锚点对准安全中心",
+          "pass": true
+        },
+        {
+          "name": "直线、对角线和点击寻路保持居中",
+          "pass": true
+        },
+        {
+          "name": "四边四角仍居中且地图外点击落空",
+          "pass": true
+        },
+        {
+          "name": "世界屏幕往返不偏格",
+          "pass": true
+        },
+        {
+          "name": "地图小于视口时仍居中",
+          "pass": true
+        },
+        {
+          "name": "按下不追、拖图保持手动、新移动恢复跟随",
+          "pass": true
+        },
+        {
+          "name": "长按期间不追，关闭后面不强制改手动",
+          "pass": true
+        },
+        {
+          "name": "相机只写地图世界层",
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "viewport": {
+          "w": 1440,
+          "h": 900,
+          "dpr": 1
+        },
+        "css": {
+          "w": 1440,
+          "h": 900,
+          "internalW": 1472,
+          "internalH": 920
+        },
+        "rest": {
+          "error": 0,
+          "anchor": {
+            "x": 720,
+            "y": 500.5
+          },
+          "center": {
+            "x": 720,
+            "y": 500.5
+          }
+        },
+        "motion": {
+          "max": 0,
+          "samples": [
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 720,
+                "y": 500.5
+              },
+              "center": {
+                "x": 720,
+                "y": 500.5
+              }
+            }
+          ]
+        },
+        "edges": [
+          {
+            "x": 0.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": 697.5,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": -697.5,
+            "outside": "15,0"
+          },
+          {
+            "x": 0.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": 697.5,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": -697.5,
+            "outside": "15,19"
+          },
+          {
+            "x": 16,
+            "y": 0.5,
+            "error": 0,
+            "tx": 0,
+            "outside": "0,0"
+          },
+          {
+            "x": 31.5,
+            "y": 10,
+            "error": 0,
+            "tx": -697.5,
+            "outside": "15,10"
+          },
+          {
+            "x": 0.5,
+            "y": 10,
+            "error": 0,
+            "tx": 697.5,
+            "outside": null
+          },
+          {
+            "x": 16,
+            "y": 19.5,
+            "error": 0,
+            "tx": 0,
+            "outside": "0,19"
+          }
+        ],
+        "roundtrip": {
+          "ok": 20,
+          "seen": [
+            {
+              "tile": "22,7",
+              "back": "22,7"
+            },
+            {
+              "tile": "0,16",
+              "back": "0,16"
+            },
+            {
+              "tile": "0,4",
+              "back": "0,4"
+            }
+          ],
+          "sx": 0.9783,
+          "sy": 0.9783
+        },
+        "small": {
+          "error": 0,
+          "cssW": 648,
+          "cssH": 405,
+          "anchor": {
+            "x": 720,
+            "y": 500.5
+          },
+          "center": {
+            "x": 720,
+            "y": 500.5
+          }
+        },
+        "hudAfterMove": {
+          "max": 0,
+          "detail": {
+            "title": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "status": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "reports": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "objective": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        }
+      },
+      "hud": {
+        "title": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 80
+        },
+        "status": {
+          "x": 24,
+          "y": 92,
+          "w": 1392,
+          "h": 92
+        },
+        "reports": {
+          "x": 18,
+          "y": 652.5,
+          "w": 370,
+          "h": 151.5
+        },
+        "objective": {
+          "x": 1082,
+          "y": 669.86,
+          "w": 340,
+          "h": 134.14
+        }
+      }
+    },
+    {
+      "viewport": "1440x900@2x",
+      "passed": 1,
+      "total": 1,
+      "results": [
+        {
+          "name": "DPR2 不影响 CSS 坐标往返",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "viewport": "1920x1080",
+      "total": 8,
+      "passed": 8,
+      "results": [
+        {
+          "name": "跟随锚点对准安全中心",
+          "pass": true
+        },
+        {
+          "name": "直线、对角线和点击寻路保持居中",
+          "pass": true
+        },
+        {
+          "name": "四边四角仍居中且地图外点击落空",
+          "pass": true
+        },
+        {
+          "name": "世界屏幕往返不偏格",
+          "pass": true
+        },
+        {
+          "name": "地图小于视口时仍居中",
+          "pass": true
+        },
+        {
+          "name": "按下不追、拖图保持手动、新移动恢复跟随",
+          "pass": true
+        },
+        {
+          "name": "长按期间不追，关闭后面不强制改手动",
+          "pass": true
+        },
+        {
+          "name": "相机只写地图世界层",
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "viewport": {
+          "w": 1920,
+          "h": 1080,
+          "dpr": 1
+        },
+        "css": {
+          "w": 1920,
+          "h": 1200,
+          "internalW": 1472,
+          "internalH": 920
+        },
+        "rest": {
+          "error": 0,
+          "anchor": {
+            "x": 960,
+            "y": 590.5
+          },
+          "center": {
+            "x": 960,
+            "y": 590.5
+          }
+        },
+        "motion": {
+          "max": 0,
+          "samples": [
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 960,
+                "y": 590.5
+              },
+              "center": {
+                "x": 960,
+                "y": 590.5
+              }
+            }
+          ]
+        },
+        "edges": [
+          {
+            "x": 0.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": 930,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": -930,
+            "outside": "15,0"
+          },
+          {
+            "x": 0.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": 930,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": -930,
+            "outside": "15,19"
+          },
+          {
+            "x": 16,
+            "y": 0.5,
+            "error": 0,
+            "tx": 0,
+            "outside": "0,0"
+          },
+          {
+            "x": 31.5,
+            "y": 10,
+            "error": 0,
+            "tx": -930,
+            "outside": "15,10"
+          },
+          {
+            "x": 0.5,
+            "y": 10,
+            "error": 0,
+            "tx": 930,
+            "outside": null
+          },
+          {
+            "x": 16,
+            "y": 19.5,
+            "error": 0,
+            "tx": 0,
+            "outside": "0,19"
+          }
+        ],
+        "roundtrip": {
+          "ok": 20,
+          "seen": [
+            {
+              "tile": "22,7",
+              "back": "22,7"
+            },
+            {
+              "tile": "0,16",
+              "back": "0,16"
+            },
+            {
+              "tile": "0,4",
+              "back": "0,4"
+            }
+          ],
+          "sx": 1.3043,
+          "sy": 1.3043
+        },
+        "small": {
+          "error": 0,
+          "cssW": 864,
+          "cssH": 486,
+          "anchor": {
+            "x": 960,
+            "y": 590.5
+          },
+          "center": {
+            "x": 960,
+            "y": 590.5
+          }
+        },
+        "hudAfterMove": {
+          "max": 0,
+          "detail": {
+            "title": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "status": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "reports": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "objective": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        }
+      },
+      "hud": {
+        "title": {
+          "x": 0,
+          "y": 0,
+          "w": 1920,
+          "h": 80
+        },
+        "status": {
+          "x": 24,
+          "y": 92,
+          "w": 1872,
+          "h": 92
+        },
+        "reports": {
+          "x": 18,
+          "y": 832.5,
+          "w": 370,
+          "h": 151.5
+        },
+        "objective": {
+          "x": 1562,
+          "y": 849.86,
+          "w": 340,
+          "h": 134.14
+        }
+      }
+    },
+    {
+      "viewport": "844x390",
+      "total": 8,
+      "passed": 8,
+      "results": [
+        {
+          "name": "跟随锚点对准安全中心",
+          "pass": true
+        },
+        {
+          "name": "直线、对角线和点击寻路保持居中",
+          "pass": true
+        },
+        {
+          "name": "四边四角仍居中且地图外点击落空",
+          "pass": true
+        },
+        {
+          "name": "世界屏幕往返不偏格",
+          "pass": true
+        },
+        {
+          "name": "地图小于视口时仍居中",
+          "pass": true
+        },
+        {
+          "name": "按下不追、拖图保持手动、新移动恢复跟随",
+          "pass": true
+        },
+        {
+          "name": "长按期间不追，关闭后面不强制改手动",
+          "pass": true
+        },
+        {
+          "name": "相机只写地图世界层",
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "viewport": {
+          "w": 844,
+          "h": 390,
+          "dpr": 1
+        },
+        "css": {
+          "w": 1280,
+          "h": 800,
+          "internalW": 1472,
+          "internalH": 920
+        },
+        "rest": {
+          "error": 0,
+          "anchor": {
+            "x": 422,
+            "y": 191.25
+          },
+          "center": {
+            "x": 422,
+            "y": 191.25
+          }
+        },
+        "motion": {
+          "max": 0,
+          "samples": [
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 422,
+                "y": 191.25
+              },
+              "center": {
+                "x": 422,
+                "y": 191.25
+              }
+            }
+          ]
+        },
+        "edges": [
+          {
+            "x": 0.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": 402,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": -838,
+            "outside": "21,0"
+          },
+          {
+            "x": 0.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": 402,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": -838,
+            "outside": "21,19"
+          },
+          {
+            "x": 16,
+            "y": 0.5,
+            "error": 0,
+            "tx": -218,
+            "outside": "5,0"
+          },
+          {
+            "x": 31.5,
+            "y": 10,
+            "error": 0,
+            "tx": -838,
+            "outside": "21,10"
+          },
+          {
+            "x": 0.5,
+            "y": 10,
+            "error": 0,
+            "tx": 402,
+            "outside": null
+          },
+          {
+            "x": 16,
+            "y": 19.5,
+            "error": 0,
+            "tx": -218,
+            "outside": "5,19"
+          }
+        ],
+        "roundtrip": {
+          "ok": 20,
+          "seen": [
+            {
+              "tile": "22,7",
+              "back": "22,7"
+            },
+            {
+              "tile": "0,16",
+              "back": "0,16"
+            },
+            {
+              "tile": "0,4",
+              "back": "0,4"
+            }
+          ],
+          "sx": 0.8696,
+          "sy": 0.8696
+        },
+        "small": {
+          "error": 0,
+          "cssW": 379,
+          "cssH": 175,
+          "anchor": {
+            "x": 422,
+            "y": 191.25
+          },
+          "center": {
+            "x": 422,
+            "y": 191.25
+          }
+        },
+        "hudAfterMove": {
+          "max": 0,
+          "detail": {
+            "title": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "status": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "reports": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "objective": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        }
+      },
+      "hud": {
+        "title": {
+          "x": 0,
+          "y": 0,
+          "w": 844,
+          "h": 44
+        },
+        "status": {
+          "x": 8,
+          "y": 48,
+          "w": 828,
+          "h": 55
+        },
+        "reports": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "objective": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      }
+    },
+    {
+      "viewport": "932x430",
+      "total": 8,
+      "passed": 8,
+      "results": [
+        {
+          "name": "跟随锚点对准安全中心",
+          "pass": true
+        },
+        {
+          "name": "直线、对角线和点击寻路保持居中",
+          "pass": true
+        },
+        {
+          "name": "四边四角仍居中且地图外点击落空",
+          "pass": true
+        },
+        {
+          "name": "世界屏幕往返不偏格",
+          "pass": true
+        },
+        {
+          "name": "地图小于视口时仍居中",
+          "pass": true
+        },
+        {
+          "name": "按下不追、拖图保持手动、新移动恢复跟随",
+          "pass": true
+        },
+        {
+          "name": "长按期间不追，关闭后面不强制改手动",
+          "pass": true
+        },
+        {
+          "name": "相机只写地图世界层",
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "viewport": {
+          "w": 932,
+          "h": 430,
+          "dpr": 1
+        },
+        "css": {
+          "w": 1280,
+          "h": 800,
+          "internalW": 1472,
+          "internalH": 920
+        },
+        "rest": {
+          "error": 0,
+          "anchor": {
+            "x": 466,
+            "y": 211.25
+          },
+          "center": {
+            "x": 466,
+            "y": 211.25
+          }
+        },
+        "motion": {
+          "max": 0,
+          "samples": [
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 466,
+                "y": 211.25
+              },
+              "center": {
+                "x": 466,
+                "y": 211.25
+              }
+            }
+          ]
+        },
+        "edges": [
+          {
+            "x": 0.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": 446,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": -794,
+            "outside": "19,0"
+          },
+          {
+            "x": 0.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": 446,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": -794,
+            "outside": "19,19"
+          },
+          {
+            "x": 16,
+            "y": 0.5,
+            "error": 0,
+            "tx": -174,
+            "outside": "4,0"
+          },
+          {
+            "x": 31.5,
+            "y": 10,
+            "error": 0,
+            "tx": -794,
+            "outside": "19,10"
+          },
+          {
+            "x": 0.5,
+            "y": 10,
+            "error": 0,
+            "tx": 446,
+            "outside": null
+          },
+          {
+            "x": 16,
+            "y": 19.5,
+            "error": 0,
+            "tx": -174,
+            "outside": "4,19"
+          }
+        ],
+        "roundtrip": {
+          "ok": 20,
+          "seen": [
+            {
+              "tile": "22,7",
+              "back": "22,7"
+            },
+            {
+              "tile": "0,16",
+              "back": "0,16"
+            },
+            {
+              "tile": "0,4",
+              "back": "0,4"
+            }
+          ],
+          "sx": 0.8696,
+          "sy": 0.8696
+        },
+        "small": {
+          "error": 0,
+          "cssW": 419,
+          "cssH": 193,
+          "anchor": {
+            "x": 466,
+            "y": 211.25
+          },
+          "center": {
+            "x": 466,
+            "y": 211.25
+          }
+        },
+        "hudAfterMove": {
+          "max": 0,
+          "detail": {
+            "title": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "status": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "reports": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "objective": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        }
+      },
+      "hud": {
+        "title": {
+          "x": 0,
+          "y": 0,
+          "w": 932,
+          "h": 44
+        },
+        "status": {
+          "x": 8,
+          "y": 48,
+          "w": 916,
+          "h": 55
+        },
+        "reports": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "objective": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      }
+    },
+    {
+      "viewport": "390x844",
+      "total": 8,
+      "passed": 8,
+      "results": [
+        {
+          "name": "跟随锚点对准安全中心",
+          "pass": true
+        },
+        {
+          "name": "直线、对角线和点击寻路保持居中",
+          "pass": true
+        },
+        {
+          "name": "四边四角仍居中且地图外点击落空",
+          "pass": true
+        },
+        {
+          "name": "世界屏幕往返不偏格",
+          "pass": true
+        },
+        {
+          "name": "地图小于视口时仍居中",
+          "pass": true
+        },
+        {
+          "name": "按下不追、拖图保持手动、新移动恢复跟随",
+          "pass": true
+        },
+        {
+          "name": "长按期间不追，关闭后面不强制改手动",
+          "pass": true
+        },
+        {
+          "name": "相机只写地图世界层",
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "viewport": {
+          "w": 390,
+          "h": 844,
+          "dpr": 1
+        },
+        "css": {
+          "w": 1350,
+          "h": 844,
+          "internalW": 1472,
+          "internalH": 920
+        },
+        "rest": {
+          "error": 0,
+          "anchor": {
+            "x": 195,
+            "y": 425.15
+          },
+          "center": {
+            "x": 195,
+            "y": 425.15
+          }
+        },
+        "motion": {
+          "max": 0,
+          "samples": [
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            },
+            {
+              "error": 0,
+              "anchor": {
+                "x": 195,
+                "y": 425.15
+              },
+              "center": {
+                "x": 195,
+                "y": 425.15
+              }
+            }
+          ]
+        },
+        "edges": [
+          {
+            "x": 0.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": 173.9,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 0.5,
+            "error": 0,
+            "tx": -1134.3,
+            "outside": "26,0"
+          },
+          {
+            "x": 0.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": 173.9,
+            "outside": null
+          },
+          {
+            "x": 31.5,
+            "y": 19.5,
+            "error": 0,
+            "tx": -1134.3,
+            "outside": "26,19"
+          },
+          {
+            "x": 16,
+            "y": 0.5,
+            "error": 0,
+            "tx": -480.2,
+            "outside": "11,0"
+          },
+          {
+            "x": 31.5,
+            "y": 10,
+            "error": 0,
+            "tx": -1134.3,
+            "outside": "26,10"
+          },
+          {
+            "x": 0.5,
+            "y": 10,
+            "error": 0,
+            "tx": 173.9,
+            "outside": null
+          },
+          {
+            "x": 16,
+            "y": 19.5,
+            "error": 0,
+            "tx": -480.2,
+            "outside": "11,19"
+          }
+        ],
+        "roundtrip": {
+          "ok": 20,
+          "seen": [
+            {
+              "tile": "22,7",
+              "back": "22,7"
+            },
+            {
+              "tile": "0,16",
+              "back": "0,16"
+            },
+            {
+              "tile": "0,4",
+              "back": "0,4"
+            }
+          ],
+          "sx": 0.9174,
+          "sy": 0.9174
+        },
+        "small": {
+          "error": 0,
+          "cssW": 175,
+          "cssH": 379,
+          "anchor": {
+            "x": 195,
+            "y": 425.15
+          },
+          "center": {
+            "x": 195,
+            "y": 425.15
+          }
+        },
+        "hudAfterMove": {
+          "max": 0,
+          "detail": {
+            "title": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "status": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "reports": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            },
+            "objective": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0
+            }
+          }
+        }
+      },
+      "hud": {
+        "title": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 44
+        },
+        "status": {
+          "x": 8,
+          "y": 48,
+          "w": 374,
+          "h": 68.8
+        },
+        "reports": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "objective": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      }
+    }
+  ],
+  "frames": [
+    {
+      "step": 0,
+      "projectiles": 1,
+      "enemyHp": 9,
+      "enemyX": 8.1,
+      "effects": 0,
+      "floats": 0,
+      "corpses": 0,
+      "lastEvents": [
+        "launch"
+      ],
+      "phase": "night"
+    },
+    {
+      "step": 1,
+      "projectiles": 1,
+      "enemyHp": 9,
+      "enemyX": 8.1,
+      "effects": 0,
+      "floats": 0,
+      "corpses": 0,
+      "lastEvents": [
+        "launch"
+      ],
+      "phase": "night"
+    },
+    {
+      "step": 2,
+      "projectiles": 1,
+      "enemyHp": 9,
+      "enemyX": 8.1,
+      "effects": 0,
+      "floats": 0,
+      "corpses": 0,
+      "lastEvents": [
+        "launch"
+      ],
+      "phase": "night"
+    },
+    {
+      "step": 3,
+      "projectiles": 0,
+      "enemyHp": null,
+      "enemyX": null,
+      "effects": 9,
+      "floats": 3,
+      "corpses": 1,
+      "lastEvents": [
+        "hit",
+        "gold",
+        "xp",
+        "death"
+      ],
+      "phase": "night"
+    },
+    {
+      "step": 4,
+      "projectiles": 0,
+      "enemyHp": null,
+      "enemyX": null,
+      "effects": 9,
+      "floats": 3,
+      "corpses": 1,
+      "lastEvents": [
+        "hit",
+        "gold",
+        "xp",
+        "death"
+      ],
+      "phase": "night"
+    },
+    {
+      "step": 5,
+      "projectiles": 0,
+      "enemyHp": null,
+      "enemyX": null,
+      "effects": 9,
+      "floats": 3,
+      "corpses": 1,
+      "lastEvents": [
+        "hit",
+        "gold",
+        "xp",
+        "death"
+      ],
+      "phase": "night"
+    },
+    {
+      "step": 6,
+      "projectiles": 0,
+      "enemyHp": null,
+      "enemyX": null,
+      "effects": 9,
+      "floats": 3,
+      "corpses": 1,
+      "lastEvents": [
+        "hit",
+        "gold",
+        "xp",
+        "death"
+      ],
+      "phase": "night"
+    },
+    {
+      "step": 7,
+      "projectiles": 0,
+      "enemyHp": null,
+      "enemyX": null,
+      "effects": 9,
+      "floats": 3,
+      "corpses": 1,
+      "lastEvents": [
+        "hit",
+        "gold",
+        "xp",
+        "death"
+      ],
+      "phase": "night"
+    },
+    {
+      "step": 8,
+      "projectiles": 0,
+      "enemyHp": null,
+      "enemyX": null,
+      "effects": 9,
+      "floats": 3,
+      "corpses": 1,
+      "lastEvents": [
+        "hit",
+        "gold",
+        "xp",
+        "death"
+      ],
+      "phase": "night"
+    },
+    {
+      "step": 9,
+      "projectiles": 0,
+      "enemyHp": null,
+      "enemyX": null,
+      "effects": 9,
+      "floats": 3,
+      "corpses": 1,
+      "lastEvents": [
+        "hit",
+        "gold",
+        "xp",
+        "death"
+      ],
+      "phase": "night"
+    },
+    {
+      "step": 10,
+      "projectiles": 0,
+      "enemyHp": null,
+      "enemyX": null,
+      "effects": 9,
+      "floats": 3,
+      "corpses": 1,
+      "lastEvents": [
+        "hit",
+        "gold",
+        "xp",
+        "death"
+      ],
+      "phase": "night"
+    },
+    {
+      "step": 11,
+      "projectiles": 0,
+      "enemyHp": null,
+      "enemyX": null,
+      "effects": 9,
+      "floats": 3,
+      "corpses": 1,
+      "lastEvents": [
+        "hit",
+        "gold",
+        "xp",
+        "death"
+      ],
+      "phase": "night"
+    }
+  ]
+}
