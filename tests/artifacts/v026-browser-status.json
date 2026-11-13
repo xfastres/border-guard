@@ -1,0 +1,12 @@
+{
+  "status": "blocked",
+  "browser": "Chromium 156.0.8078.79 on Linux",
+  "runner": "node tests/run-v026-checks.cjs",
+  "exitCode": 1,
+  "startupError": "Error: Chromium exited: [23:23:1114/024347.506562:FATAL:chrome/browser/process_singleton_posix.cc:297] Check failed: . socket() failed: Operation not permitted (1)\n[1114/024347.506793:ERROR:third_party/crashpad/crashpad/util/linux/scoped_ptrace_attach.cc:27] ptrace: Operation not permitted (1)",
+  "baselineBrowserStatus": "Error: Chrome startup timed out",
+  "viewportsPlanned": 13,
+  "viewportsExecuted": 0,
+  "screenshotCount": 0,
+  "nativeInteractionsExecuted": 0
+}
