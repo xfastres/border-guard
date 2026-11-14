@@ -1,5 +1,5 @@
 {
-  "note": "状态夹具用 evaluate；建城后的详情按钮/卡牌/夜修为 CDP 真实点击。触屏为 Chrome Emulation。截图使用 7/7 行动的普通日间状态，不用 20 行动夹具冒充。",
+  "note": "状态夹具用 evaluate；卡牌/关详情必须 CDP 真实点选，禁止 evaluate 回退完成。触屏为 Chrome Emulation。截图使用 7/7 行动的普通日间状态。",
   "viewports": [
     {
       "label": "1440x900",
@@ -17,9 +17,15 @@
       },
       "deck": {
         "x": 240,
-        "y": 785,
+        "y": 760,
         "w": 960,
-        "h": 105
+        "h": 130
+      },
+      "rail": {
+        "x": 10,
+        "y": 117,
+        "w": 196,
+        "h": 683
       },
       "overflow": false,
       "pageErrors": [],
@@ -30,6 +36,16 @@
       "actions": 7,
       "ring": 600,
       "castle": 50,
+      "camera": {
+        "tx": 0,
+        "ty": 0,
+        "vw": 1440,
+        "vh": 847,
+        "covers": true,
+        "noPosBlank": true
+      },
+      "sheetOpen": true,
+      "leftRailHidden": false,
       "fixtureActions": 7
     },
     {
@@ -48,9 +64,15 @@
       },
       "deck": {
         "x": 480,
-        "y": 965,
+        "y": 940,
         "w": 960,
-        "h": 105
+        "h": 130
+      },
+      "rail": {
+        "x": 10,
+        "y": 117,
+        "w": 196,
+        "h": 863
       },
       "overflow": false,
       "pageErrors": [],
@@ -61,6 +83,16 @@
       "actions": 7,
       "ring": 600,
       "castle": 50,
+      "camera": {
+        "tx": 0,
+        "ty": 0,
+        "vw": 1920,
+        "vh": 1027,
+        "covers": true,
+        "noPosBlank": true
+      },
+      "sheetOpen": true,
+      "leftRailHidden": false,
       "fixtureActions": 7
     },
     {
@@ -79,9 +111,15 @@
       },
       "deck": {
         "x": 10,
-        "y": 370,
+        "y": 350,
         "w": 912,
-        "h": 50
+        "h": 70
+      },
+      "rail": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
       },
       "overflow": false,
       "pageErrors": [],
@@ -92,6 +130,16 @@
       "actions": 7,
       "ring": 600,
       "castle": 50,
+      "camera": {
+        "tx": 0,
+        "ty": 0,
+        "vw": 932,
+        "vh": 381,
+        "covers": true,
+        "noPosBlank": true
+      },
+      "sheetOpen": true,
+      "leftRailHidden": true,
       "fixtureActions": 7
     },
     {
@@ -103,16 +151,22 @@
         "h": 742.40625
       },
       "side": {
-        "x": -10,
-        "y": 165.59375,
-        "w": 390,
-        "h": 280
+        "x": 8,
+        "y": 436,
+        "w": 374,
+        "h": 320
       },
       "deck": {
         "x": 10,
-        "y": 735,
+        "y": 715,
         "w": 370,
-        "h": 99
+        "h": 119
+      },
+      "rail": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
       },
       "overflow": false,
       "pageErrors": [],
@@ -123,7 +177,69 @@
       "actions": 7,
       "ring": 600,
       "castle": 50,
+      "camera": {
+        "tx": -9.0478515625,
+        "ty": 0,
+        "vw": 390,
+        "vh": 742.40625,
+        "covers": true,
+        "noPosBlank": true
+      },
+      "sheetOpen": true,
+      "leftRailHidden": true,
       "fixtureActions": 7
+    }
+  ],
+  "cards": [
+    {
+      "w": 1440,
+      "h": 900,
+      "mobile": false,
+      "exists": true,
+      "mainInert": false,
+      "pauseVisible": false,
+      "top": "P",
+      "clickable": true,
+      "cardModal": true,
+      "cardYs": [
+        367,
+        367,
+        367
+      ],
+      "point": {
+        "x": 535.59375,
+        "y": 451.5
+      },
+      "selected": {
+        "pending": false,
+        "modal": false,
+        "paused": false
+      }
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "mobile": true,
+      "exists": true,
+      "mainInert": false,
+      "pauseVisible": false,
+      "top": "P",
+      "clickable": true,
+      "cardModal": true,
+      "cardYs": [
+        370,
+        370,
+        370
+      ],
+      "point": {
+        "x": 71,
+        "y": 443.796875
+      },
+      "selected": {
+        "pending": false,
+        "modal": false,
+        "paused": false
+      }
     }
   ],
   "combat": {
@@ -135,8 +251,8 @@
     "defenses": "none-towers",
     "mode": "fixed-fixture-moveEnemy",
     "collapsedAt": 0.05,
-    "lostAt": 6.649999999999984,
-    "afterCollapse": 6.5999999999999845,
+    "lostAt": 2.5999999999999988,
+    "afterCollapse": 2.549999999999999,
     "finalCastle": 0,
     "finalWall": "broken"
   },
@@ -150,6 +266,8 @@
     "day-390x844.png",
     "castle-390x844.png",
     "desktop-work-inside-building.png",
+    "cards-1440x900.png",
+    "cards-390x844.png",
     "desktop-cards.png",
     "combat-after-collapse.png",
     "touch-closed-panel.png"

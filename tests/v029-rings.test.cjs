@@ -192,6 +192,102 @@ test('扩地不回血不加上限，非法扩地不扣费', () => {
   assert.equal(result.waterOwned, false);
 });
 
+test('维修到时与致命墙伤同一步：先攻击倒塌，本步不复活', () => {
+  const result = run(`
+    for (const t of game.tiles) t.visible = true;
+    chooseSite(0);
+    const ring = game.wallRings.get('home');
+    game.phase = 'night'; game.cardPending = false; paused = false; game.clock = 10;
+    game.hero.hp = 0;
+    const f = makeFront('home', null, createWavePlan(1,'home',false), 0);
+    f.gates = entrances(1); game.fronts = [f]; calculateRoutes(f);
+    game.spawnStopped = true;
+    const p = ringAttackPads('home')[0];
+    game.enemies = [{id:99, x:p.x, y:p.y, hp:100, max:100, speed:1.4, radius:DEMO.radii.normal,
+      faction:'enemy', movement:'enemy', front:f, cooldown:0, next:null, routeRevision:-1,
+      flash:0, strike:0, face:1, moving:false, heavy:false, boss:false}];
+    ring.hp = 11.5;
+    ring.repair = {usedNightId:game.day, status:'building', elapsed:5.96, duration:6,
+      budgetHp:150, appliedHp:149, paid:{material:6}};
+    advanceBattle(.04);
+    return {hp:ring.hp, status:ring.status, repair:ring.repair.status};
+  `);
+  assert.equal(result.hp, 0);
+  assert.equal(result.status, 'broken');
+  assert.notEqual(result.repair, 'completed');
+});
+
+test('实际 spawnEnemy 标记敌方，经门不可穿越', () => {
+  const result = run(`
+    for (const t of game.tiles) t.visible = true;
+    chooseSite(0);
+    const ring = game.wallRings.get('home');
+    const f = makeFront('home', null, createWavePlan(1,'home',false), 0);
+    f.gates = entrances(1); game.fronts = [f]; calculateRoutes(f);
+    const e = spawnEnemy(f);
+    const gate = [...ring.edges].find(([id]) => isGateEdge(ring, id))[1];
+    const a = center(game.tiles[gate.insideTileId]), b = center(game.tiles[gate.outsideTileId]);
+    return {profile:movementProfile(e), cross:canTraverse(e, a, b), faction:e.faction, movement:e.movement};
+  `);
+  assert.equal(result.profile, 'enemy');
+  assert.equal(result.faction, 'enemy');
+  assert.equal(result.movement, 'enemy');
+  assert.equal(result.cross, false);
+});
+
+test('扩地堵住全部可过城门外侧时不扣费且不改归属', () => {
+  const result = run(`
+    for (const t of game.tiles) t.visible = true;
+    chooseSite(0);
+    const c = game.castle;
+    // 预留一格可扩地；其余近距未占格全部施工堵住，使扩地后新门外侧仍无合法通道
+    const target = game.tiles.find(t => !t.owned && t.ground !== 'water' && isAdjacent(t) && !t.node && !t.building);
+    for (const t of game.tiles) {
+      if (!target || t === target || t.owned || t.ground === 'water' || t.building) continue;
+      if (Math.abs(t.x - c.x) <= 5 && Math.abs(t.y - c.y) <= 5)
+        t.building = {type:'tower', hp:90, max:90, level:0, cooldown:0};
+    }
+    const gold = game.resources.gold;
+    const edgesBefore = game.wallRings.get('home').edges.size;
+    const ok = target ? claim(target) : false;
+    return {
+      ok, owned: !!(target && target.owned), goldBefore: gold, goldAfter: game.resources.gold,
+      edgesBefore, edgesAfter: game.wallRings.get('home').edges.size,
+      hasTarget: !!target
+    };
+  `);
+  assert.equal(result.hasTarget, true);
+  assert.equal(result.ok, false);
+  assert.equal(result.owned, false);
+  assert.equal(result.goldAfter, result.goldBefore);
+  assert.equal(result.edgesAfter, result.edgesBefore);
+});
+
+test('点击实际墙边打开圈详情，不给领主误发移动令', () => {
+  const result = run(`
+    for (const t of game.tiles) t.visible = true;
+    chooseSite(0);
+    closeInspector();
+    game.mode = null;
+    game.hero.goal = null;
+    const ring = game.wallRings.get('home');
+    const edge = [...ring.edges].find(([id]) => !isGateEdge(ring, id))[1];
+    const [a, b] = edgeEndpoints(edge);
+    const p = {x:(a.x+b.x)/2, y:(a.y+b.y)/2};
+    mapClick(tileAt(Math.floor(p.x), Math.floor(p.y)), p, false);
+    return {
+      panel: !!game.panel,
+      text: document.getElementById('inspectBody').textContent,
+      heroMoving: !!(game.hero.goal && game.hero.goal.length),
+      selectedRing: game.selectedRingId
+    };
+  `);
+  assert.equal(result.panel, true);
+  assert.match(result.text, /城墙/);
+  assert.equal(result.heroMoving, false);
+  assert.equal(result.selectedRing, 'home');
+});
+
 test('逐格建墙入口已移除', () => {
   const result = run(`
     for (const t of game.tiles) t.visible = true;

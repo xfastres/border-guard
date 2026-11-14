@@ -51,8 +51,9 @@ function connect(url) {
 (async () => {
   let client;
   const evidence = {
-    note: '状态夹具用 evaluate；建城后的详情按钮/卡牌/夜修为 CDP 真实点击。触屏为 Chrome Emulation。截图使用 7/7 行动的普通日间状态，不用 20 行动夹具冒充。',
+    note: '状态夹具用 evaluate；卡牌/关详情必须 CDP 真实点选，禁止 evaluate 回退完成。触屏为 Chrome Emulation。截图使用 7/7 行动的普通日间状态。',
     viewports: [],
+    cards: [],
     combat: null,
     screenshots: []
   };
@@ -123,6 +124,11 @@ function connect(url) {
     };
 
     // 普通试玩状态：7/7 行动，非 20 行动夹具
+    const touchPoint = async (p, hold = 0) => {
+      await send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [{...p, id: 1}]});
+      if (hold) await delay(hold);
+      await send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []});
+    };
     const dayFixture = async () => evaluate(`(()=>{
       $('dialog').close();
       game=makeGame(42);
@@ -140,20 +146,30 @@ function connect(url) {
           ground:kind==='wood'?'trees':['stone','mine'].includes(kind)?'rock':'grass',
           cover:kind==='wood'?'forest':['stone','mine'].includes(kind)?'mountain':'none', field:kind==='farm'});
       }
-      centerOnHero(); sync();
+      measureCameraViewport();
+      snapCameraToPoint(game.castle.x+.5, game.castle.y+.5);
+      sync();
       return {
         actions:game.actions, ring:game.wallRings.get('home').hp,
-        castle:game.castleHp, pop:game.residents.filter(r=>r.state!=='dead').length
+        castle:game.castleHp, pop:game.residents.filter(r=>r.state!=='dead').length,
+        cam:{tx:camera.tx,ty:camera.ty,vw:camera.vw,vh:camera.vh,sx:camera.sx,sy:camera.sy}
       };
     })()`);
 
     const measure = async (label) => evaluate(`(()=>{
-      const rect=id=>{const el=$(id); if(!el) return null; const r=el.getBoundingClientRect(); return {x:r.x,y:r.y,w:r.width,h:r.height};};
-      const board=rect('board'), side=rect('playSide'), deck=rect('commandDeck');
+      const rect=id=>{const el=$(id); if(!el||el.hidden) return null; const r=el.getBoundingClientRect(); return {x:r.x,y:r.y,w:r.width,h:r.height};};
+      const board=rect('board'), side=rect('playSide'), deck=rect('commandDeck'), rail=rect('leftRail');
       const overflow=document.documentElement.scrollWidth>innerWidth+1;
-      return {label:${JSON.stringify(label)}, board, side, deck, overflow, pageErrors:__pageErrors.slice(),
+      const map=document.getElementById('map');
+      const worldW=map.width*camera.sx, worldH=map.height*camera.sy;
+      const covers=worldW+.5>=camera.vw && worldH+.5>=camera.vh;
+      const noPosBlank=(worldW>=camera.vw-.5?camera.tx<=0.5:true)&&(worldH>=camera.vh-.5?camera.ty<=0.5:true);
+      return {label:${JSON.stringify(label)}, board, side, deck, rail, overflow, pageErrors:__pageErrors.slice(),
         screen:[innerWidth,innerHeight], actions:game.actions,
-        ring:game.wallRings?.get?.('home')?.hp, castle:game.castleHp};
+        ring:game.wallRings?.get?.('home')?.hp, castle:game.castleHp,
+        camera:{tx:camera.tx,ty:camera.ty,vw:camera.vw,vh:camera.vh,covers,noPosBlank},
+        sheetOpen:document.body.classList.contains('sheet-open'),
+        leftRailHidden:getComputedStyle(document.getElementById('leftRail')).display==='none'};
     })()`);
 
     // 视口截图
@@ -169,6 +185,8 @@ function connect(url) {
       const m = await measure(w + 'x' + h);
       assert.equal(fx.actions, 7);
       assert.ok(!m.overflow, m.label + ' 横向溢出');
+      assert.equal(m.camera.covers, true, m.label + ' 地图应盖住视口');
+      assert.equal(m.camera.noPosBlank, true, m.label + ' 不允许正方向空白');
       assert.deepEqual(m.pageErrors, []);
       evidence.viewports.push({...m, fixtureActions: fx.actions});
     }
@@ -198,26 +216,56 @@ function connect(url) {
       return {owned:t.owned, hp:game.wallRings.get('home').hp};
     })()`);
 
-    // 卡牌覆盖层
-    await evaluate(`(()=>{
-      game.cardPending=true;
-      game.cardChoices=CARDS.slice(0,3).map(c=>({key:c.key,label:c.label,info:c.info}));
-      showCards();
-    })()`);
-    await frames();
-    await screenshot('desktop-cards');
-    await clickText('跳过');
-    await frames();
-    if (await evaluate('game.cardPending')) {
-      await evaluate('pickGrowthCard(null,"跳过"); sync();');
+    // 真实点击卡牌：禁止 evaluate pickGrowthCard 回退
+    for (const [w, h, mobile] of [[1440, 900, false], [390, 844, true]]) {
+      await size(w, h, mobile);
+      await navigate();
+      await dayFixture();
+      await evaluate(`(()=>{
+        game.cardPending=true;
+        game.cardChoices=CARDS.slice(0,3).map(c=>({key:c.key,label:c.label,info:c.info}));
+        showCards(); sync();
+      })()`);
       await frames();
+      const hit = await evaluate(`(()=>{
+        const b=document.querySelector('#cardRow button');
+        if(!b) return {exists:false};
+        const r=b.getBoundingClientRect();
+        const top=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
+        return {
+          exists:true,
+          mainInert:!!document.querySelector('main').inert,
+          pauseVisible:!document.getElementById('pauseOverlay').hidden,
+          top:top&&(top.id||top.tagName),
+          clickable:top===b||b.contains(top),
+          cardModal:!!game.cardModal,
+          cardYs:[...document.querySelectorAll('#cardRow button')].map(e=>Math.round(e.getBoundingClientRect().y)),
+          point:{x:r.x+r.width/2,y:r.y+r.height/2}
+        };
+      })()`);
+      assert.equal(hit.exists, true, w + 'x' + h + ' 卡牌应存在');
+      assert.equal(hit.mainInert, false, w + 'x' + h + ' main 不得 inert');
+      assert.equal(hit.pauseVisible, false, w + 'x' + h + ' 不得显示暂停遮罩');
+      assert.equal(hit.clickable, true, w + 'x' + h + ' elementFromPoint 必须落在首张卡');
+      assert.equal(hit.cardModal, true);
+      assert.ok(Math.max(...hit.cardYs) - Math.min(...hit.cardYs) < 28, w + 'x' + h + ' 三卡须并排');
+      await screenshot('cards-' + w + 'x' + h);
+      if (mobile) await touchPoint(hit.point);
+      else await clickPoint(hit.point);
+      await frames();
+      const selected = await evaluate('({pending:game.cardPending,modal:game.cardModal,paused})');
+      assert.equal(selected.pending, false, w + 'x' + h + ' 真实点击后必须选中卡牌');
+      assert.equal(selected.modal, false);
+      evidence.cards.push({w, h, mobile, ...hit, selected});
     }
-    assert.equal(await evaluate('game.cardPending'), false);
+    await screenshot('desktop-cards');
 
     // 固定战斗夹具：破墙→主城失守耗时（非伪造）
+    await size(1440, 900, false);
+    await navigate();
+    await dayFixture();
     const combat = await evaluate(`(()=>{
-      // 重置为可测夜袭夹具
-      game.phase='night'; paused=false;
+      game.phase='night'; paused=false; game.cardModal=false;
       const ring=game.wallRings.get('home');
       ring.hp=80; ring.status='intact';
       game.castleHp=50; game.castleMax=50;
@@ -225,7 +273,6 @@ function connect(url) {
       game.fronts[0].gates=entrances(1);
       calculateRoutes(game.fronts[0]);
       const pads=ringAttackPads('home');
-      // 12 只普通兵贴墙拆；种子 42，无塔
       game.enemies=pads.slice(0,12).map((p,i)=>({
         id:i+1,x:p.x,y:p.y,hp:30,max:30,speed:1.3,radius:DEMO.radii.normal,
         faction:'enemy',movement:'enemy',front:game.fronts[0],cooldown:0,
@@ -235,8 +282,8 @@ function connect(url) {
       const dt=0.05;
       for(let i=0;i<800;i++){
         t+=dt;
-        if(game.wallRings) for(const id of game.wallRings.keys()) stepNightRepair(id,dt);
         for(const e of game.enemies) if(e.hp>0) moveEnemy(e,dt);
+        if(game.wallRings) for(const id of game.wallRings.keys()) stepNightRepair(id,dt);
         if(collapsed<0 && ring.status==='broken') collapsed=t;
         if(game.castleHp<=0){ lost=t; break; }
       }
@@ -250,32 +297,36 @@ function connect(url) {
     evidence.combat = combat;
     assert.ok(combat.collapsedAt >= 0, '墙应倒塌');
     assert.ok(combat.lostAt > combat.collapsedAt, '破墙后应继续打主城');
-    // 5–10 秒是调试目标；记录实际值，不伪造
     await screenshot('combat-after-collapse');
 
-    // 触屏关详情
+    // 触屏关详情：真实触点，失败即失败
     await size(390, 844, true);
     await navigate();
     await dayFixture();
     await evaluate('openInspector(game.castle); sync();');
     await frames();
     assert.equal(await evaluate("camera.sideView"), 'inspect');
-    await clickPoint(await evaluate(`(()=>{
-      const b=document.getElementById('closeInspector').getBoundingClientRect();
-      return {x:b.x+b.width/2,y:b.y+b.height/2};
-    })()`));
+    const sheet = await measure('390x844-sheet');
+    assert.equal(sheet.sheetOpen, true);
+    assert.equal(sheet.leftRailHidden, true, '打开详情时应折叠左轨');
+    const closeHit = await evaluate(`(()=>{
+      const b=document.getElementById('closeInspector');
+      const r=b.getBoundingClientRect();
+      const p={x:r.x+r.width/2,y:r.y+r.height/2};
+      const top=document.elementFromPoint(p.x,p.y);
+      return {point:p, clickable:top===b||b.contains(top), top:top&&(top.id||top.tagName)};
+    })()`);
+    assert.equal(closeHit.clickable, true, '关闭按钮必须可被 elementFromPoint 命中');
+    await touchPoint(closeHit.point);
     await frames();
-    if (await evaluate('!!game.panel')) {
-      await evaluate('closeInspector()');
-      await frames();
-    }
-    assert.equal(await evaluate('!!game.panel'), false);
+    assert.equal(await evaluate('!!game.panel'), false, '触屏关闭必须成功，禁止 evaluate 回退');
     await screenshot('touch-closed-panel');
 
     assert.deepEqual(await evaluate('__pageErrors'), []);
     fs.writeFileSync(path.join(artifacts, 'browser.json'), JSON.stringify(evidence, null, 2) + '\n');
     console.log('v029 rings-ui browser OK → ' + artifacts);
     console.log('combat afterCollapseSeconds=', combat.afterCollapse);
+    console.log('cards=', JSON.stringify(evidence.cards.map(c => ({w:c.w,h:c.h,selected:c.selected,clickable:c.clickable}))));
     await send('Browser.close');
   } catch (error) {
     evidence.failure = error && error.message || String(error);

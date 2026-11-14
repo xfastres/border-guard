@@ -56,6 +56,14 @@ function bootV029(options = {}){
         this.children.push(next);
       }
     }
+    insertBefore(node, ref){
+      const next = typeof node === 'string' ? {textContent:node} : node;
+      next.parentElement = this;
+      const idx = ref ? this.children.indexOf(ref) : -1;
+      if(idx >= 0) this.children.splice(idx, 0, next);
+      else this.children.push(next);
+      return next;
+    }
     replaceChildren(...els){
       for(const child of this.children) child.isConnected = false;
       this.children = [];
@@ -78,7 +86,10 @@ function bootV029(options = {}){
     focus(){doc.activeElement = this;}
     showModal(){this.open = true;}
     close(){this.open = false; this.dispatch('close', {target:this});}
-    getBoundingClientRect(){return {width:1280, height:800, left:0, right:1280, top:0, bottom:800};}
+    getBoundingClientRect(){
+      return {x:0,y:0,width:this.clientWidth||1280,height:this.clientHeight||800,left:0,right:this.clientWidth||1280,top:0,bottom:this.clientHeight||800};
+    }
+    getClientRects(){return [this.getBoundingClientRect()];}
     getContext(){
       return new Proxy({}, {
         get(obj, key){
