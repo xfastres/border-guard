@@ -391,6 +391,16 @@ body.touch-ui .victory-actions button,body.touch-ui #victoryNights button { min-
 <script data-page-node-id="E4vthzUMIk1pSF41Ng6gSc" data-pnid-children="Z33v8rEe9677c2KUckIX9I">
 'use strict';
 
+/* 本轮整圈城墙 / 主城试玩默认（对话确认 50/600；非旧稿「两击主城」） */
+const V029 = {
+  castleHp: 50,
+  castleMax: 50,
+  wallRingHp: 600,
+  dayRepairFullCost: 12,
+  dayRepairMinCost: 1,
+  nightRepairCost: 6,
+  nightRepairSeconds: 6
+};
 const DEMO = {
   // 试玩数值，不是正式表：白天先收到 35 秒，走路速度仍是 3.5 格/秒。
   // v0.17：保留准备预算；停刷后必须真实清完残敌，不再超时删除。
@@ -515,6 +525,209 @@ function intactWallRings(snapshot){
   const rings=snapshot?.wallRings||game.wallRings;
   if(!rings||typeof rings.values!=='function')return [];
   return [...rings.values()].filter(r=>r&&r.status!=='broken');
+}
+function emptyWallRepair(){
+  return {usedNightId:null,status:'idle',elapsed:0,duration:V029.nightRepairSeconds,budgetHp:0,appliedHp:0,paid:{material:0}};
+}
+function edgeKey(a,b){
+  const left=a.x<b.x||(a.x===b.x&&a.y<=b.y);
+  const p=left?a:b,q=left?b:a;
+  return p.x+','+p.y+'|'+q.x+','+q.y;
+}
+function buildBoundary(ownedPred){
+  const edges=new Map();
+  const pads=[];
+  for(const t of game.tiles){
+    if(!ownedPred(t))continue;
+    for(const [dx,dy] of dirs){
+      const n=tileAt(t.x+dx,t.y+dy);
+      if(n&&ownedPred(n))continue;
+      let a,b;
+      if(dx===1){a={x:t.x+1,y:t.y};b={x:t.x+1,y:t.y+1};}
+      else if(dx===-1){a={x:t.x,y:t.y};b={x:t.x,y:t.y+1};}
+      else if(dy===1){a={x:t.x,y:t.y+1};b={x:t.x+1,y:t.y+1};}
+      else{a={x:t.x,y:t.y};b={x:t.x+1,y:t.y};}
+      const id=edgeKey(a,b);
+      if(edges.has(id))continue;
+      edges.set(id,{id,a,b,insideTileId:at(t.x,t.y),outsideTileId:n?at(n.x,n.y):-1,gate:false});
+      if(n&&n.ground!=='water'&&!n.building&&!n.campSolid)pads.push(at(n.x,n.y));
+    }
+  }
+  return {edges,pads:[...new Set(pads)],perimeter:edges.size};
+}
+function pickGateEdge(edges,castle){
+  let best=null,bestScore=-Infinity;
+  for(const edge of edges.values()){
+    if(edge.outsideTileId<0)continue;
+    const out=game.tiles[edge.outsideTileId],inn=game.tiles[edge.insideTileId];
+    if(!out||out.ground==='water')continue;
+    // 偏好朝南/朝道路的边，保证脚底直径可通过
+    let score=0;
+    if(out.y>inn.y)score+=5;
+    if(out.ground==='road')score+=8;
+    if(castle)score-=Math.hypot(out.x+.5-(castle.x+.5),out.y+.5-(castle.y+.5))*.2;
+    if(score>bestScore){bestScore=score;best=edge;}
+  }
+  return best||[...edges.values()].find(e=>e.outsideTileId>=0)||null;
+}
+function syncWallRingGeometry(ringId,ownedPred,keepHp=true){
+  if(!(game.wallRings instanceof Map))game.wallRings=new Map();
+  const prev=game.wallRings.get(ringId)||{};
+  const {edges,pads,perimeter}=buildBoundary(ownedPred);
+  const gate=pickGateEdge(edges,game.castle);
+  if(gate){gate.gate=true;edges.set(gate.id,gate);}
+  const maxHp=prev.maxHp||V029.wallRingHp;
+  let hp,status;
+  if(!keepHp){hp=maxHp;status='intact';}
+  else if(prev.status==='broken'){hp=prev.hp;status='broken';}
+  else{hp=Number.isFinite(prev.hp)?prev.hp:maxHp;status=hp>0?'intact':'broken';}
+  const ring=prev;
+  ring.id=ringId;ring.status=status;ring.hp=hp;ring.maxHp=maxHp;
+  ring.edges=edges;ring.pads=pads;ring.perimeter=perimeter;
+  ring.gates=new Map(gate?[['main',{edgeId:gate.id}]]:[]);
+  if(!ring.repair)ring.repair=emptyWallRepair();
+  game.wallRings.set(ringId,ring);
+  invalidateNavigation();
+  return ring;
+}
+function createHomeWallRing(){
+  if(!game.castle)return null;
+  game.castleHp=V029.castleHp;
+  game.castleMax=V029.castleMax;
+  return syncWallRingGeometry('home',t=>!!t?.owned,false);
+}
+function refreshHomeWallRingKeepHp(){
+  if(!game.castle||!(game.wallRings instanceof Map))return null;
+  const prev=game.wallRings.get('home');
+  if(!prev||prev.status==='broken')return prev||null;
+  return syncWallRingGeometry('home',t=>!!t?.owned,true);
+}
+function ringAttackPads(ringId){
+  const ring=game.wallRings?.get?.(ringId);
+  if(!ring||ring.status==='broken')return [];
+  const out=[];
+  for(const edge of ring.edges.values()){
+    if(edge.outsideTileId<0)continue;
+    const t=game.tiles[edge.outsideTileId];
+    if(!t||t.ground==='water')continue;
+    const p=center(t);
+    if(canStand({radius:DEMO.radii.normal,faction:'enemy',movement:'enemy'},p))out.push(p);
+  }
+  return out.length?out:[center(game.castle)];
+}
+function damageWallRing(ringId,amount,sourceId,edgeId){
+  const ring=game.wallRings?.get?.(ringId);
+  if(!ring||ring.status==='broken')return {ok:false,reason:'missing-or-broken'};
+  if(edgeId&&ring.edges&&!ring.edges.has(edgeId))return {ok:false,reason:'edge-mismatch'};
+  const blow=Math.max(0,amount||0);
+  if(!blow)return {ok:true,hp:ring.hp};
+  const before=ring.hp;
+  ring.hp=Math.max(0,ring.hp-blow);
+  const dealt=before-ring.hp;
+  if(dealt>0){
+    const book=nightBook();
+    if(book)book.castleDamage=(book.castleDamage||0)+0; // 墙伤另计，不混主城
+    const sample=edgeId?ring.edges.get(edgeId):[...ring.edges.values()][0];
+    if(sample){
+      const t=game.tiles[sample.insideTileId];
+      if(t)markBuildingFlash(t);
+    }
+  }
+  if(ring.hp<=0)collapseWall(ringId);
+  return {ok:true,hp:ring.hp,dealt};
+}
+function collapseWall(ringId){
+  const ring=game.wallRings?.get?.(ringId);
+  if(!ring)return {ok:false};
+  if(ring.status==='broken'&&ring.hp<=0)return {ok:true,idempotent:true};
+  ring.hp=0;
+  ring.status='broken';
+  if(ring.repair&&ring.repair.status==='building'){
+    ring.repair.status='failed';
+  }
+  invalidateNavigation();
+  if(game.fronts)for(const front of game.fronts)calculateRoutes(front);
+  report(ringId==='home'?'主城城墙倒塌！敌军涌入。':'营地围墙倒塌。',true);
+  return {ok:true};
+}
+function wallDayRepairCost(ringId){
+  const ring=game.wallRings?.get?.(ringId);
+  if(!ring)return 0;
+  const missing=Math.max(0,ring.maxHp-Math.max(0,ring.hp));
+  if(missing<=0&&ring.status!=='broken')return 0;
+  const ratio=missing/ring.maxHp||1;
+  return Math.max(V029.dayRepairMinCost,Math.ceil(ratio*V029.dayRepairFullCost));
+}
+function repairWallDay(ringId){
+  const ring=game.wallRings?.get?.(ringId);
+  if(!ring)return {ok:false,reason:'missing'};
+  if(game.phase!=='day')return {ok:false,reason:'not-day'};
+  const need=wallDayRepairCost(ringId);
+  if(ring.status!=='broken'&&ring.hp>=ring.maxHp)return {ok:false,reason:'full'};
+  if(need<=0)return {ok:false,reason:'full'};
+  if(!spend({material:need},false,'repair','整圈修墙'))return {ok:false,reason:'funds'};
+  ring.hp=ring.maxHp;
+  ring.status='intact';
+  ring.repair=emptyWallRepair();
+  // 倒塌后日修重建几何
+  if(ringId==='home')syncWallRingGeometry('home',t=>!!t?.owned,true);
+  invalidateNavigation();
+  announce((ringId==='home'?'主城城墙':'营地围墙')+'已修满（'+need+' 材料）。');
+  return {ok:true,cost:need};
+}
+function startNightRepair(ringId){
+  const ring=game.wallRings?.get?.(ringId);
+  if(!ring)return {ok:false,reason:'missing'};
+  if(game.phase!=='night')return {ok:false,reason:'not-night'};
+  if(ring.status==='broken')return {ok:false,reason:'broken'};
+  if(ring.hp>=ring.maxHp)return {ok:false,reason:'full'};
+  if(ring.repair?.usedNightId===game.day)return {ok:false,reason:'used'};
+  if(ring.repair?.status==='building')return {ok:false,reason:'busy'};
+  if(!canPay({material:V029.nightRepairCost}))return {ok:false,reason:'funds'};
+  pay({material:V029.nightRepairCost},'repair','夜间抢修城墙');
+  const missing=ring.maxHp-ring.hp;
+  const budget=Math.min(0.25*ring.maxHp,missing);
+  ring.repair={
+    usedNightId:game.day,status:'building',elapsed:0,duration:V029.nightRepairSeconds,
+    budgetHp:budget,appliedHp:0,paid:{material:V029.nightRepairCost}
+  };
+  announce('夜间抢修开始，持续 '+V029.nightRepairSeconds+' 秒。');
+  return {ok:true};
+}
+function stepNightRepair(ringId,dt){
+  const ring=game.wallRings?.get?.(ringId);
+  if(!ring?.repair||ring.repair.status!=='building')return;
+  if(paused||document.hidden||$('dialog')?.open||game.cardPending)return;
+  if(ring.status==='broken'){ring.repair.status='failed';return;}
+  ring.repair.elapsed+=dt;
+  const u=Math.min(1,ring.repair.elapsed/ring.repair.duration);
+  const target=ring.repair.budgetHp*u;
+  const add=Math.max(0,target-ring.repair.appliedHp);
+  if(add){
+    ring.hp=Math.min(ring.maxHp,ring.hp+add);
+    ring.repair.appliedHp+=add;
+  }
+  if(ring.repair.elapsed>=ring.repair.duration){
+    ring.repair.status='completed';
+    ring.repair.elapsed=ring.repair.duration;
+  }
+}
+function findRingEdgeNear(actor,range){
+  if(!(game.wallRings instanceof Map))return null;
+  for(const ring of intactWallRings()){
+    for(const [edgeId,edge] of ring.edges){
+      const ends=edgeEndpoints(edge);
+      if(!ends)continue;
+      const [a,b]=ends;
+      const d=distPointSeg(actor.x,actor.y,a.x,a.y,b.x,b.y);
+      if(d<=range)return {ringId:ring.id,edgeId,edge,ring};
+    }
+  }
+  return null;
+}
+function ringProtectsCastle(){
+  const ring=game.wallRings?.get?.('home');
+  return !!(ring&&ring.status!=='broken'&&ring.hp>0);
 }
 function edgeEndpoints(edge){
   if(edge?.a&&edge?.b)return [edge.a,edge.b];
@@ -1810,7 +2023,6 @@ const NODE_NAMES = {
 };
 const YIELD = {farm:['food',3], wood:['material',3], stone:['material',3], mine:['gold',3], rich:['gold',8], iron:['material',8]};
 const BUILDS = {
-  wall:{label:'城墙',cost:{material:5},hp:100,info:'拖住来袭怪物。敌人也可能改走代价更低的道路。'},
   tower:{label:'箭塔',cost:{material:10,gold:4},hp:90,info:'自动攻击范围内的怪物。点击塔可查看射程或白天升级。'},
 };
 const PRODUCTION_TYPES = {farm:'farm', wood:'lumber', stone:'quarry', mine:'mine', rich:'mine', iron:'mine'};
@@ -1818,7 +2030,7 @@ const PRODUCTION_LABELS = {farm:'农场', lumber:'林场', quarry:'采石场', m
 const CARDS = [
   {key:'blade', label:'领主的誓约', info:'领主攻击伤害 +5。'},
   {key:'bow', label:'齐射训练', info:'全体箭塔攻击伤害 +4。'},
-  {key:'mason', label:'工匠值夜', info:'城堡恢复 35 点，最大耐久提高 20。'},
+  {key:'mason', label:'工匠值夜', info:'主城城墙恢复 120 点（不超过上限）。'},
   {key:'militia', label:'城垣协防', info:'每名民兵攻击伤害 +3。'},
   {key:'vigor', label:'养精蓄锐', info:'领主最大生命提高 20，并恢复至满生命。'}
 ];
@@ -2167,9 +2379,11 @@ function makeGame(seed = Math.floor(Math.random()*999999)+1) {
     carry:{home:0}, reserve:{home:[]}, nextQueueId:1, nextEnemyId:1,
     heroDown:null, heroDownUsed:0, earlyNightAt:null, bossSpawned:false, finished:false,
     fronts:[], spawnStopped:false, announcedRaid:null, nightDue:false,
-    resources:{gold:14,material:30,food:4,rare:0}, castle:null, castleHp:160, castleMax:160,
+    resources:{gold:14,material:30,food:4,rare:0}, castle:null,
+    castleHp:V029.castleHp, castleMax:V029.castleMax,
+    wallRings:new Map(),
     productionBuildings:new Map(), dockReservations:new Map(), nextProductionId:1,
-    focusResident:null, residentCommand:null,
+    focusResident:null, residentCommand:null, selectedRingId:null,
     hero:{x:8.5,y:5.5,hp:100,max:100,cooldown:0,hit:0,goal:null,face:1,moving:false,
       radius:DEMO.radii.hero,faction:'ally',movement:'ally',invuln:0}, heroLevel:0, militia:0, fragments:0, artifact:null, blueprints:false,
     ranks:{hero:0,tower:0}, bonuses:{blade:0,bow:0,militia:0}, xp:0, nextCard:4, cardPending:false,
@@ -2259,6 +2473,7 @@ function chooseSite(index) {
     cell.owned=cell.ground!=='water'&&Math.abs(cell.x-x)<=2&&Math.abs(cell.y-y)<=2;
     if(cell.owned)cell.visible=true;
   }
+  createHomeWallRing();
 
   if(heroOverlapsSite){
     // 只在领主确实与新城堡碰撞时安置一次，不改变移动速度或行动/资源。
@@ -2327,11 +2542,13 @@ function exploreNode(t){
   }
 }
 function claim(t){
-  if(game.phase!=='day'||!game.castle||t.owned||!t.visible||t.ground==='water'||campAt(t)||!isAdjacent(t))return;
-  if(!spend({gold:DEMO.claimGold},false,'build','占领土地'))return;
+  if(game.phase!=='day'||!game.castle||t.owned||!t.visible||t.ground==='water'||campAt(t)||!isAdjacent(t))return false;
+  if(!spend({gold:DEMO.claimGold},false,'build','占领土地'))return false;
   t.owned=true;
+  refreshHomeWallRingKeepHp();
   game.mode=null;openInspector(t);
   announce('领地扩展了一格。'+(t.node?'可以开发'+NODE_NAMES[t.node.kind]+'。':'可在这里布防。'));
+  return true;
 }
 function develop(t){
   if(!t.visible||!canDevelop(t)||!t.node||!YIELD[t.node.kind]||t.node.developed||t.building)return;
@@ -2536,7 +2753,12 @@ function showCards(){
     game.cardChoices.map(({key,label,info})=>({label,detail:info,click:()=>{
       if(!game.cardPending||game.phase!=='day')return;
       game.cardPending=false;
-      if(key==='mason'){game.castleMax+=20;game.castleHp=Math.min(game.castleMax,game.castleHp+35);}
+      if(key==='mason'){
+        const ring=game.wallRings?.get?.('home');
+        if(ring&&ring.status!=='broken'){
+          ring.hp=Math.min(ring.maxHp,ring.hp+120);
+        }
+      }
       else if(key==='vigor'){game.hero.max+=20;game.hero.hp=game.hero.max;}
       else game.bonuses[key]++;
       announce('主城选择了「'+label+'」。');
@@ -2576,6 +2798,7 @@ function entrances(day){
 }
 function calculateRoutes(front,target){
   const targetTile=target||(front.camp&&!front.camp.lost?campTile(front.camp):game.castle||tileOf(game.hero));
+  const enemyActor={radius:DEMO.radii.normal,faction:'enemy',movement:'enemy'};
   const run=seeds=>{
     const scores=Array(game.tiles.length).fill(Infinity);
     const seen=new Set();
@@ -2591,20 +2814,24 @@ function calculateRoutes(front,target){
       for(const [dx,dy] of dirs){
         const n=tileAt(t.x+dx,t.y+dy);
         if(!enemyPassable(n))continue;
+        if(!canTraverse(enemyActor,center(t),center(n)))continue;
         const index=at(n.x,n.y);
-        const cost=n.building?.type==='tower'?14:n.building?.type==='wall'?9.45:
-          n.ground==='road'?.75:1.22;
+        const cost=n.building?.type==='tower'?14:n.ground==='road'?.75:1.22;
         scores[index]=Math.min(scores[index],scores[chosen]+cost);
       }
     }
     return scores;
   };
-  // 源是目标实体外侧 4 个相邻有效攻击位（含可拆塔/墙），不是实体格中心。
-  let slots=dirs.map(([dx,dy])=>tileAt(targetTile.x+dx,targetTile.y+dy))
-    .filter(t=>t&&enemyPassable(t));
+  // 主城圈完整时，进攻目标是外侧墙边攻击位，不能穿墙打主城
+  let slots;
+  if(!front.camp&&ringProtectsCastle()){
+    slots=ringAttackPads('home').map(p=>tileAt(Math.floor(p.x),Math.floor(p.y))).filter(Boolean);
+    slots=[...new Map(slots.map(t=>[at(t.x,t.y),t])).values()];
+  }else{
+    slots=dirs.map(([dx,dy])=>tileAt(targetTile.x+dx,targetTile.y+dy)).filter(t=>t&&enemyPassable(t));
+  }
   if(!slots.length)slots=serviceTiles(targetTile).filter(enemyPassable);
   let scores=run(slots);
-  // 兜底：入口仍不可达时，把所有可拆建筑也作为源，保证敌人不会永久卡在出生点。
   if(front.gates?.some(g=>!Number.isFinite(scores[at(g.x,g.y)]))){
     const extra=game.tiles.filter(enemyBreakable);
     if(extra.length)scores=run(slots.concat(extra));
@@ -3109,10 +3336,24 @@ function moveEnemy(e,dt){
       ['outbound','returning','escorted','leaving'].includes(r.state)&&distance(e,r)<.82+e.radius);
     if(resident){hurtResident(resident);e.cooldown=1;}
   }
+  // 完整主城圈：优先拆墙，不能隔墙打主城
+  if(!camp&&ringProtectsCastle()){
+    const hit=findRingEdgeNear(e,.62+e.radius);
+    if(hit){
+      e.moving=false;
+      if(e.cooldown<=0){
+        const blow=e.boss?35:e.heavy?22:12;
+        damageWallRing(hit.ringId,blow,'enemy:'+e.id,hit.edgeId);
+        e.cooldown=.85;
+      }
+      return;
+    }
+  }
   // v0.23 有效攻击站位：目标周围只有 8 个位置能同时出手，其余后排排队，
   // 不允许几十名敌人叠在一点同时伤害城堡。
   const distTarget=distance(e,targetPoint);
   if(distTarget<2.3){
+    if(!camp&&ringProtectsCastle()){e.moving=false;return;}
     if(e.slot===null){e.moving=false;return;}
     if(distTarget>=1.45&&e.slot){stepToward(e,e.slot,e.speed,dt);return;}
     e.moving=false;
@@ -3146,14 +3387,26 @@ function moveEnemy(e,dt){
     stepToward(e,h,e.speed,dt);
     return;
   }
+  // 靠近完整墙边时停下来拆，不穿墙
+  if(!camp&&ringProtectsCastle()){
+    const hit=findRingEdgeNear(e,.7+e.radius);
+    if(hit){
+      e.moving=false;
+      if(e.cooldown<=0){
+        const blow=e.boss?35:e.heavy?22:12;
+        damageWallRing(hit.ringId,blow,'enemy:'+e.id,hit.edgeId);
+        e.cooldown=.85;
+      }
+      return;
+    }
+  }
   // 墙是「停下来拆」的目标，不能按到达中心处理，否则每帧都会改选下一格
   const atGoal=()=>e.next&&!enemyBreakable(e.next)&&distance(e,center(e.next))<.14;
-  if(!e.next||atGoal()||!enemyPassable(e.next)){
+  if(!e.next||atGoal()||!enemyPassable(e.next)||(e.next&&!canTraverse(e, {x:e.x,y:e.y}, center(e.next)))){
     const current=tileOf(e);
-    const score=t=>front.route[at(t.x,t.y)]+
-      (t.building?.type==='tower'?6:t.building?.type==='wall'?4.35:0);
+    const score=t=>front.route[at(t.x,t.y)]+(t.building?.type==='tower'?6:0);
     const options=dirs.map(([dx,dy])=>tileAt(current.x+dx,current.y+dy))
-      .filter(t=>t&&enemyPassable(t)&&Number.isFinite(score(t)))
+      .filter(t=>t&&enemyPassable(t)&&Number.isFinite(score(t))&&canTraverse(e,{x:e.x,y:e.y},center(t)))
       .sort((a,b)=>score(a)-score(b));
     e.next=options[0]||null;
     if(!e.next){
@@ -3378,6 +3631,7 @@ function advanceBattle(dt){
   fireTowers(dt);
   updateProjectiles(dt);
   assignAttackSlots();
+  if(game.wallRings)for(const id of game.wallRings.keys())stepNightRepair(id,dt);
   for(const e of game.enemies)if(e.hp>0)moveEnemy(e,dt);
   separateUnits(dt);
   updateEffects(dt);
@@ -3774,18 +4028,65 @@ function drawCamp(c){
   }
 }
 function boundaries(showStarting){
-  const lineColor=showStarting?'#efd49aa6':'#f1d68eb8';
-  for(const t of game.tiles){
-    const region=showStarting?game.sites.findIndex(s=>Math.abs(t.x-s.x)<=2&&Math.abs(t.y-s.y)<=2):t.owned?0:-1;
-    if(region===-1)continue;
-    const x=t.x*CELL,y=t.y*CELL;
-    dirs.forEach(([dx,dy])=>{
-      const n=tileAt(t.x+dx,t.y+dy);
-      const adjacent=n&&(showStarting?Math.abs(n.x-game.sites[region].x)<=2&&Math.abs(n.y-game.sites[region].y)<=2:n.owned);
-      if(adjacent)return;
-      const sx=dx>0?x+CELL:x,sy=dy>0?y+CELL:y;
-      line(sx,sy,dx?sx:x+CELL,dy?sy:y+CELL,lineColor,2);
-    });
+  if(showStarting||!(game.wallRings instanceof Map)||!game.wallRings.size){
+    const lineColor=showStarting?'#efd49aa6':'#f1d68eb8';
+    for(const t of game.tiles){
+      const region=showStarting?game.sites.findIndex(s=>Math.abs(t.x-s.x)<=2&&Math.abs(t.y-s.y)<=2):t.owned?0:-1;
+      if(region===-1)continue;
+      const x=t.x*CELL,y=t.y*CELL;
+      dirs.forEach(([dx,dy])=>{
+        const n=tileAt(t.x+dx,t.y+dy);
+        const adjacent=n&&(showStarting?Math.abs(n.x-game.sites[region].x)<=2&&Math.abs(n.y-game.sites[region].y)<=2:n.owned);
+        if(adjacent)return;
+        const sx=dx>0?x+CELL:x,sy=dy>0?y+CELL:y;
+        line(sx,sy,dx?sx:x+CELL,dy?sy:y+CELL,lineColor,2);
+      });
+    }
+    return;
+  }
+  drawWallRings();
+}
+function drawWallRings(){
+  for(const ring of game.wallRings.values()){
+    if(ring.status==='broken'||ring.hp<=0)continue;
+    const selected=game.selectedRingId===ring.id;
+    for(const edge of ring.edges.values()){
+      const ends=edgeEndpoints(edge);
+      if(!ends)continue;
+      const [a,b]=ends;
+      const gate=isGateEdge(ring,edge.id);
+      ctx.save();
+      ctx.strokeStyle=gate?'#d7b56a':selected?'#f0d9a0':'#b7b49a';
+      ctx.lineWidth=gate?5:4;
+      ctx.lineCap='square';
+      ctx.beginPath();
+      ctx.moveTo(a.x*CELL,a.y*CELL);
+      ctx.lineTo(b.x*CELL,b.y*CELL);
+      ctx.stroke();
+      // 雉堞
+      const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+      const nx=-(b.y-a.y),ny=(b.x-a.x);
+      const nlen=Math.hypot(nx,ny)||1;
+      ctx.fillStyle='#cfc8b0';
+      ctx.fillRect(mx*CELL-3-(nx/nlen)*4,my*CELL-3-(ny/nlen)*4,6,6);
+      if(gate){
+        ctx.fillStyle='#3d6d8c';
+        ctx.fillRect(mx*CELL-8,my*CELL-14,16,12);
+        path([[mx*CELL-9,my*CELL-14],[mx*CELL,my*CELL-22],[mx*CELL+9,my*CELL-14]],'#4a82a4','#243e52',1.5);
+      }
+      ctx.restore();
+    }
+    // 圈血条
+    const pts=[...ring.edges.values()].map(e=>edgeEndpoints(e)).filter(Boolean);
+    if(pts.length){
+      let sx=0,sy=0;
+      for(const [a,b] of pts){sx+=(a.x+b.x)/2;sy+=(a.y+b.y)/2;}
+      sx/=pts.length;sy/=pts.length;
+      const label=ring.id==='home'?'主城城墙':'营地城墙';
+      bar(sx*CELL-28,sy*CELL-18,56,ring.hp/ring.maxHp,'#8fd18a');
+      ctx.fillStyle='#f3e6c4';ctx.font='700 11px Microsoft YaHei,sans-serif';
+      ctx.textAlign='center';ctx.fillText(label+' '+Math.ceil(ring.hp)+'/'+ring.maxHp,sx*CELL,sy*CELL-24);
+    }
   }
 }
 function drawCombatLayer(){
@@ -4467,11 +4768,23 @@ function inspect(){
     return;
   }
   if(t.building?.type==='castle'){
-    heading.textContent='城堡';
+    heading.textContent='主城';
     info.id='vitals';
-    info.textContent='耐久 '+Math.ceil(game.castleHp)+'/'+game.castleMax+' · 居民 '+game.residents.filter(r=>r.state!=='dead').length+' 人';
+    const ring=game.wallRings?.get?.('home');
+    const wallLine=ring
+      ?('城墙 '+(ring.status==='broken'?'已倒塌':Math.ceil(ring.hp)+'/'+ring.maxHp))
+      :'城墙未生成';
+    info.textContent='主城 '+Math.ceil(game.castleHp)+'/'+game.castleMax+' · '+wallLine+' · 居民 '+game.residents.filter(r=>r.state!=='dead').length+' 人';
     if(day){
-      actions.append(button('维修城堡',()=>repair(t),{detail:costDetail({material:5}),disabled:disabled||game.castleHp===game.castleMax||game.resources.material<5}));
+      if(ring){
+        const cost=wallDayRepairCost('home');
+        const wallFull=ring.status!=='broken'&&ring.hp>=ring.maxHp;
+        actions.append(button(ring.status==='broken'?'重建城墙':'修满城墙',()=>repairWallDay('home'),{
+          detail:wallFull?'已满':cost+' 材料 · 不耗行动',
+          disabled:wallFull||!canPay({material:cost})
+        }));
+      }
+      actions.append(button('维修主城',()=>repair(t),{detail:costDetail({material:5}),disabled:disabled||game.castleHp===game.castleMax||game.resources.material<5}));
       const recruitCost={gold:5,food:1};
       actions.append(button('招募居民',recruitResident,{
         detail:costDetail(recruitCost,false),disabled:!canPay(recruitCost)
@@ -4482,6 +4795,13 @@ function inspect(){
         })):[];
         residentRow(parent,r,choices);
       }
+    }else if(game.phase==='night'&&ring&&ring.status!=='broken'){
+      const used=ring.repair?.usedNightId===game.day;
+      const busy=ring.repair?.status==='building';
+      actions.append(button(busy?'抢修中…':'夜间抢修城墙',()=>startNightRepair('home'),{
+        detail:used?'本夜已用':busy?('进度 '+Math.min(100,Math.round((ring.repair.elapsed/ring.repair.duration)*100))+'%'):(V029.nightRepairCost+' 材料 · 6 秒'),
+        disabled:used||busy||ring.hp>=ring.maxHp||!canPay({material:V029.nightRepairCost})
+      }));
     }
     return;
   }
@@ -5422,7 +5742,10 @@ window.FW={
   settleCampDawn,startNight,postResident,chooseSite,createCamp,build,develop,salvage,findPath,
   tileAt,at,center,campTile,dispatchResident,updateResidents,returnResident,
   assignWorker,stepWorker,workerAtDock,orderResidentMove,recallHomeResident,recallResident,clearResidentWork,
-  productionTypeForNode,tileCover,clearTileCover,canStand,findPathFor,
+  productionTypeForNode,tileCover,clearTileCover,canStand,findPathFor,productionWorkPos,
+  V029,buildBoundary,createHomeWallRing,refreshHomeWallRingKeepHp,damageWallRing,collapseWall,
+  repairWallDay,startNightRepair,stepNightRepair,wallDayRepairCost,ringAttackPads,ringProtectsCastle,
+  findRingEdgeNear,intactWallRings,
   campStaff,releaseEvacuee,noteRaidWindow,paintNode,newRun,sync,draw,
   syncSheet,centerOnHero,followHero,updateCamera,MOBILE,
   camera,measureCameraViewport,worldToScreen,screenToWorld,screenToGrid,setCameraMode,panCameraBy,
