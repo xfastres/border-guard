@@ -17,9 +17,9 @@
       },
       "deck": {
         "x": 240,
-        "y": 760,
+        "y": 756,
         "w": 960,
-        "h": 130
+        "h": 134
       },
       "rail": {
         "x": 10,
@@ -46,6 +46,10 @@
       },
       "sheetOpen": true,
       "leftRailHidden": false,
+      "castleVital": "50/50",
+      "wallVital": "600/600",
+      "cmdIcons": 12,
+      "legendCollapsed": false,
       "fixtureActions": 7
     },
     {
@@ -64,9 +68,9 @@
       },
       "deck": {
         "x": 480,
-        "y": 940,
+        "y": 936,
         "w": 960,
-        "h": 130
+        "h": 134
       },
       "rail": {
         "x": 10,
@@ -93,6 +97,10 @@
       },
       "sheetOpen": true,
       "leftRailHidden": false,
+      "castleVital": "50/50",
+      "wallVital": "600/600",
+      "cmdIcons": 12,
+      "legendCollapsed": false,
       "fixtureActions": 7
     },
     {
@@ -111,9 +119,9 @@
       },
       "deck": {
         "x": 10,
-        "y": 350,
+        "y": 346,
         "w": 912,
-        "h": 70
+        "h": 74
       },
       "rail": {
         "x": 0,
@@ -131,7 +139,7 @@
       "ring": 600,
       "castle": 50,
       "camera": {
-        "tx": 0,
+        "tx": -5.684341886080802e-14,
         "ty": 0,
         "vw": 932,
         "vh": 381,
@@ -140,6 +148,10 @@
       },
       "sheetOpen": true,
       "leftRailHidden": true,
+      "castleVital": "50/50",
+      "wallVital": "600/600",
+      "cmdIcons": 12,
+      "legendCollapsed": true,
       "fixtureActions": 7
     },
     {
@@ -158,9 +170,9 @@
       },
       "deck": {
         "x": 10,
-        "y": 715,
+        "y": 711,
         "w": 370,
-        "h": 119
+        "h": 123
       },
       "rail": {
         "x": 0,
@@ -178,7 +190,7 @@
       "ring": 600,
       "castle": 50,
       "camera": {
-        "tx": -9.0478515625,
+        "tx": -33.53466796875,
         "ty": 0,
         "vw": 390,
         "vh": 742.40625,
@@ -187,6 +199,10 @@
       },
       "sheetOpen": true,
       "leftRailHidden": true,
+      "castleVital": "50/50",
+      "wallVital": "600/600",
+      "cmdIcons": 12,
+      "legendCollapsed": true,
       "fixtureActions": 7
     }
   ],
@@ -270,6 +286,11 @@
     "cards-390x844.png",
     "desktop-cards.png",
     "combat-after-collapse.png",
+    "wall-inspect-vitals.png",
     "touch-closed-panel.png"
-  ]
+  ],
+  "vitals": {
+    "castle": "44/50",
+    "wall": "321/600"
+  }
 }
