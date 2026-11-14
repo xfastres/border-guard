@@ -9,9 +9,9 @@
     "projectiles": 0,
     "effects": 0,
     "floats": 0,
-    "drawMedianMs": 2.8,
+    "drawMedianMs": 2,
     "drawP95Ms": 5,
-    "drawMaxMs": 5.7
+    "drawMaxMs": 5.8
   },
   "hardware": "win32 / headless Chrome / --disable-gpu"
 }

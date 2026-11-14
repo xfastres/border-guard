@@ -152,9 +152,9 @@
       "projectiles": 0,
       "effects": 0,
       "floats": 0,
-      "drawMedianMs": 2.8,
+      "drawMedianMs": 2,
       "drawP95Ms": 5,
-      "drawMaxMs": 5.7
+      "drawMaxMs": 5.8
     },
     "campaigns": [
       {
@@ -217,14 +217,6 @@
           "open": false,
           "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
           "resetVisible": true,
-          "reset": {
-            "left": 887.34375,
-            "top": 17.5,
-            "right": 975.34375,
-            "bottom": 61.5,
-            "width": 88,
-            "height": 44
-          },
           "commandHidden": true
         }
       },
@@ -241,14 +233,6 @@
           "open": false,
           "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
           "resetVisible": true,
-          "reset": {
-            "left": 1277.34375,
-            "top": 17.5,
-            "right": 1365.34375,
-            "bottom": 61.5,
-            "width": 88,
-            "height": 44
-          },
           "commandHidden": true
         }
       },
@@ -265,14 +249,6 @@
           "open": true,
           "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
           "resetVisible": true,
-          "reset": {
-            "left": 265,
-            "top": 1.5,
-            "right": 331,
-            "bottom": 45.5,
-            "width": 66,
-            "height": 44
-          },
           "commandHidden": true,
           "closed": true,
           "reopened": true
@@ -291,14 +267,6 @@
           "open": true,
           "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
           "resetVisible": true,
-          "reset": {
-            "left": 248,
-            "top": 1.5,
-            "right": 306,
-            "bottom": 45.5,
-            "width": 58,
-            "height": 44
-          },
           "commandHidden": true,
           "closed": true,
           "reopened": true
@@ -317,14 +285,6 @@
           "open": true,
           "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
           "resetVisible": true,
-          "reset": {
-            "left": 208,
-            "top": 1.5,
-            "right": 266,
-            "bottom": 45.5,
-            "width": 58,
-            "height": 44
-          },
           "commandHidden": true,
           "closed": true,
           "reopened": true
@@ -343,14 +303,6 @@
           "open": true,
           "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
           "resetVisible": true,
-          "reset": {
-            "left": 719,
-            "top": 1.5,
-            "right": 785,
-            "bottom": 45.5,
-            "width": 66,
-            "height": 44
-          },
           "commandHidden": true
         }
       },
@@ -367,14 +319,6 @@
           "open": true,
           "goal": "本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束。 本夜城堡承受 40、修复 0、损失 0 座建筑。下局先在入口布防，并留一点急修资源。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。",
           "resetVisible": true,
-          "reset": {
-            "left": 807,
-            "top": 1.5,
-            "right": 873,
-            "bottom": 45.5,
-            "width": 66,
-            "height": 44
-          },
           "commandHidden": true
         }
       }
