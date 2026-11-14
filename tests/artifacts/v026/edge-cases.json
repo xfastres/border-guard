@@ -1,0 +1,993 @@
+{
+  "title": "v0.26 易漏交互专项验收",
+  "cases": [
+    {
+      "name": "预设状态夹具：同种子 42 充分布防",
+      "kind": "夹具",
+      "status": "PASS",
+      "result": "{\"seed\":42,\"towers\":3,\"actions\":4,\"stocks\":[2,0,4,0]}"
+    },
+    {
+      "name": "原生点击「提前入夜」→ 加速到夜战",
+      "kind": "真实界面+加速",
+      "status": "PASS",
+      "result": {
+        "early": "{\"text\":\"取消入夜 3秒\",\"early\":true}",
+        "night": {
+          "ok": true,
+          "used": 2.9,
+          "phase": "night",
+          "day": 1,
+          "castleHp": 160,
+          "heroHp": 100,
+          "kills": 0,
+          "gold": 2
+        }
+      }
+    },
+    {
+      "name": "布防充分 → 打完首夜 → 查看天亮结果（夹具）",
+      "kind": "夹具",
+      "status": "PASS",
+      "result": {
+        "run": {
+          "ok": true,
+          "used": 66.2,
+          "phase": "day",
+          "day": 2,
+          "castleHp": 160,
+          "heroHp": 100,
+          "kills": 18,
+          "gold": 8
+        },
+        "state": {
+          "phase": "day",
+          "day": 2,
+          "mode": null,
+          "side": null,
+          "actions": 7,
+          "stocks": [
+            8,
+            0,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 8,
+          "paused": false,
+          "dialog": false,
+          "toast": "主城成长，可以选择一项强化。",
+          "pageErrors": []
+        },
+        "report": "\n          主城成长，可以选择一项强化。第 1 夜结束：击退 18 只怪物，获得 6 击杀金币。第 1 夜：本夜未接军令，按自己的节奏打完了。第 1 夜。敌军开始进攻城堡。准备完毕：3 秒后入夜，再点一次按钮可取消。提醒（不强制阻止）：4 处领地资源未开发。箭塔已建成。箭塔已建成。箭塔已建成。城堡建在西岭台地，两名居民已在城内。点地面或用 WASD 探路。走近候选点后可以建城。迷雾里的林地、山地和田垄对应可能的资源。\n        "
+      }
+    },
+    {
+      "name": "触屏夹具：固定种子、建城、揭雾、暂停时钟",
+      "kind": "夹具",
+      "status": "PASS",
+      "result": {
+        "phase": "day",
+        "day": 1,
+        "mode": null,
+        "side": null,
+        "actions": 7,
+        "stocks": [
+          14,
+          30,
+          4,
+          0
+        ],
+        "castleHp": 160,
+        "heroHp": 100,
+        "gold": 14,
+        "paused": false,
+        "dialog": false,
+        "toast": "",
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "普通短按：只移动，不扣费、不打开详情",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": {
+          "phase": "day",
+          "day": 1,
+          "mode": null,
+          "side": null,
+          "actions": 7,
+          "stocks": [
+            14,
+            30,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 14,
+          "paused": false,
+          "dialog": false,
+          "toast": "",
+          "pageErrors": []
+        },
+        "after": {
+          "phase": "day",
+          "day": 1,
+          "mode": null,
+          "side": null,
+          "actions": 7,
+          "stocks": [
+            14,
+            30,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 14,
+          "paused": false,
+          "dialog": false,
+          "toast": "",
+          "pageErrors": []
+        }
+      }
+    },
+    {
+      "name": "长按：只查看地点，不扣费、不清除路线",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": {
+          "phase": "day",
+          "day": 1,
+          "mode": null,
+          "side": null,
+          "actions": 7,
+          "stocks": [
+            14,
+            30,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 14,
+          "paused": false,
+          "dialog": false,
+          "toast": "",
+          "pageErrors": []
+        },
+        "after": {
+          "phase": "day",
+          "day": 1,
+          "mode": null,
+          "side": "inspect",
+          "actions": 7,
+          "stocks": [
+            14,
+            30,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 14,
+          "paused": false,
+          "dialog": false,
+          "toast": "",
+          "pageErrors": []
+        }
+      }
+    },
+    {
+      "name": "拖动：只平移相机，不打开详情、不扣费",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": {
+          "phase": "day",
+          "day": 1,
+          "mode": null,
+          "side": null,
+          "actions": 7,
+          "stocks": [
+            14,
+            30,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 14,
+          "paused": false,
+          "dialog": false,
+          "toast": "",
+          "pageErrors": []
+        },
+        "after": {
+          "phase": "day",
+          "day": 1,
+          "mode": null,
+          "side": null,
+          "actions": 7,
+          "stocks": [
+            14,
+            30,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 14,
+          "paused": false,
+          "dialog": false,
+          "toast": "",
+          "pageErrors": []
+        },
+        "cameraMode": "manual"
+      }
+    },
+    {
+      "name": "选工具后点地：只执行一次、只扣一次费",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": {
+          "phase": "day",
+          "day": 1,
+          "mode": "tower",
+          "side": null,
+          "actions": 7,
+          "stocks": [
+            14,
+            30,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 14,
+          "paused": false,
+          "dialog": false,
+          "toast": "",
+          "pageErrors": []
+        },
+        "after": {
+          "phase": "day",
+          "day": 1,
+          "mode": "tower",
+          "side": null,
+          "actions": 6,
+          "stocks": [
+            10,
+            20,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 10,
+          "paused": false,
+          "dialog": false,
+          "toast": "箭塔已建成。继续点空地可再放一座，Esc 或再点一次按钮结束。",
+          "pageErrors": []
+        },
+        "tile": {
+          "x": 45,
+          "y": 334.796875,
+          "index": 68
+        },
+        "built": true
+      }
+    },
+    {
+      "name": "拖动地图不会把旧手势变成一次工具扣费",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": {
+          "phase": "day",
+          "day": 1,
+          "mode": "tower",
+          "side": null,
+          "actions": 6,
+          "stocks": [
+            10,
+            20,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 10,
+          "paused": false,
+          "dialog": false,
+          "toast": "箭塔已建成。继续点空地可再放一座，Esc 或再点一次按钮结束。",
+          "pageErrors": []
+        },
+        "after": {
+          "phase": "day",
+          "day": 1,
+          "mode": "tower",
+          "side": null,
+          "actions": 6,
+          "stocks": [
+            10,
+            20,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 10,
+          "paused": false,
+          "dialog": false,
+          "toast": "箭塔已建成。继续点空地可再放一座，Esc 或再点一次按钮结束。",
+          "pageErrors": []
+        }
+      }
+    },
+    {
+      "name": "第二根手指（多指）不触发工具扣费",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": {
+          "phase": "day",
+          "day": 1,
+          "mode": "tower",
+          "side": null,
+          "actions": 6,
+          "stocks": [
+            10,
+            20,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 10,
+          "paused": false,
+          "dialog": false,
+          "toast": "箭塔已建成。继续点空地可再放一座，Esc 或再点一次按钮结束。",
+          "pageErrors": []
+        },
+        "after": {
+          "phase": "day",
+          "day": 1,
+          "mode": "tower",
+          "side": null,
+          "actions": 6,
+          "stocks": [
+            10,
+            20,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 10,
+          "paused": false,
+          "dialog": false,
+          "toast": "箭塔已建成。继续点空地可再放一座，Esc 或再点一次按钮结束。",
+          "pageErrors": []
+        }
+      }
+    },
+    {
+      "name": "切换分组（切工具）清空待执行手势，不误扣费",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": {
+          "phase": "day",
+          "day": 1,
+          "mode": "tower",
+          "side": null,
+          "actions": 6,
+          "stocks": [
+            10,
+            20,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 10,
+          "paused": false,
+          "dialog": false,
+          "toast": "箭塔已建成。继续点空地可再放一座，Esc 或再点一次按钮结束。",
+          "pageErrors": []
+        },
+        "after": {
+          "phase": "day",
+          "day": 1,
+          "mode": null,
+          "side": null,
+          "actions": 6,
+          "stocks": [
+            10,
+            20,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 10,
+          "paused": false,
+          "dialog": false,
+          "toast": "箭塔已建成。继续点空地可再放一座，Esc 或再点一次按钮结束。",
+          "pageErrors": []
+        },
+        "groups": "[\"建造\",\"经营\"]"
+      }
+    },
+    {
+      "name": "入夜不会把旧手势变成一次扣费",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": {
+          "phase": "day",
+          "day": 1,
+          "mode": null,
+          "side": null,
+          "actions": 6,
+          "stocks": [
+            10,
+            20,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 10,
+          "paused": false,
+          "dialog": false,
+          "toast": "箭塔已建成。继续点空地可再放一座，Esc 或再点一次按钮结束。",
+          "pageErrors": []
+        },
+        "after": {
+          "phase": "night",
+          "day": 1,
+          "mode": null,
+          "side": null,
+          "actions": 6,
+          "stocks": [
+            10,
+            20,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 10,
+          "paused": false,
+          "dialog": false,
+          "toast": "第 1 夜。敌军开始进攻城堡。",
+          "pageErrors": []
+        },
+        "night": "{\"phase\":\"night\",\"mode\":null}"
+      }
+    },
+    {
+      "name": "横屏 844x390 夜战夹具（城堡/领主受伤、余额充足）",
+      "kind": "夹具",
+      "status": "PASS",
+      "result": {
+        "phase": "night",
+        "day": 1,
+        "mode": null,
+        "side": null,
+        "actions": 7,
+        "stocks": [
+          30,
+          30,
+          4,
+          0
+        ],
+        "castleHp": 120,
+        "heroHp": 70,
+        "gold": 30,
+        "paused": true,
+        "dialog": false,
+        "toast": "",
+        "pageErrors": []
+      }
+    },
+    {
+      "name": "受伤状态下急修/药剂自行变为可用",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "repair": false,
+        "potion": false,
+        "repairText": "城堡急修 · 5 金币",
+        "potionText": "使用药剂 · 4 金币"
+      }
+    },
+    {
+      "name": "满血/满耐久时按钮禁用且给出理由",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "repair": true,
+        "potion": true,
+        "repairDetail": "耐久已满",
+        "potionDetail": "生命已满"
+      }
+    },
+    {
+      "name": "余额不足时禁用且提示原因",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": "{\"repair\":true,\"potion\":true,\"repairTitle\":\"\",\"potionTitle\":\"\",\"gold\":0}"
+    },
+    {
+      "name": "恢复量小于上限时提示实际恢复量",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": {
+          "phase": "night",
+          "day": 1,
+          "mode": null,
+          "side": null,
+          "actions": 7,
+          "stocks": [
+            30,
+            30,
+            4,
+            0
+          ],
+          "castleHp": 157,
+          "heroHp": 98,
+          "gold": 30,
+          "paused": true,
+          "dialog": false,
+          "toast": "",
+          "pageErrors": []
+        },
+        "afterRepair": {
+          "phase": "night",
+          "day": 1,
+          "mode": null,
+          "side": null,
+          "actions": 7,
+          "stocks": [
+            25,
+            30,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 98,
+          "gold": 25,
+          "paused": true,
+          "dialog": false,
+          "toast": "城堡急修完成，恢复 3 耐久。",
+          "pageErrors": []
+        },
+        "afterPotion": {
+          "phase": "night",
+          "day": 1,
+          "mode": null,
+          "side": null,
+          "actions": 7,
+          "stocks": [
+            21,
+            30,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 21,
+          "paused": true,
+          "dialog": false,
+          "toast": "药剂恢复 2 生命。",
+          "pageErrors": []
+        },
+        "repairToast": "城堡急修完成，恢复 3 耐久。",
+        "potionToast": "药剂恢复 2 生命。"
+      }
+    },
+    {
+      "name": "快速连点：每次成功点击恰好扣 5 金、恢复 18 耐久，禁用后不再扣费",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": {
+          "gold": 30,
+          "castleHp": 80
+        },
+        "after": {
+          "gold": 10,
+          "castleHp": 152
+        },
+        "spent": 20,
+        "executions": 4,
+        "results": [
+          {
+            "i": 0,
+            "pre": {
+              "gold": 30,
+              "hp": 80
+            },
+            "post": {
+              "gold": 25,
+              "hp": 98
+            },
+            "dGold": 5,
+            "dHp": 18
+          },
+          {
+            "i": 1,
+            "pre": {
+              "gold": 25,
+              "hp": 98
+            },
+            "post": {
+              "gold": 20,
+              "hp": 116
+            },
+            "dGold": 5,
+            "dHp": 18
+          },
+          {
+            "i": 2,
+            "pre": {
+              "gold": 20,
+              "hp": 116
+            },
+            "post": {
+              "gold": 15,
+              "hp": 134
+            },
+            "dGold": 5,
+            "dHp": 18
+          },
+          {
+            "i": 3,
+            "pre": {
+              "gold": 15,
+              "hp": 134
+            },
+            "post": {
+              "gold": 10,
+              "hp": 152
+            },
+            "dGold": 5,
+            "dHp": 18
+          }
+        ]
+      }
+    },
+    {
+      "name": "暂停：时钟停住，底层按钮不可聚焦，恢复后归还",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "t0": 0,
+        "t1": 0.03330000000000001,
+        "t2": 0.03330000000000001,
+        "t3": 0.05000000000000006,
+        "inert": "{\"overlay\":true,\"focusables\":8}"
+      }
+    },
+    {
+      "name": "焦点在按钮上：空格激活按钮而非地图攻击",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": "{\"auto\":false,\"active\":\"map\"}",
+        "after": "{\"side\":\"report\",\"auto\":false}"
+      }
+    },
+    {
+      "name": "焦点在地图：空格用于攻击",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": "{\"active\":\"map\",\"cooldown\":0}",
+        "after": "{\"cooldown\":0,\"swing\":false,\"attacks\":null}"
+      }
+    },
+    {
+      "name": "点地图关闭菜单：首击只关菜单，不执行地图命令",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "opened": "{\"menu\":true}",
+        "closed": "{\"menu\":false}",
+        "before": {
+          "phase": "day",
+          "day": 1,
+          "mode": null,
+          "side": null,
+          "actions": 7,
+          "stocks": [
+            14,
+            30,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 14,
+          "paused": false,
+          "dialog": false,
+          "toast": "",
+          "pageErrors": []
+        },
+        "after": {
+          "phase": "day",
+          "day": 1,
+          "mode": null,
+          "side": null,
+          "actions": 7,
+          "stocks": [
+            14,
+            30,
+            4,
+            0
+          ],
+          "castleHp": 160,
+          "heroHp": 100,
+          "gold": 14,
+          "paused": false,
+          "dialog": false,
+          "toast": "",
+          "pageErrors": []
+        }
+      }
+    },
+    {
+      "name": "战役面板：夜袭预报与军令入口同时可见",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": "{\"side\":\"campaign\",\"preview\":\"试探夜 · 西门 单路 · 计划 18 名普通兵 · 4 波\",\"sections\":[\"\"],\"questButtons\":[\"领主亲征 · 今夜领主亲自击退敌军（目标 5） · 夜里带领主贴上去，空格或点敌人\",\"守住阵线 · 今夜击退足够多的敌军（目标 9） · 塔、民兵、领主都算\",\"跳过\"]}"
+    },
+    {
+      "name": "打开战报后新事件及时出现",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": {
+          "count": 2,
+          "text": "城堡建在西岭台地，两名居民已在城内。\n点地面或用 WASD 探路。走近候选点后可以建城。迷雾里的林地、山地和田垄对应可能的资源。"
+        },
+        "after": {
+          "count": 3,
+          "text": "验收注入的新事件，用于验证战报实时刷新。\n城堡建在西岭台地，两名居民已在城内。\n点地面或用 WASD 探路。走近候选点后可以建城。迷雾里的林地、山地和田垄对应可能的资源。"
+        }
+      }
+    },
+    {
+      "name": "详情刷新时阅读内容与命令栏滚动位置保持稳定",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "panel": "{\"scroll\":0,\"bar\":0}",
+        "set": "{\"scroll\":0,\"bar\":0}",
+        "after": "{\"scroll\":0,\"bar\":0}"
+      }
+    },
+    {
+      "name": "首领胜利演出期间旧命令不会误触发",
+      "kind": "夹具",
+      "status": "PASS",
+      "result": {
+        "before": "{\"gold\":14,\"phase\":\"night\"}",
+        "presentation": "{\"presentation\":true,\"phase\":\"night\"}",
+        "after": "{\"gold\":14,\"barHidden\":false,\"buttons\":3}"
+      }
+    },
+    {
+      "name": "胜利卡可移动、复盘与重开可达",
+      "kind": "夹具",
+      "status": "PASS",
+      "result": "{\"visible\":true,\"rect\":[0,0,400,260.078125],\"gears\":[[\"victoryNew\",true],[\"victoryReport\",true],[\"victoryNights\",true],[\"victoryHandle\",true]]}"
+    },
+    {
+      "name": "重开后无残留工具/面板/旧手势",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "before": "{\"mode\":\"tower\",\"side\":\"inspect\"}",
+        "confirm": "{\"dialog\":true,\"choices\":[\"开始新一局\",\"继续当前局\"]}",
+        "after": {
+          "mode": null,
+          "side": null,
+          "dialog": false,
+          "inspectHidden": true,
+          "toolHidden": true,
+          "menuHidden": true
+        }
+      }
+    },
+    {
+      "name": "失败原因与当局真实情况相符",
+      "kind": "夹具",
+      "status": "PASS",
+      "result": "{\"diagnosis\":\"本局没有留下可用箭塔。下局先在夜袭入口布防，并留一点维修资源。\",\"castleHp\":0,\"castle\":true}"
+    },
+    {
+      "name": "320x568 打开长详情并选中工具：按钮可点、地图仍可见",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "detail": "{\"side\":\"campaign\",\"sideRect\":[310.96875,159.03125],\"board\":[153.78125,157.1875],\"panelScrollH\":534,\"panelClientH\":158}",
+        "tool": "{\"mode\":null,\"groups\":[\"建造\",\"经营\"]}",
+        "buttons": 11,
+        "occluded": [],
+        "offscreen": [
+          {
+            "text": "领主亲征 今夜领主亲自击退敌军（目标 5",
+            "inView": false,
+            "hit": false,
+            "scroller": "playSide",
+            "scrollable": true,
+            "hint": true
+          },
+          {
+            "text": "守住阵线 今夜击退足够多的敌军（目标 9",
+            "inView": false,
+            "hit": false,
+            "scroller": "playSide",
+            "scrollable": true,
+            "hint": true
+          },
+          {
+            "text": "跳过",
+            "inView": false,
+            "hit": false,
+            "scroller": "playSide",
+            "scrollable": true,
+            "hint": true
+          },
+          {
+            "text": "战后休整 2 粮食",
+            "inView": false,
+            "hit": true,
+            "scroller": "commandBar",
+            "scrollable": true,
+            "hint": true
+          },
+          {
+            "text": "回到城堡 领主自动寻路回城",
+            "inView": false,
+            "hit": false,
+            "scroller": "commandBar",
+            "scrollable": true,
+            "hint": true
+          }
+        ],
+        "scrollHints": "{\"commandBar\":\"左右滑动查看全部命令\",\"canScroll\":true,\"playSideScroll\":true}"
+      }
+    },
+    {
+      "name": "844x390 夜战支援栏：所有关键按钮可见可点",
+      "kind": "真实界面",
+      "status": "PASS",
+      "result": {
+        "buttons": 10,
+        "bad": [],
+        "support": "{\"repair\":false,\"potion\":false}"
+      }
+    },
+    {
+      "name": "844x390 结算画面可浏览",
+      "kind": "夹具",
+      "status": "PASS",
+      "result": "{\"rect\":[0,0,400,241.796875],\"inView\":true,\"actions\":[[\"victoryNew\",true],[\"victoryReport\",true],[\"victoryNights\",true]]}"
+    }
+  ],
+  "findings": [
+    {
+      "type": "320x568 需滑动才能看到的按钮",
+      "buttons": [
+        {
+          "text": "领主亲征 今夜领主亲自击退敌军（目标 5",
+          "inView": false,
+          "hit": false,
+          "scroller": "playSide",
+          "scrollable": true,
+          "hint": true
+        },
+        {
+          "text": "守住阵线 今夜击退足够多的敌军（目标 9",
+          "inView": false,
+          "hit": false,
+          "scroller": "playSide",
+          "scrollable": true,
+          "hint": true
+        },
+        {
+          "text": "跳过",
+          "inView": false,
+          "hit": false,
+          "scroller": "playSide",
+          "scrollable": true,
+          "hint": true
+        },
+        {
+          "text": "战后休整 2 粮食",
+          "inView": false,
+          "hit": true,
+          "scroller": "commandBar",
+          "scrollable": true,
+          "hint": true
+        },
+        {
+          "text": "回到城堡 领主自动寻路回城",
+          "inView": false,
+          "hit": false,
+          "scroller": "commandBar",
+          "scrollable": true,
+          "hint": true
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    "edge-01-dawn-day2.png",
+    "edge-02-support-844x390.png",
+    "edge-03-paused.png",
+    "edge-04-campaign.png",
+    "edge-05-victory-presentation.png",
+    "edge-06-victory-1440x900.png",
+    "edge-07-defeat.png",
+    "edge-08-320x568-detail-tool.png",
+    "edge-09-844x390-support.png",
+    "edge-10-844x390-settlement.png"
+  ],
+  "realUI": [
+    "原生点击「提前入夜」→ 加速到夜战",
+    "普通短按：只移动，不扣费、不打开详情",
+    "长按：只查看地点，不扣费、不清除路线",
+    "拖动：只平移相机，不打开详情、不扣费",
+    "选工具后点地：只执行一次、只扣一次费",
+    "拖动地图不会把旧手势变成一次工具扣费",
+    "第二根手指（多指）不触发工具扣费",
+    "切换分组（切工具）清空待执行手势，不误扣费",
+    "入夜不会把旧手势变成一次扣费",
+    "受伤状态下急修/药剂自行变为可用",
+    "满血/满耐久时按钮禁用且给出理由",
+    "余额不足时禁用且提示原因",
+    "恢复量小于上限时提示实际恢复量",
+    "快速连点：每次成功点击恰好扣 5 金、恢复 18 耐久，禁用后不再扣费",
+    "暂停：时钟停住，底层按钮不可聚焦，恢复后归还",
+    "焦点在按钮上：空格激活按钮而非地图攻击",
+    "焦点在地图：空格用于攻击",
+    "点地图关闭菜单：首击只关菜单，不执行地图命令",
+    "战役面板：夜袭预报与军令入口同时可见",
+    "打开战报后新事件及时出现",
+    "详情刷新时阅读内容与命令栏滚动位置保持稳定",
+    "重开后无残留工具/面板/旧手势",
+    "320x568 打开长详情并选中工具：按钮可点、地图仍可见",
+    "844x390 夜战支援栏：所有关键按钮可见可点"
+  ],
+  "fixtures": [
+    "预设状态夹具：同种子 42 充分布防",
+    "布防充分 → 打完首夜 → 查看天亮结果（夹具）",
+    "触屏夹具：固定种子、建城、揭雾、暂停时钟",
+    "横屏 844x390 夜战夹具（城堡/领主受伤、余额充足）",
+    "首领胜利演出期间旧命令不会误触发",
+    "胜利卡可移动、复盘与重开可达",
+    "失败原因与当局真实情况相符",
+    "844x390 结算画面可浏览"
+  ],
+  "summary": {
+    "cases": 32,
+    "pass": 32,
+    "fail": 0,
+    "realUI": 24,
+    "fixtures": 8,
+    "findings": 1,
+    "screenshots": 10
+  }
+}
