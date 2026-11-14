@@ -475,8 +475,10 @@ function tileSolid(t){
   return !t||t.ground==='water'||tileCover(t)==='forest'||tileCover(t)==='mountain'||!!t.building||!!t.campSolid;
 }
 function walkable(t){
-  // 己方格心谓词：水/建筑/营地核心阻挡；森林山脉可走
-  return !!t&&t.ground!=='water'&&!t.building&&!t.campSolid;
+  // 己方格心谓词：水/非生产建筑/营地核心阻挡；生产建筑与森林山脉可走
+  if(!t||t.ground==='water'||t.campSolid)return false;
+  if(t.building&&!isProductionBuilding(t.building))return false;
+  return true;
 }
 function enemyBreakable(t){
   return !!t?.building&&(t.building.type==='wall'||t.building.type==='tower');
@@ -596,7 +598,12 @@ function terrainBlocksFoot(actor,t,x,y,r){
   if(t.ground==='water'&&circleHitsTile(x,y,r,t))return true;
   const cover=tileCover(t);
   if((cover==='forest'||cover==='mountain')&&movementProfile(actor)==='enemy'&&circleHitsTile(x,y,r,t))return true;
-  if((t.building||t.campSolid)&&circleHitsTile(x,y,r,t))return true;
+  // 生产建筑对己方是可见工作区，可进入；城堡/墙/塔/营地核心仍阻挡
+  if(t.building&&circleHitsTile(x,y,r,t)){
+    if(movementProfile(actor)==='ally'&&isProductionBuilding(t.building))return false;
+    return true;
+  }
+  if(t.campSolid&&circleHitsTile(x,y,r,t))return true;
   return false;
 }
 function canStand(actor,position,snapshot){
@@ -1231,16 +1238,28 @@ function productionTypeForNode(kind){
   return PRODUCTION_TYPES[kind]||null;
 }
 function isProductionBuilding(b){
-  return !!b&&!!PRODUCTION_LABELS[b.type];
+  return !!b&&(b.type==='farm'||b.type==='lumber'||b.type==='quarry'||b.type==='mine');
+}
+function productionWorkPos(tileId){
+  const t=game.tiles[tileId];
+  if(!t)return null;
+  // 建筑内可见作业平台：格内偏入口一侧，工人应站在该建筑画面里
+  return {x:t.x+.5,y:t.y+.58};
 }
 function findProductionDocks(tileId){
   const t=game.tiles[tileId];
   if(!t)return [];
   const probe={radius:DEMO.radii.resident,faction:'ally',movement:'ally'};
+  const work=productionWorkPos(tileId);
+  // 默认停靠在本格工作平台；生产建筑对己方可站
+  if(work&&canStand(probe,work))return [tileId];
+  if(canStand(probe,center(t)))return [tileId];
+  // 极端情况下本格不可站，才退相邻，仍优先贴着该建筑
   const out=[];
   for(const [dx,dy] of dirs){
     const n=tileAt(t.x+dx,t.y+dy);
-    if(!n||n.ground==='water'||n.building||n.campSolid)continue;
+    if(!n||n.ground==='water'||n.campSolid)continue;
+    if(n.building&&!isProductionBuilding(n.building))continue;
     if(!canStand(probe,center(n)))continue;
     out.push(at(n.x,n.y));
   }
@@ -1293,7 +1312,9 @@ function unregisterProductionAt(t){
 }
 function dockWorldPos(dockTileId){
   const t=game.tiles[dockTileId];
-  return t?center(t):null;
+  if(!t)return null;
+  if(isProductionBuilding(t.building)||t.node?.developed)return productionWorkPos(dockTileId)||center(t);
+  return center(t);
 }
 function assignWorker(residentId,buildingId){
   ensureProductionMaps();
@@ -1344,7 +1365,7 @@ function orderResidentMove(residentId,tile){
   r.slot=null;
   return {ok:true};
 }
-function recallResident(residentId){
+function recallHomeResident(residentId){
   const r=game.residents.find(x=>x.id===residentId);
   if(!r||r.state==='dead')return {ok:false,reason:'missing'};
   if(['outbound','posted','waiting','leaving','returning','escorted'].includes(r.state)&&r.camp!=null)
@@ -4415,7 +4436,7 @@ function inspect(){
         },{detail:game.residentCommand?.residentId===r.id?'等待点选地图':'暂停当前工作并前往',
           active:game.residentCommand?.residentId===r.id&&game.residentCommand?.type==='move'}));
         actions.append(button('调回城堡',()=>{
-          if(!recallResident(r.id).ok)toast('当前无法调回。');
+          if(!recallHomeResident(r.id).ok)toast('当前无法调回。');
           else announce('居民 '+r.id+' 已调回城堡待命。');
           sync();
         }));
@@ -5400,7 +5421,7 @@ window.FW={
   scoutAroundHero,attack,moveHero,mapClick,setDestination,dawn,advanceBattle,
   settleCampDawn,startNight,postResident,chooseSite,createCamp,build,develop,salvage,findPath,
   tileAt,at,center,campTile,dispatchResident,updateResidents,returnResident,
-  assignWorker,stepWorker,workerAtDock,orderResidentMove,recallResident,clearResidentWork,
+  assignWorker,stepWorker,workerAtDock,orderResidentMove,recallHomeResident,recallResident,clearResidentWork,
   productionTypeForNode,tileCover,clearTileCover,canStand,findPathFor,
   campStaff,releaseEvacuee,noteRaidWindow,paintNode,newRun,sync,draw,
   syncSheet,centerOnHero,followHero,updateCamera,MOBILE,
