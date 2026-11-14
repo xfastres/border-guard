@@ -243,3 +243,67 @@ test('拆除生产建筑会释放岗位，不留双岗重复预约', () => {
   assert.equal(result.buildings, 0);
   assert.equal(result.building, null);
 });
+
+test('调回按钮按正常速度沿路返程，不能插值瞬移回城', () => {
+  const result = run(`
+    const r = addResident();
+    const t = tileAt(10,5);
+    Object.assign(t,{ground:'trees',cover:'forest',node:{kind:'wood',developed:false}});
+    develop(t);
+    assignWorker(r.id, t.building.productionId);
+    for(let i=0;i<600;i++) updateResidents(.045);
+    openInspector(tileOf(r), r.id); sync();
+    const btn = [...document.getElementById('inspectBody').querySelectorAll('button')].find(b => /调回/.test(b.textContent));
+    const before = {x:r.x,y:r.y,job:r.work.state};
+    btn.click();
+    updateResidents(.045);
+    return {
+      button: !!btn,
+      step: distance(r, before),
+      limit: DEMO.dispatchSpeed * .045,
+      state: r.state,
+      job: r.work.state,
+      hadJob: before.job
+    };
+  `);
+  assert.equal(result.button, true);
+  assert.equal(result.hadJob, 'working');
+  assert.equal(result.job, 'idle');
+  assert.ok(result.state === 'returning' || result.state === 'leaving', '应进入返程状态');
+  assert.ok(result.step <= result.limit + 1e-6, `单步 ${result.step} 超过 ${result.limit}`);
+});
+
+test('拆除后 forecastIncome 为 0 且可重新 develop，天亮不双算', () => {
+  const result = run(`
+    const t = tileAt(10,5);
+    Object.assign(t,{ground:'trees',cover:'forest',node:{kind:'wood',developed:false},owned:true});
+    develop(t);
+    const before = forecastIncome().material;
+    salvage(t);
+    const after = forecastIncome().material;
+    const kind = t.node.kind;
+    const developed = t.node.developed;
+    develop(t);
+    const rebuiltType = t.building && t.building.type;
+    const forecastAfterRebuild = forecastIncome().material;
+    // 天亮账本：仅认有效生产实体
+    game.phase = 'night'; game.day = 1; game.waveKills = 0; game.waveGold = 0;
+    game.xp = 0; game.nextCard = 999; game.cardPending = false;
+    game.nights = game.nights || new Map();
+    const mat0 = game.resources.material;
+    const income = forecastIncome();
+    addIncome(income, 'production', '生产');
+    return {
+      before, after, kind, developed, rebuilt: rebuiltType,
+      dawnGain: game.resources.material - mat0,
+      forecastAfterRebuild
+    };
+  `);
+  assert.equal(result.before, 3);
+  assert.equal(result.after, 0);
+  assert.equal(result.developed, false);
+  assert.equal(result.kind, 'wood');
+  assert.equal(result.rebuilt, 'lumber');
+  assert.equal(result.forecastAfterRebuild, 3);
+  assert.equal(result.dawnGain, 3);
+});

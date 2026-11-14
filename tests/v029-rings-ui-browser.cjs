@@ -135,7 +135,10 @@ function connect(url) {
       game.started=true; paused=false; keys.clear();
       game.settings.sound=false;
       for(const t of game.tiles) t.visible=true;
-      chooseSite(0); closeInspector();
+      chooseSite(0);
+      // 建城会触发首组卡牌；截图夹具先收起，保持 7/7 与真实城址
+      if(game.cardPending){game.cardPending=false;game.cardModal=false;hideCardOverlay();}
+      closeInspector();
       game.actions=7;
       game.resources={material:28,gold:20,food:8,rare:0};
       // 布置四类资源供开发截图
@@ -164,12 +167,17 @@ function connect(url) {
       const worldW=map.width*camera.sx, worldH=map.height*camera.sy;
       const covers=worldW+.5>=camera.vw && worldH+.5>=camera.vh;
       const noPosBlank=(worldW>=camera.vw-.5?camera.tx<=0.5:true)&&(worldH>=camera.vh-.5?camera.ty<=0.5:true);
+      const ring=game.wallRings?.get?.('home');
       return {label:${JSON.stringify(label)}, board, side, deck, rail, overflow, pageErrors:__pageErrors.slice(),
         screen:[innerWidth,innerHeight], actions:game.actions,
-        ring:game.wallRings?.get?.('home')?.hp, castle:game.castleHp,
+        ring:ring?.hp, castle:game.castleHp,
         camera:{tx:camera.tx,ty:camera.ty,vw:camera.vw,vh:camera.vh,covers,noPosBlank},
         sheetOpen:document.body.classList.contains('sheet-open'),
-        leftRailHidden:getComputedStyle(document.getElementById('leftRail')).display==='none'};
+        leftRailHidden:getComputedStyle(document.getElementById('leftRail')).display==='none',
+        castleVital:document.getElementById('castleVital')?.textContent||null,
+        wallVital:document.getElementById('wallVital')?.textContent||null,
+        cmdIcons:[...document.querySelectorAll('#commandBar .cmd-icon .glyph')].length,
+        legendCollapsed:!!document.querySelector('.legend-panel ul')?.hidden};
     })()`);
 
     // 视口截图
@@ -298,6 +306,35 @@ function connect(url) {
     assert.ok(combat.collapsedAt >= 0, '墙应倒塌');
     assert.ok(combat.lostAt > combat.collapsedAt, '破墙后应继续打主城');
     await screenshot('combat-after-collapse');
+
+    // 点墙开详情 + vitals 持续刷新（CDP 观测）
+    await size(1440, 900, false);
+    await navigate();
+    await dayFixture();
+    const wallPick = await evaluate(`(()=>{
+      closeInspector(); game.mode=null; game.hero.goal=null;
+      const ring=game.wallRings.get('home');
+      const edge=[...ring.edges].find(([id])=>!isGateEdge(ring,id))[1];
+      const [a,b]=edgeEndpoints(edge);
+      const p={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+      mapClick(tileAt(Math.floor(p.x),Math.floor(p.y)),p,false);
+      sync();
+      return {panel:!!game.panel, selectedRing:game.selectedRingId, text:document.getElementById('inspectBody').textContent};
+    })()`);
+    assert.equal(wallPick.panel, true);
+    assert.equal(wallPick.selectedRing, 'home');
+    assert.match(wallPick.text, /城墙|主城/);
+    await evaluate(`(()=>{
+      const ring=game.wallRings.get('home');
+      ring.hp=321; game.castleHp=44;
+      for(let i=0;i<8;i++) updateBattleHud();
+    })()`);
+    await frames();
+    const vitals = await evaluate(`({castle:document.getElementById('castleVital')?.textContent, wall:document.getElementById('wallVital')?.textContent})`);
+    assert.match(vitals.castle || '', /44/);
+    assert.match(vitals.wall || '', /321/);
+    evidence.vitals = vitals;
+    await screenshot('wall-inspect-vitals');
 
     // 触屏关详情：真实触点，失败即失败
     await size(390, 844, true);

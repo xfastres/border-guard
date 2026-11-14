@@ -27,7 +27,7 @@ function bootV029(options = {}){
   class Element {
     constructor(tag, id, hidden=false){
       this.tagName = String(tag).toUpperCase();
-      this.id = id;
+      this._id = id || '';
       this.children = [];
       this.classList = makeClassList();
       this.style = Object.create(css);
@@ -43,6 +43,12 @@ function bootV029(options = {}){
       this.clientWidth = 1280;
       this.scrollWidth = 1280;
       this.isConnected = true;
+      if(this._id) ids.set(this._id, this);
+    }
+    get id(){return this._id;}
+    set id(value){
+      this._id = String(value || '');
+      if(this._id) ids.set(this._id, this);
     }
     get textContent(){return this._text + this.children.map(x=>x.textContent).join('');}
     set textContent(text){this._text = String(text ?? ''); this.children = [];}
@@ -76,7 +82,10 @@ function bootV029(options = {}){
         : []);
     }
     querySelector(tag){return this.querySelectorAll(tag)[0] ?? null;}
-    setAttribute(k, v){this.attrs[k] = String(v);}
+    setAttribute(k, v){
+      this.attrs[k] = String(v);
+      if(k === 'id') this.id = String(v);
+    }
     getAttribute(k){return this.attrs[k] ?? null;}
     addEventListener(type, f){(this.events[type] ??= []).push(f);}
     dispatch(type, e){for(const f of this.events[type] ?? []) f(e);}
@@ -109,6 +118,7 @@ function bootV029(options = {}){
   const syntheticClass = new Map(['.side','.status','.top','main'].map(key=>[key, create('section')]));
   doc = {
     createElement: create,
+    createElementNS(_ns, tag){return create(tag);},
     body,
     activeElement: body,
     hidden: false,

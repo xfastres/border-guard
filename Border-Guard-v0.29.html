@@ -133,24 +133,8 @@ body.touch-ui.sheet-open #leftRail { display:none; }
 }
 #closeInspector { position:relative; z-index:2; min-width:44px; min-height:44px; }
 .inspect-art {
-  height:72px; margin:6px 0 10px; border-radius:10px; border:1px solid #6a5a3c;
-  background:linear-gradient(180deg,#3a4a3c,#243028); position:relative; overflow:hidden;
-}
-.inspect-art::before,.inspect-art::after { content:""; position:absolute; }
-.inspect-art.castle-art::before {
-  left:50%; bottom:10px; width:46px; height:36px; transform:translateX(-50%);
-  background:#b7b29a; box-shadow:inset 0 3px 0 #d2cbb4, -18px 6px 0 #9e9a84, 18px 6px 0 #9e9a84;
-}
-.inspect-art.castle-art::after {
-  left:50%; bottom:40px; width:0; height:0; transform:translateX(-50%);
-  border-left:14px solid transparent; border-right:14px solid transparent; border-bottom:16px solid #4a82a4;
-}
-.inspect-art.tower-art::before {
-  left:50%; bottom:8px; width:22px; height:40px; transform:translateX(-50%); background:#9c9a82;
-  box-shadow:inset 2px 0 0 #bbb59d;
-}
-.inspect-art.tower-art::after {
-  left:50%; bottom:48px; width:30px; height:10px; transform:translateX(-50%); background:#c19f69;
+  height:80px; margin:6px 0 10px; border-radius:10px; border:1px solid #6a5a3c;
+  background:linear-gradient(180deg,#3a4a3c,#243028); overflow:hidden;
 }
 .inspect-bars { display:grid; gap:6px; margin:8px 0 4px; }
 .inspect-bars .bar-row { display:grid; grid-template-columns:48px 1fr auto; gap:6px; align-items:center; font-size:12px; color:#d8c49b; }
@@ -220,17 +204,14 @@ summary { cursor:pointer; padding:5px 0; }
   min-width:76px; padding:6px 10px 7px;
 }
 .cmd-btn .cmd-icon {
-  width:22px; height:22px; border-radius:5px; flex:none;
-  background:#3a4a3c; border:1px solid #6a7a62; position:relative;
+  width:26px; height:26px; border-radius:6px; flex:none;
+  background:#1c2a22; border:1px solid #6a7a62; display:grid; place-items:center;
 }
-.cmd-btn .cmd-icon[data-icon="tower"]{background:linear-gradient(180deg,#c19f69,#9c9a82);}
-.cmd-btn .cmd-icon[data-icon="claim"]{background:linear-gradient(180deg,#7ecf7a,#4d6a45);}
-.cmd-btn .cmd-icon[data-icon="camp"]{background:linear-gradient(180deg,#d4a574,#8b6a45);}
-.cmd-btn .cmd-icon[data-icon="lord"]{background:linear-gradient(180deg,#efc47e,#b99456);}
-.cmd-btn .cmd-icon[data-icon="battle"]{background:linear-gradient(180deg,#ed9a7c,#8f5457);}
-.cmd-btn .cmd-icon[data-icon="support"]{background:linear-gradient(180deg,#8fd0d8,#4a82a4);}
+.cmd-btn .cmd-icon .glyph { display:block; }
 .cmd-btn .cmd-label { font-weight:700; font-size:13px; }
 .command-bar .cmd-btn small { margin-top:0; }
+.inspect-art { display:grid; place-items:center; background:linear-gradient(180deg,#3a4a3c,#243028); }
+.inspect-art .glyph { width:64px; height:64px; }
 .command-nav,.group-tabs { display:flex; gap:5px; align-items:center; min-width:0; }
 .command-nav:empty { display:none; }
 .command-nav button { font-size:12px; }
@@ -1068,9 +1049,24 @@ function stepToward(actor,goal,speed,dt){
   const step=Math.min(dist,Math.max(0,speed*dt));
   if(!step)return dist<.085;
   const dx=(goal.x-actor.x)/dist*step,dy=(goal.y-actor.y)/dist*step;
+  const before={x:actor.x,y:actor.y};
   const moved=moveWithCollision(actor,dx,dy);
-  actor.moving=moved>step*.22;
-  if(Math.abs(dx)>Math.abs(dy)*1.1)actor.face=dx<0?-1:1;
+  // 禁止同帧双轴滑步形成穿角弦：若直线不可穿越，只保留合法单轴位移
+  if(moved>1e-6&&!canTraverse(actor,before,{x:actor.x,y:actor.y})){
+    const ax=actor.x,ay=actor.y;
+    actor.x=before.x;actor.y=before.y;
+    const onlyX={x:ax,y:before.y},onlyY={x:before.x,y:ay};
+    if(Math.abs(ax-before.x)>=Math.abs(ay-before.y)){
+      if(canTraverse(actor,before,onlyX))actor.x=onlyX.x;
+      else if(canTraverse(actor,before,onlyY))actor.y=onlyY.y;
+    }else{
+      if(canTraverse(actor,before,onlyY))actor.y=onlyY.y;
+      else if(canTraverse(actor,before,onlyX))actor.x=onlyX.x;
+    }
+  }
+  const moved2=Math.hypot(actor.x-before.x,actor.y-before.y);
+  actor.moving=moved2>step*.22;
+  if(Math.abs(actor.x-before.x)>Math.abs(actor.y-before.y)*1.1)actor.face=actor.x<before.x?-1:1;
   return distance(actor,goal)<.085;
 }
 function takeStep(unit,goal,speed,dt){return stepToward(unit,goal,speed,dt);}
@@ -1692,7 +1688,11 @@ function unregisterProductionAt(t){
       }
     }
   }
-  if(t.node?.developedByBuildingId===id)t.node.developedByBuildingId=null;
+  // 拆除/损毁后清除开发标记，保留资源 kind，避免无建筑仍永久产粮
+  if(t.node){
+    t.node.developed=false;
+    t.node.developedByBuildingId=null;
+  }
 }
 function dockWorldPos(dockTileId){
   const t=game.tiles[dockTileId];
@@ -1754,10 +1754,20 @@ function recallHomeResident(residentId){
   if(!r||r.state==='dead')return {ok:false,reason:'missing'};
   if(['outbound','posted','waiting','leaving','returning','escorted'].includes(r.state)&&r.camp!=null)
     return {ok:false,reason:'camp-task'};
+  if(!game.castle)return {ok:false,reason:'no-castle'};
+  // 先校验通往主城服务位的真实路径；无路则保留有效岗位
+  const route=findApproachPath(r,game.castle,'home');
+  if(!route){
+    toast('暂时找不到回城的路，岗位保留。');
+    return {ok:false,reason:'unreachable'};
+  }
   clearResidentWork(r);
   clearResidentOrders(r);
   if(game.residentCommand?.residentId===r.id)game.residentCommand=null;
-  r.state='home';r.slot=null;r.activity='idle';
+  r.postedAt=null;r.slot=null;r.camp=null;
+  r.route=route;r.targetTile=game.castle;
+  r.routeRevision=navigationRevision();r.blocked=false;r.stuck=0;r.retryCooldown=0;
+  r.state='returning';r.activity='walk';r.moving=true;
   return {ok:true};
 }
 function stepResidentOrder(r,dt){
@@ -1894,8 +1904,12 @@ function dispatchResident(r,c){
   if(game.phase!=='day'||r.state!=='home'||!r.role||c.lost||c.damaged)return false;
   const route=findApproachPath(r,campTile(c),'camp');
   if(!route){toast('营地和城堡之间没有可通行道路。');return false;}
+  // 派驻营地前必须释放生产岗位与停靠预约，不能双持
+  clearResidentWork(r);
+  clearResidentOrders(r);
+  if(game.residentCommand?.residentId===r.id)game.residentCommand=null;
   r.route=route;r.state='outbound';r.camp=c.id;r.targetTile=campTile(c);
-  r.routeRevision=navigationRevision();r.blocked=false;r.stuck=0;r.slot=null;
+  r.routeRevision=navigationRevision();r.blocked=false;r.stuck=0;r.slot=null;r.postedAt=null;
   // v0.14：派驻给明确的到岗预期，不再让玩家猜「人到底走到哪了」
   announce(ROLES[r.role]+' '+r.id+' 正在前往'+campName(c)+'，约 '+
     Math.ceil(route.length/DEMO.dispatchSpeed)+' 秒到岗。');
@@ -2055,9 +2069,10 @@ function updateResidents(dt){
     if(['home','posted','waiting','hurt'].includes(r.state)){
       if(r.postedAt&&r.state==='home'){
         if(canOccupy(r,r.postedAt.x,r.postedAt.y)){
-          const k=Math.min(1,dt*5);
-          r.x+=(r.postedAt.x-r.x)*k;r.y+=(r.postedAt.y-r.y)*k;
-          r.moving=false;r.activity='idle';
+          // 回城停靠也按正常速度碰撞移动，禁止插值穿墙/超速
+          if(distance(r,r.postedAt)>1e-4)stepToward(r,r.postedAt,DEMO.dispatchSpeed,dt);
+          else r.moving=false;
+          r.activity='idle';
           continue;
         }
         r.postedAt=null;
@@ -2066,11 +2081,8 @@ function updateResidents(dt){
       if(!r.slot||r.slotAnchor!==key||!canOccupy(r,r.slot.x,r.slot.y)){
         r.slot=findResidentSlot(r,anchor);r.slotAnchor=key;
       }
-      if(r.slot){
-        const k=Math.min(1,dt*5);
-        r.x+=(r.slot.x-r.x)*k;r.y+=(r.slot.y-r.y)*k;
-      }
-      r.moving=false;
+      if(r.slot&&distance(r,r.slot)>1e-4)stepToward(r,r.slot,DEMO.dispatchSpeed,dt);
+      else r.moving=false;
       r.activity=r.state==='hurt'?'hurt':r.state==='waiting'?'wait':
         r.state==='posted'?(r.role==='guard'?'guard':'work'):'idle';
       continue;
@@ -2558,7 +2570,7 @@ function makeGame(seed = Math.floor(Math.random()*999999)+1) {
     hero:{x:8.5,y:5.5,hp:100,max:100,cooldown:0,hit:0,goal:null,face:1,moving:false,
       radius:DEMO.radii.hero,faction:'ally',movement:'ally',invuln:0}, heroLevel:0, militia:0, fragments:0, artifact:null, blueprints:false,
     ranks:{hero:0,tower:0}, bonuses:{blade:0,bow:0,militia:0}, xp:0, nextCard:4, cardPending:false,
-    cardModal:false, pausedBeforeCards:false,
+    cardModal:false, pausedBeforeCards:false, starterCardsOffered:false,
     reports:['点地面或用 WASD 探路。走近候选点后可以建城。迷雾里的林地、山地和田垄对应可能的资源。'],
     enemies:[], effects:[], scheduled:false, early:false, clock:0,
     // v0.24 战斗表现层：projectiles 可能影响天亮判定，effects/floats/corpses 只影响画面
@@ -2665,8 +2677,20 @@ function chooseSite(index) {
   setCameraMode('manual');
   measureCameraViewport();
   snapCameraToPoint(t.x+.5,t.y+.5);
+  if(!game.starterCardsOffered){
+    game.starterCardsOffered=true;
+    offerGrowthCards('城堡落成，选择一项开局强化。');
+  }
   announce('城堡建在'+SITE_NAMES[index]+'，两名居民已在城内。'+
     (heroOverlapsSite?'领主已安置到城堡外侧。':heroTargetsSite?'领主已改道至城堡外侧。':''));
+}
+function offerGrowthCards(reason){
+  if(!game.castle||game.phase!=='day')return false;
+  game.cardPending=true;
+  const available=[...CARDS];
+  game.cardChoices=Array.from({length:3},()=>available.splice(Math.floor(game.rnd()*available.length),1)[0]);
+  report(reason||'主城成长，可以选择一项强化。',true);
+  return true;
 }
 function isAdjacent(t) {
   return dirs.some(([dx,dy])=>tileAt(t.x+dx,t.y+dy)?.owned);
@@ -2972,8 +2996,10 @@ function endCardModal(){
 function showCards(){
   if(!game.cardPending)return;
   const overlay=$('cardOverlay'),row=$('cardRow');
+  const blurb=game.starterCardsOffered&&game.xp<game.nextCard-16?
+    '城堡落成开局强化，或后续主城经验达标时再选。':'选择一项强化。开局建城与主城经验达标都会触发。';
   if(!overlay||!row){
-    dialog('主城成长', ['选择一项强化。本局的主城经验来自夜间击杀。'],
+    dialog('主城成长', [blurb],
       game.cardChoices.map(({key,label,info})=>({label,detail:info,click:()=>pickGrowthCard(key,label)})));
     return;
   }
@@ -3728,12 +3754,29 @@ function fireTowers(dt){
 }
 /* v0.15 资源信息层：结算、面板预期、来源说明共用同一份计算，避免两处口径漂移。
    注意：产出不是「点一下采集」，而是已开发资源点在每夜结束、天亮时统一结算。 */
+function hasActiveProduction(t){
+  if(!t?.node?.developed||!YIELD[t.node.kind])return false;
+  if(t.owned){
+    if(!isProductionBuilding(t.building))return false;
+    ensureProductionMaps();
+    const prod=game.productionBuildings?.get?.(t.building.productionId);
+    return !!(prod&&prod.active);
+  }
+  // 营地控制的资源仍按营地运转口径，不依赖领地生产实体
+  return campYield(t)>0||(!!campAt(t)?.controlled&&!campAt(t)?.lost);
+}
 function forecastIncome(){
   const income={gold:0,material:0,food:0};
   for(const t of game.tiles){
     if(!t.node?.developed||!YIELD[t.node.kind])continue;
-    const [type,amount]=YIELD[t.node.kind];
-    income[type]+=t.owned?amount:campYield(t);
+    if(t.owned){
+      if(!hasActiveProduction(t))continue;
+      const [type,amount]=YIELD[t.node.kind];
+      income[type]+=amount;
+    }else{
+      const gain=campYield(t);
+      if(gain)income[YIELD[t.node.kind][0]]+=gain;
+    }
   }
   return income;
 }
@@ -3756,7 +3799,9 @@ function campBudget(c){
   const net=Object.fromEntries(Object.entries(income).map(([key,n])=>[key,n-(upkeep[key]||0)]));
   return {income,upkeep,due,net,harvests:remainingHarvests()};
 }
-function developedCount(){return game.tiles.filter(t=>t.node?.developed&&YIELD[t.node.kind]).length;}
+function developedCount(){
+  return game.tiles.filter(t=>hasActiveProduction(t)||(!t.owned&&t.node?.developed&&YIELD[t.node.kind]&&campYield(t)>0)).length;
+}
 function resourceOutlook(t){
   const n=t.node, [type,base]=YIELD[n.kind], label=RESOURCE_LABELS[type], c=campAt(t);
   if(!remainingHarvests())return '本夜是终局，胜利后直接结束：现在开发不会再获得普通天亮产出。';
@@ -3768,7 +3813,8 @@ function resourceOutlook(t){
     if(isAdjacent(t))return '还差 1 步：先点「占领这块地」（'+DEMO.claimGold+' 金币），再开发；'+gain+'。';
     return '还差：从相邻领地一格格占领过来，或在附近建营地并派驻居民；'+gain+'。';
   }
-  // 已开发：与 forecastIncome / dawn 同口径
+  if(t.owned&&!hasActiveProduction(t))
+    return '生产建筑已拆除：当前 0 '+label+'，可重新开发后恢复天亮产出。';
   const total=t.owned?base:campYield(t);
   if(total>0)return '下次天亮 +'+total+' '+label+(total>base?'（基础 '+base+' + 驻员加成 '+(total-base)+'）':'')+' · 每夜结束结算一次，不是立刻到账。';
   return '当前 0 '+label+'：营地需「运转中」（居民到岗 + 维护缴清 + 未受损）才计入天亮结算。';
@@ -3810,10 +3856,8 @@ function dawn(){
   const nextNight=openNight(game.day);
   nextNight.start=copyBag(game.resources);
   if(game.castle&&game.xp>=game.nextCard){
-    game.cardPending=true;game.nextCard+=16;
-    const available=[...CARDS];
-    game.cardChoices=Array.from({length:3},()=>available.splice(Math.floor(game.rnd()*available.length),1)[0]);
-    report('主城成长，可以选择一项强化。',true);
+    game.nextCard+=16;
+    offerGrowthCards('主城经验达标，可以选择一项强化。');
   }
   // v0.21：新的一昼开始，重置白天行为计数并发放新的军令候选
   game.dayActions={built:0,developed:0,found:0};
@@ -4237,6 +4281,10 @@ function drawResident(r){
     oval(8,-19,7,7,pose.state==='waiting'?'#8d4b3c':'#3b5c74');
     label(pose.badge,8,-19,9,'#ffe9bd');
   }
+  if(r.work?.state==='working'){
+    oval(-9,-20,7,7,'#7ecf7a');
+    label('作',-9,-20,9,'#1a2a1c');
+  }
   ctx.restore();
 }
 function drawMilitia(){
@@ -4548,7 +4596,15 @@ function draw(){
     if(t.building)sprites.push({y:t.y+1,fn:()=>structure(t)});
   }
   for(const c of game.camps)sprites.push({y:campTile(c).y+1,fn:()=>drawCamp(c)});
-  for(const r of game.residents)if(r.state!=='dead')sprites.push({y:r.y,fn:()=>drawResident(r)});
+  for(const r of game.residents)if(r.state!=='dead'){
+    // 作业中的工人按所属建筑入口层绘制，避免被屋顶/工棚盖住
+    let y=r.y;
+    if(r.work?.state==='working'&&r.work.dockTileId!=null){
+      const dock=game.tiles[r.work.dockTileId];
+      if(dock?.building)y=dock.y+1.2;
+    }
+    sprites.push({y,fn:()=>drawResident(r)});
+  }
   if(game.militia)sprites.push({y:game.castle?game.castle.y+1.4:0,fn:drawMilitia});
   if(game.hero.hp>0&&['day','night'].includes(game.phase))sprites.push({y:game.hero.y,fn:()=>fighter(game.hero,true)});
   if(isNight)for(const e of game.enemies)sprites.push({y:e.y,fn:()=>fighter(e)});
@@ -4567,6 +4623,7 @@ function syncSheet(){
   document.body.classList.toggle('touch-ui',mobile);
   const view=game.phase==='won'?null:game.panel?'inspect':manualSheetOpen||null;
   document.body.classList.toggle('sheet-open',!!view);
+  ensureLegendDefault(mobile);
   $('playSide').hidden=!view;
   $('inspectPanel').hidden=view!=='inspect';
   $('campaignPanel').hidden=view!=='campaign';
@@ -4582,13 +4639,23 @@ function syncSheet(){
   }
   markSideOverflow();
 }
+function ensureLegendDefault(mobile){
+  const list=$('leftRail')?.querySelector?.('.legend-panel ul');
+  const toggle=$('toggleLegend');
+  if(!list||!toggle)return;
+  if(mobile&&!camera.legendCollapsedInit){
+    list.hidden=true;
+    toggle.textContent='展开图例';
+    camera.legendCollapsedInit=true;
+  }
+}
 function sizeMapToCover(){
   const board=$('board');
   if(!board||!canvas)return;
   const bw=board.clientWidth,bh=board.clientHeight;
   if(bw<1||bh<1)return;
-  // 世界像素至少盖住视口，避免默认镜头四周纯色空白
-  const scale=Math.max(bw/canvas.width,bh/canvas.height);
+  // 盖住视口并适度放大，主城与生产建筑更易辨认
+  const scale=Math.max(bw/canvas.width,bh/canvas.height)*1.12;
   canvas.style.width=(canvas.width*scale)+'px';
   canvas.style.height=(canvas.height*scale)+'px';
 }
@@ -4603,8 +4670,17 @@ function measureCameraViewport(){
   const bottom=Math.min(rect.bottom-(parseFloat(style.borderBottomWidth)||0),innerHeight);
   camera.vw=Math.max(0,right-left);
   camera.vh=Math.max(0,bottom-top);
-  camera.safeX=left-camera.vx+camera.vw/2;
-  camera.safeY=top-camera.vy+camera.vh/2;
+  // 安全中心避开左轨/顶 briefing，避免主城圈被挡住
+  let insetL=0,insetT=8;
+  if(!MOBILE()){
+    const rail=$('leftRail');
+    if(rail&&getComputedStyle(rail).display!=='none'&&!rail.hidden){
+      const rr=rail.getBoundingClientRect();
+      insetL=Math.max(0,Math.min(camera.vw*.35,rr.right-left+8));
+    }
+  }
+  camera.safeX=insetL+(camera.vw-insetL)/2;
+  camera.safeY=insetT+(camera.vh-insetT)/2;
   const display=canvas.getBoundingClientRect();
   camera.sx=display.width/canvas.width;
   camera.sy=display.height/canvas.height;
@@ -4792,6 +4868,63 @@ function syncPlayHud(){
   canvas.setAttribute('aria-label',game.phase==='won'?'战后地图，可拖动查看和点选地点。':
     MOBILE()?'地图：短按移动，长按查看，拖动浏览。':'地图：点地移动、点对象查看，WASD 移动，空格攻击。');
 }
+function buildingGlyph(kind,size=22){
+  const ns='http://www.w3.org/2000/svg';
+  const make=(tag)=>document.createElementNS?document.createElementNS(ns,tag):document.createElement(tag);
+  const svg=make('svg');
+  svg.setAttribute('viewBox','0 0 32 32');
+  svg.setAttribute('width',String(size));
+  svg.setAttribute('height',String(size));
+  if(svg.classList)svg.classList.add('glyph');
+  else svg.className=(svg.className?svg.className+' ':'')+'glyph';
+  const add=(tag,attrs)=>{
+    const el=make(tag);
+    for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);
+    svg.append(el);return el;
+  };
+  if(kind==='tower'){
+    add('rect',{x:'11',y:'8',width:'10',height:'18',fill:'#9c9a82',stroke:'#5a5848','stroke-width':'1'});
+    add('rect',{x:'8',y:'4',width:'16',height:'6',fill:'#c19f69'});
+    add('rect',{x:'8',y:'2',width:'4',height:'4',fill:'#d6c7a7'});
+    add('rect',{x:'14',y:'2',width:'4',height:'4',fill:'#d6c7a7'});
+    add('rect',{x:'20',y:'2',width:'4',height:'4',fill:'#d6c7a7'});
+  }else if(kind==='claim'){
+    add('path',{d:'M8 26 L8 6 L22 10 L8 14 Z',fill:'#7ecf7a',stroke:'#3d5c45','stroke-width':'1.2'});
+    add('line',{x1:'8',y1:'6',x2:'8',y2:'28',stroke:'#8b7350','stroke-width':'2'});
+  }else if(kind==='camp'){
+    add('path',{d:'M6 24 L16 8 L26 24 Z',fill:'#d4a574',stroke:'#6a4e32','stroke-width':'1.2'});
+    add('line',{x1:'16',y1:'10',x2:'16',y2:'24',stroke:'#6a4e32','stroke-width':'1.5'});
+  }else if(kind==='farm'){
+    add('rect',{x:'6',y:'14',width:'12',height:'10',fill:'#b7a488',stroke:'#6a4e32','stroke-width':'1'});
+    add('path',{d:'M5 14 L12 8 L19 14 Z',fill:'#8d6a45'});
+    add('rect',{x:'20',y:'16',width:'8',height:'8',fill:'#c2aa6c'});
+  }else if(kind==='lumber'){
+    add('rect',{x:'5',y:'14',width:'14',height:'10',fill:'#8b6a45',stroke:'#4a3828','stroke-width':'1'});
+    add('rect',{x:'4',y:'11',width:'16',height:'4',fill:'#6a4e32'});
+    add('rect',{x:'20',y:'18',width:'8',height:'5',fill:'#a07a48'});
+    add('rect',{x:'22',y:'15',width:'7',height:'4',fill:'#8d6840'});
+  }else if(kind==='quarry'){
+    add('rect',{x:'6',y:'14',width:'12',height:'9',fill:'#9a9a86',stroke:'#5a5848','stroke-width':'1'});
+    add('path',{d:'M18 22 L24 14 L28 22 Z',fill:'#8a8474'});
+    add('line',{x1:'10',y1:'20',x2:'16',y2:'12',stroke:'#6d6554','stroke-width':'2'});
+  }else if(kind==='mine'){
+    add('path',{d:'M6 24 L10 10 L22 10 L26 24 Z',fill:'#5a5348',stroke:'#3c372f','stroke-width':'1'});
+    add('ellipse',{cx:'16',cy:'14',rx:'5',ry:'4',fill:'#1f1c18'});
+    add('rect',{x:'20',y:'20',width:'8',height:'5',fill:'#6e6558'});
+  }else if(kind==='castle'){
+    add('rect',{x:'4',y:'14',width:'24',height:'12',fill:'#a4a18d',stroke:'#5a5848','stroke-width':'1'});
+    add('rect',{x:'4',y:'8',width:'8',height:'18',fill:'#bfb8a0'});
+    add('rect',{x:'20',y:'8',width:'8',height:'18',fill:'#9e9f88'});
+    add('path',{d:'M3 8 L8 2 L13 8 Z',fill:'#4a82a4'});
+    add('path',{d:'M19 8 L24 2 L29 8 Z',fill:'#4a82a4'});
+    add('rect',{x:'14',y:'18',width:'4',height:'8',fill:'#4c4738'});
+    add('line',{x1:'16',y1:'6',x2:'16',y2:'1',stroke:'#5c4b37','stroke-width':'1.5'});
+    add('path',{d:'M16 1 L22 3 L16 5 Z',fill:'#e7b86e'});
+  }else{
+    add('rect',{x:'8',y:'8',width:'16',height:'16',rx:'3',fill:'#3a4a3c',stroke:'#6a7a62','stroke-width':'1'});
+  }
+  return svg;
+}
 function button(label,click,{detail='',gold=false,active=false,disabled=false,icon=''}={}){
   const el=document.createElement('button');
   el.type='button';el.disabled=disabled;
@@ -4799,6 +4932,7 @@ function button(label,click,{detail='',gold=false,active=false,disabled=false,ic
     el.classList.add('cmd-btn');
     const ic=document.createElement('span');
     ic.className='cmd-icon';ic.dataset.icon=icon;ic.setAttribute('aria-hidden','true');
+    ic.append(buildingGlyph(icon,22));
     const lab=document.createElement('span');lab.className='cmd-label';lab.textContent=label;
     el.append(ic,lab);
   }else{
@@ -4859,7 +4993,14 @@ function renderCommands(){
   dusk.textContent=game.earlyNightAt?'取消入夜':'提前入夜';
   $('toolState').hidden=!game.mode;
   $('cancelTool').hidden=!game.mode;
-  $('toolState').textContent=game.mode?(BUILDS[game.mode]?.label||{claim:'占领土地',camp:'建立营地'}[game.mode])+' · 选地块':'';
+  const developModes={
+    'develop-farm':{label:'农场',kind:'farm',icon:'farm'},
+    'develop-lumber':{label:'林场',kind:'wood',icon:'lumber'},
+    'develop-quarry':{label:'采石场',kind:'stone',icon:'quarry'},
+    'develop-mine':{label:'矿场',kind:'mine',icon:'mine'}
+  };
+  $('toolState').textContent=game.mode?(BUILDS[game.mode]?.label||developModes[game.mode]?.label||
+    {claim:'占领土地',camp:'建立营地'}[game.mode]||game.mode)+' · 选地块':'';
   camps.hidden=true;
   if(!['day','night'].includes(game.phase)){bar.hidden=true;camps.hidden=true;return;}
   bar.hidden=false;
@@ -4885,7 +5026,13 @@ function renderCommands(){
     });
     add('build','占领土地',()=>setMode('claim'),{detail:DEMO.claimGold+' 金币',active:game.mode==='claim',icon:'claim'});
     add('build','建立营地',()=>setMode('camp'),{detail:costDetail(DEMO.campCost),active:game.mode==='camp',disabled:!game.actions,icon:'camp'});
-    add('lord','居民管理',()=>{game.mode=null;openInspector(game.castle);sync();},{icon:'lord'});
+    for(const [mode,spec] of Object.entries(developModes)){
+      add('build',spec.label,()=>setMode(mode),{
+        detail:'2 材料 · 点对应资源',active:game.mode===mode,
+        disabled:!game.actions||!canPay({material:2}),icon:spec.icon
+      });
+    }
+    add('lord','居民管理',()=>{game.mode=null;openInspector(game.castle);sync();},{icon:'castle'});
     const heroCost={material:8+game.heroLevel*2,gold:4};
     add('lord','强化领主',trainHero,{
       detail:game.heroLevel>=4?'已到上限':costDetail(heroCost),
@@ -5095,30 +5242,25 @@ function inspect(){
   }
   if(t.building?.type==='castle'){
     heading.textContent='主城';
-    info.id='vitals';
     const ring=game.wallRings?.get?.('home');
-    const wallLine=ring
-      ?('城墙 '+(ring.status==='broken'?'已倒塌':Math.ceil(ring.hp)+'/'+ring.maxHp))
-      :'城墙未生成';
-    info.textContent='主城 '+Math.ceil(game.castleHp)+'/'+game.castleMax+' · '+wallLine+' · 居民 '+game.residents.filter(r=>r.state!=='dead').length+' 人';
-    const art=document.createElement('div');art.className='inspect-art castle-art';art.setAttribute('aria-hidden','true');
+    const infoLine=document.createElement('p');
+    infoLine.textContent='居民 '+game.residents.filter(r=>r.state!=='dead').length+' 人';
+    const art=document.createElement('div');
+    art.className='inspect-art';art.setAttribute('aria-hidden','true');
+    art.append(buildingGlyph('castle',64));
     const bars=document.createElement('div');bars.className='inspect-bars';
-    const castlePct=Math.max(0,Math.min(100,Math.round((game.castleHp/Math.max(1,game.castleMax))*100)));
-    const wallPct=ring&&ring.status!=='broken'?Math.max(0,Math.min(100,Math.round((ring.hp/Math.max(1,ring.maxHp))*100))):0;
-    const row=(label,cls,pct,val)=>{
+    const row=(id,label,cls)=>{
       const line=document.createElement('div');line.className='bar-row';
       const name=document.createElement('span');name.textContent=label;
       const track=document.createElement('div');track.className='bar'+(cls?' '+cls:'');
-      const fill=document.createElement('i');fill.style.width=pct+'%';
+      const fill=document.createElement('i');fill.id=id+'Bar';
       track.append(fill);
-      const num=document.createElement('span');num.className='bar-val';num.textContent=val;
+      const num=document.createElement('span');num.className='bar-val';num.id=id;
       line.append(name,track,num);return line;
     };
-    bars.append(
-      row('主城','',castlePct,Math.ceil(game.castleHp)+'/'+game.castleMax),
-      row('城墙','wall',wallPct,ring?(ring.status==='broken'?'倒塌':Math.ceil(ring.hp)+'/'+ring.maxHp):'—')
-    );
-    parent.replaceChildren(heading,art,info,bars,actions);
+    bars.append(row('castleVital','主城',''),row('wallVital','城墙','wall'));
+    parent.replaceChildren(heading,art,infoLine,bars,actions);
+    refreshCastleWallVitals();
     if(day){
       if(ring){
         const cost=wallDayRepairCost('home');
@@ -5142,9 +5284,12 @@ function inspect(){
     }else if(game.phase==='night'&&ring&&ring.status!=='broken'){
       const used=ring.repair?.usedNightId===game.day;
       const busy=ring.repair?.status==='building';
+      const pct=busy?Math.min(100,Math.round((ring.repair.elapsed/Math.max(.001,ring.repair.duration))*100)):0;
       actions.append(button(busy?'抢修中…':'夜间抢修城墙',()=>startNightRepair('home'),{
-        detail:used?'本夜已用':busy?('进度 '+Math.min(100,Math.round((ring.repair.elapsed/ring.repair.duration)*100))+'%'):(V029.nightRepairCost+' 材料 · 6 秒'),
-        disabled:used||busy||ring.hp>=ring.maxHp||!canPay({material:V029.nightRepairCost})
+        // 施工中优先显示进度；完成后才显示「本夜已用」
+        detail:busy?('进度 '+pct+'% · '+ring.repair.elapsed.toFixed(1)+'/'+ring.repair.duration+' 秒'):
+          used?'本夜已用':(V029.nightRepairCost+' 材料 · 6 秒'),
+        disabled:busy||used||ring.hp>=ring.maxHp||!canPay({material:V029.nightRepairCost})
       }));
     }
     return;
@@ -5769,6 +5914,7 @@ function updateBattleHud(){
     fill.style.width=Math.max(0,Math.min(100,left/total*100))+'%';
     fill.style.background=game.phase==='day'?'#e8b76c':game.spawnStopped?'#a1bd77':'#ed9a7c';
   }
+  refreshCastleWallVitals();
   if(!night)return;
   updateSupportButtons();
   const count=game.fronts.map(f=>(f.camp?campName(f.camp):game.castle?'主城':'追击')+' '+
@@ -5795,9 +5941,26 @@ function updateBattleHud(){
       return stat;
     }));
   }
-  const vitals=$('vitals');
-  if(vitals)vitals.textContent='城堡 '+Math.ceil(game.castleHp)+'/'+game.castleMax+' 耐久 · '+
-    '领主 '+Math.ceil(game.hero.hp)+'/'+game.hero.max+' 生命'+down;
+  refreshCastleWallVitals();
+}
+function refreshCastleWallVitals(){
+  const ring=game.wallRings?.get?.('home');
+  const castleEl=$('castleVital'), wallEl=$('wallVital');
+  const castleBar=$('castleVitalBar'), wallBar=$('wallVitalBar');
+  if(castleEl)castleEl.textContent=Math.ceil(game.castleHp)+'/'+game.castleMax;
+  if(wallEl)wallEl.textContent=ring?(ring.status==='broken'?'倒塌':Math.ceil(ring.hp)+'/'+ring.maxHp):'—';
+  if(castleBar)castleBar.style.width=Math.max(0,Math.min(100,(game.castleHp/Math.max(1,game.castleMax))*100))+'%';
+  if(wallBar){
+    const pct=ring&&ring.status!=='broken'?Math.max(0,Math.min(100,(ring.hp/Math.max(1,ring.maxHp))*100)):0;
+    wallBar.style.width=pct+'%';
+  }
+  // 夜修按钮进度：若详情仍开着，同步 detail 文案
+  const repairBtn=[...($('inspectBody')?.querySelectorAll?.('button')||[])].find(b=>/抢修|夜间抢修/.test(b.textContent||''));
+  if(repairBtn&&ring?.repair?.status==='building'){
+    const pct=Math.min(100,Math.round((ring.repair.elapsed/Math.max(.001,ring.repair.duration))*100));
+    const sm=repairBtn.querySelector('small');
+    if(sm)sm.textContent='进度 '+pct+'% · '+ring.repair.elapsed.toFixed(1)+'/'+ring.repair.duration+' 秒';
+  }
 }
 function residentAt(t){
   if(!t||!game?.residents)return null;
@@ -5828,7 +5991,17 @@ function applyMapTool(t){
       toast('请选择与领地相邻、已探明的未占领陆地。');
     }else claim(t);
   }else if(game.mode==='camp')createCamp(t);
-  else build(t,game.mode);
+  else if(String(game.mode).startsWith('develop-')){
+    const kind=String(game.mode).slice(8);
+    const want=kind==='lumber'?'wood':kind==='quarry'?'stone':kind==='mine'?'mine':kind==='farm'?'farm':kind;
+    if(!t.node||t.node.kind!==want){
+      toast('请点对应类型的未开发资源点（不会凭空产资源）。');
+    }else if(t.node.developed||t.building){
+      toast('这里已有生产建筑。');
+    }else if(!canDevelop(t)){
+      toast('还不能开发这里：先确认领地或营地控制。');
+    }else develop(t);
+  }else build(t,game.mode);
   return true;
 }
 function moveFromMap(t){
@@ -6082,6 +6255,39 @@ function drawMinimap(){
     mctx.fillStyle='#efc47e';
     mctx.fillRect(game.castle.x*sx,game.castle.y*sy,Math.max(2,sx),Math.max(2,sy));
   }
+  // 真实城墙圈 / 城门 / 破圈
+  if(game.wallRings instanceof Map){
+    for(const ring of game.wallRings.values()){
+      if(!ring.edges)continue;
+      mctx.strokeStyle=ring.status==='broken'||ring.hp<=0?'#6a3a34':'#cfc8b0';
+      mctx.lineWidth=ring.status==='broken'?1:1.6;
+      for(const edge of ring.edges.values()){
+        const ends=edgeEndpoints(edge);
+        if(!ends)continue;
+        const [a,b]=ends;
+        mctx.beginPath();
+        mctx.moveTo(a.x*sx,a.y*sy);mctx.lineTo(b.x*sx,b.y*sy);
+        mctx.stroke();
+        if(isGateEdge(ring,edge.id)&&ring.status!=='broken'){
+          mctx.fillStyle='#4a82a4';
+          mctx.fillRect(((a.x+b.x)/2)*sx-1.5,((a.y+b.y)/2)*sy-1.5,3,3);
+        }
+      }
+    }
+  }
+  // 来袭入口 / 战线（真实 fronts / entrances，非假预告）
+  if(game.phase==='night'&&game.fronts){
+    for(const front of game.fronts){
+      for(const g of front.gates||[]){
+        mctx.fillStyle='#ed9a7c';
+        mctx.beginPath();mctx.arc((g.x+.5)*sx,(g.y+.5)*sy,2.4,0,Math.PI*2);mctx.fill();
+      }
+      if(front.staging){
+        mctx.strokeStyle='#ed9a7c';mctx.lineWidth=1;
+        mctx.strokeRect(front.staging.x*sx,front.staging.y*sy,sx,sy);
+      }
+    }
+  }
   if(game.hero){
     mctx.fillStyle='#ffe9bd';
     mctx.beginPath();mctx.arc(game.hero.x*sx,game.hero.y*sy,2.2,0,Math.PI*2);mctx.fill();
@@ -6189,8 +6395,8 @@ window.FW={
   SECRETS,CONTRACTS,offerContracts,freshContract,contractGoal,codexCount,markCodex,nightPreview,
   chooseContract,skipContract,bumpContract,contractProgress,contractMet,settleContract,
   rally,loadBest,commitRecord,nextRunHint,renderQuestBar,
-  dialog,button,showCards,hideCardOverlay,endCardModal,pickGrowthCard,playClockFrozen,repair,healHero,
-  openInspector,closeInspector,inspect,
+  dialog,button,buildingGlyph,showCards,hideCardOverlay,endCardModal,pickGrowthCard,offerGrowthCards,playClockFrozen,repair,healHero,
+  openInspector,closeInspector,inspect,refreshCastleWallVitals,hasActiveProduction,forecastIncome,salvage,
   placeVictoryCard,clampVictoryCard,pickLeastOverlap,rectOverlap,renderVictory,showVictoryPlace,
   pause(){paused=true;},
   resume(){paused=false;}

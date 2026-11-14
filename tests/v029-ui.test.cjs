@@ -161,8 +161,47 @@ test('建造栏无逐格城墙，保留箭塔与真实费用', () => {
     game.mobileGroup = 'build';
     renderCommands(); applyCommandGroups();
     const text = [...document.getElementById('commandBar').children].map(b => b.textContent).join('|');
-    return {text, hasWall: /城墙/.test(text), hasTower: /箭塔/.test(text)};
+    return {text, hasWall: /城墙/.test(text), hasTower: /箭塔/.test(text), hasLumber: /林场/.test(text)};
   })()`);
   assert.equal(ui.hasWall, false);
   assert.equal(ui.hasTower, true);
+  assert.equal(ui.hasLumber, true);
+});
+
+test('建城自动触发首组三选一，非仅夹具', () => {
+  const b = bootV029({seed: 42});
+  const ui = b.execute(`(() => {
+    document.getElementById('dialog').close();
+    game = makeGame(42); game.started = true; game.settings.sound = false;
+    for (const t of game.tiles) t.visible = true;
+    chooseSite(0);
+    return {pending: game.cardPending, choices: (game.cardChoices||[]).length, starter: game.starterCardsOffered};
+  })()`);
+  assert.equal(ui.pending, true);
+  assert.equal(ui.choices, 3);
+  assert.equal(ui.starter, true);
+});
+
+test('夜修施工中显示进度；vitals 专用节点持续刷新不被覆盖', () => {
+  const b = boot();
+  const ui = b.execute(`(() => {
+    game.phase = 'night'; paused = false;
+    const ring = game.wallRings.get('home');
+    ring.hp = 400; ring.status = 'intact';
+    ring.repair = {usedNightId: game.day, status: 'building', elapsed: 2, duration: 6, budgetHp: 150, appliedHp: 50, paid:{material:6}};
+    openInspector(game.castle); sync();
+    const btn = [...document.getElementById('inspectBody').querySelectorAll('button')].find(x => /抢修/.test(x.textContent));
+    const detail = btn && btn.querySelector('small') && btn.querySelector('small').textContent;
+    ring.hp = 388;
+    game.castleHp = 42;
+    for (let i = 0; i < 8; i++) updateBattleHud();
+    return {
+      detail,
+      castle: document.getElementById('castleVital') && document.getElementById('castleVital').textContent,
+      wall: document.getElementById('wallVital') && document.getElementById('wallVital').textContent
+    };
+  })()`);
+  assert.match(ui.detail || '', /进度/);
+  assert.match(ui.castle || '', /42/);
+  assert.match(ui.wall || '', /388/);
 });
