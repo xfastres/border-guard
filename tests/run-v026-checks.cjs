@@ -11,8 +11,16 @@ const root = path.resolve(__dirname, '..');
 const artifacts = path.resolve(process.env.BORDER_ARTIFACTS || path.join(__dirname, 'artifacts', 'v026'));
 fs.mkdirSync(artifacts, { recursive: true });
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'border-v026-'));
-const chrome = spawn(process.env.CHROME_BIN || (process.platform === 'win32' ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' : 'chromium'), [
+// 容器 / CI 常以 root 运行，Chrome 在这种场景下必须显式关闭沙箱，否则进程单例
+// 创建 socket 失败并立即退出（"Running as root without --no-sandbox is not supported"）。
+// --disable-dev-shm-usage 避免 /dev/shm 过小时崩溃。Windows 保持原有启动参数。
+const linuxFlags = process.platform === 'win32' ? [] : ['--no-sandbox', '--disable-dev-shm-usage'];
+const chromeBin = process.env.CHROME_BIN || (process.platform === 'win32'
+  ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+  : ['/usr/bin/google-chrome', '/usr/bin/chromium', 'chromium'].find(p => p === 'chromium' || fs.existsSync(p)) || 'chromium');
+const chrome = spawn(chromeBin, [
   '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+  ...linuxFlags,
   '--remote-debugging-port=0', '--user-data-dir=' + profile, 'about:blank'
 ], { windowsHide: true, stdio: ['ignore','ignore','pipe'] });
 let spawnError, chromeErrors='';
