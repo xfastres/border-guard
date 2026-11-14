@@ -1,0 +1,916 @@
+{
+  "note": "选址/日间详情/三卡真实点击；地图点击与安全区不落在面板；截图写入本目录。",
+  "viewports": [
+    {
+      "w": 1108,
+      "h": 1195,
+      "mobile": false,
+      "site": {
+        "phase": "site",
+        "width": 1108,
+        "height": 1195,
+        "free": 0.916015625,
+        "target": "map",
+        "focusClear": true,
+        "focusCenter": true,
+        "inRemainGap": true,
+        "safe": {
+          "x": 609,
+          "y": 566.09375
+        },
+        "expect": {
+          "x": 609,
+          "y": 566.09375
+        },
+        "focusScreen": {
+          "x": 609,
+          "y": 619.09375
+        },
+        "legendHidden": true,
+        "minimapHidden": true,
+        "deckWidth": 289.328125,
+        "deckCompact": true,
+        "sideRect": null,
+        "deckRect": {
+          "top": 1126,
+          "bottom": 1185,
+          "left": 409.3359375,
+          "right": 698.6640625
+        },
+        "boardBottom": 1195,
+        "deckOnlyB": 75,
+        "legendH": 54,
+        "miniH": 54,
+        "legendTitleDisplay": "none",
+        "miniTitleDisplay": "none",
+        "legendBtn": {
+          "w": 70,
+          "h": 44,
+          "text": "展开图例",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "miniBtn": {
+          "w": 82,
+          "h": 44,
+          "text": "展开小地图",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "insets": {
+          "l": 110,
+          "r": 0,
+          "t": 65.1875,
+          "b": 75,
+          "sideDock": null
+        },
+        "pageErrors": []
+      },
+      "day": {
+        "phase": "details",
+        "width": 1108,
+        "height": 1195,
+        "free": 0.666015625,
+        "target": "map",
+        "focusClear": true,
+        "focusCenter": true,
+        "inRemainGap": true,
+        "safe": {
+          "x": 467.046875,
+          "y": 523.59375
+        },
+        "expect": {
+          "x": 467.046875,
+          "y": 523.59375
+        },
+        "focusScreen": {
+          "x": 467.046875,
+          "y": 576.59375
+        },
+        "legendHidden": true,
+        "minimapHidden": true,
+        "deckWidth": 594,
+        "deckCompact": false,
+        "sideRect": {
+          "top": 117,
+          "bottom": 1031,
+          "left": 832.09375,
+          "right": 1098,
+          "width": 265.90625
+        },
+        "deckRect": {
+          "top": 1041,
+          "bottom": 1185,
+          "left": 257,
+          "right": 851
+        },
+        "boardBottom": 1195,
+        "deckOnlyB": 160,
+        "legendH": 54,
+        "miniH": 54,
+        "legendTitleDisplay": "none",
+        "miniTitleDisplay": "none",
+        "legendBtn": {
+          "w": 70,
+          "h": 44,
+          "text": "展开图例",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "miniBtn": {
+          "w": 82,
+          "h": 44,
+          "text": "展开小地图",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "insets": {
+          "l": 110,
+          "r": 283.90625,
+          "t": 65.1875,
+          "b": 160,
+          "sideDock": "right"
+        },
+        "pageErrors": []
+      },
+      "overlap": 0,
+      "passthrough": {
+        "skipped": false,
+        "x": 875,
+        "y": 1113,
+        "target": "map",
+        "map": true
+      }
+    },
+    {
+      "w": 886,
+      "h": 956,
+      "mobile": false,
+      "site": {
+        "phase": "site",
+        "width": 886,
+        "height": 956,
+        "free": 0.904296875,
+        "target": "map",
+        "focusClear": true,
+        "focusCenter": true,
+        "inRemainGap": true,
+        "safe": {
+          "x": 498,
+          "y": 450.59375
+        },
+        "expect": {
+          "x": 498,
+          "y": 450.59375
+        },
+        "focusScreen": {
+          "x": 498,
+          "y": 495.59375
+        },
+        "legendHidden": true,
+        "minimapHidden": true,
+        "deckWidth": 289.328125,
+        "deckCompact": true,
+        "sideRect": null,
+        "deckRect": {
+          "top": 887,
+          "bottom": 946,
+          "left": 298.3359375,
+          "right": 587.6640625
+        },
+        "boardBottom": 956,
+        "deckOnlyB": 75,
+        "legendH": 54,
+        "miniH": 54,
+        "legendTitleDisplay": "none",
+        "miniTitleDisplay": "none",
+        "legendBtn": {
+          "w": 70,
+          "h": 44,
+          "text": "展开图例",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "miniBtn": {
+          "w": 82,
+          "h": 44,
+          "text": "展开小地图",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "insets": {
+          "l": 110,
+          "r": 0,
+          "t": 65.1875,
+          "b": 75,
+          "sideDock": null
+        },
+        "pageErrors": []
+      },
+      "day": {
+        "phase": "details",
+        "width": 886,
+        "height": 956,
+        "free": 0.60546875,
+        "target": "map",
+        "focusClear": true,
+        "focusCenter": true,
+        "inRemainGap": true,
+        "safe": {
+          "x": 364,
+          "y": 408.09375
+        },
+        "expect": {
+          "x": 364,
+          "y": 408.09375
+        },
+        "focusScreen": {
+          "x": 364,
+          "y": 453.09375
+        },
+        "legendHidden": true,
+        "minimapHidden": true,
+        "deckWidth": 594,
+        "deckCompact": false,
+        "sideRect": {
+          "top": 109,
+          "bottom": 792,
+          "left": 626,
+          "right": 876,
+          "width": 250
+        },
+        "deckRect": {
+          "top": 802,
+          "bottom": 946,
+          "left": 146,
+          "right": 740
+        },
+        "boardBottom": 956,
+        "deckOnlyB": 160,
+        "legendH": 54,
+        "miniH": 54,
+        "legendTitleDisplay": "none",
+        "miniTitleDisplay": "none",
+        "legendBtn": {
+          "w": 70,
+          "h": 44,
+          "text": "展开图例",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "miniBtn": {
+          "w": 82,
+          "h": 44,
+          "text": "展开小地图",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "insets": {
+          "l": 110,
+          "r": 268,
+          "t": 65.1875,
+          "b": 160,
+          "sideDock": "right"
+        },
+        "pageErrors": []
+      },
+      "overlap": 0,
+      "passthrough": {
+        "skipped": false,
+        "x": 764,
+        "y": 874,
+        "target": "map",
+        "map": true
+      }
+    },
+    {
+      "w": 1108,
+      "h": 720,
+      "mobile": false,
+      "site": {
+        "phase": "site",
+        "width": 1108,
+        "height": 720,
+        "free": 0.865234375,
+        "target": "map",
+        "focusClear": true,
+        "focusCenter": true,
+        "inRemainGap": true,
+        "safe": {
+          "x": 609,
+          "y": 328.59375
+        },
+        "expect": {
+          "x": 609,
+          "y": 328.59375
+        },
+        "focusScreen": {
+          "x": 609,
+          "y": 381.59375
+        },
+        "legendHidden": true,
+        "minimapHidden": true,
+        "deckWidth": 289.328125,
+        "deckCompact": true,
+        "sideRect": null,
+        "deckRect": {
+          "top": 651,
+          "bottom": 710,
+          "left": 409.3359375,
+          "right": 698.6640625
+        },
+        "boardBottom": 720,
+        "deckOnlyB": 75,
+        "legendH": 54,
+        "miniH": 54,
+        "legendTitleDisplay": "none",
+        "miniTitleDisplay": "none",
+        "legendBtn": {
+          "w": 70,
+          "h": 44,
+          "text": "展开图例",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "miniBtn": {
+          "w": 82,
+          "h": 44,
+          "text": "展开小地图",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "insets": {
+          "l": 110,
+          "r": 0,
+          "t": 65.1875,
+          "b": 75,
+          "sideDock": null
+        },
+        "pageErrors": []
+      },
+      "day": {
+        "phase": "details",
+        "width": 1108,
+        "height": 720,
+        "free": 0.6015625,
+        "target": "map",
+        "focusClear": true,
+        "focusCenter": true,
+        "inRemainGap": true,
+        "safe": {
+          "x": 467.046875,
+          "y": 286.09375
+        },
+        "expect": {
+          "x": 467.046875,
+          "y": 286.09375
+        },
+        "focusScreen": {
+          "x": 467.046875,
+          "y": 339.09375
+        },
+        "legendHidden": true,
+        "minimapHidden": true,
+        "deckWidth": 594,
+        "deckCompact": false,
+        "sideRect": {
+          "top": 117,
+          "bottom": 556,
+          "left": 832.09375,
+          "right": 1098,
+          "width": 265.90625
+        },
+        "deckRect": {
+          "top": 566,
+          "bottom": 710,
+          "left": 257,
+          "right": 851
+        },
+        "boardBottom": 720,
+        "deckOnlyB": 160,
+        "legendH": 54,
+        "miniH": 54,
+        "legendTitleDisplay": "none",
+        "miniTitleDisplay": "none",
+        "legendBtn": {
+          "w": 70,
+          "h": 44,
+          "text": "展开图例",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "miniBtn": {
+          "w": 82,
+          "h": 44,
+          "text": "展开小地图",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "insets": {
+          "l": 110,
+          "r": 283.90625,
+          "t": 65.1875,
+          "b": 160,
+          "sideDock": "right"
+        },
+        "pageErrors": []
+      },
+      "overlap": 0,
+      "passthrough": {
+        "skipped": false,
+        "x": 875,
+        "y": 638,
+        "target": "map",
+        "map": true
+      }
+    },
+    {
+      "w": 1440,
+      "h": 900,
+      "mobile": false,
+      "site": {
+        "phase": "site",
+        "width": 1440,
+        "height": 900,
+        "free": 0.912109375,
+        "target": "map",
+        "focusClear": true,
+        "focusCenter": true,
+        "inRemainGap": true,
+        "safe": {
+          "x": 775,
+          "y": 418.59375
+        },
+        "expect": {
+          "x": 775,
+          "y": 418.59375
+        },
+        "focusScreen": {
+          "x": 775,
+          "y": 471.59375
+        },
+        "legendHidden": true,
+        "minimapHidden": true,
+        "deckWidth": 289.328125,
+        "deckCompact": true,
+        "sideRect": null,
+        "deckRect": {
+          "top": 831,
+          "bottom": 890,
+          "left": 575.3359375,
+          "right": 864.6640625
+        },
+        "boardBottom": 900,
+        "deckOnlyB": 75,
+        "legendH": 54,
+        "miniH": 54,
+        "legendTitleDisplay": "none",
+        "miniTitleDisplay": "none",
+        "legendBtn": {
+          "w": 70,
+          "h": 44,
+          "text": "展开图例",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "miniBtn": {
+          "w": 82,
+          "h": 44,
+          "text": "展开小地图",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "insets": {
+          "l": 110,
+          "r": 0,
+          "t": 65.1875,
+          "b": 75,
+          "sideDock": null
+        },
+        "pageErrors": []
+      },
+      "day": {
+        "phase": "details",
+        "width": 1440,
+        "height": 900,
+        "free": 0.6484375,
+        "target": "map",
+        "focusClear": true,
+        "focusCenter": true,
+        "inRemainGap": true,
+        "safe": {
+          "x": 601,
+          "y": 376.09375
+        },
+        "expect": {
+          "x": 601,
+          "y": 376.09375
+        },
+        "focusScreen": {
+          "x": 601,
+          "y": 429.09375
+        },
+        "legendHidden": true,
+        "minimapHidden": true,
+        "deckWidth": 720,
+        "deckCompact": false,
+        "sideRect": {
+          "top": 117,
+          "bottom": 736,
+          "left": 1100,
+          "right": 1430,
+          "width": 330
+        },
+        "deckRect": {
+          "top": 746,
+          "bottom": 890,
+          "left": 360,
+          "right": 1080
+        },
+        "boardBottom": 900,
+        "deckOnlyB": 160,
+        "legendH": 54,
+        "miniH": 54,
+        "legendTitleDisplay": "none",
+        "miniTitleDisplay": "none",
+        "legendBtn": {
+          "w": 70,
+          "h": 44,
+          "text": "展开图例",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "miniBtn": {
+          "w": 82,
+          "h": 44,
+          "text": "展开小地图",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "insets": {
+          "l": 110,
+          "r": 348,
+          "t": 65.1875,
+          "b": 160,
+          "sideDock": "right"
+        },
+        "pageErrors": []
+      },
+      "overlap": 0,
+      "passthrough": {
+        "skipped": false,
+        "x": 1104,
+        "y": 818,
+        "target": "map",
+        "map": true
+      }
+    },
+    {
+      "w": 932,
+      "h": 430,
+      "mobile": true,
+      "site": {
+        "phase": "site",
+        "width": 932,
+        "height": 430,
+        "free": 0.8056640625,
+        "target": "map",
+        "focusClear": true,
+        "focusCenter": true,
+        "inRemainGap": true,
+        "safe": {
+          "x": 521,
+          "y": 188.5
+        },
+        "expect": {
+          "x": 521,
+          "y": 188.5
+        },
+        "focusScreen": {
+          "x": 521,
+          "y": 237.5
+        },
+        "legendHidden": true,
+        "minimapHidden": true,
+        "deckWidth": 277.328125,
+        "deckCompact": true,
+        "sideRect": null,
+        "deckRect": {
+          "top": 370,
+          "bottom": 420,
+          "left": 327.3359375,
+          "right": 604.6640625
+        },
+        "boardBottom": 430,
+        "deckOnlyB": 66,
+        "legendH": 54,
+        "miniH": 54,
+        "legendTitleDisplay": "none",
+        "miniTitleDisplay": "none",
+        "legendBtn": {
+          "w": 70,
+          "h": 44,
+          "text": "展开图例",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "miniBtn": {
+          "w": 82,
+          "h": 44,
+          "text": "展开小地图",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "insets": {
+          "l": 110,
+          "r": 0,
+          "t": 62,
+          "b": 66,
+          "sideDock": null
+        },
+        "pageErrors": []
+      },
+      "day": {
+        "phase": "details",
+        "width": 932,
+        "height": 430,
+        "free": 0.537109375,
+        "target": "map",
+        "focusClear": true,
+        "focusCenter": true,
+        "inRemainGap": true,
+        "safe": {
+          "x": 312.546875,
+          "y": 176.5
+        },
+        "expect": {
+          "x": 312.546875,
+          "y": 176.5
+        },
+        "focusScreen": {
+          "x": 312.546875,
+          "y": 225.5
+        },
+        "legendHidden": true,
+        "minimapHidden": true,
+        "deckWidth": 772,
+        "deckCompact": false,
+        "sideRect": {
+          "top": 113,
+          "bottom": 336,
+          "left": 633.09375,
+          "right": 922,
+          "width": 288.90625
+        },
+        "deckRect": {
+          "top": 346,
+          "bottom": 420,
+          "left": 80,
+          "right": 852
+        },
+        "boardBottom": 430,
+        "deckOnlyB": 90,
+        "legendH": 0,
+        "miniH": 0,
+        "legendTitleDisplay": "none",
+        "miniTitleDisplay": "none",
+        "legendBtn": {
+          "w": 0,
+          "h": 0,
+          "text": "展开图例",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "miniBtn": {
+          "w": 0,
+          "h": 0,
+          "text": "展开小地图",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "insets": {
+          "l": 0,
+          "r": 306.90625,
+          "t": 62,
+          "b": 90,
+          "sideDock": "right"
+        },
+        "pageErrors": []
+      },
+      "overlap": 0,
+      "passthrough": {
+        "skipped": false,
+        "x": 876,
+        "y": 383,
+        "target": "map",
+        "map": true
+      }
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "mobile": true,
+      "site": {
+        "phase": "site",
+        "width": 390,
+        "height": 844,
+        "free": 0.8447265625,
+        "target": "map",
+        "focusClear": true,
+        "focusCenter": true,
+        "inRemainGap": true,
+        "safe": {
+          "x": 250,
+          "y": 366.703125
+        },
+        "expect": {
+          "x": 250,
+          "y": 366.703125
+        },
+        "focusScreen": {
+          "x": 250,
+          "y": 468.296875
+        },
+        "legendHidden": true,
+        "minimapHidden": true,
+        "deckWidth": 277.328125,
+        "deckCompact": true,
+        "sideRect": null,
+        "deckRect": {
+          "top": 779,
+          "bottom": 834,
+          "left": 56.3359375,
+          "right": 333.6640625
+        },
+        "boardBottom": 844,
+        "deckOnlyB": 71,
+        "legendH": 54,
+        "miniH": 54,
+        "legendTitleDisplay": "none",
+        "miniTitleDisplay": "none",
+        "legendBtn": {
+          "w": 70,
+          "h": 44,
+          "text": "展开图例",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "miniBtn": {
+          "w": 82,
+          "h": 44,
+          "text": "展开小地图",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "insets": {
+          "l": 110,
+          "r": 0,
+          "t": 62,
+          "b": 71,
+          "sideDock": null
+        },
+        "pageErrors": []
+      },
+      "day": {
+        "phase": "details",
+        "width": 390,
+        "height": 844,
+        "free": 0.47265625,
+        "target": "map",
+        "focusClear": true,
+        "focusCenter": true,
+        "inRemainGap": true,
+        "safe": {
+          "x": 195,
+          "y": 230.296875
+        },
+        "expect": {
+          "x": 195,
+          "y": 230.296875
+        },
+        "focusScreen": {
+          "x": 195,
+          "y": 331.890625
+        },
+        "legendHidden": true,
+        "minimapHidden": true,
+        "deckWidth": 370,
+        "deckCompact": false,
+        "sideRect": {
+          "top": 501,
+          "bottom": 701,
+          "left": 8,
+          "right": 382,
+          "width": 374
+        },
+        "deckRect": {
+          "top": 711,
+          "bottom": 834,
+          "left": 10,
+          "right": 380
+        },
+        "boardBottom": 844,
+        "deckOnlyB": 139,
+        "legendH": 0,
+        "miniH": 0,
+        "legendTitleDisplay": "none",
+        "miniTitleDisplay": "none",
+        "legendBtn": {
+          "w": 0,
+          "h": 0,
+          "text": "展开图例",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "miniBtn": {
+          "w": 0,
+          "h": 0,
+          "text": "展开小地图",
+          "nowrap": true,
+          "writing": "horizontal-tb"
+        },
+        "insets": {
+          "l": 0,
+          "r": 0,
+          "t": 67.1875,
+          "b": 349,
+          "sideDock": "bottom"
+        },
+        "pageErrors": []
+      },
+      "overlap": 0,
+      "passthrough": {
+        "skipped": false,
+        "x": 378,
+        "y": 772.5,
+        "target": "map",
+        "map": true
+      }
+    }
+  ],
+  "cards": [
+    {
+      "w": 1440,
+      "h": 900,
+      "mobile": false,
+      "exists": true,
+      "clickable": true,
+      "point": {
+        "x": 535.59375,
+        "y": 451.5
+      },
+      "cardModal": true,
+      "selected": {
+        "pending": false,
+        "modal": false
+      }
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "mobile": true,
+      "exists": true,
+      "clickable": true,
+      "point": {
+        "x": 71,
+        "y": 443.796875
+      },
+      "cardModal": true,
+      "selected": {
+        "pending": false,
+        "modal": false
+      }
+    }
+  ],
+  "mapClicks": [
+    {
+      "point": {
+        "x": 529.198974609375,
+        "y": 330.2
+      },
+      "clear": true,
+      "top": "map",
+      "hx": 8.5,
+      "hy": 5.5
+    }
+  ],
+  "screenshots": [
+    "site-1108x1195.png",
+    "details-1108x1195.png",
+    "site-886x956.png",
+    "details-886x956.png",
+    "site-1108x720.png",
+    "details-1108x720.png",
+    "site-1440x900.png",
+    "details-1440x900.png",
+    "site-932x430.png",
+    "details-932x430.png",
+    "site-390x844.png",
+    "details-390x844.png",
+    "expanded-rail-1440x900.png",
+    "rail-touch-390x844.png",
+    "map-click-1440x900.png",
+    "cards-1440x900.png",
+    "cards-390x844.png"
+  ]
+}

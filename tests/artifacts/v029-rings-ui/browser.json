@@ -1,0 +1,296 @@
+{
+  "note": "状态夹具用 evaluate；卡牌/关详情必须 CDP 真实点选，禁止 evaluate 回退完成。触屏为 Chrome Emulation。截图使用 7/7 行动的普通日间状态。",
+  "viewports": [
+    {
+      "label": "1440x900",
+      "board": {
+        "x": 0,
+        "y": 53,
+        "w": 1440,
+        "h": 847
+      },
+      "side": {
+        "x": 1100,
+        "y": 117,
+        "w": 330,
+        "h": 683
+      },
+      "deck": {
+        "x": 240,
+        "y": 756,
+        "w": 960,
+        "h": 134
+      },
+      "rail": {
+        "x": 10,
+        "y": 117,
+        "w": 196,
+        "h": 683
+      },
+      "overflow": false,
+      "pageErrors": [],
+      "screen": [
+        1440,
+        900
+      ],
+      "actions": 7,
+      "ring": 600,
+      "castle": 50,
+      "camera": {
+        "tx": 0,
+        "ty": 0,
+        "vw": 1440,
+        "vh": 847,
+        "covers": true,
+        "noPosBlank": true
+      },
+      "sheetOpen": true,
+      "leftRailHidden": false,
+      "castleVital": "50/50",
+      "wallVital": "600/600",
+      "cmdIcons": 12,
+      "legendCollapsed": false,
+      "fixtureActions": 7
+    },
+    {
+      "label": "1920x1080",
+      "board": {
+        "x": 0,
+        "y": 53,
+        "w": 1920,
+        "h": 1027
+      },
+      "side": {
+        "x": 1580,
+        "y": 117,
+        "w": 330,
+        "h": 863
+      },
+      "deck": {
+        "x": 480,
+        "y": 936,
+        "w": 960,
+        "h": 134
+      },
+      "rail": {
+        "x": 10,
+        "y": 117,
+        "w": 196,
+        "h": 863
+      },
+      "overflow": false,
+      "pageErrors": [],
+      "screen": [
+        1920,
+        1080
+      ],
+      "actions": 7,
+      "ring": 600,
+      "castle": 50,
+      "camera": {
+        "tx": 0,
+        "ty": 0,
+        "vw": 1920,
+        "vh": 1027,
+        "covers": true,
+        "noPosBlank": true
+      },
+      "sheetOpen": true,
+      "leftRailHidden": false,
+      "castleVital": "50/50",
+      "wallVital": "600/600",
+      "cmdIcons": 12,
+      "legendCollapsed": false,
+      "fixtureActions": 7
+    },
+    {
+      "label": "932x430",
+      "board": {
+        "x": 0,
+        "y": 49,
+        "w": 932,
+        "h": 381
+      },
+      "side": {
+        "x": 633.09375,
+        "y": 113,
+        "w": 288.90625,
+        "h": 217
+      },
+      "deck": {
+        "x": 10,
+        "y": 346,
+        "w": 912,
+        "h": 74
+      },
+      "rail": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "overflow": false,
+      "pageErrors": [],
+      "screen": [
+        932,
+        430
+      ],
+      "actions": 7,
+      "ring": 600,
+      "castle": 50,
+      "camera": {
+        "tx": -5.684341886080802e-14,
+        "ty": 0,
+        "vw": 932,
+        "vh": 381,
+        "covers": true,
+        "noPosBlank": true
+      },
+      "sheetOpen": true,
+      "leftRailHidden": true,
+      "castleVital": "50/50",
+      "wallVital": "600/600",
+      "cmdIcons": 12,
+      "legendCollapsed": true,
+      "fixtureActions": 7
+    },
+    {
+      "label": "390x844",
+      "board": {
+        "x": 0,
+        "y": 101.59375,
+        "w": 390,
+        "h": 742.40625
+      },
+      "side": {
+        "x": 8,
+        "y": 436,
+        "w": 374,
+        "h": 320
+      },
+      "deck": {
+        "x": 10,
+        "y": 711,
+        "w": 370,
+        "h": 123
+      },
+      "rail": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "overflow": false,
+      "pageErrors": [],
+      "screen": [
+        390,
+        844
+      ],
+      "actions": 7,
+      "ring": 600,
+      "castle": 50,
+      "camera": {
+        "tx": -33.53466796875,
+        "ty": 0,
+        "vw": 390,
+        "vh": 742.40625,
+        "covers": true,
+        "noPosBlank": true
+      },
+      "sheetOpen": true,
+      "leftRailHidden": true,
+      "castleVital": "50/50",
+      "wallVital": "600/600",
+      "cmdIcons": 12,
+      "legendCollapsed": true,
+      "fixtureActions": 7
+    }
+  ],
+  "cards": [
+    {
+      "w": 1440,
+      "h": 900,
+      "mobile": false,
+      "exists": true,
+      "mainInert": false,
+      "pauseVisible": false,
+      "top": "P",
+      "clickable": true,
+      "cardModal": true,
+      "cardYs": [
+        367,
+        367,
+        367
+      ],
+      "point": {
+        "x": 535.59375,
+        "y": 451.5
+      },
+      "selected": {
+        "pending": false,
+        "modal": false,
+        "paused": false
+      }
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "mobile": true,
+      "exists": true,
+      "mainInert": false,
+      "pauseVisible": false,
+      "top": "P",
+      "clickable": true,
+      "cardModal": true,
+      "cardYs": [
+        370,
+        370,
+        370
+      ],
+      "point": {
+        "x": 71,
+        "y": 443.796875
+      },
+      "selected": {
+        "pending": false,
+        "modal": false,
+        "paused": false
+      }
+    }
+  ],
+  "combat": {
+    "seed": 42,
+    "enemyCount": 12,
+    "enemyType": "normal",
+    "wallStartHp": 80,
+    "castleStartHp": 50,
+    "defenses": "none-towers",
+    "mode": "fixed-fixture-moveEnemy",
+    "collapsedAt": 0.05,
+    "lostAt": 2.5999999999999988,
+    "afterCollapse": 2.549999999999999,
+    "finalCastle": 0,
+    "finalWall": "broken"
+  },
+  "screenshots": [
+    "day-1440x900.png",
+    "castle-1440x900.png",
+    "day-1920x1080.png",
+    "castle-1920x1080.png",
+    "day-932x430.png",
+    "castle-932x430.png",
+    "day-390x844.png",
+    "castle-390x844.png",
+    "desktop-work-inside-building.png",
+    "cards-1440x900.png",
+    "cards-390x844.png",
+    "desktop-cards.png",
+    "combat-after-collapse.png",
+    "wall-inspect-vitals.png",
+    "touch-closed-panel.png"
+  ],
+  "vitals": {
+    "castle": "44/50",
+    "wall": "321/600"
+  }
+}

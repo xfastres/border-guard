@@ -16,9 +16,15 @@
 
 ## 当前试玩文件
 
-- **当前版：`Border-Guard-v0.26.html`** —— 双击即可用浏览器离线打开，无需服务器或网络。
-- **上一版对照：`Border-Guard-v0.25.html`** —— 同样可独立双击打开，用于对比界面与交互变化。
-- 历史版本 `Border-Guard-v0.17.html` … `Border-Guard-v0.25.html` 全部保留，每个都能独立打开，历史文件与历史验证证据均未改动。
+- **当前版：`Border-Guard-v0.29.html`** —— 双击即可用浏览器离线打开，无需服务器或网络。含整圈城墙（主城 50 HP、圈墙 600 HP 试玩默认）、生产岗位与参考图风格叠层 UI。
+- **上一稳定对照：`Border-Guard-v0.26.html`** —— 同样可独立双击打开。
+- 历史版本 `Border-Guard-v0.17.html` … `Border-Guard-v0.28.html` 全部保留，每个都能独立打开，历史文件与历史验证证据均未改动。
+
+### v0.29 本轮试玩默认与限制
+
+- 主城耐久 **50**；主城圈墙 **600** 共享 HP，归零整圈倒塌。
+- 顶栏资源仍为金币 / 材料 / 粮食（不把材料拆成虚构的木材·石料余额）。
+- 营地独立围墙、木石分账与完整工时经济仍属后续范围。详见 `docs/ring-wall-ui-report.md` 与 `docs/resident-workplaces-fix-report.md`。
 
 ## 桌面基本操作
 
@@ -45,6 +51,7 @@
 无浏览器回归（Node 脚本，不启动浏览器、不写产物，**可直接在项目目录运行**）：
 
 ```sh
+node --test tests/v029-workplaces.test.cjs tests/v029-rings.test.cjs tests/v029-ui.test.cjs
 node --test tests/v026-ui-contract.cjs
 node tests/run-v026-model.cjs
 ```
@@ -52,6 +59,8 @@ node tests/run-v026-model.cjs
 浏览器回归（把 `CHROME_BIN` 换成你的浏览器路径后可直接复制）：
 
 ```sh
+CHROME_BIN="C:/Program Files/Google/Chrome/Application/chrome.exe" node tests/v029-rings-ui-browser.cjs
+CHROME_BIN="C:/Program Files/Google/Chrome/Application/chrome.exe" node tests/v029-workplaces-browser.cjs
 CHROME_BIN="C:/Program Files/Google/Chrome/Application/chrome.exe" node tests/run-v026-checks.cjs
 CHROME_BIN="C:/Program Files/Google/Chrome/Application/chrome.exe" node tests/v026-playthrough.cjs
 CHROME_BIN="C:/Program Files/Google/Chrome/Application/chrome.exe" node tests/v026-edge-cases.cjs
