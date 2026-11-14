@@ -1,7 +1,7 @@
 # 整圈城墙与参考图 UI 报告
 
-**分支:** `codex/fix-resident-workplaces`  
-**基线:** `6f09d54`  
+**分支:** `codex/fix-resident-workplaces`
+**基线:** `6f09d54`
 **范围:** 居民岗位 + 整圈城墙 + 参考图风格 UI（含返修与审查收尾）。
 
 ## 默认值
@@ -71,3 +71,16 @@ node tests/v029-rings-ui-browser.cjs
 - 材料未拆 wood/stone。
 - 图标为内联 SVG 轮廓，非精细插画/3D。
 - 390 竖屏未开详情时图例默认折叠；开详情折叠左轨改底部 sheet。
+
+## Codex 独立最终复核
+
+产品提交 `0d19325` 之后，Codex 独立运行：
+
+- `node --test tests/v029-workplaces.test.cjs tests/v029-rings.test.cjs tests/v029-ui.test.cjs tests/v027-balance.cjs tests/v028-priority.cjs`：**45/45 通过**（本轮 29、历史 16）。
+- 独立居民检查 **7/7**：真实到岗、调回按钮、返程全程速度及碰撞、失败改派保留岗位、拆除停产/重建、跨营地派驻释放旧岗。
+- 独立圈墙检查 **7/7**：闭合外框、城门权限、移除逐段放置、致命伤优先、真实刷兵敌方标记、点墙开详情、HUD 持续显示圈/主城耐久。
+- `node tests/v029-workplaces-browser.cjs`：实际鼠标与 Chrome 触屏模拟的派遣、移动、改派通过。
+- `node tests/v029-rings-ui-browser.cjs`：四视口及真实卡牌/详情操作、圈墙战斗夹具通过。
+- 额外独立浏览器回放：1440×900、1920×1080、932×430、390×844 均无页面横向溢出，地图覆盖视口，三卡同排且实际可选择；小地图图像随整圈倒塌及真实进攻方向变化而变化。
+
+本轮为 Chrome 自动化及受控状态夹具，未冒称真人或手机真机试玩。已人工查看实际输出的主城、工人作业和窄屏截图。
