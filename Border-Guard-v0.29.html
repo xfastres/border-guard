@@ -109,8 +109,9 @@ body.battle #phaseIcon { color:#c9d9ef; }
 #mapWorld { position:absolute; inset:0 auto auto 0; }
 #map { display:block; max-width:none; touch-action:none; cursor:crosshair; }
 .left-rail {
-  position:absolute; z-index:5; left:10px; top:64px; bottom:100px;
-  width:min(196px,30vw); display:flex; flex-direction:column; gap:8px;
+  position:absolute; z-index:5; left:10px; top:64px; bottom:var(--hud-bottom,100px);
+  width:auto; max-width:min(220px,46vw); display:flex; flex-direction:column; gap:8px;
+  align-items:flex-start; height:auto; max-height:calc(100% - 64px - var(--hud-bottom,100px)); overflow:auto;
   pointer-events:none;
 }
 body.touch-ui.sheet-open #leftRail { display:none; }
@@ -120,13 +121,30 @@ body.touch-ui.sheet-open #leftRail { display:none; }
   color:var(--text); padding:8px 10px; backdrop-filter:blur(8px);
   box-shadow:0 8px 24px #0006;
 }
-.legend-panel h3, .minimap-panel h3 { margin:0 0 6px; font-size:13px; color:var(--gold); }
-.legend-panel ul { list-style:none; margin:0; padding:0; display:grid; gap:4px; font-size:12px; color:#d5ddc8; }
+.rail-head { display:flex; align-items:center; justify-content:space-between; gap:6px; flex-wrap:wrap; }
+.rail-head h3 { margin:0; font-size:13px; color:var(--gold); white-space:nowrap; }
+.rail-head button {
+  min-width:44px; min-height:44px; padding:8px 10px; font-size:12px; flex:none;
+  white-space:nowrap; writing-mode:horizontal-tb;
+}
+.legend-panel:not(.collapsed), .minimap-panel:not(.collapsed) {
+  width:min(196px,42vw); min-width:min(168px,42vw); box-sizing:border-box;
+}
+.legend-panel.collapsed, .minimap-panel.collapsed {
+  width:fit-content; max-width:100%; padding:4px; box-sizing:border-box;
+}
+.legend-panel.collapsed .rail-head, .minimap-panel.collapsed .rail-head { display:block; }
+.legend-panel.collapsed .rail-head h3, .minimap-panel.collapsed .rail-head h3 { display:none; }
+.legend-panel.collapsed .rail-head button, .minimap-panel.collapsed .rail-head button {
+  display:block; width:auto; max-width:none;
+}
+.legend-panel h3, .minimap-panel h3 { margin:0; font-size:13px; color:var(--gold); }
+.legend-panel ul { list-style:none; margin:6px 0 0; padding:0; display:grid; gap:4px; font-size:12px; color:#d5ddc8; }
 .legend-panel li { display:flex; align-items:center; gap:6px; }
 .legend-swatch { width:12px; height:12px; border-radius:3px; flex:none; }
-#miniMap { width:100%; height:120px; border-radius:8px; background:#142019; display:block; cursor:pointer; }
+#miniMap { width:100%; height:120px; margin-top:6px; border-radius:8px; background:#142019; display:block; cursor:pointer; }
 .side {
-  position:absolute; z-index:6; right:10px; top:64px; bottom:100px;
+  position:absolute; z-index:6; right:10px; top:64px; bottom:var(--hud-bottom,100px);
   min-height:0; min-width:0; width:clamp(250px,24vw,330px); overflow:auto; overscroll-behavior:contain;
   scrollbar-width:thin; background:var(--glass); border:1px solid var(--glass-line); border-radius:14px;
   color:var(--text); box-shadow:0 8px 24px #0006;
@@ -176,10 +194,12 @@ summary { cursor:pointer; padding:5px 0; }
 .reports li:first-child { color:#ffe2a7; }
 .command-deck {
   position:absolute; z-index:5; left:50%; bottom:10px; transform:translateX(-50%);
-  width:min(960px,calc(100% - 20px)); min-width:0; padding:8px 12px;
+  width:fit-content; max-width:min(960px,calc(100% - 20px)); min-width:0; padding:8px 12px;
   background:var(--glass); border:1px solid var(--glass-line); border-radius:14px;
-  box-shadow:0 8px 24px #0007;
+  box-shadow:0 8px 24px #0007; pointer-events:none;
 }
+.command-deck > * { pointer-events:auto; }
+.command-deck.deck-compact { width:max-content; }
 #cardOverlay {
   position:absolute; z-index:25; inset:0; display:flex; align-items:center; justify-content:center;
   background:#0b140fcc; padding:12px;
@@ -274,10 +294,10 @@ body.touch-ui .victory-actions button,body.touch-ui #victoryNights button { min-
   .stock strong { font-size:14px; }
   #actionCount,#clockReadout { font-size:11px; }
   .workspace { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) auto; }
-  /* 移动端详情改为底部 sheet，打开时折叠左轨，避免叠字 */
+  /* 移动端详情改为底部 sheet，打开时折叠左轨；底边跟随 --hud-bottom，高度让出可见地图 */
   .side {
-    left:8px; right:8px; top:auto; bottom:88px; width:auto;
-    max-height:min(42dvh,320px); border:1px solid var(--glass-line);
+    left:8px; right:8px; top:auto; bottom:var(--hud-bottom,88px); width:auto;
+    max-height:min(30dvh,var(--sheet-max,200px),calc(100% - var(--hud-bottom,88px) - 110px)); border:1px solid var(--glass-line);
   }
   .growth-card { min-height:148px; padding:8px; }
   .growth-card h3 { font-size:12px; margin-bottom:4px; }
@@ -298,7 +318,7 @@ body.touch-ui .victory-actions button,body.touch-ui #victoryNights button { min-
 /* 矮竖屏（如 320x568）：34dvh 的详情区会把棋盘压到 123px，领主几乎不可见。
    收紧详情区上限，把空间还给棋盘；详情内容仍可纵向滚动阅读。 */
 @media (max-width:600px) and (max-height:620px) {
-  .side { max-height:min(30dvh,200px); bottom:84px; }
+  .side { max-height:min(28dvh,var(--sheet-max,180px)); bottom:var(--hud-bottom,84px); }
 }
 @media (orientation:landscape) and (max-height:470px) {
   .top { padding-block:2px; }
@@ -396,9 +416,12 @@ body.touch-ui .victory-actions button,body.touch-ui #victoryNights button { min-
         <div id="toast" hidden role="status"></div>
       </div>
       <aside class="left-rail" id="leftRail" aria-label="图例与小地图">
-        <div class="glass-panel legend-panel">
-          <h3>地形概览</h3>
-          <ul>
+        <div class="glass-panel legend-panel collapsed">
+          <div class="rail-head">
+            <h3>地形概览</h3>
+            <button id="toggleLegend" type="button" class="quiet" aria-expanded="false">展开图例</button>
+          </div>
+          <ul id="legendList" hidden>
             <li><i class="legend-swatch" style="background:#3d5c45"></i>森林（敌挡己穿）</li>
             <li><i class="legend-swatch" style="background:#7a7f6e"></i>山地（敌挡己穿）</li>
             <li><i class="legend-swatch" style="background:#9a814e"></i>农田</li>
@@ -406,11 +429,13 @@ body.touch-ui .victory-actions button,body.touch-ui #victoryNights button { min-
             <li><i class="legend-swatch" style="background:#3d615c"></i>水域</li>
             <li><i class="legend-swatch" style="background:#cfc8b0"></i>整圈城墙</li>
           </ul>
-          <button id="toggleLegend" type="button" class="quiet" style="margin-top:6px;width:100%">折叠图例</button>
         </div>
-        <div class="glass-panel minimap-panel">
-          <h3>小地图</h3>
-          <canvas id="miniMap" width="180" height="120" aria-label="点击定位"></canvas>
+        <div class="glass-panel minimap-panel collapsed">
+          <div class="rail-head">
+            <h3>小地图</h3>
+            <button id="toggleMinimap" type="button" class="quiet" aria-expanded="false">展开小地图</button>
+          </div>
+          <canvas id="miniMap" width="180" height="120" hidden aria-label="点击定位"></canvas>
         </div>
       </aside>
       <div id="cardOverlay" hidden aria-label="主城强化三选一">
@@ -4623,7 +4648,7 @@ function syncSheet(){
   document.body.classList.toggle('touch-ui',mobile);
   const view=game.phase==='won'?null:game.panel?'inspect':manualSheetOpen||null;
   document.body.classList.toggle('sheet-open',!!view);
-  ensureLegendDefault(mobile);
+  ensureRailDefaults();
   $('playSide').hidden=!view;
   $('inspectPanel').hidden=view!=='inspect';
   $('campaignPanel').hidden=view!=='campaign';
@@ -4632,22 +4657,85 @@ function syncSheet(){
   $('campaignBtn').setAttribute('aria-expanded',String(view==='campaign'));
   $('campaignBtn').setAttribute('aria-label',game.cardPending?'战役简报，有待选强化':view==='campaign'?'关闭战役简报':'战役简报');
   $('reportBtn').setAttribute('aria-expanded',String(view==='report'));
-  if(camera.seenMobile!==mobile||camera.sideView!==view){
+  const field=document.querySelector('.field');
+  const prevBottom=field?.style.getPropertyValue('--hud-bottom')||'';
+  layoutHudChrome();
+  const nextBottom=field?.style.getPropertyValue('--hud-bottom')||'';
+  if(camera.seenMobile!==mobile||camera.sideView!==view||prevBottom!==nextBottom){
     camera.seenMobile=mobile;
     camera.sideView=view;
     resizeCamera();
   }
   markSideOverflow();
 }
-function ensureLegendDefault(mobile){
-  const list=$('leftRail')?.querySelector?.('.legend-panel ul');
-  const toggle=$('toggleLegend');
-  if(!list||!toggle)return;
-  if(mobile&&!camera.legendCollapsedInit){
-    list.hidden=true;
-    toggle.textContent='展开图例';
-    camera.legendCollapsedInit=true;
+function hudPanelVisible(el){
+  if(!el||el.hidden)return false;
+  const style=getComputedStyle(el);
+  if(style.display==='none'||style.visibility==='hidden'||Number(style.opacity)===0)return false;
+  const r=el.getBoundingClientRect();
+  return r.width>=1&&r.height>=1;
+}
+function ensureRailDefaults(){
+  const list=$('legendList');
+  const mini=$('miniMap');
+  if(!camera.railCollapsedInit){
+    if(list)list.hidden=true;
+    if(mini)mini.hidden=true;
+    camera.railCollapsedInit=true;
   }
+  syncRailToggleLabels();
+}
+function syncRailToggleLabels(){
+  const list=$('legendList');
+  const legendPanel=$('toggleLegend')?.closest?.('.legend-panel');
+  const legendToggle=$('toggleLegend');
+  const mini=$('miniMap');
+  const miniPanel=$('toggleMinimap')?.closest?.('.minimap-panel');
+  const miniToggle=$('toggleMinimap');
+  if(legendToggle&&list){
+    const open=!list.hidden;
+    legendToggle.textContent=open?'折叠图例':'展开图例';
+    legendToggle.setAttribute('aria-expanded',String(open));
+    legendPanel?.classList?.toggle?.('collapsed',!open);
+  }
+  if(miniToggle&&mini){
+    const open=!mini.hidden;
+    miniToggle.textContent=open?'折叠小地图':'展开小地图';
+    miniToggle.setAttribute('aria-expanded',String(open));
+    miniPanel?.classList?.toggle?.('collapsed',!open);
+  }
+}
+function layoutHudChrome(){
+  const field=document.querySelector('.field');
+  const deck=$('commandDeck');
+  if(!deck)return;
+  const compact=!!(game&&game.phase==='day'&&!game.castle);
+  deck.classList.toggle('deck-compact',compact);
+  syncCommandNavVisibility();
+  if(!field||!field.style||typeof field.style.setProperty!=='function')return;
+  let clearance=compact?72:100;
+  const fr=field.getBoundingClientRect();
+  if(hudPanelVisible(deck)){
+    const dr=deck.getBoundingClientRect();
+    clearance=Math.max(compact?64:72,Math.ceil(fr.bottom-dr.top+10));
+  }
+  field.style.setProperty('--hud-bottom',clearance+'px');
+  // 仅窄屏底部 sheet 限额（max-width:600 才启用）；横屏右侧详情不受此影响
+  let sheetMax=200;
+  if(innerWidth<=600){
+    const briefing=document.querySelector('.briefing');
+    const topClear=hudPanelVisible(briefing)?Math.ceil(briefing.getBoundingClientRect().bottom-fr.top+8):72;
+    const avail=Math.max(120,Math.floor(fr.height-clearance-topClear));
+    sheetMax=Math.max(140,Math.min(200,Math.floor(avail*0.38)));
+  }
+  field.style.setProperty('--sheet-max',sheetMax+'px');
+}
+function syncCommandNavVisibility(){
+  const nav=document.querySelector('#commandDeck .command-nav');
+  if(!nav)return;
+  const tabs=$('mobileGroups');
+  const show=!!((tabs&&tabs.children.length)||!$('toolState').hidden||!$('cancelTool').hidden||!$('duskBtn').hidden);
+  nav.hidden=!show;
 }
 function sizeMapToCover(){
   const board=$('board');
@@ -4670,17 +4758,43 @@ function measureCameraViewport(){
   const bottom=Math.min(rect.bottom-(parseFloat(style.borderBottomWidth)||0),innerHeight);
   camera.vw=Math.max(0,right-left);
   camera.vh=Math.max(0,bottom-top);
-  // 安全中心避开左轨/顶 briefing，避免主城圈被挡住
-  let insetL=0,insetT=8;
-  if(!MOBILE()){
-    const rail=$('leftRail');
-    if(rail&&getComputedStyle(rail).display!=='none'&&!rail.hidden){
-      const rr=rail.getBoundingClientRect();
-      insetL=Math.max(0,Math.min(camera.vw*.35,rr.right-left+8));
+  // 安全中心避开顶栏 briefing、底栏、左右可见面板
+  let insetL=0,insetR=0,insetT=8,insetB=8;
+  const briefing=document.querySelector('.briefing');
+  if(hudPanelVisible(briefing)){
+    insetT=Math.max(insetT,briefing.getBoundingClientRect().bottom-top+6);
+  }
+  const deck=$('commandDeck');
+  if(hudPanelVisible(deck)){
+    insetB=Math.max(insetB,bottom-deck.getBoundingClientRect().top+6);
+  }
+  const rail=$('leftRail');
+  if(rail&&getComputedStyle(rail).display!=='none'&&!rail.hidden){
+    for(const sel of ['.legend-panel','.minimap-panel']){
+      const panel=rail.querySelector(sel);
+      if(!hudPanelVisible(panel))continue;
+      const rr=panel.getBoundingClientRect();
+      insetL=Math.max(insetL,Math.min(camera.vw*.38,rr.right-left+8));
     }
   }
-  camera.safeX=insetL+(camera.vw-insetL)/2;
-  camera.safeY=insetT+(camera.vh-insetT)/2;
+  const side=$('playSide');
+  let sideDock=null;
+  if(hudPanelVisible(side)){
+    const sr=side.getBoundingClientRect();
+    // 按实际矩形判断：宽铺底部为 sheet，否则按右侧面板；不按触屏/MOBILE()
+    const spansBottom=sr.width>=camera.vw*0.65&&sr.left<=left+camera.vw*0.22;
+    sideDock=spansBottom?'bottom':'right';
+    if(sideDock==='bottom'){
+      insetB=Math.max(insetB,bottom-sr.top+6);
+    }else{
+      insetR=Math.max(insetR,Math.min(camera.vw*.45,right-sr.left+8));
+    }
+  }
+  const safeW=Math.max(48,camera.vw-insetL-insetR);
+  const safeH=Math.max(48,camera.vh-insetT-insetB);
+  camera.safeX=insetL+safeW/2;
+  camera.safeY=insetT+safeH/2;
+  camera.insets={l:insetL,r:insetR,t:insetT,b:insetB,sideDock};
   const display=canvas.getBoundingClientRect();
   camera.sx=display.width/canvas.width;
   camera.sy=display.height/canvas.height;
@@ -4756,6 +4870,7 @@ function resizeCamera(){
   try{resizeCameraNow();}finally{cameraResizing=false;}
 }
 function resizeCameraNow(){
+  layoutHudChrome();
   const sx=camera.sx||1,sy=camera.sy||1;
   const worldX=(camera.safeX-camera.tx)/sx,worldY=(camera.safeY-camera.ty)/sy;
   measureCameraViewport();
@@ -4766,8 +4881,15 @@ function resizeCameraNow(){
   }
 }
 function bindCameraObservers(){
+  layoutHudChrome();
   measureCameraViewport();
-  if(typeof ResizeObserver==='function')new ResizeObserver(resizeCamera).observe($('board'));
+  if(typeof ResizeObserver==='function'){
+    const ro=new ResizeObserver(resizeCamera);
+    ro.observe($('board'));
+    const deck=$('commandDeck'); if(deck)ro.observe(deck);
+    const side=$('playSide'); if(side)ro.observe(side);
+    const rail=$('leftRail'); if(rail)ro.observe(rail);
+  }
 }
 function showSide(view){
   const next=manualSheetOpen===view&&!game.panel?null:view;
@@ -5094,7 +5216,9 @@ function applyCommandGroups(){
     tab.setAttribute('aria-pressed',String(selected));
     tabs.append(tab);
   }
+  syncCommandNavVisibility();
   markCommandOverflow();
+  layoutHudChrome();
 }
 function markCommandOverflow(){
   const bar=$('commandBar');
@@ -6317,11 +6441,22 @@ function bindMinimap(){
   });
   const toggle=$('toggleLegend');
   if(toggle)toggle.addEventListener('click',()=>{
-    const panel=toggle.closest('.legend-panel');
-    const list=panel?.querySelector('ul');
+    const list=$('legendList');
     if(!list)return;
     list.hidden=!list.hidden;
-    toggle.textContent=list.hidden?'展开图例':'折叠图例';
+    syncRailToggleLabels();
+    layoutHudChrome();
+    resizeCamera();
+  });
+  const miniToggle=$('toggleMinimap');
+  if(miniToggle)miniToggle.addEventListener('click',()=>{
+    const mini=$('miniMap');
+    if(!mini)return;
+    mini.hidden=!mini.hidden;
+    syncRailToggleLabels();
+    if(!mini.hidden)drawMinimap();
+    layoutHudChrome();
+    resizeCamera();
   });
   const skip=$('cardSkip');
   if(skip)skip.addEventListener('click',()=>pickGrowthCard(null,'跳过'));
@@ -6388,6 +6523,7 @@ window.FW={
   campStaff,releaseEvacuee,noteRaidWindow,paintNode,newRun,sync,draw,
   syncSheet,centerOnHero,followHero,updateCamera,MOBILE,
   camera,measureCameraViewport,clampCamera,sizeMapToCover,snapCameraToPoint,worldToScreen,screenToWorld,screenToGrid,setCameraMode,panCameraBy,
+  layoutHudChrome,ensureRailDefaults,syncRailToggleLabels,hudPanelVisible,
   report,announce,setPaused,showIntro,startRun(){game.started=true;},phaseLimit,tutorialStep,
   forecastIncome,developedCount,resourceOutlook,showResourceSources,
   campBudget,remainingHarvests,trainAndDispatch,

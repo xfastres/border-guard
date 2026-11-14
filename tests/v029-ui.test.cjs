@@ -61,6 +61,47 @@ test('左侧图例与小地图节点存在，右侧主城区分城墙与主城�
   assert.equal(ui.wallBtn, true);
 });
 
+test('图例与小地图默认折叠，选址底栏 compact，可按需展开', () => {
+  const b = bootV029({seed: 42});
+  const ui = b.execute(`(() => {
+    document.getElementById('dialog').close();
+    game = makeGame(42); game.started = true; game.settings.sound = false;
+    for (const t of game.tiles) t.visible = true;
+    sync();
+    const list = document.getElementById('legendList');
+    const mini = document.getElementById('miniMap');
+    const legendPanel = document.getElementById('toggleLegend').closest
+      ? document.getElementById('toggleLegend').closest('.legend-panel')
+      : null;
+    const before = {
+      legendHidden: !!list.hidden,
+      miniHidden: !!mini.hidden,
+      deckCompact: document.getElementById('commandDeck').classList.contains('deck-compact'),
+      toggleLegend: document.getElementById('toggleLegend').textContent,
+      toggleMini: document.getElementById('toggleMinimap').textContent,
+      collapsedClass: !!(legendPanel && legendPanel.classList.contains('collapsed'))
+    };
+    list.hidden = false; mini.hidden = false; syncRailToggleLabels();
+    const after = {
+      legendHidden: !!list.hidden,
+      miniHidden: !!mini.hidden,
+      toggleLegend: document.getElementById('toggleLegend').textContent,
+      toggleMini: document.getElementById('toggleMinimap').textContent,
+      collapsedClass: !!(legendPanel && legendPanel.classList.contains('collapsed'))
+    };
+    return {before, after};
+  })()`);
+  assert.equal(ui.before.legendHidden, true);
+  assert.equal(ui.before.miniHidden, true);
+  assert.equal(ui.before.deckCompact, true);
+  assert.match(ui.before.toggleLegend, /展开/);
+  assert.match(ui.before.toggleMini, /展开/);
+  assert.equal(ui.after.legendHidden, false);
+  assert.equal(ui.after.miniHidden, false);
+  assert.match(ui.after.toggleLegend, /折叠/);
+  assert.match(ui.after.toggleMini, /折叠/);
+});
+
 test('卡牌三选一独立模态冻结，不 inert main、不显示暂停遮罩', () => {
   const b = boot();
   const ui = b.execute(`(() => {
