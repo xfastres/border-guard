@@ -1,0 +1,356 @@
+{
+  "taskId": "WP1-QA-01",
+  "role": "quality-lead (严守真)",
+  "team": "border-guard-v030-polish",
+  "scope": "WP1 · 验收并提交 v0.30 视觉层",
+  "verdictOwner": "team-lead — 本文件只记录逐项事实与判定，不自行宣布 WP1 质量门通过",
+  "environment": {
+    "repo": "D:/Work/game/border-guard",
+    "branch": "codex/claude-gameplay-art-layout",
+    "head": "cd4437a",
+    "worktreeTouched": false,
+    "branchSwitched": false,
+    "pushed": false,
+    "node": "v22.22.2",
+    "chrome": "Chrome/157.0.8103.52 headless=new, CDP port 9333",
+    "cdpTool": "D:/Work/game/bg-scratch/cdp.cjs",
+    "fixturesNote": "fx/day-scene.js / fx/night.js / fx/perf.js 为状态夹具，仅用于截图与性能，不是自然流程证据"
+  },
+  "advisorySummary": {
+    "checksPassed": 6,
+    "checksFailed": 0,
+    "codeOrCssChangesRequired": false,
+    "consoleErrors": 0,
+    "pageErrors": 0,
+    "note": "1–6 全部实测通过；最终 WP1 质量门放行由主理人判定"
+  },
+  "acceptance": [
+    {
+      "id": "1-node-regression",
+      "title": "§4.1 Node 回归 6 个 test 文件",
+      "status": "PASS",
+      "command": "node --test tests/v029-workplaces.test.cjs tests/v029-rings.test.cjs tests/v029-ui.test.cjs tests/v027-balance.cjs tests/v028-priority.cjs tests/v030-flow.test.cjs",
+      "raw": {
+        "tests": 48,
+        "pass": 48,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "durationMs": 3306.9591,
+        "tapVersion": 13
+      },
+      "assertionDiscipline": {
+        "command": "git diff cd4437a -- tests/",
+        "output": "(empty)",
+        "conclusion": "已有断言无删除、无放宽、无结果文件改动",
+        "status": "PASS"
+      },
+      "log": "/tmp/wp1-node-regression.log"
+    },
+    {
+      "id": "2-scenes-and-visual-checks",
+      "title": "WP1 第 2 步：桌面/手机场景截图逐张查看 + 5 项放大核对",
+      "status": "PASS",
+      "commands": [
+        "bash scenes.sh D:/Work/game/bg-scratch/after 1440 900",
+        "bash scenes.sh D:/Work/game/bg-scratch/after 390 844 touch",
+        "node cdp.cjs \"open 1440 900 ;; clicktext 普通难度 ;; wait 600 ;; evalfile fx/day-scene.js ;; wait 3500 ;; zoom <file> 40 100 480 420 2\""
+      ],
+      "screenshots": {
+        "desktop": [
+          "D:/Work/game/bg-scratch/after/start-1440x900.png",
+          "D:/Work/game/bg-scratch/after/day-1440x900.png",
+          "D:/Work/game/bg-scratch/after/night-1440x900.png"
+        ],
+        "mobile": [
+          "D:/Work/game/bg-scratch/after/start-390x844.png",
+          "D:/Work/game/bg-scratch/after/day-390x844.png",
+          "D:/Work/game/bg-scratch/after/night-390x844.png"
+        ],
+        "zooms": [
+          "D:/Work/game/bg-scratch/after/zoom-castle-1440x900.png",
+          "D:/Work/game/bg-scratch/after/zoom-fog-1440x900.png",
+          "D:/Work/game/bg-scratch/after/zoom-workers-top.png",
+          "D:/Work/game/bg-scratch/after/zoom-workers-bottom.png",
+          "D:/Work/game/bg-scratch/after/zoom-worker1-same.png",
+          "D:/Work/game/bg-scratch/after/zoom-worker2-same.png",
+          "D:/Work/game/bg-scratch/after/zoom-bubble-quarry.png",
+          "D:/Work/game/bg-scratch/after/zoom-source-1440x900.png"
+        ]
+      },
+      "visualChecks": [
+        {
+          "item": "2.1 四种生产建筑轮廓互不相同，且没有一个被画成箭塔",
+          "status": "PASS",
+          "evidence": "D:/Work/game/bg-scratch/after/zoom-castle-1440x900.png, zoom-workers-top.png, zoom-workers-bottom.png",
+          "observed": "农场=红顶谷仓+风车+麦田；林场=木屋+原木堆+斧子；采石场=岩坑+石块+吊架；矿场=山体+拱形矿口+矿点金块；箭塔=石基+蓝顶(升级红/紫顶)，与四种生产建筑均不同。夹具返回 prods=[quarry,lumber,mine,farm] / [mine,quarry,farm,lumber] 等，四种齐备。"
+        },
+        {
+          "item": "2.2 开发后的格子无残留树/石/麦田图标",
+          "status": "PASS",
+          "evidence": "D:/Work/game/bg-scratch/after/zoom-workers-top.png, zoom-workers-bottom.png + 页内状态查询",
+          "observed": "四个生产格页内状态均为 {ground:'grass', field:false, node.developed:true, building:<对应类型>}；develop() 调用 clearTileCover(t) 且 t.field=false。黄色麦田与风车同属农场建筑插画本身，非残留自然图标。附近松树/岩石位于相邻未开发格。Node 测试第 41 项「开发后旧图标与箭塔兜底不参与同格绘制」亦通过。"
+        },
+        {
+          "item": "2.3 工人在对应建筑格内且头顶有作业气泡",
+          "status": "PASS",
+          "evidence": "D:/Work/game/bg-scratch/after/zoom-worker1-same.png, zoom-worker2-same.png",
+          "observed": "页内状态：resident 1 (4.5,3.6) work.state='working', building prod-1；resident 2 (6.5,3.5) work.state='working', building prod-2；getResidentPose 均 visible=true, activity='work'。6x 放大图可见小人(圆头+上衣+工具)站在建筑格内，头顶绿色圆角气泡，内含白色 ⚒(交叉锤镐) 作业字形（是工具 emoji，不是缺字方块）。"
+        },
+        {
+          "item": "2.4 整圈城墙闭合、门楼竖直、耐久牌在圈下沿且不压主城",
+          "status": "PASS",
+          "evidence": "D:/Work/game/bg-scratch/after/zoom-castle-1440x900.png",
+          "observed": "四面墙身+四角塔楼连成闭合矩形；西侧门楼为竖立蓝顶拱门塔(非旧版横条)；全圈仅一块「600/600」耐久牌，位于底墙下方，主城(三塔蓝顶)在其上方且未被遮挡。"
+        },
+        {
+          "item": "2.5 迷雾边缘柔和、已探明区域明亮",
+          "status": "PASS",
+          "evidence": "D:/Work/game/bg-scratch/after/zoom-fog-1440x900.png, D:/Work/game/bg-scratch/after/day-1440x900.png",
+          "observed": "已探明区为明亮饱和嫩绿，未探明区压暗；drawFog() 在未探明格叠 rgba(58,78,74,.70) 并在邻接探明格的边界画 3 个较大云团(near 分支)，放大图可见半透明白色云团沿边界软化。",
+          "observation": "仍存在按格对齐的亮度硬阶(逐格雾层矩形)，且 day-scene.js 夹具用 9x9 矩形置 visible=true，使边界呈直线；属已知实现特征，云团柔化已生效，建议 WP3 视情况再优化，不构成 WP1 阻塞。"
+        }
+      ]
+    },
+    {
+      "id": "3-console-errors",
+      "title": "cdp.cjs 输出 EXC / CONSOLE error 检查",
+      "status": "PASS",
+      "raw": {
+        "EXC": 0,
+        "CONSOLE_error_or_warn": 0,
+        "EVAL_ERR": 0,
+        "ERR": 0,
+        "sessionsChecked": 12
+      },
+      "sessions": [
+        "/tmp/wp1-scenes-desktop.log",
+        "/tmp/wp1-scenes-mobile.log",
+        "/tmp/wp1-zoom.log",
+        "/tmp/wp1-zoom-workers.log",
+        "/tmp/wp1-perf.log",
+        "/tmp/wp1-perf2.log",
+        "/tmp/wp1-console-watch.log",
+        "/tmp/wp1-hud.log",
+        "/tmp/wp1-work.log",
+        "/tmp/wp1-rings.log"
+      ],
+      "longWatch": {
+        "command": "open 1440 900 -> clicktext 普通难度 -> day-scene -> night.js -> wait 12000 -> eval",
+        "result": "{phase:'night', enemies:1, effects:0, floats:1, banner:true}",
+        "errors": "none"
+      },
+      "fixRequired": false
+    },
+    {
+      "id": "4-browser-runners",
+      "title": "§4.2 三个 v029 浏览器 runner",
+      "status": "PASS",
+      "runners": [
+        {
+          "name": "v029-hud-occlusion-browser.cjs",
+          "command": "BORDER_ARTIFACTS=tests/artifacts/v030-hud node tests/v029-hud-occlusion-browser.cjs",
+          "status": "OK",
+          "exitCode": 0,
+          "artifacts": "D:/Work/game/border-guard/tests/artifacts/v030-hud/",
+          "evidenceJson": "D:/Work/game/border-guard/tests/artifacts/v030-hud/browser.json",
+          "raw": {
+            "viewports": [
+              { "wh": "1108x1195", "siteDeckWidth": 286, "siteFree": 0.916, "dayFree": 0.639, "focusClear": true, "overlap": 0 },
+              { "wh": "886x956", "siteDeckWidth": 286, "siteFree": 0.895, "dayFree": 0.581, "focusClear": true, "overlap": 0 },
+              { "wh": "1108x720", "siteDeckWidth": 286, "siteFree": 0.865, "dayFree": 0.576, "focusClear": true, "overlap": 0 },
+              { "wh": "1440x900", "siteDeckWidth": 286, "siteFree": 0.912, "dayFree": 0.641, "focusClear": true, "overlap": 0 },
+              { "wh": "932x430", "siteDeckWidth": 274, "siteFree": 0.758, "dayFree": 0.527, "focusClear": true, "overlap": 0 },
+              { "wh": "390x844", "siteDeckWidth": 274, "siteFree": 0.801, "dayFree": 0.473, "focusClear": true, "overlap": 0 }
+            ],
+            "thresholds": {
+              "siteDeckWidth": "< 520 (max measured 286) PASS",
+              "legendH_miniH": "<= 60 (断言通过) PASS",
+              "dayFree": ">= 0.45 常规 / >= 0.48 矮横屏 (min measured 0.473 @390x844, 0.527 @932x430) PASS",
+              "siteFree": ">= 0.85 桌面 / >= 0.80 触屏 / >= 0.68 矮横屏 (min 0.758 @932x430) PASS",
+              "cardsClickable": "1440x900 true, 390x844 true (三选一卡牌真实点击后 pending=false, modal=false) PASS",
+              "overlap": 0,
+              "focusClear": true
+            },
+            "pageErrors": "all 12 viewport-level pageErrors arrays empty",
+            "failureField": null
+          }
+        },
+        {
+          "name": "v029-workplaces-browser.cjs",
+          "command": "BORDER_ARTIFACTS=tests/artifacts/v030-work node tests/v029-workplaces-browser.cjs",
+          "status": "OK",
+          "exitCode": 0,
+          "artifacts": "D:/Work/game/border-guard/tests/artifacts/v030-work/",
+          "evidenceJson": "D:/Work/game/border-guard/tests/artifacts/v030-work/browser.json",
+          "raw": { "pageErrors": "desktop [] / touch []", "failureField": null }
+        },
+        {
+          "name": "v029-rings-ui-browser.cjs",
+          "command": "BORDER_ARTIFACTS=tests/artifacts/v030-rings node tests/v029-rings-ui-browser.cjs",
+          "status": "OK",
+          "exitCode": 0,
+          "artifacts": "D:/Work/game/border-guard/tests/artifacts/v030-rings/",
+          "evidenceJson": "D:/Work/game/border-guard/tests/artifacts/v030-rings/browser.json",
+          "raw": {
+            "afterCollapseSeconds": 1.9999999999999973,
+            "threshold": "<= 5",
+            "cards": [
+              { "w": 1440, "h": 900, "clickable": true, "selected": { "pending": false, "modal": false, "paused": false } },
+              { "w": 390, "h": 844, "clickable": true, "selected": { "pending": false, "modal": false, "paused": false } }
+            ],
+            "pageErrors": "all 4 viewport-level pageErrors arrays empty",
+            "failureField": null
+          }
+        }
+      ],
+      "cssOrCodeChanges": "无 — 三条 runner 一次通过，未触线，无需改 CSS/断言"
+    },
+    {
+      "id": "5-performance",
+      "title": "1440x900 白天夹具 evalfile fx/perf.js (nightMs<=8, dayMs<=4)",
+      "status": "PASS",
+      "commands": [
+        "node cdp.cjs \"open 1440 900 ;; clicktext 普通难度 ;; wait 600 ;; evalfile fx/day-scene.js ;; wait 3500 ;; evalfile fx/perf.js\""
+      ],
+      "runs": [
+        { "run": 1, "nightMs": 4.35, "dayMs": 2.15, "enemies": 40, "log": "/tmp/wp1-perf.log" },
+        { "run": 2, "nightMs": 4.87, "dayMs": 1.72, "enemies": 40, "log": "/tmp/wp1-perf2.log" }
+      ],
+      "raw": {
+        "nightMsMax": 4.87,
+        "nightMsThreshold": 8,
+        "dayMsMax": 2.15,
+        "dayMsThreshold": 4,
+        "drawCallsPerProbe": 60,
+        "enemies": 40
+      },
+      "fixtureNote": "perf.js 为夹具：spawnEnemy x40 后直接调用 draw() 60 次计时，非自然流程帧率"
+    },
+    {
+      "id": "6-before-after-compare",
+      "title": "前后对比：桌面、手机各 2 组（白天 / 夜战），保存到 tests/artifacts/v030-polish/compare/",
+      "status": "PASS",
+      "outputDir": "D:/Work/game/border-guard/tests/artifacts/v030-polish/compare/",
+      "pairs": [
+        {
+          "formFactor": "desktop",
+          "scene": "day",
+          "before": "D:/Work/game/border-guard/tests/artifacts/v030-polish/compare/desktop-day-before.png",
+          "after": "D:/Work/game/border-guard/tests/artifacts/v030-polish/compare/desktop-day-after.png",
+          "composite": "D:/Work/game/border-guard/tests/artifacts/v030-polish/compare/desktop-day-compare.png"
+        },
+        {
+          "formFactor": "desktop",
+          "scene": "night",
+          "before": "D:/Work/game/border-guard/tests/artifacts/v030-polish/compare/desktop-night-before.png",
+          "after": "D:/Work/game/border-guard/tests/artifacts/v030-polish/compare/desktop-night-after.png",
+          "composite": "D:/Work/game/border-guard/tests/artifacts/v030-polish/compare/desktop-night-compare.png"
+        },
+        {
+          "formFactor": "mobile",
+          "scene": "day",
+          "before": "D:/Work/game/border-guard/tests/artifacts/v030-polish/compare/mobile-day-before.png",
+          "after": "D:/Work/game/border-guard/tests/artifacts/v030-polish/compare/mobile-day-after.png",
+          "composite": "D:/Work/game/border-guard/tests/artifacts/v030-polish/compare/mobile-day-compare.png"
+        },
+        {
+          "formFactor": "mobile",
+          "scene": "night",
+          "before": "D:/Work/game/border-guard/tests/artifacts/v030-polish/compare/mobile-night-before.png",
+          "after": "D:/Work/game/border-guard/tests/artifacts/v030-polish/compare/mobile-night-after.png",
+          "composite": "D:/Work/game/border-guard/tests/artifacts/v030-polish/compare/mobile-night-compare.png"
+        }
+      ],
+      "sourceBeforeDir": "D:/Work/game/bg-scratch/before/",
+      "sourceAfterDir": "D:/Work/game/bg-scratch/after/",
+      "observedDifference": "旧版暗橄榄绿、扁平象形图标、灰墙；新版明亮嫩绿草地/亮蓝水/暖黄路、2.5D 描边建筑(蓝顶主城/箭塔)、金边深蓝玻璃 HUD 与金色渐变按钮、圈下沿 600/600 耐久牌、夜间冷蓝暗幕配暖光孔。"
+    }
+  ],
+  "commitGates": {
+    "allSixChecksPass": true,
+    "backdoorGrep": {
+      "command": "grep -n \"__wallHit\\|window.__\" Border-Guard-v0.29.html",
+      "matches": [],
+      "allowedHook": "window.FW at line 7117 (window.FW 测试钩子)",
+      "status": "PASS"
+    },
+    "noAssertionDeletion": true,
+    "noCssOrCodeFixNeeded": true
+  },
+  "fileStateBeforeCommit": {
+    "tracked": [
+      { "path": "Border-Guard-v0.29.html", "state": "M", "diffVsCd4437a": "+1001/-387, 1388 lines changed" }
+    ],
+    "untracked": [
+      "docs/v030-handoff-plan.md (交接计划，非 WP1 产出，保持未入库)",
+      "tests/artifacts/v030-baseline/ (改造前基线，明确不入库)",
+      "tests/artifacts/v030-hud/ (WP1 证据)",
+      "tests/artifacts/v030-work/ (WP1 证据)",
+      "tests/artifacts/v030-rings/ (WP1 证据)",
+      "tests/artifacts/v030-polish/ (wp1-acceptance.json + compare/)",
+      "tests/artifacts/v030-polish/wp1-visual-audit.md (art-director 在途产出，已从暂存区撤出，保持未跟踪、不在本次提交内)"
+    ],
+    "outsideRepo": [
+      "D:/Work/game/bg-scratch/after/ (6 张场景图 + 8 张 zoom 图，不入库)",
+      "D:/Work/game/bg-scratch/compare.html (对比页临时文件，不入库)",
+      "/tmp/wp1-*.log (命令输出日志，不入库)"
+    ],
+    "gitDiffStatVsCd4437a": "Border-Guard-v0.29.html | 1388 ++++++++++++++++++++------------- (1 file changed, 1001 insertions(+), 387 deletions(-))"
+  },
+  "concurrentTeammateDeliverable": {
+    "file": "tests/artifacts/v030-polish/wp1-visual-audit.md",
+    "author": "art-director 林绘澄 · WP1-ART-01 静态视觉契约审读",
+    "mtime": "2026-11-15 11:27:24 +0800",
+    "verdict": "CONCERNS（仅视觉契约，7 符合 / 3 存疑 / 0 硬性失败）",
+    "myAction": "未纳入本次提交（属他人在途产出，Output Path 只列 wp1-acceptance.json 与 compare/）；已用 git restore --staged 撤出暂存区，文件保持未跟踪。请主理人决定是否单独入库。",
+    "screenshotsForArtDirector": "本次产出的 6 张场景图 + 8 张 zoom 图绝对路径已记录在 acceptance[1].screenshots，可转交 art-director 做 S1–S12 二次确认；按团队规则未直连该成员。"
+  },
+  "technicalConcerns": [
+    {
+      "id": "TC-1-gradient-capability-detection",
+      "source": "art-director 静态审读第 6 项 + 本次代码复核",
+      "severity": "CONCERN (latent, 非当前失败)",
+      "finding": "白天分支 Border-Guard-v0.29.html L5044–5045 直接调用 ctx.createLinearGradient(...) 后 g.addColorStop(...)，无能力检测；夜间分支 L5054 已对离屏 l.createRadialGradient 做双重检测。§5 要求所有渐变/离屏绘制做能力检测。",
+      "verification": "已读代码确认；Node 回归 48/48 全绿，真实 Chrome 白天/夜晚截图与 12 次 cdp.cjs 会话均无 EXC / CONSOLE error。原因：tests/helpers/v029-vm.cjs L106 的桩恰好返回 {addColorStop(){}}，真实浏览器原生支持。若按 §5 假设桩返回空函数，白天 draw() 会抛 TypeError。",
+      "myDecision": "不改代码。WP1 验收清单无失败项，且团队指令限定「出现 EXC/CONSOLE error 才修」；此项为面向未来更严格桩的健壮性建议，交主理人决定是否在后续包补 typeof 判定（L5044、L5073 warm）。"
+    },
+    {
+      "id": "TC-2-hit-flash-scope",
+      "source": "art-director 静态审读第 5 项",
+      "severity": "CONCERN (验收口径待澄清)",
+      "finding": "受击闪白作用于墙身(L4892)，耐久牌本身不闪白(L4955)；契约「受击闪白」未明确对象。另 L4949 注释写「上沿」而代码 L4951 用 maxY 取下沿（本次截图已确认牌在圈下沿，代码行为正确，仅注释过时）。",
+      "myDecision": "未拍夜战受击瞬间帧，列为未验证；请主理人确认口径并在需要时安排 S8 截图。"
+    },
+    {
+      "id": "TC-3-50percent-legibility",
+      "source": "art-director 静态审读第 9 项 / §4.4",
+      "severity": "CONCERN (未验证)",
+      "finding": "富/铁角标 9px、状态气泡 9px、耐久牌 9px 数字、箭塔等级 7px 在 50% 缩放下可能不可读。本次只做了 2x/4x/6x/8x 放大核对，未做 50% 缩小截图。",
+      "myDecision": "列入未验证项，属后续包 / 主理人判定范围。"
+    }
+  ],
+  "observations": [
+    "卡牌/战斗按钮上的「X」形图标是 GLYPHS.battle(交叉双剑) 与 GLYPHS.farm(风车四叶) 的正常 SVG，不是缺字/破图；绿色气泡内白字为 ⚒(交叉锤镐) 作业 emoji，也非缺字方块。",
+    "迷雾边界仍保留逐格雾层造成的亮度硬阶，云团柔化已生效；建议 WP3 评估是否进一步羽化。",
+    "390x844 夜战底部战斗栏仅完整显示 2 张卡（桌面 3 张）；390x844 白天第 4 个命令按钮文字右侧略裁切。均属 WP3 多端范围，hud-occlusion runner 已通过，不构成 WP1 阻塞。",
+    "交接计划 §1.3 的已知待办（hoverTile 未赋值、#mapHint.next 未启用、小地图旧配色、胜利 HUD 旧样式）属于 WP2/WP3，本次 WP1 未改动、未验证。"
+  ],
+  "unverified": [
+    "手机真机未测（仅 Chrome 触控模拟 390x844 touch）",
+    "真人试玩未做；本次为夹具+自动回归，自然流程完整试玩属 WP5",
+    "7 视口逐一布局检查属 WP3，本次仅 hud-occlusion runner 覆盖的 6 个视口",
+    "卡牌插画/事件横幅的完整自然触发流程属 WP5，本次仅确认 DOM #eventBanner 存在且夜间有 1 个 float",
+    "未做 flaky 测试隔离分析（本次两次 perf 与三条 runner 均稳定通过）",
+    "art-director 待截图确认清单 S1–S12 中，本次覆盖了 S1(生产建筑互异)、S4 部分(作业气泡)、S5 部分(夜景光孔/迷雾)、S6(白天明亮)、S7(整圈城墙/耐久牌位置)、S12(控制台无异常)；未覆盖 S2(富/铁角标 50% 可读性)、S3(箭塔 lv0/1/2 三色同框)、S8(夜战受击瞬间帧/闪白口径)、S9(倒塌碎石残段)、S10(交互四态高亮)、S11(50% 缩放全景剪影)",
+    "未验证 §5「更严格的 canvas 桩」场景：当前 VM 桩为 createLinearGradient 返回兼容对象，真实浏览器原生支持，故 L5044 缺能力检测未在任何实测中触发异常"
+  ],
+  "commit": {
+    "toExecute": true,
+    "message": "feat: bright cartoon renderer, icon set, HUD theme and event banners",
+    "coAuthoredByRequired": true,
+    "push": false,
+    "note": "提交 hash 在提交后由主理人回执补充；本 JSON 写于提交之前，记录提交前文件状态"
+  }
+}
