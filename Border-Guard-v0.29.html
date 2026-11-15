@@ -5041,7 +5041,9 @@ function drawCombatLayer(){
 let lightCanvas=null;
 function drawLighting(isNight){
   if(!isNight){
-    const g=ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+    // 白天暖光：能力检测（§5 契约）。测试 VM 的 createLinearGradient 可能返回空函数/undefined。
+    const g=typeof ctx.createLinearGradient==='function'?ctx.createLinearGradient(0,0,canvas.width,canvas.height):null;
+    if(!g?.addColorStop)return;
     g.addColorStop(0,'rgba(255,240,190,.10)');g.addColorStop(1,'rgba(40,70,30,.08)');
     rect(0,0,canvas.width,canvas.height,g);
     return;
@@ -5068,12 +5070,14 @@ function drawLighting(isNight){
   for(const t of game.tiles)if(t.building?.type==='tower')hole((t.x+.5)*CELL,(t.y+.3)*CELL,CELL*1.6*flick,.7);
   for(const c of game.camps)if(!c.lost){const t=campTile(c);hole((t.x+.5)*CELL,(t.y+.5)*CELL,CELL*1.5,.6);}
   ctx.drawImage(lightCanvas,0,0);
-  // 暖色火光叠加
-  ctx.save();ctx.globalCompositeOperation='lighter';
-  const warm=(wx,wy,r,a)=>{const g=ctx.createRadialGradient(wx,wy,0,wx,wy,r);g.addColorStop(0,'rgba(255,170,70,'+a+')');g.addColorStop(1,'rgba(255,170,70,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(wx,wy,r,0,Math.PI*2);ctx.fill();};
-  if(game.castle)warm((game.castle.x+.5)*CELL,(game.castle.y+.4)*CELL,CELL*1.6*flick,.22);
-  for(const t of game.tiles)if(t.building?.type==='tower')warm((t.x+.5)*CELL,(t.y+.2)*CELL,CELL*.8*flick,.2);
-  ctx.restore();
+  // 暖色火光叠加：整体能力检测（§5 契约），不满足则整段跳过，不逐次 try/catch
+  if(typeof ctx.createRadialGradient==='function'&&ctx.createRadialGradient(0,0,0,0,0,1)?.addColorStop){
+    ctx.save();ctx.globalCompositeOperation='lighter';
+    const warm=(wx,wy,r,a)=>{const g=ctx.createRadialGradient(wx,wy,0,wx,wy,r);g.addColorStop(0,'rgba(255,170,70,'+a+')');g.addColorStop(1,'rgba(255,170,70,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(wx,wy,r,0,Math.PI*2);ctx.fill();};
+    if(game.castle)warm((game.castle.x+.5)*CELL,(game.castle.y+.4)*CELL,CELL*1.6*flick,.22);
+    for(const t of game.tiles)if(t.building?.type==='tower')warm((t.x+.5)*CELL,(t.y+.2)*CELL,CELL*.8*flick,.2);
+    ctx.restore();
+  }
 }
 /* ---------- 放置预览：选中工具时高亮合法地块 ---------- */
 function toolTileState(t){
