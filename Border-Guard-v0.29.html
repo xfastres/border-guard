@@ -992,6 +992,31 @@ function ringAttackPads(ringId){
   }
   return out.length?out:[center(game.castle)];
 }
+/* ===== WP2：城墙破防时间估算 / 倒塌方向（纯逻辑，不依赖 DOM） ===== */
+const WALL_DAMAGE_WINDOW = 5;
+function resolveCollapseSide(){
+  const gate=game.fronts?.[0]?.gates?.[0]||entrances(game.day)?.[0];
+  if(gate&&Number.isFinite(gate.x))return gate.x<WIDTH/2?'west':'east';
+  if(game.castle&&Number.isFinite(game.castle.x))return game.castle.x<WIDTH/2?'west':'east';
+  return null;
+}
+// 最近 W 秒圈墙净伤害估算剩余耐久还能撑多久。samples 只含 dealt（不含夜修回血）。
+// text 是并入 updateBattleHud() 城墙胶囊的后缀；show/critical 由 seconds<30 单一条件驱动。
+function estimateWallBreach(ringHp,ringStatus,samples,now,W=WALL_DAMAGE_WINDOW){
+  const out={dps:0,seconds:Infinity,N:0,show:false,critical:false,text:''};
+  if(ringStatus==='broken'||!(ringHp>0)||!Number.isFinite(now)||now<W)return out;
+  const valid=(Array.isArray(samples)?samples:[]).filter(s=>
+    s&&Number.isFinite(s.t)&&s.t>now-W&&s.t<=now&&Number.isFinite(s.dmg)&&s.dmg>0);
+  const dmgSum=valid.reduce((n,s)=>n+s.dmg,0);
+  if(dmgSum<=0)return out;
+  const dps=dmgSum/W;
+  const seconds=Math.max(0,ringHp)/dps;
+  out.dps=dps;out.seconds=seconds;out.N=Math.max(1,Math.ceil(seconds));
+  out.show=seconds<30;
+  out.critical=out.show;
+  out.text=out.show?' · 约 '+out.N+' 秒破墙':'';
+  return out;
+}
 function damageWallRing(ringId,amount,sourceId,edgeId){
   const ring=game.wallRings?.get?.(ringId);
   if(!ring||ring.status==='broken')return {ok:false,reason:'missing-or-broken'};
@@ -1002,6 +1027,12 @@ function damageWallRing(ringId,amount,sourceId,edgeId){
   ring.hp=Math.max(0,ring.hp-blow);
   const dealt=before-ring.hp;
   if(dealt>0){
+    // WP2：唯一权威采样点，只记主城圈墙的净伤害，时间戳用夜内秒 game.clock
+    if(ringId==='home'){
+      if(!Array.isArray(game.wallDamageSamples))game.wallDamageSamples=[];
+      game.wallDamageSamples.push({t:game.clock,dmg:dealt});
+      game.wallDamageSamples=game.wallDamageSamples.filter(s=>s.t>game.clock-WALL_DAMAGE_WINDOW);
+    }
     ring.hitFlash=performance.now();
     const book=nightBook();
     if(book)book.castleDamage=(book.castleDamage||0)+0; // 墙伤另计，不混主城
@@ -1020,6 +1051,16 @@ function collapseWall(ringId){
   if(ring.status==='broken'&&ring.hp<=0)return {ok:true,idempotent:true};
   ring.hp=0;
   ring.status='broken';
+  // WP2：主城圈墙倒塌时把复盘三字段写入当夜账本（只增不改，openNight 不受 lost 早退影响）
+  if(ringId==='home'){
+    const day=game.ledgerDay||game.day;
+    const book=openNight(day);
+    if(book&&book.collapseAt==null){
+      book.collapseAt=Math.max(1,Math.ceil(game.clock));
+      book.collapseSide=resolveCollapseSide();
+      book.towersAtCollapse=game.tiles.filter(t=>t.building?.type==='tower').length;
+    }
+  }
   if(ring.repair&&ring.repair.status==='building'){
     ring.repair.status='failed';
   }
@@ -2636,6 +2677,22 @@ function secretStatusLine(){
 }
 function failureDiagnosis(){
   if(!game.castle)return '还未建城，夜袭追击领主。下局在天黑前选一处已探明的城址建城，或留出时间撤离敌群。';
+  // WP2：圈墙倒塌过则优先给带夜号/秒数/方向/塔数的复盘诊断；旧账本缺字段时逐字段降级
+  const collapseBooks=Object.entries(game.ledger||{})
+    .filter(([,b])=>b&&b.collapseAt!=null&&Number.isFinite(b.collapseAt))
+    .sort((a,b)=>Number(a[0])-Number(b[0]));
+  const last=collapseBooks[collapseBooks.length-1];
+  if(last){
+    const night=Number(last[0]), b=last[1];
+    const side=b.collapseSide==='west'?'西':b.collapseSide==='east'?'东':null;
+    const towers=Number.isFinite(b.towersAtCollapse)?b.towersAtCollapse:null;
+    const head='第 '+night+' 夜 '+b.collapseAt+' 秒城墙倒塌';
+    const advice=side?'下局在该侧城墙内放 2 座箭塔，入夜前修满城墙。':'下局在敌袭侧城墙内放 2 座箭塔，入夜前修满城墙。';
+    if(side&&towers!==null)return head+'（敌军从 '+side+' 侧集中拆墙），当时箭塔 '+towers+' 座。'+advice;
+    if(!side&&towers!==null)return head+'，当时箭塔 '+towers+' 座。'+advice;
+    if(side&&towers===null)return head+'（敌军从 '+side+' 侧集中拆墙）。'+advice;
+    return head+'。'+advice;
+  }
   const books=Object.values(game.ledger||{});
   const castleDamage=books.reduce((n,b)=>n+(b.castleDamage||0),0);
   const castleRepair=books.reduce((n,b)=>n+(b.castleRepair||0),0);
@@ -2828,7 +2885,9 @@ function makeGame(seed = Math.floor(Math.random()*999999)+1) {
     projectiles:[], floats:[], corpses:[], combatEvents:[], combatEventSeq:0, projectileSeq:0,
     presentation:null, shake:{t:0,mag:0}, buildingFlash:{},
     settings:{sound:true,effects:'standard'},
-    kills:0, waveKills:0, waveGold:0, result:null, ledgerDay:null
+    kills:0, waveKills:0, waveGold:0, result:null, ledgerDay:null,
+    // WP2：鼠标悬停格（索引，不是对象）与最近 5 秒圈墙净伤害样本
+    hoverTile:null, wallDamageSamples:[]
   };
   state.ledger={1:freshNight(1,state.resources)};
   state.contract=freshContract(1,seed);
@@ -3232,17 +3291,70 @@ function showIntro(){
     {label:'高难度 · 开始守卫',detail:'居民可能永久阵亡',click:()=>{game.hard=true;}}
   ]);
 }
-function tutorialStep(){
-  if(game.day!==1||game.phase!=='day')return null;
-  if(game.castle){
-    if(!game.sawResource&&!game.tiles.some(t=>t.node?.developed))
-      return (MOBILE()?'长按':'点击')+'领地内的资源点可开发，守过一夜后收获。';
-    return null;
+/* ===== WP2：六步提示链 / 推荐布防格 / 工人数 的单一真源 =====
+   提示链（tutorialStep）与地图高亮（recommendedDefenseTiles）共用这些判定，
+   避免出现「文案说该建塔、地图却没有圈」或「圈画在另一侧」。 */
+function defenseSide(){
+  const gate=entrances(game.day)?.[0];
+  if(gate&&Number.isFinite(gate.x))return gate.x<WIDTH/2?'west':'east';
+  return (game.castle?.x??game.hero?.x??0)<WIDTH/2?'west':'east';
+}
+function towersOnSide(side){
+  return game.tiles.filter(t=>(side==='west'?t.x<WIDTH/2:t.x>=WIDTH/2)&&t.owned&&t.building?.type==='tower').length;
+}
+function productionWorkerCount(){
+  ensureProductionMaps();
+  let developed=0,workers=0;
+  for(const t of game.tiles){
+    if(!t.node?.developed||!t.building||!isProductionBuilding(t.building))continue;
+    developed++;
+    const b=game.productionBuildings.get(t.building.productionId);
+    workers+=b?.assignedResidentIds?.length||0;
   }
-  if(!game.sites.some(s=>tileAt(s.x,s.y)?.visible))return '从底部选 A 或 B，领主会前往探路。';
-  const t=game.tiles[game.selected];
-  if(game.panel&&t?.site!==undefined)return '在详情中确认建城，城址本局固定。';
-  return '点底部「查看」比较已探明的城址。';
+  return {developed,workers};
+}
+function productionWorkerCountAt(t){
+  ensureProductionMaps();
+  const b=game.productionBuildings.get(t?.building?.productionId);
+  return b?.assignedResidentIds?.length||0;
+}
+// 返回步骤 id（S1..S6）或 null；让位门禁统一收口在这里，不给 renderUI() 留第二套。
+function guideStep(){
+  if(game.day!==1||game.phase!=='day')return null;
+  if(game.mode||game.cardModal)return null;
+  if(!game.castle)return 'S1';
+  if(game.cardPending===true)return 'S2';
+  if(!game.tiles.some(t=>t.node?.developed))return 'S3';
+  const {developed,workers}=productionWorkerCount();
+  if(developed>0&&workers===0)return 'S4';
+  if(towersOnSide(defenseSide())===0)return 'S5';
+  return 'S6';
+}
+function tutorialStep(){
+  const s=guideStep();
+  if(!s)return null;
+  switch(s){
+    case 'S1':return '从底部选 A 或 B 前往探路';
+    case 'S2':return '先选择一项开局强化';
+    case 'S3':return '点领地内带金色 + 的资源点，开发成生产建筑';
+    case 'S4':return '点生产建筑，派遣居民去工作';
+    case 'S5':return '今夜敌军从'+(defenseSide()==='west'?'西':'东')+'侧来：在该侧城墙内建 1–2 座箭塔';
+    default:return '准备好了可以提前入夜';
+  }
+}
+// 第 5 步出现时，圈出离今夜入口最近的 2 个合法箭塔格；只绘制不建造，每帧重算。
+function recommendedDefenseTiles(){
+  if(guideStep()!=='S5')return [];
+  const gate=entrances(game.day)?.[0];
+  const side=defenseSide();
+  const gx=gate?gate.x+.5:(side==='west'?0:WIDTH-1)+.5;
+  const gy=gate?gate.y+.5:(game.castle?.y??game.hero?.y??0)+.5;
+  return game.tiles
+    .filter(t=>t.owned&&(side==='west'?t.x<WIDTH/2:t.x>=WIDTH/2)&&canBuildAt(t)&&!t.building)
+    .map(t=>({t,d:Math.hypot(t.x+.5-gx,t.y+.5-gy),key:at(t.x,t.y)}))
+    .sort((a,b)=>a.d-b.d||a.key-b.key)
+    .slice(0,2)
+    .map(x=>x.t);
 }
 function invest(line){
   const rank=game.ranks[line];
@@ -3399,6 +3511,7 @@ function startNight(){
   const raid=raidCamp();
   cancelMapGesture();
   game.phase='night';game.mode=null;game.clock=0;game.spawnStopped=false;
+  game.wallDamageSamples=[];game.hoverTile=null;
   game.earlyNightAt=null;
   game.isBoss=Boolean(game.castle&&(game.day>=LAST_NIGHT||game.scheduled));
   game.bossDefeated=false;game.bossSpawned=false;
@@ -4138,6 +4251,7 @@ function dawn(){
   // 天亮产出和维护仍算在刚结束的这一夜里，不能记到下一天的起点上。
   game.ledgerDay=finished;
   game.phase='day';game.day++;game.phaseElapsed=0;game.actions=7;game.enemies=[];game.mode=null;
+  game.wallDamageSamples=[];game.hoverTile=null;
   clearCombatVisuals();
   game.heroDown=null;game.heroDownUsed=0;game.earlyNightAt=null;game.bossSpawned=false;
   game.hero.hp=Math.max(Math.min(game.hero.max,game.hero.hp+13),35);
@@ -4679,6 +4793,14 @@ function structure(t){
       if(lv>=1)label(lv===2?'重':'Ⅱ',x-9,y-21,7,'#fff3d0');
       if(b.hp<b.max)hpPips(x-17,y+15,34,b.hp/b.max,'#ffd36a');
     }
+    // WP2：生产建筑右上角工人数徽章（👤N / 灰色「空」），与 S4 共用人数读取口径
+    if(isProductionBuilding(b)){
+      const n=productionWorkerCountAt(t);
+      ctx.save();
+      rrect(36,1,24,15,5,n>0?'rgba(28,42,26,.88)':'rgba(84,90,96,.88)',OUT,1.2);
+      label(n>0?'👤'+n:'空',48,8.5,10,n>0?'#ffe9a8':'#cdd3d8','900');
+      ctx.restore();
+    }
   });
 }
 function nodeArt(t){
@@ -5096,6 +5218,16 @@ function toolTileState(t){
   if(BUILDS[m])return canBuildAt(t)&&!t.building?'ok':null;
   return null;
 }
+// WP2：第 5 步的推荐布防格，金色虚线框（只用基础 API，不引入渐变 / 不缓存 ctx）
+function drawRecommendedDefense(){
+  const tiles=recommendedDefenseTiles();
+  if(!tiles.length)return;
+  ctx.save();
+  ctx.strokeStyle='rgba(255,224,138,.9)';ctx.lineWidth=2;ctx.setLineDash([6,5]);
+  for(const t of tiles)ctx.strokeRect(t.x*CELL+4,t.y*CELL+4,CELL-8,CELL-8);
+  ctx.setLineDash([]);
+  ctx.restore();
+}
 function drawToolPreview(){
   if(!game.mode||game.phase!=='day')return;
   const pulse=.5+.5*Math.sin(performance.now()/260);
@@ -5181,6 +5313,7 @@ function draw(){
   }
   drawGates();
   drawToolPreview();
+  drawRecommendedDefense();
   if(game.phase==='night'&&game.rallyCharges>0&&game.hero.hp>0){
     ctx.save();ctx.strokeStyle='rgba(255,224,138,.35)';ctx.lineWidth=2;ctx.setLineDash([7,7]);
     ctx.beginPath();ctx.arc(game.hero.x*CELL,game.hero.y*CELL,DEMO.rallyRange*CELL,0,Math.PI*2);
@@ -5549,6 +5682,8 @@ function cancelMapGesture(){
   if(g)clearTimeout(g.timer);
   releaseCameraHold(g);
   mapGesture=null;touchPointers.clear();touchBlocked=false;
+  // WP2：切换阶段 / 失焦时清掉悬停框，避免金框跨昼夜残留
+  if(game)game.hoverTile=null;
 }
 function bindMapGestures(){
   const board=$('board');
@@ -5581,6 +5716,16 @@ function bindMapGestures(){
       g.dragged=true;clearTimeout(g.timer);setCameraMode('manual');
     }
     if(g.dragged){panCameraBy(g.sx+dx-camera.tx,g.sy+dy-camera.ty);e.preventDefault();}
+  });
+  // WP2：悬停预览仅对鼠标生效；独立监听，不 preventDefault、不干扰既有拖动平移
+  board.addEventListener('pointermove',e=>{
+    if(e.pointerType!=='mouse')return;
+    const t=screenToGrid(e.clientX,e.clientY);
+    game.hoverTile=t?at(t.x,t.y):null;
+  });
+  board.addEventListener('pointerleave',e=>{
+    if(e.pointerType!=='mouse')return;
+    game.hoverTile=null;
   });
   window.addEventListener('pointerup',e=>{
     if(e.pointerType!=='mouse'){
@@ -5933,6 +6078,21 @@ function inspectCamp(c,heading,info,actions,parent){
     }));
   }
 }
+// WP2：居民目的地「建筑名 + 坐标」。坐标始终是整数格坐标，无 undefined / NaN / 空括号。
+function destinationLabel(t){
+  if(!t||!Number.isFinite(t.x)||!Number.isFinite(t.y))return '目的地不明';
+  const coord='（'+t.x+','+t.y+'）';
+  const b=t.building;
+  if(b?.type==='castle')return '前往 主城'+coord;
+  if(isProductionBuilding(b))return '前往 '+(PRODUCTION_LABELS[b.type]||b.type)+coord;
+  if(b?.type==='tower')return '前往 '+BUILDS.tower.label+coord;
+  if(b?.type==='wall')return '前往 城墙'+coord;
+  const c=campCore(t);
+  if(c)return '前往 '+campName(c)+coord;
+  if(t.node&&!t.node.developed)return '前往 '+(NODE_NAMES[t.node.kind]||'资源点')+coord+' · 待开发';
+  if(t.site!==undefined&&!game.castle)return '前往 '+(SITE_NAMES[t.site]||'城址')+coord;
+  return '前往 空地'+coord;
+}
 function inspect(){
   const parent=$('inspectBody'), t=game.tiles[game.selected];
   parent.replaceChildren();
@@ -5947,9 +6107,9 @@ function inspect(){
       const names={home:'在城堡',outbound:'前往营地',posted:'驻守',waiting:'到岗待缴',leaving:'撤离中',returning:'返回城堡',escorted:'跟随领主',hurt:'休养中',blocked:'道路受阻'};
       const workNames={idle:'无岗位',travel:'前往岗位',working:'作业中',blocked:'岗位受阻'};
       heading.textContent='居民 '+r.id;
-      const dest=r.order?.kind==='move'&&game.tiles[r.order.tileId]?
-        '移动至 '+game.tiles[r.order.tileId].x+','+game.tiles[r.order.tileId].y:
-        r.targetTile?'目的地格 '+r.targetTile.x+','+r.targetTile.y:
+      const moveTile=r.order?.kind==='move'?game.tiles[r.order.tileId]:null;
+      const dest=moveTile?destinationLabel(moveTile):
+        r.targetTile?destinationLabel(r.targetTile):
         r.postedAt?'驻留野外':'没有单独目的地';
       const work=r.work?.state&&r.work.state!=='idle'?' · '+(workNames[r.work.state]||r.work.state):'';
       info.textContent=(ROLES[r.role]||'未培养')+' · '+(names[r.state]||r.state)+work+(r.blocked?' · 道路受阻':'')+' · '+dest;
@@ -6604,21 +6764,30 @@ function renderUI(){
     if(game.notes?.length)goal.textContent+=' 本局发生了什么：'+game.notes.slice(0,2).join('；')+'。';
     goal.textContent+=' '+nextRunHint();
     primary.append(button('开始新一局',newRun,{gold:true}));
-    // v0.14：败局诊断，让玩家知道哪里崩的，而不是只看到一个数字
-    if(game.notes.length){
+    // v0.14 / WP2：败局复盘面板。首行是带倒塌字段的诊断，其后保留既有「本局发生了什么」三条战报
+    if(phase==='lost'||game.notes.length){
       const box=document.createElement('div');box.className='diagnosis';
+      if(phase==='lost'){
+        const diagCap=document.createElement('div');diagCap.className='section-caption';
+        diagCap.textContent='败局诊断';box.append(diagCap);
+        const diag=document.createElement('p');diag.textContent=failureDiagnosis();box.append(diag);
+      }
       const cap=document.createElement('div');cap.className='section-caption';
       cap.textContent='本局发生了什么';box.append(cap);
-      for(const line of game.notes.slice(0,3)){
+      for(const line of (game.notes||[]).slice(0,3)){
         const p=document.createElement('p');p.textContent='· '+line;box.append(p);
       }
       primary.append(box);
     }
   }
   renderReports();
+  // WP2：覆盖顺位 1（L6573 modes）→ 2（提示链）→ 3（胜利页）。门禁已收进 guideStep()
   const step=tutorialStep();
-  if(step&&!game.mode)$('mapHint').textContent=step;
+  const guideActive=!!step;
+  if(guideActive)$('mapHint').textContent=step;
   if(phase==='won')$('mapHint').textContent='拖动地图查看领地，点已探明的地点复盘。';
+  // 每次 renderUI 都显式 toggle，避免 day2 / 夜间 / 胜利页残留 ▶
+  $('mapHint').classList.toggle('next',guideActive&&phase!=='won');
   syncPlayHud();
   renderVictory();
   syncSheet();
@@ -6680,7 +6849,12 @@ function updateBattleHud(){
   if(game.castle){
     const ring=game.wallRings?.get?.('home');
     stats.push(['主城 '+Math.ceil(game.castleHp)+'/'+game.castleMax,game.castleHp<game.castleMax*.35]);
-    if(ring)stats.push(['城墙 '+(ring.status==='broken'?'破':Math.ceil(ring.hp)+'/'+ring.maxHp),ring.hp<ring.maxHp*.35||ring.status==='broken']);
+    if(ring){
+      // WP2：估算文案并入 label（L6685 的 dataset.label 短路要求），critical 随 stats 一起重算
+      const est=estimateWallBreach(ring.hp,ring.status,game.wallDamageSamples,game.clock);
+      const wallText='城墙 '+(ring.status==='broken'?'破':Math.ceil(ring.hp)+'/'+ring.maxHp)+(est.show?est.text:'');
+      stats.push([wallText,ring.hp<ring.maxHp*.35||ring.status==='broken'||est.critical]);
+    }
   }
   stats.push(['领主 '+Math.ceil(game.hero.hp)+'/'+game.hero.max+down,game.hero.hp<game.hero.max*.35]);
   if(boss)stats.push(['首领 '+Math.ceil(boss.hp)+'/'+boss.max,true]);
@@ -7153,6 +7327,10 @@ window.FW={
   camera,measureCameraViewport,clampCamera,sizeMapToCover,snapCameraToPoint,worldToScreen,screenToWorld,screenToGrid,setCameraMode,panCameraBy,
   layoutHudChrome,ensureRailDefaults,syncRailToggleLabels,hudPanelVisible,
   report,announce,setPaused,showIntro,startRun(){game.started=true;},phaseLimit,tutorialStep,
+  // WP2：引导链 / 推荐布防 / 工人数 / 目的地文案 / 破防估算 / 倒塌诊断（供 Node 测试）
+  WALL_DAMAGE_WINDOW,estimateWallBreach,resolveCollapseSide,failureDiagnosis,
+  guideStep,recommendedDefenseTiles,defenseSide,towersOnSide,
+  productionWorkerCount,productionWorkerCountAt,destinationLabel,drawRecommendedDefense,
   forecastIncome,developedCount,resourceOutlook,showResourceSources,
   campBudget,remainingHarvests,trainAndDispatch,
   shortfall,costDetail,renderAlert,renderUI,applyCommandGroups,updateBattleHud,
