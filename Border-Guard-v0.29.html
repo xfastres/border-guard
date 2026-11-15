@@ -529,8 +529,15 @@ const V029 = {
   dayRepairFullCost: 12,
   dayRepairMinCost: 1,
   nightRepairCost: 6,
-  nightRepairSeconds: 6
+  nightRepairSeconds: 6,
+  // 整圈城墙每击伤害（与拆单体塔/墙的 12/22/35 分开调）
+  // 首夜对照（seed 42/7，单塔挂机）：12 → 1/2 失守；7 → 0/2 失守、圈墙余 89/600；不建任何防御仍会失守。
+  wallHit: {normal: 7, heavy: 14, boss: 30}
 };
+function wallBlow(e){
+  const h=V029.wallHit;
+  return e.boss?h.boss:e.heavy?h.heavy:h.normal;
+}
 const DEMO = {
   // 试玩数值，不是正式表：白天先收到 35 秒，走路速度仍是 3.5 格/秒。
   // v0.17：保留准备预算；停刷后必须真实清完残敌，不再超时删除。
@@ -1028,6 +1035,9 @@ function cornerCutBlocked(actor,x0,y0,x1,y1,snapshot){
   const dx=Math.sign(Math.round((x1-x0)*1000)/1000);
   const dy=Math.sign(Math.round((y1-y0)*1000)/1000);
   if(!dx||!dy)return false;
+  // 只有同时跨越列边界与行边界才是穿角；偏离格心后回到同列/同行邻格的斜线不是穿角
+  // （脚底圆是否擦到旁边障碍由 canStand 逐点采样判定）。v0.29 曾把它当穿角，敌军被分离推偏后卡死。
+  if(Math.floor(x0)===Math.floor(x1)||Math.floor(y0)===Math.floor(y1))return false;
   const ax=Math.floor(x0),ay=Math.floor(y0);
   const tA=navTileAt(ax+dx,ay,snapshot),tB=navTileAt(ax,ay+dy,snapshot);
   const block=t=>{
@@ -3628,7 +3638,7 @@ function moveEnemy(e,dt){
     if(hit){
       e.moving=false;
       if(e.cooldown<=0){
-        const blow=e.boss?35:e.heavy?22:12;
+        const blow=wallBlow(e);
         damageWallRing(hit.ringId,blow,'enemy:'+e.id,hit.edgeId);
         e.cooldown=.85;
       }
@@ -3679,7 +3689,7 @@ function moveEnemy(e,dt){
     if(hit){
       e.moving=false;
       if(e.cooldown<=0){
-        const blow=e.boss?35:e.heavy?22:12;
+        const blow=wallBlow(e);
         damageWallRing(hit.ringId,blow,'enemy:'+e.id,hit.edgeId);
         e.cooldown=.85;
       }
