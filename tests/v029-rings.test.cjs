@@ -12,28 +12,26 @@ const run = source => bootV029({seed: 42}).execute(`(() => {
   ${source}
 })()`);
 
-test('建城生成闭合主城圈与合法城门，己方过门敌方挡门', () => {
+test('建城生成闭合主城圈与四向城门，己方过门敌方挡门', () => {
   const result = run(`
     for (const t of game.tiles) t.visible = true;
     chooseSite(0);
     const ring = game.wallRings && game.wallRings.get('home');
-    const hero = game.hero;
-    const gateEdge = ring && [...ring.gates.values()][0];
-    const gate = gateEdge && ring.edges.get(gateEdge.edgeId);
-    const inside = game.tiles[gate.insideTileId];
-    const outside = game.tiles[gate.outsideTileId];
+    const gates = [...ring.gates.entries()].map(([side, meta]) => ({side, edge:ring.edges.get(meta.edgeId)}));
     const ally = {radius:DEMO.radii.hero, faction:'ally', movement:'ally'};
     const enemy = {radius:DEMO.radii.normal, faction:'enemy', movement:'enemy'};
-    const throughGate = canTraverse(ally, center(outside), center(inside));
-    const enemyGate = canTraverse(enemy, center(outside), center(inside));
-    const solidEdge = [...ring.edges.entries()].find(([id]) => id !== gateEdge.edgeId);
+    const passage = gates.map(({edge})=>{
+      const inside=game.tiles[edge.insideTileId],outside=game.tiles[edge.outsideTileId];
+      return {ally:canTraverse(ally,center(outside),center(inside)),enemy:canTraverse(enemy,center(outside),center(inside))};
+    });
+    const gateIds=new Set(gates.map(g=>g.edge.id));
+    const solidEdge = [...ring.edges.entries()].find(([id]) => !gateIds.has(id));
     const se = solidEdge[1];
     const sIn = game.tiles[se.insideTileId], sOut = game.tiles[se.outsideTileId];
     const allyWall = sOut ? canTraverse(ally, center(sOut), center(sIn)) : false;
     return {
       hasRing: !!ring, status: ring && ring.status, hp: ring && ring.hp, max: ring && ring.maxHp,
-      edges: ring && ring.edges.size, gates: ring && ring.gates.size,
-      throughGate, enemyGate, allyWall,
+      edges: ring && ring.edges.size, gates: ring && ring.gates.size,sides:gates.map(g=>g.side),passage,allyWall,
       castleHp: game.castleHp, castleMax: game.castleMax
     };
   `);
@@ -42,9 +40,9 @@ test('建城生成闭合主城圈与合法城门，己方过门敌方挡门', ()
   assert.equal(result.hp, 600);
   assert.equal(result.max, 600);
   assert.ok(result.edges >= 4);
-  assert.ok(result.gates >= 1);
-  assert.equal(result.throughGate, true);
-  assert.equal(result.enemyGate, false);
+  assert.equal(result.gates, 4);
+  assert.equal(JSON.stringify(result.sides.sort()), JSON.stringify(['east','north','south','west']));
+  assert.ok(result.passage.every(g=>g.ally&&!g.enemy));
   assert.equal(result.allyWall, false);
   assert.equal(result.castleHp, 50);
   assert.equal(result.castleMax, 50);

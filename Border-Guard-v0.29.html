@@ -412,12 +412,14 @@ body.battle #clockReadout{color:#ffb3a3}
 .stock span{display:flex;align-items:center;gap:5px;color:#c9d2e2;font-size:11px;white-space:nowrap}
 .stock .glyph{flex:none;filter:drop-shadow(0 1px 0 rgba(0,0,0,.5))}
 .stock strong{color:#fff7e0;font-size:18px;font-weight:800}
+.stock .income{color:#c9d5bd;font-size:10px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .stock .delta{
-  position:absolute;right:6px;top:-4px;font-size:12px;font-weight:900;pointer-events:none;
+  position:absolute;z-index:2;right:5px;top:-2px;padding:0 3px;border:1px solid currentColor;border-radius:8px;
+  background:#17231b;font-size:12px;font-weight:900;line-height:1.2;pointer-events:none;
   animation:deltaUp 1.4s ease-out forwards;text-shadow:0 1px 2px #000;
 }
-.stock .delta.up{color:#9ff07e}.stock .delta.down{color:#ffb08a}
-@keyframes deltaUp{0%{opacity:0;transform:translateY(6px)}15%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateY(-14px)}}
+.stock .delta.up{color:#b7ef8e}.stock .delta.down{color:#ffb08a}
+@keyframes deltaUp{0%{opacity:0;transform:translateY(3px)}15%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateY(-3px)}}
 @keyframes stockChange{from{box-shadow:0 0 0 2px rgba(242,193,78,.85),inset 0 2px 4px rgba(0,0,0,.35)}to{box-shadow:inset 0 2px 4px rgba(0,0,0,.35)}}
 .stock.gain strong{color:#b8f59a}.stock.cost strong{color:#ffc0a0}
 #actionCount{
@@ -617,7 +619,8 @@ body.fx-weak *{animation:none!important;transition:none!important}
       <div class="brief-actions">
         <button id="campaignBtn" type="button" aria-controls="playSide" aria-expanded="false">战役</button>
         <button id="reportBtn" type="button" aria-controls="playSide" aria-expanded="false">战报</button>
-        <button id="focusBtn" type="button" aria-label="定位领主">领主</button>
+        <button id="growthBtn" type="button" aria-label="查看主城强化" disabled>强化</button>
+        <button id="focusBtn" type="button" aria-label="跟随领主">跟随领主</button>
       </div>
     </div>
     <div id="alertBar" role="status" hidden></div>
@@ -913,19 +916,27 @@ function gateOutsideClear(edge){
   if(out.building||out.campSolid||inn.building||inn.campSolid)return false;
   return true;
 }
-function pickGateEdge(edges,castle){
+function pickGateEdge(edges,castle,side){
   let best=null,bestScore=-Infinity;
   for(const edge of edges.values()){
     if(!gateOutsideClear(edge))continue;
     const out=game.tiles[edge.outsideTileId],inn=game.tiles[edge.insideTileId];
-    // 偏好朝南/朝道路的边，保证脚底直径可通过
-    let score=0;
-    if(out.y>inn.y)score+=5;
-    if(out.ground==='road')score+=8;
+    const edgeSide=out.x<inn.x?'west':out.x>inn.x?'east':out.y<inn.y?'north':'south';
+    if(side&&edgeSide!==side)continue;
+    // 偏好朝道路的边，确保门外有可通行地块。
+    let score=out.ground==='road'?8:0;
     if(castle)score-=Math.hypot(out.x+.5-(castle.x+.5),out.y+.5-(castle.y+.5))*.2;
     if(score>bestScore){bestScore=score;best=edge;}
   }
   return best;
+}
+function pickGateEdges(edges,castle){
+  const gates=new Map();
+  for(const side of ['north','east','south','west']){
+    const edge=pickGateEdge(edges,castle,side);
+    if(edge){edge.gate=true;gates.set(side,{edgeId:edge.id});}
+  }
+  return gates;
 }
 function homeRingAccessOk(){
   const ring=game.wallRings?.get?.('home');
@@ -957,8 +968,7 @@ function syncWallRingGeometry(ringId,ownedPred,keepHp=true){
   if(!(game.wallRings instanceof Map))game.wallRings=new Map();
   const prev=game.wallRings.get(ringId)||{};
   const {edges,pads,perimeter}=buildBoundary(ownedPred);
-  const gate=pickGateEdge(edges,game.castle);
-  if(gate){gate.gate=true;edges.set(gate.id,gate);}
+  const gates=pickGateEdges(edges,game.castle);
   const maxHp=prev.maxHp||V029.wallRingHp;
   let hp,status;
   if(!keepHp){hp=maxHp;status='intact';}
@@ -967,7 +977,7 @@ function syncWallRingGeometry(ringId,ownedPred,keepHp=true){
   const ring=prev;
   ring.id=ringId;ring.status=status;ring.hp=hp;ring.maxHp=maxHp;
   ring.edges=edges;ring.pads=pads;ring.perimeter=perimeter;
-  ring.gates=new Map(gate?[['main',{edgeId:gate.id}]]:[]);
+  ring.gates=gates;
   if(!ring.repair)ring.repair=emptyWallRepair();
   game.wallRings.set(ringId,ring);
   invalidateNavigation();
@@ -2892,7 +2902,7 @@ function makeGame(seed = Math.floor(Math.random()*999999)+1) {
     hero:{x:8.5,y:5.5,hp:100,max:100,cooldown:0,hit:0,goal:null,face:1,moving:false,
       radius:DEMO.radii.hero,faction:'ally',movement:'ally',invuln:0}, heroLevel:0, militia:0, fragments:0, artifact:null, blueprints:false,
     ranks:{hero:0,tower:0}, bonuses:{blade:0,bow:0,militia:0}, xp:0, nextCard:4, cardPending:false,
-    cardModal:false, pausedBeforeCards:false, starterCardsOffered:false,
+    growthCards:[], cardModal:false, pausedBeforeCards:false, starterCardsOffered:false,
     reports:['点地面或用 WASD 探路。走近候选点后可以建城。迷雾里的林地、山地和田垄对应可能的资源。'],
     enemies:[], effects:[], scheduled:false, early:false, clock:0,
     // v0.24 战斗表现层：projectiles 可能影响天亮判定，effects/floats/corpses 只影响画面
@@ -3032,8 +3042,8 @@ function chooseSite(index) {
 
   firstResidents();
   openInspector(t);
-  // 建城后默认聚焦城堡并夹紧镜头，避免视口留下纯色空白
-  setCameraMode('manual');
+  // 建城后默认聚焦城堡；若领主仍在前往城址的路上，保留移动跟随。
+  setCameraMode(heroTargetsSite&&!heroOverlapsSite?'follow':'manual');
   measureCameraViewport();
   snapCameraToPoint(t.x+.5,t.y+.5);
   if(!game.starterCardsOffered){
@@ -3392,6 +3402,10 @@ function invest(line){
 function pickGrowthCard(key,label){
   if(!game.cardPending||game.phase!=='day')return;
   game.cardPending=false;
+  if(key){
+    const card=CARDS.find(item=>item.key===key);
+    game.growthCards.push({key,label,info:card?.info||''});
+  }
   endCardModal();
   if(key==='mason'){
     const ring=game.wallRings?.get?.('home');
@@ -3399,6 +3413,11 @@ function pickGrowthCard(key,label){
   }else if(key==='vigor'){game.hero.max+=20;game.hero.hp=game.hero.max;}
   else if(key)game.bonuses[key]++;
   announce(key?'主城选择了「'+label+'」。':'本轮跳过主城强化。');
+}
+function showGrowthSummary(){
+  if(game.cardPending){showCards();return;}
+  const entries=game.growthCards.map((card,index)=>(index+1)+' · '+card.label+'：'+card.info);
+  dialog('主城强化',entries.length?entries:['还没有选择主城强化。']);
 }
 function hideCardOverlay(){
   const overlay=$('cardOverlay');
@@ -4234,6 +4253,14 @@ function forecastIncome(){
   }
   return income;
 }
+function forecastNetIncome(){
+  const net=forecastIncome();
+  for(const camp of game.camps)if(camp.running){
+    const upkeep=maintenanceFor(campStaff(camp).length);
+    for(const key of Object.keys(net))net[key]-=upkeep[key]||0;
+  }
+  return net;
+}
 function remainingHarvests(){
   if(!['day','night'].includes(game.phase)||game.scheduled||game.day>=LAST_NIGHT)return 0;
   return LAST_NIGHT-game.day;
@@ -4407,8 +4434,8 @@ function tickCampaign(dt){
   updateHeroRecovery(dt);
   game.nightDue=game.phase==='day'&&game.phaseElapsed+dt>=phaseLimit();
   updateResidents(dt);
+  if(scoutAroundHero())sync();
   if(game.phase==='day'){
-    if(scoutAroundHero())sync();
     game.phaseElapsed+=dt;
     const raid=raidCamp();
     if(raid&&game.announcedRaid!==raid.id){
@@ -4495,45 +4522,45 @@ function updateHeroRecovery(dt){
     sync();
   }
 }
-/* ===== v0.30 渲染层：明亮卡通中世纪边境 =====
+/* ===== v0.30 渲染层：低饱和卡通中世纪边境 =====
    约束：只读游戏状态，不改血量/资源/寻路；函数名 structure / nodeArt / drawFoliage /
    drawResident / fighter / drawMilitia / drawCombatLayer / draw 为测试与 FW 钩子契约，保持不变。
    世界坐标 = 格 × CELL；每格内部用 0..60 的设计单位（inCell）。 */
 const PAL={
-  grass:['#7fae4f','#86b555','#79a84b','#8bb95a'], grassOwned:['#93bf5c','#9ac563','#8dba57','#a0c96a'],
-  grassDark:'#5f8c3b', grassLight:'#a9d070',
-  road:'#d8b77a', roadEdge:'#b48f57', roadLight:'#ead09a',
-  water:'#4fa6c9', waterDeep:'#3a8db3', waterLight:'#8fd3ea', shore:'#e6d39a',
-  stone:'#c9c0aa', stoneMid:'#a99f88', stoneDark:'#7d7462', stoneLight:'#e9e1cc',
-  wood:'#a0703f', woodDark:'#6e4a27', woodLight:'#c89560',
-  roofBlue:'#3f74c4', roofBlueDark:'#2c5596', roofBlueLight:'#6a9ae0',
-  roofRed:'#c4573f', roofRedDark:'#8f3b2a', roofRedLight:'#e07a5d',
-  thatch:'#d9a94e', thatchDark:'#a87a2c',
-  leaf:'#3f8a3c', leafDark:'#2c6a2e', leafLight:'#67b04f',
-  ink:'#2a2216', shadow:'rgba(28,40,20,.32)', gold:'#f2c14e', red:'#d9533c'
+  grass:['#7f9e5b','#819f5e'], grassOwned:['#87a966','#89ab68'],
+  grassDark:'#5e7548', grassLight:'#a4b77b',
+  road:'#c6ad7d', roadEdge:'#a78d64', roadLight:'#d9c69d',
+  water:'#56899a', waterDeep:'#416f7b', waterLight:'#91b6bc', shore:'#c8b995',
+  stone:'#bdb7a7', stoneMid:'#989384', stoneDark:'#706d61', stoneLight:'#d2cebf',
+  wood:'#8d6d49', woodDark:'#64513a', woodLight:'#ad8d61',
+  roofBlue:'#536e8b', roofBlueDark:'#40566e', roofBlueLight:'#7e92a6',
+  roofRed:'#986351', roofRedDark:'#734c42', roofRedLight:'#b47c66',
+  thatch:'#c3a25e', thatchDark:'#90794b',
+  leaf:'#58754a', leafDark:'#465f3d', leafLight:'#789061',
+  ink:'#37352e', shadow:'rgba(30,34,25,.24)', gold:'#d9b461', red:'#b45e4a'
 };
-const OUT='#2b2418';
+const OUT='#575348';
 function rect(x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(x,y,w,h);}
 function path(points,color,stroke=null,weight=1){
   ctx.beginPath();
   points.forEach(([x,y],index)=>index?ctx.lineTo(x,y):ctx.moveTo(x,y));
   ctx.closePath();
   if(color){ctx.fillStyle=color;ctx.fill();}
-  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=weight;ctx.lineJoin='round';ctx.stroke();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=weight*.86;ctx.lineJoin='round';ctx.stroke();}
 }
 function oval(x,y,rx,ry,color,stroke=null,weight=1){
   ctx.beginPath();ctx.ellipse(x,y,Math.max(.01,rx),Math.max(.01,ry),0,0,Math.PI*2);
   if(color){ctx.fillStyle=color;ctx.fill();}
-  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=weight;ctx.stroke();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=weight*.86;ctx.stroke();}
 }
 function line(x1,y1,x2,y2,color,width=1) {
-  ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  ctx.strokeStyle=color;ctx.lineWidth=width*.9;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
 }
 function rrect(x,y,w,h,r,color,stroke=null,weight=1){
   ctx.beginPath();
   if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h);
   if(color){ctx.fillStyle=color;ctx.fill();}
-  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=weight;ctx.stroke();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=weight*.88;ctx.stroke();}
 }
 function label(text,x,y,size,color,weight='700',outline=null){
   ctx.font=weight+' '+size+'px "Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif';
@@ -4552,7 +4579,9 @@ function pine(x,y,size,shade=false) {
   const s=size/34;
   oval(x+3*s,y+3*s,13*s,5*s,PAL.shadow);
   rect(x-2.2*s,y-6*s,4.4*s,10*s,PAL.woodDark);
-  const dark=shade?'#2f6f35':PAL.leafDark, mid=shade?'#3d8240':PAL.leaf, light=shade?'#5a9c4a':PAL.leafLight;
+  const dark=shade?shadeHex(PAL.leafDark,-.08):PAL.leafDark;
+  const mid=shade?shadeHex(PAL.leaf,-.08):PAL.leaf;
+  const light=shade?shadeHex(PAL.leafLight,-.06):PAL.leafLight;
   path([[x,y-size],[x-12*s,y-13*s],[x+12*s,y-13*s]],mid,OUT,1.4);
   path([[x,y-size+6*s],[x-15*s,y-4*s],[x+15*s,y-4*s]],dark,OUT,1.4);
   path([[x,y-size-4*s],[x-9*s,y-20*s],[x+9*s,y-20*s]],mid,OUT,1.4);
@@ -4583,13 +4612,13 @@ function inCell(px,py,draw){
 }
 function wheatPatch(x,y,ripe=1){
   // 田垄：土色底 + 交错麦穗
-  path([[x-22,y-12],[x+16,y-14],[x+24,y+12],[x-18,y+14]],'#b98a4a',OUT,1.4);
+  path([[x-22,y-12],[x+16,y-14],[x+24,y+12],[x-18,y+14]],PAL.thatchDark,OUT,1.2);
   for(let i=0;i<4;i++){
     const yy=y-8+i*6;
-    line(x-18+i*1.2,yy,x+18+i*1.6,yy-1,'#9a6f38',2.2);
+    line(x-18+i*1.2,yy,x+18+i*1.6,yy-1,PAL.woodDark,1.8);
     for(let j=0;j<6;j++){
       const xx=x-16+j*6.6+i*1.4;
-      oval(xx,yy-2,1.8,3.2,ripe?'#f1cf62':'#a6c45b');
+      oval(xx,yy-2,1.8,3.2,ripe?PAL.thatch:'#91a36b');
     }
   }
 }
@@ -4599,7 +4628,9 @@ function terrain(t){
   inCell(t.x*CELL,t.y*CELL,()=>{
     const v=t.variation;
     if(t.ground==='water'){
-      rect(0,0,60,60,v>.5?PAL.water:PAL.waterDeep);
+      rect(0,0,60,60,PAL.waterDeep);
+      // 水面底色跨格统一，避免每格明暗交替形成棋盘纹。
+      if(v>.82)oval(30,30,22,9,'rgba(145,182,188,.08)');
       // 岸线：相邻陆地一侧画沙岸
       const sh=PAL.shore;
       if(!isWater(t.x,t.y-1))rect(0,0,60,5,sh);
@@ -4670,15 +4701,24 @@ function cachedLayer(name,key,paint){
   ctx.drawImage(off,0,0);
 }
 function drawFog(t){
-  // 迷雾：云团边缘，与已探明区柔和过渡
+  // 探索边缘渐隐，避免整格明暗切换形成硬方块。
   inCell(t.x*CELL,t.y*CELL,()=>{
-    rect(-1,-1,62,62,'rgba(58,78,74,.70)');
-    const near=dirs.some(([dx,dy])=>tileAt(t.x+dx,t.y+dy)?.visible);
-    const drift=0;
-    for(let i=0;i<(near?3:2);i++){
-      const cx=hash2(t.x,t.y,70+i)*50+5+drift, cy=hash2(t.x,t.y,80+i)*50+5;
-      oval(cx,cy,near?17:13,near?12:8,near?'rgba(236,242,238,.22)':'rgba(220,232,228,.10)');
+    const side=dirs.find(([dx,dy])=>tileAt(t.x+dx,t.y+dy)?.visible===!t.visible);
+    if(t.visible&&!side)return;
+    let fill='rgba(17,29,34,.58)';
+    if(side&&typeof ctx.createLinearGradient==='function'){
+      const [dx,dy]=side;
+      const edgeX=dx<0?0:dx>0?60:30,edgeY=dy<0?0:dy>0?60:30;
+      const fade=t.visible?ctx.createLinearGradient(30,30,edgeX,edgeY):
+        ctx.createLinearGradient(edgeX,edgeY,30-dx*45,30-dy*45);
+      if(fade&&typeof fade.addColorStop==='function'){
+        fade.addColorStop(0,t.visible?'rgba(17,29,34,0)':'rgba(17,29,34,.24)');
+        fade.addColorStop(t.visible?1:.5,t.visible?'rgba(17,29,34,.24)':'rgba(17,29,34,.34)');
+        if(!t.visible)fade.addColorStop(1,'rgba(17,29,34,.58)');
+        fill=fade;
+      }
     }
+    rect(0,0,60,60,fill);
   });
 }
 function drawFoliage(t){
@@ -4771,8 +4811,8 @@ function structure(t){
       // 农场：麦田 + 红顶谷仓 + 风车小轮
       oval(x,y+12,26,7,PAL.shadow);
       wheatPatch(x+8,y+6);
-      houseBox(x-24,y-6,18,14,'#e8d2a6',PAL.roofRed,PAL.roofRedDark,{roofH:12,depth:5});
-      line(x-21,y+1,x-11,y+1,'#b98a5a',1);
+      houseBox(x-24,y-6,18,14,PAL.stoneLight,PAL.roofRed,PAL.roofRedDark,{roofH:12,depth:5});
+      line(x-21,y+1,x-11,y+1,PAL.woodLight,1);
       // 小风车
       const a=performance.now()/600;
       line(x+18,y-4,x+18,y-22,PAL.woodDark,2.4);
@@ -4786,8 +4826,8 @@ function structure(t){
       // 伐木场：木屋 + 原木堆 + 树桩斧头
       oval(x,y+12,26,7,PAL.shadow);
       pine(x+17,y-2,22,true);
-      houseBox(x-22,y-6,22,15,PAL.wood,'#7c5530','#5a3b1f',{roofH:11,depth:5,side:PAL.woodDark});
-      for(let k=0;k<3;k++)line(x-21,y-2+k*4,x-1,y-2+k*4,'rgba(60,35,15,.45)',1);
+      houseBox(x-22,y-6,22,15,PAL.wood,PAL.woodDark,shadeHex(PAL.woodDark,-.18),{roofH:11,depth:5,side:PAL.woodDark});
+      for(let k=0;k<3;k++)line(x-21,y-2+k*4,x-1,y-2+k*4,'rgba(48,40,30,.38)',1);
       for(let k=0;k<3;k++){oval(x+6+k*6,y+8,3.2,3.2,PAL.woodLight,OUT,1.2);oval(x+6+k*6,y+8,1.2,1.2,PAL.woodDark);}
       for(let k=0;k<2;k++){oval(x+9+k*6,y+3,3.2,3.2,PAL.woodLight,OUT,1.2);oval(x+9+k*6,y+3,1.2,1.2,PAL.woodDark);}
       oval(x+18,y+12,5,2.5,'#c99a62',OUT,1);line(x+16,y+11,x+21,y+5,'#6e4a27',1.6);path([[x+20,y+4],[x+24,y+5],[x+22,y+8]],'#cfd6d8',OUT,.8);
@@ -4795,11 +4835,11 @@ function structure(t){
     } else if(b.type==='quarry'){
       // 采石场：灰岩坑 + 切石块 + 起重架
       oval(x,y+12,26,7,PAL.shadow);
-      path([[x-24,y+10],[x-18,y-8],[x+4,y-12],[x+10,y+2],[x+2,y+12]],'#9d978a',OUT,1.6);
-      path([[x-18,y-8],[x+4,y-12],[x-2,y-2],[x-14,y]],'#c9c3b3');
-      line(x-14,y-2,x-2,y+4,'rgba(60,55,45,.5)',1.2);
+      path([[x-24,y+10],[x-18,y-8],[x+4,y-12],[x+10,y+2],[x+2,y+12]],PAL.stoneMid,OUT,1.4);
+      path([[x-18,y-8],[x+4,y-12],[x-2,y-2],[x-14,y]],PAL.stoneLight);
+      line(x-14,y-2,x-2,y+4,'rgba(60,55,45,.42)',1.1);
       for(const [bx,by] of [[x+10,y+6],[x+18,y+6],[x+14,y]]){
-        rect(bx-4,by-4,8,7,'#d8d2c2');ctx.strokeStyle=OUT;ctx.lineWidth=1.2;ctx.strokeRect(bx-4,by-4,8,7);rect(bx+1,by-4,3,7,'#aaa392');
+        rect(bx-4,by-4,8,7,PAL.stoneLight);ctx.strokeStyle=OUT;ctx.lineWidth=1.1;ctx.strokeRect(bx-4,by-4,8,7);rect(bx+1,by-4,3,7,PAL.stoneMid);
       }
       line(x+20,y-4,x+20,y-22,PAL.woodDark,2.4);line(x+20,y-22,x+8,y-18,PAL.woodDark,2.4);
       line(x+9,y-18,x+9,y-10,'#4a4038',1);rect(x+6,y-10,6,4,'#c9c3b3');
@@ -4807,10 +4847,10 @@ function structure(t){
     } else if(b.type==='mine'){
       // 矿场：山体 + 木支护矿口 + 矿车铁轨
       const ore=t.node?.kind;
-      const tint=ore==='iron'?'#a9b9c4':ore==='rich'?'#ffd257':'#f0c75a';
+      const tint=ore==='iron'?'#93a3a6':ore==='rich'?PAL.thatch:PAL.thatchDark;
       oval(x,y+12,26,7,PAL.shadow);
-      path([[x-26,y+10],[x-14,y-16],[x+2,y-22],[x+18,y-10],[x+26,y+10]],'#9a8a72',OUT,1.6);
-      path([[x-14,y-16],[x+2,y-22],[x-2,y-10],[x-12,y-6]],'#bfae92');
+      path([[x-26,y+10],[x-14,y-16],[x+2,y-22],[x+18,y-10],[x+26,y+10]],PAL.stoneMid,OUT,1.4);
+      path([[x-14,y-16],[x+2,y-22],[x-2,y-10],[x-12,y-6]],PAL.stoneLight);
       ctx.beginPath();ctx.moveTo(x-9,y+10);ctx.lineTo(x-9,y-2);ctx.arc(x,y-2,9,Math.PI,0);ctx.lineTo(x+9,y+10);ctx.closePath();
       ctx.fillStyle='#1d1610';ctx.fill();
       line(x-10,y+10,x-10,y-3,PAL.wood,3);line(x+10,y+10,x+10,y-3,PAL.wood,3);line(x-12,y-6,x+12,y-6,PAL.woodLight,3);
@@ -4865,9 +4905,9 @@ function nodeArt(t){
     else if(kind==='wood'){
       pine(x-12,y+14,34);pine(x+12,y+16,36,true);pine(x+1,y+4,36);
     } else if(['stone','mine','rich','iron'].includes(kind)){
-      const color=kind==='stone'?null:kind==='iron'?['#9fb0ba','#5f6f78','#d4e2ea']:['#d2b05a','#8f7232','#ffe08a'];
+      const color=kind==='stone'?null:kind==='iron'?['#98a5a4','#667372','#c3ccbf']:[PAL.thatch,'#89764c','#e2d0a0'];
       rock(x-6,y+8,18,color||undefined);rock(x+13,y+14,11,color||undefined);
-      if(kind==='rich'||kind==='mine'){oval(x-10,y,2.2,2.2,'#fff1b0');oval(x+14,y+8,1.8,1.8,'#fff1b0');}
+      if(kind==='rich'||kind==='mine'){oval(x-10,y,2.2,2.2,'#e6d29a');oval(x+14,y+8,1.8,1.8,'#e6d29a');}
       if(kind==='rich')rock(x+4,y-4,10,color);
     } else {
       // 遗迹 / 秘点：石台 + 漂浮晶石
@@ -4898,26 +4938,26 @@ function fighter(e,hero=false){
   const t=performance.now();
   const bob=e.moving?Math.abs(Math.sin(t/110+(e.id||0)))*-2.2:0;
   ctx.save();ctx.translate(x,y);ctx.scale(s*(e.face<0?-1:1),s);
-  oval(0,10,12,4.5,'rgba(10,16,8,.45)');
+  oval(0,10,12,4.5,'rgba(30,34,25,.24)');
   ctx.translate(0,bob);
   if(hero){
     // 领主：金色地环 + 蓝披风 + 头盔 + 剑
     ctx.strokeStyle='#ffe08a';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,10,16,6,0,0,Math.PI*2);ctx.stroke();
-    path([[-11,10],[-9,-6],[8,-7],[12,10]],'#2f5fb0',OUT,1.6);
-    path([[-6,10],[-5,-4],[5,-4],[6,10]],'#cfd8e0',OUT,1.4);
-    rect(-5,-2,10,3,PAL.gold);
-    oval(0,-11,6.5,6.5,'#f2c9a0',OUT,1.4);
-    path([[-7,-12],[-6,-19],[6,-19],[7,-12]],'#c8d0d8',OUT,1.4);
+    path([[-11,10],[-9,-6],[8,-7],[12,10]],PAL.roofBlue,OUT,1.5);
+    path([[-6,10],[-5,-4],[5,-4],[6,10]],PAL.stoneLight,OUT,1.3);
+    rect(-5,-2,10,3,PAL.thatch);
+    oval(0,-11,6.5,6.5,'#d2b89f',OUT,1.3);
+    path([[-7,-12],[-6,-19],[6,-19],[7,-12]],PAL.stoneMid,OUT,1.3);
     line(0,-19,0,-25,PAL.red,2.4);
     const swing=e.swing?Math.min(1,e.swing.t/.25):0;
     ctx.save();ctx.translate(8,1);ctx.rotate(-1.1+swing*2.1);
-    line(0,0,0,-17,'#eef3f6',2.8);line(-3,-2,3,-2,PAL.gold,2.4);ctx.restore();
-    oval(-10,1,4.6,6.2,'#9a3b2c',OUT,1.2);oval(-10,1,1.6,2.4,PAL.gold);
+    line(0,0,0,-17,PAL.stoneLight,2.6);line(-3,-2,3,-2,PAL.thatch,2.2);ctx.restore();
+    oval(-10,1,4.6,6.2,PAL.roofRedDark,OUT,1.2);oval(-10,1,1.6,2.4,PAL.thatch);
     if(e.hurt>0){ctx.save();ctx.globalAlpha=Math.min(.7,e.hurt*3.2);oval(0,-3,15,17,'#ffb3a3');ctx.restore();}
   }else{
     // 敌军：绿皮掠夺者 / 重甲 / 首领
-    const skin=e.boss?'#7a4c8c':e.heavy?'#5f7a59':'#76a246';
-    const armor=e.boss?'#3c2a44':e.heavy?'#6f6c78':'#7a4a2c';
+    const skin=e.boss?'#725f78':e.heavy?'#68765b':'#74815d';
+    const armor=e.boss?'#493f4b':e.heavy?'#66676b':PAL.woodDark;
     const fill=e.flash>0?'#fff1c8':armor;
     path([[-10,10],[-9,-5],[9,-5],[10,10]],fill,OUT,1.6);
     if(e.heavy||e.boss){rect(-9,-4,18,4,e.boss?'#c79a3c':'#a7a5b0');}
@@ -4953,26 +4993,26 @@ function drawResident(r){
   }
   ctx.scale(s*(pose.face<0?-1:1),s);
   const b=pose.bob;
-  oval(0,8,8,3.4,'rgba(10,16,8,.42)');
-  const colors={miner:'#d49a3a',wood:'#4f9a4a',guard:'#4f7fc0'};
-  const tunic=colors[pose.role]||'#b5845a';
+  oval(0,8,8,3.4,'rgba(30,34,25,.24)');
+  const colors={miner:PAL.thatchDark,wood:PAL.leafDark,guard:PAL.roofBlue};
+  const tunic=colors[pose.role]||PAL.woodLight;
   const legA=walking?Math.sin(performance.now()/90+r.id)*2.4:0;
-  line(-2.5,4+b,-2.5-legA*.4,8,'#4a3826',2.2);line(2.5,4+b,2.5+legA*.4,8,'#4a3826',2.2);
-  path([[-6,6+b],[-5,-5+b],[5,-5+b],[6,6+b]],tunic,OUT,1.4);
-  rect(-5,0+b,10,2,'#5a3e22');
-  oval(0,-9+b,5,5,'#f0c49a',OUT,1.2);
+  line(-2.5,4+b,-2.5-legA*.4,8,PAL.woodDark,2.2);line(2.5,4+b,2.5+legA*.4,8,PAL.woodDark,2.2);
+  path([[-6,6+b],[-5,-5+b],[5,-5+b],[6,6+b]],tunic,OUT,1.3);
+  rect(-5,0+b,10,2,PAL.woodDark);
+  oval(0,-9+b,5,5,'#d2b89f',OUT,1.1);
   const tool=working?Math.sin(performance.now()/160+r.id)*.9:pose.work*.15;
   if(pose.role==='miner'){
-    path([[-5.5,-10+b],[0,-15+b],[5.5,-10+b]],'#e0b44a',OUT,1);
-    ctx.save();ctx.translate(5,0+b);ctx.rotate(-.6+tool);line(0,0,0,-11,'#7a5530',2);path([[-5,-11],[5,-10],[0,-13]],'#c8d0d8',OUT,.8);ctx.restore();
+    path([[-5.5,-10+b],[0,-15+b],[5.5,-10+b]],PAL.thatch,OUT,1);
+    ctx.save();ctx.translate(5,0+b);ctx.rotate(-.6+tool);line(0,0,0,-11,PAL.woodDark,2);path([[-5,-11],[5,-10],[0,-13]],PAL.stoneLight,OUT,.8);ctx.restore();
   }else if(pose.role==='wood'){
-    path([[-5.5,-10+b],[0,-14+b],[5.5,-10+b]],'#3d6e34',OUT,1);
-    ctx.save();ctx.translate(5,0+b);ctx.rotate(-.5+tool);line(0,0,0,-11,'#7a5530',2);path([[0,-11],[5,-9],[0,-6]],'#c8d0d8',OUT,.8);ctx.restore();
+    path([[-5.5,-10+b],[0,-14+b],[5.5,-10+b]],PAL.leafDark,OUT,1);
+    ctx.save();ctx.translate(5,0+b);ctx.rotate(-.5+tool);line(0,0,0,-11,PAL.woodDark,2);path([[0,-11],[5,-9],[0,-6]],PAL.stoneLight,OUT,.8);ctx.restore();
   }else if(pose.role==='guard'){
-    path([[-6,-10+b],[0,-16+b],[6,-10+b]],'#a8b4c0',OUT,1);
-    line(7,5+b,7,-16+b,'#7a5530',1.8);path([[5,-16+b],[7,-21+b],[9,-16+b]],'#dfe6ea',OUT,.8);
+    path([[-6,-10+b],[0,-16+b],[6,-10+b]],PAL.stoneMid,OUT,1);
+    line(7,5+b,7,-16+b,PAL.woodDark,1.8);path([[5,-16+b],[7,-21+b],[9,-16+b]],PAL.stoneLight,OUT,.8);
   }else{
-    path([[-5.5,-10+b],[0,-13+b],[5.5,-10+b]],'#c9a46a',OUT,1);
+    path([[-5.5,-10+b],[0,-13+b],[5.5,-10+b]],PAL.woodLight,OUT,1);
   }
   if(pose.activity==='hurt'){line(-5,-3+b,4,1+b,'#fff',2);}
   ctx.restore();
@@ -4995,13 +5035,13 @@ function drawMilitia(){
     if(!t||!walkable(t))continue;
     const x=(t.x+.5)*CELL,y=(t.y+.4)*CELL,s=CELL/60;
     ctx.save();ctx.translate(x,y);ctx.scale(s*(i?-1:1),s);
-    oval(0,8,8,3.4,'rgba(10,16,8,.42)');
-    path([[-6,6],[-5,-5],[5,-5],[6,6]],'#8a3a3a',OUT,1.4);
-    rect(-5,-1,10,3,'#e8d6b0');
-    oval(0,-9,5,5,'#f0c49a',OUT,1.2);
-    path([[-6,-10],[0,-15],[6,-10]],'#a8b4c0',OUT,1);
-    line(7,6,9,-16,'#7a5530',1.8);path([[7.5,-16],[9.5,-21],[11,-15.5]],'#dfe6ea',OUT,.8);
-    oval(-7,0,3.6,5,'#c79a3c',OUT,1);
+    oval(0,8,8,3.4,'rgba(30,34,25,.24)');
+    path([[-6,6],[-5,-5],[5,-5],[6,6]],PAL.roofRedDark,OUT,1.3);
+    rect(-5,-1,10,3,PAL.stoneLight);
+    oval(0,-9,5,5,'#d2b89f',OUT,1.1);
+    path([[-6,-10],[0,-15],[6,-10]],PAL.stoneMid,OUT,1);
+    line(7,6,9,-16,PAL.woodDark,1.8);path([[7.5,-16],[9.5,-21],[11,-15.5]],PAL.stoneLight,OUT,.8);
+    oval(-7,0,3.6,5,PAL.thatchDark,OUT,1);
     ctx.restore();
   }
 }
@@ -5014,7 +5054,7 @@ function drawCamp(c){
   inCell(t.x*CELL,t.y*CELL,()=>{
     const x=30, y=33;
     oval(x,y+11,22,6,PAL.shadow);
-    const tent=c.lost?'#7a6a62':c.running?'#e0b062':'#cfc3a6';
+    const tent=c.lost?PAL.stoneMid:c.running?PAL.thatch:PAL.stoneLight;
     path([[x-21,y+10],[x,y-18],[x+21,y+10]],tent,OUT,1.8);
     path([[x,y-18],[x+21,y+10],[x+6,y+10]],shadeHex(tent,-.18));
     path([[x-5,y+10],[x+1,y-4],[x+7,y+10]],'#4a3320');
@@ -5122,16 +5162,18 @@ function drawWallRings(){
       path([[-15,-13],[0,-24],[15,-13]],PAL.roofBlue,OUT,1.4);
       ctx.restore();
     }
-    // 6) 统一圈耐久牌：置于圈下沿中点，避免压住主城
-    let maxY=-Infinity,sx=0,n=0;
-    for(const edge of edges){const e=edgeEndpoints(edge);if(!e)continue;maxY=Math.max(maxY,e[0].y,e[1].y);sx+=(e[0].x+e[1].x)/2;n++;}
-    if(n){
-      sx=sx/n*CELL;const sy=maxY*CELL+20;
-      const w=104;
-      rrect(sx-w/2,sy-11,w,22,8,'rgba(28,36,24,.82)',ratio<.35?'#ff7a5a':'rgba(255,224,138,.8)',1.4);
-      label('🛡',sx-w/2+11,sy,11,'#fff');
-      hpPips(sx-w/2+21,sy-6,w-28,ratio,ratio<.35?'#ff7a5a':'#7fd36a');
-      label(Math.ceil(ring.hp)+' / '+ring.maxHp,sx+8,sy+4.5,11,'#fff7e0','700');
+    // 6) 耐久牌贴在下沿的实体墙段上，避开城门与墙外地块。
+    let maxY=-Infinity;
+    for(const edge of edges){const e=edgeEndpoints(edge);if(e)maxY=Math.max(maxY,e[0].y,e[1].y);}
+    const lower=edges.filter(edge=>{
+      const e=edgeEndpoints(edge);return e&&e[0].y===maxY&&e[1].y===maxY&&!isGateEdge(ring,edge.id);
+    });
+    if(lower.length){
+      const edge=lower.sort((a,b)=>Math.abs((a.a.x+a.b.x)/2-game.castle.x-.5)-Math.abs((b.a.x+b.b.x)/2-game.castle.x-.5))[0];
+      const sx=(edge.a.x+edge.b.x)/2*CELL,sy=maxY*CELL,w=56;
+      rrect(sx-w/2,sy-9,w,18,6,'rgba(28,36,24,.88)',ratio<.35?'#ff7a5a':'rgba(255,224,138,.8)',1.2);
+      label(Math.ceil(ring.hp)+'/'+ring.maxHp,sx,sy-2,9,'#fff7e0','700');
+      hpPips(sx-w/2+8,sy+3,w-16,ratio,ratio<.35?'#ff7a5a':'#7fd36a');
     }
   }
 }
@@ -5438,7 +5480,7 @@ function draw(){
   for(const sp of sprites)sp.fn();
   // 墙在精灵之后、迷雾之前：圈墙始终可读
   if(game.castle&&game.wallRings instanceof Map&&game.wallRings.size)drawWallRings();
-  cachedLayer('fog',visible+'|'+navigationRevision()+'|'+game.seed,()=>{for(const t of game.tiles)if(!t.visible)drawFog(t);});
+  cachedLayer('fog',visible+'|'+navigationRevision()+'|'+game.seed,()=>{for(const t of game.tiles)drawFog(t);});
   drawSelection();
   // WP3 P7 ①b′：徽章晚绘 pass —— 只遍历 game.tiles（不用懒加载 Map），t.visible 守卫在 drawProductionBadge 内
   for(const t of game.tiles)if(t.building&&isProductionBuilding(t.building))drawProductionBadge(t);
@@ -5569,8 +5611,8 @@ function sizeMapToCover(){
   if(!board||!canvas)return;
   const bw=board.clientWidth,bh=board.clientHeight;
   if(bw<1||bh<1)return;
-  // 盖住视口并适度放大，主城与生产建筑更易辨认
-  const scale=Math.max(bw/canvas.width,bh/canvas.height)*1.12;
+  // 留出足够的平移余量，让领主移动时镜头能实际跟上。
+  const scale=Math.max(bw/canvas.width,bh/canvas.height)*1.35;
   canvas.style.width=(canvas.width*scale)+'px';
   canvas.style.height=(canvas.height*scale)+'px';
 }
@@ -5646,7 +5688,13 @@ function applyCamera(){
 function setCameraMode(mode){
   camera.mode=mode==='manual'?'manual':'follow';
   camera.generation=(camera.generation||0)+1;
-  
+  const focus=$('focusBtn');
+  if(focus){
+    focus.textContent=camera.mode==='follow'?'跟随中':'跟随领主';
+    focus.setAttribute('aria-label',camera.mode==='follow'?'镜头正在跟随领主':'点击恢复镜头跟随');
+    focus.setAttribute('aria-pressed',String(camera.mode==='follow'));
+    focus.classList.toggle('active',camera.mode==='follow');
+  }
 }
 function panCameraBy(dx,dy){
   camera.tx+=dx;camera.ty+=dy;applyCamera();
@@ -5825,6 +5873,11 @@ function syncPlayHud(){
   $('campaignBtn').hidden=game.phase==='won';
   $('reportBtn').hidden=game.phase==='won';
   if(game.phase==='lost')$('campaignBtn').textContent='复盘';
+  const growth=$('growthBtn');
+  growth.hidden=!active;
+  growth.disabled=!game.cardPending&&!game.growthCards.length;
+  growth.textContent=game.cardPending?'选择强化':game.growthCards.length?'强化 '+game.growthCards.length:'强化';
+  growth.setAttribute('aria-label',game.cardPending?'打开主城强化选择':game.growthCards.length?'查看已选主城强化':'主城强化');
   $('focusBtn').hidden=!active;
   canvas.setAttribute('aria-label',game.phase==='won'?'战后地图，可拖动查看和点选地点。':
     MOBILE()?'地图：短按移动，长按查看，拖动浏览。':'地图：点地移动、点对象查看，WASD 移动，空格攻击。');
@@ -5898,12 +5951,17 @@ function button(label,click,{detail='',gold=false,active=false,disabled=false,ic
 let stockGame=null;
 function updateStocks(){
   const amounts=$('stocks').querySelectorAll('strong');
+  const net=remainingHarvests()?forecastNetIncome():null;
   Object.keys(RESOURCE_LABELS).forEach((key,index)=>{
     const amount=amounts[index], value=game.resources[key];
+    const item=amount.parentElement;
+    const outlook=item.querySelector('.income');
+    const change=net?net[key]||0:null;
+    if(outlook)outlook.textContent=change===null?'—/夜':(change>0?'+':'')+change+'/夜';
+    item.title=RESOURCE_LABELS[key]+' · 当前 '+value+' · '+(change===null?'本夜不结算普通收益':'预计净变化 '+(change>0?'+':'')+change+' / 夜');
     const previous=Number(amount.textContent);
     if(amount.textContent!==String(value)){
       amount.textContent=value;
-      const item=amount.parentElement;
       item.classList.remove('gain','cost');
       if(stockGame===game){
         void item.offsetWidth;
@@ -7084,8 +7142,10 @@ Object.keys(RESOURCE_LABELS).forEach((key,index)=>{
   const item=document.createElement('div');item.className='stock';
   const name=document.createElement('span');
   name.append(buildingGlyph(key,22),RESOURCE_LABELS[key]);
-  item.append(name,document.createElement('strong'));
-  item.title=RESOURCE_LABELS[key]+' · 菜单中可查看资源来源';
+  const amount=document.createElement('strong');
+  const income=document.createElement('small');income.className='income';income.textContent='—/夜';
+  item.append(name,amount,income);
+  item.title=RESOURCE_LABELS[key]+' · 预计每夜净变化';
   $('stocks').append(item);
 });
 function tileFromPointer(event){
@@ -7161,6 +7221,7 @@ $('resetBtn').addEventListener('click',()=>{
 $('sourceBtn').addEventListener('click',showResourceSources);
 $('campaignBtn').addEventListener('click',()=>showSide('campaign'));
 $('reportBtn').addEventListener('click',()=>showSide('report'));
+$('growthBtn').addEventListener('click',showGrowthSummary);
 $('focusBtn').addEventListener('click',centerOnHero);
 $('duskBtn').addEventListener('click',()=>game.earlyNightAt?cancelEarlyNight():requestEarlyNight());
 $('cancelTool').addEventListener('click',()=>setMode(game.mode));
