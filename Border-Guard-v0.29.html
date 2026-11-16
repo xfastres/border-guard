@@ -4,7 +4,7 @@
 <meta data-page-node-id="Gtc1uK028NyjT2SVQ9BeQM" charset="utf-8">
 <meta data-page-node-id="p8eJDyv0EikOmXkDEII5wR" content="width=device-width,initial-scale=1" name="viewport">
 <meta data-page-node-id="SSfGPKPveAT6E3i5gYpHlg" content="#151d18" name="theme-color">
-<title data-page-node-id="PaIw42y7uKXDElXIDZ9qfY" data-pnid-children="gIx7bQQJzmZ2En9q46lVWH">边境守卫 · v0.30</title>
+<title data-page-node-id="PaIw42y7uKXDElXIDZ9qfY" data-pnid-children="gIx7bQQJzmZ2En9q46lVWH">边境守卫 · v0.31</title>
 <style>
 :root{color-scheme:dark;--bg:#141c17;--paper:#202b23;--line:#586448;--text:#f1ebd8;--muted:#c0c6af;--accent:#e8b76c;--ink:#251d13;--red:#ed9a7c;
   --glass:rgba(18,34,26,.82);--glass-line:rgba(201,168,98,.55);--gold:#efc47e;--hp:#7ecf7a}
@@ -109,9 +109,9 @@ body.battle #phaseIcon { color:#c9d9ef; }
 #mapWorld { position:absolute; inset:0 auto auto 0; }
 #map { display:block; max-width:none; touch-action:none; cursor:crosshair; }
 .left-rail {
-  position:absolute; z-index:5; left:10px; top:64px; bottom:var(--hud-bottom,100px);
+  position:absolute; z-index:5; left:10px; top:var(--hud-top,64px); bottom:var(--hud-bottom,100px);
   width:auto; max-width:min(220px,46vw); display:flex; flex-direction:column; gap:8px;
-  align-items:flex-start; height:auto; max-height:calc(100% - 64px - var(--hud-bottom,100px)); overflow:auto;
+  align-items:flex-start; height:auto; max-height:calc(100% - var(--hud-top,64px) - var(--hud-bottom,100px)); overflow:auto;
   pointer-events:none;
 }
 body.touch-ui.sheet-open #leftRail { display:none; }
@@ -144,7 +144,7 @@ body.touch-ui.sheet-open #leftRail { display:none; }
 .legend-swatch { width:12px; height:12px; border-radius:3px; flex:none; }
 #miniMap { width:100%; height:120px; margin-top:6px; border-radius:8px; background:#142019; display:block; cursor:pointer; }
 .side {
-  position:absolute; z-index:6; right:10px; top:64px; bottom:var(--hud-bottom,100px);
+  position:absolute; z-index:6; right:10px; top:var(--hud-top,64px); bottom:var(--hud-bottom,100px);
   min-height:0; min-width:0; width:clamp(250px,24vw,330px); overflow:auto; overscroll-behavior:contain;
   scrollbar-width:thin; background:var(--glass); border:1px solid var(--glass-line); border-radius:14px;
   color:var(--text); box-shadow:0 8px 24px #0006;
@@ -193,8 +193,9 @@ summary { cursor:pointer; padding:5px 0; }
 .reports li { padding:7px 0; border-bottom:1px solid #455344; }
 .reports li:first-child { color:#ffe2a7; }
 .command-deck {
-  position:absolute; z-index:5; left:50%; bottom:10px; transform:translateX(-50%);
-  width:fit-content; max-width:min(960px,calc(100% - 20px)); min-width:0; padding:8px 12px;
+  /* v0.31：left/right + margin:auto 居中；旧的 left:50% 会把 fit-content 宽度限制在半屏，导致命令按钮被裁 */
+  position:absolute; z-index:5; left:10px; right:10px; margin-inline:auto; bottom:10px;
+  width:fit-content; max-width:min(1180px,calc(100% - 20px)); min-width:0; padding:8px 12px;
   background:var(--glass); border:1px solid var(--glass-line); border-radius:14px;
   box-shadow:0 8px 24px #0007; pointer-events:none;
 }
@@ -577,6 +578,42 @@ dialog::backdrop{background:rgba(8,12,20,.66)}
   .card-title{font-size:16px;margin-bottom:6px}
   #eventBanner{top:52px}
 }
+/* ===== v0.31 参考图风格：顶栏胶囊、详情卡插画、亮色地图底 ===== */
+.board{background:#3d8c35}
+.top{background:linear-gradient(180deg,#2e3d58,#1c2638);border-bottom:2px solid #c9952f}
+.time{background:linear-gradient(180deg,#141c2a,#1b2434);border:1px solid #3d4c66;border-radius:14px;padding:1px 12px 1px 8px;box-shadow:inset 0 2px 4px rgba(0,0,0,.35)}
+#phaseIcon{font-size:22px}
+.stock{min-height:32px;padding:2px 12px 2px 3px;gap:6px}
+.stock span{gap:6px}
+.stock .glyph{width:24px;height:24px;padding:1px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#3c4b66,#1a2232);box-sizing:content-box}
+.stock .stock-name{font-weight:600}
+.stock strong{font-size:19px;margin-left:auto}
+.stock .income{color:#9aa6ba;font-weight:700}
+.stock .income.pos{color:#8ff06a}
+.stock .income.neg{color:#ff9a7a}
+/* 变化气泡悬在胶囊上方，不压住数字 */
+.stock .delta{top:auto;bottom:calc(100% - 6px);right:8px;font-size:11px}
+@media (max-width:1100px){.stock .income{display:none}}
+#actionCount::before{content:"⚡";margin-right:4px;color:#ffd36a}
+@media (min-width:921px){
+  .stock .stock-name{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+}
+/* 详情卡：用地图同款建筑插画 */
+.inspect-art.painted{height:auto;aspect-ratio:300/104;padding:0;background:#8fd3ff;border:2px solid var(--glass-line);border-radius:14px;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35),0 4px 12px rgba(0,0,0,.3)}
+.inspect-art.painted canvas{display:block;width:100%;height:100%;object-fit:cover}
+.panel h3{display:flex;align-items:center;gap:8px}
+.inspect-bars .bar-row{grid-template-columns:52px 1fr auto}
+.inspect-bars .bar-row span:first-child::before{content:"❤";margin-right:4px;color:#ff6a5a}
+.inspect-bars .bar-row:nth-child(2) span:first-child::before{content:"⛨";color:#7fb8ff}
+.tile-actions button.gold{min-width:150px;font-size:15px}
+@media (max-width:600px){
+  /* 窄屏：还原顶栏高度，保住 390×844 地图可见占比（siteFree ≥ 0.80） */
+  .time{padding:0;border:0;background:none;box-shadow:none}
+  .stock{min-height:26px;padding:1px 8px 1px 2px;gap:3px}
+  .stock .glyph{width:18px;height:18px;padding:0;background:none}
+  .stock strong{font-size:14px}
+  #phaseIcon{font-size:15px}
+}
 /* WP4：菜单「效果：弱化」也要关掉 CSS 动画（上方 @media 规则只覆盖系统偏好）。
    class 挂在 body 而非 documentElement，兼容 Node 测试 VM 的 DOM 桩。 */
 body.fx-weak *{animation:none!important;transition:none!important}
@@ -637,12 +674,12 @@ body.fx-weak *{animation:none!important;transition:none!important}
             <button id="toggleLegend" type="button" class="quiet" aria-expanded="false">展开图例</button>
           </div>
           <ul id="legendList" hidden>
-            <li><i class="legend-swatch" style="background:#3d5c45"></i>森林（敌挡己穿）</li>
-            <li><i class="legend-swatch" style="background:#7a7f6e"></i>山地（敌挡己穿）</li>
-            <li><i class="legend-swatch" style="background:#9a814e"></i>农田</li>
-            <li><i class="legend-swatch" style="background:#9d8e65"></i>道路</li>
-            <li><i class="legend-swatch" style="background:#3d615c"></i>水域</li>
-            <li><i class="legend-swatch" style="background:#cfc8b0"></i>整圈城墙</li>
+            <li><i class="legend-swatch" style="background:#3c9c46"></i>森林（敌挡己穿）</li>
+            <li><i class="legend-swatch" style="background:#b4ad9d"></i>山地（敌挡己穿）</li>
+            <li><i class="legend-swatch" style="background:#f0c457"></i>农田</li>
+            <li><i class="legend-swatch" style="background:#e6c787"></i>道路</li>
+            <li><i class="legend-swatch" style="background:#47a6e2"></i>水域</li>
+            <li><i class="legend-swatch" style="background:#dcd6c8"></i>整圈城墙</li>
           </ul>
         </div>
         <div class="glass-panel minimap-panel collapsed">
@@ -2493,6 +2530,9 @@ const canvas = $('map');
 // 渲染时可临时切到离屏层（地形/迷雾缓存），绘制后立即切回
 let ctx = canvas.getContext('2d');
 const WIDTH = 32, HEIGHT = 20, CELL = 46, LAST_NIGHT = 5;
+// v0.31：世界逻辑尺寸固定为 WIDTH×CELL / HEIGHT×CELL；画布像素可按显示倍率放大（RES），绘制时统一 setTransform。
+const WORLD_W = WIDTH*CELL, WORLD_H = HEIGHT*CELL;
+let RES = 1;
 // v0.13 竖屏状态：抽屉是否手动展开、玩家是否正在手动拖看地图
 let manualSheetOpen = null;
 let camera = {tx:0,ty:0,mode:'follow',hold:false,vx:0,vy:0,vw:0,vh:0,safeX:0,safeY:0,sx:1,sy:1};
@@ -4522,24 +4562,24 @@ function updateHeroRecovery(dt){
     sync();
   }
 }
-/* ===== v0.30 渲染层：低饱和卡通中世纪边境 =====
+/* ===== v0.31 渲染层：明亮饱和的卡通中世纪边境（参考：鲜绿草地 / 亮蓝河流 / 成片圆冠松林 / 蓝顶石堡） =====
    约束：只读游戏状态，不改血量/资源/寻路；函数名 structure / nodeArt / drawFoliage /
    drawResident / fighter / drawMilitia / drawCombatLayer / draw 为测试与 FW 钩子契约，保持不变。
    世界坐标 = 格 × CELL；每格内部用 0..60 的设计单位（inCell）。 */
 const PAL={
-  grass:['#7f9e5b','#819f5e'], grassOwned:['#87a966','#89ab68'],
-  grassDark:'#5e7548', grassLight:'#a4b77b',
-  road:'#c6ad7d', roadEdge:'#a78d64', roadLight:'#d9c69d',
-  water:'#56899a', waterDeep:'#416f7b', waterLight:'#91b6bc', shore:'#c8b995',
-  stone:'#bdb7a7', stoneMid:'#989384', stoneDark:'#706d61', stoneLight:'#d2cebf',
-  wood:'#8d6d49', woodDark:'#64513a', woodLight:'#ad8d61',
-  roofBlue:'#536e8b', roofBlueDark:'#40566e', roofBlueLight:'#7e92a6',
-  roofRed:'#986351', roofRedDark:'#734c42', roofRedLight:'#b47c66',
-  thatch:'#c3a25e', thatchDark:'#90794b',
-  leaf:'#58754a', leafDark:'#465f3d', leafLight:'#789061',
-  ink:'#37352e', shadow:'rgba(30,34,25,.24)', gold:'#d9b461', red:'#b45e4a'
+  grass:['#78c04a','#7bc34d'], grassOwned:['#86cc57','#89ce5a'],
+  grassDark:'#4e9a32', grassLight:'#a7dc6c',
+  road:'#e6c787', roadEdge:'#bf9a5c', roadLight:'#f5e2ae',
+  water:'#47a6e2', waterDeep:'#3a90d4', waterLight:'#b4e2f7', shore:'#ecd9a2',
+  stone:'#dcd6c8', stoneMid:'#b4ad9d', stoneDark:'#8d8677', stoneLight:'#f2eee3',
+  wood:'#a8743f', woodDark:'#6e4a28', woodLight:'#d49c5e',
+  roofBlue:'#3c7fd8', roofBlueDark:'#2a5ea9', roofBlueLight:'#86b8f2',
+  roofRed:'#dc5638', roofRedDark:'#a63a26', roofRedLight:'#f6906c',
+  thatch:'#f0c457', thatchDark:'#c48f34',
+  leaf:'#3c9c46', leafDark:'#25763a', leafLight:'#7fd25a',
+  ink:'#2c2418', shadow:'rgba(22,48,12,.28)', gold:'#ffcd45', red:'#e2483a'
 };
-const OUT='#575348';
+const OUT='#3b2f22';
 function rect(x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(x,y,w,h);}
 function path(points,color,stroke=null,weight=1){
   ctx.beginPath();
@@ -4575,29 +4615,43 @@ function hash2(x,y,k=0){
   return ((h^(h>>>16))>>>0)/4294967296;
 }
 function pine(x,y,size,shade=false) {
-  // 卡通圆冠松：投影 + 树干 + 三层冠 + 高光
+  // 卡通圆冠松：投影 + 树干 + 三层圆角冠 + 左上高光
   const s=size/34;
-  oval(x+3*s,y+3*s,13*s,5*s,PAL.shadow);
-  rect(x-2.2*s,y-6*s,4.4*s,10*s,PAL.woodDark);
-  const dark=shade?shadeHex(PAL.leafDark,-.08):PAL.leafDark;
+  oval(x+2*s,y+2*s,12*s,4.5*s,PAL.shadow);
+  rect(x-2.2*s,y-5*s,4.4*s,7*s,PAL.woodDark);
+  const dark=shade?shadeHex(PAL.leafDark,-.1):PAL.leafDark;
   const mid=shade?shadeHex(PAL.leaf,-.08):PAL.leaf;
   const light=shade?shadeHex(PAL.leafLight,-.06):PAL.leafLight;
-  path([[x,y-size],[x-12*s,y-13*s],[x+12*s,y-13*s]],mid,OUT,1.4);
-  path([[x,y-size+6*s],[x-15*s,y-4*s],[x+15*s,y-4*s]],dark,OUT,1.4);
-  path([[x,y-size-4*s],[x-9*s,y-20*s],[x+9*s,y-20*s]],mid,OUT,1.4);
-  path([[x-1*s,y-size-1*s],[x-6*s,y-21*s],[x-1*s,y-19*s]],light);
-  path([[x-2*s,y-size+9*s],[x-10*s,y-6*s],[x-2*s,y-7*s]],light);
+  const tier=(top,bot,half,fill)=>{
+    ctx.beginPath();
+    ctx.moveTo(x,y-top);
+    ctx.quadraticCurveTo(x-half*.55,y-(top+bot)/2,x-half,y-bot);
+    ctx.quadraticCurveTo(x,y-bot+half*.42,x+half,y-bot);
+    ctx.quadraticCurveTo(x+half*.55,y-(top+bot)/2,x,y-top);
+    ctx.closePath();ctx.fillStyle=fill;ctx.fill();
+    ctx.strokeStyle=OUT;ctx.lineWidth=1.2*s;ctx.lineJoin='round';ctx.stroke();
+  };
+  tier(size*.62,3*s,15*s,dark);
+  tier(size*.86,12*s,12*s,mid);
+  tier(size*1.06,21*s,8.5*s,mid);
+  // 高光：左侧亮面
+  ctx.save();ctx.globalAlpha=.85;
+  path([[x-1*s,y-size*1.02],[x-6.5*s,y-22*s],[x-2*s,y-23*s]],light);
+  path([[x-2*s,y-size*.82],[x-10*s,y-13*s],[x-3*s,y-14*s]],light);
+  path([[x-2.5*s,y-size*.58],[x-12*s,y-4.5*s],[x-4*s,y-5.5*s]],shadeHex(light,-.12));
+  ctx.restore();
 }
 function leafTree(x,y,size){
   const s=size/30;
-  oval(x+3*s,y+2*s,12*s,5*s,PAL.shadow);
+  oval(x+2*s,y+2*s,12*s,4.5*s,PAL.shadow);
   rect(x-2*s,y-8*s,4*s,10*s,PAL.woodDark);
-  oval(x,y-15*s,12*s,11*s,PAL.leaf,OUT,1.4);
-  oval(x-6*s,y-11*s,8*s,7*s,PAL.leafDark,OUT,1.2);
-  oval(x+6*s,y-12*s,8*s,7*s,PAL.leaf,OUT,1.2);
-  oval(x-3*s,y-19*s,5*s,4*s,PAL.leafLight);
+  oval(x,y-15*s,12.5*s,11.5*s,PAL.leafDark,OUT,1.3);
+  oval(x-5*s,y-17*s,8*s,7.5*s,PAL.leaf);
+  oval(x+5*s,y-14*s,7.5*s,7*s,PAL.leaf);
+  oval(x-4*s,y-20*s,4.5*s,3.5*s,PAL.leafLight);
+  oval(x+5*s,y-17*s,2.6*s,2*s,PAL.leafLight);
 }
-function rock(x,y,size,palette=['#b9b2a0','#7f786a','#e2dccb']){
+function rock(x,y,size,palette=['#d4cfc2','#9a9385','#f6f3ea']){
   oval(x+size*.15,y+size*.25,size*1.05,size*.38,PAL.shadow);
   path([[x-size,y],[x-size*.6,y-size*.62],[x+size*.25,y-size*.85],[x+size*.82,y-size*.3],[x+size*.62,y+size*.28],[x-size*.55,y+size*.3]],palette[0],OUT,1.6);
   path([[x-size*.6,y-size*.62],[x+size*.25,y-size*.85],[x+size*.12,y-size*.28],[x-size*.5,y-size*.22]],palette[2]);
@@ -4624,62 +4678,87 @@ function wheatPatch(x,y,ripe=1){
 }
 /* ---------- 地形 ---------- */
 function isWater(x,y){const t=tileAt(x,y);return !t||t.ground==='water';}
-function terrain(t){
+// 大尺度草色斑块：用粗网格伪随机插值，避免整格棋盘纹
+function grassNoise(x,y){
+  const gx=Math.floor(x/4),gy=Math.floor(y/4),fx=(x%4)/4,fy=(y%4)/4;
+  const a=hash2(gx,gy,71),b=hash2(gx+1,gy,71),c=hash2(gx,gy+1,71),d=hash2(gx+1,gy+1,71);
+  const sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy);
+  return (a+(b-a)*sx)*(1-sy)+(c+(d-c)*sx)*sy;
+}
+function terrainBase(t){
+  inCell(t.x*CELL,t.y*CELL,()=>{
+    if(t.ground==='water'){rect(-.5,-.5,61,61,PAL.waterDeep);return;}
+    const pal=t.owned?PAL.grassOwned:PAL.grass;
+    const n=grassNoise(t.x,t.y);
+    const base=shadeHex(pal[0],n>.5?(n-.5)*.22:-(.5-n)*.16);
+    rect(-.5,-.5,61,61,base);
+  });
+}
+function terrainDetail(t){
   inCell(t.x*CELL,t.y*CELL,()=>{
     const v=t.variation;
     if(t.ground==='water'){
-      rect(0,0,60,60,PAL.waterDeep);
-      // 水面底色跨格统一，避免每格明暗交替形成棋盘纹。
-      if(v>.82)oval(30,30,22,9,'rgba(145,182,188,.08)');
-      // 岸线：相邻陆地一侧画沙岸
-      const sh=PAL.shore;
-      if(!isWater(t.x,t.y-1))rect(0,0,60,5,sh);
-      if(!isWater(t.x,t.y+1)){rect(0,55,60,5,sh);}
-      if(!isWater(t.x-1,t.y))rect(0,0,5,60,sh);
-      if(!isWater(t.x+1,t.y))rect(55,0,5,60,sh);
+      // 水面：靠岸一侧画沙岸 + 浅水带 + 白色浪花；内部统一深蓝，避免棋盘纹。
+      const N=!isWater(t.x,t.y-1),S=!isWater(t.x,t.y+1),W=!isWater(t.x-1,t.y),E=!isWater(t.x+1,t.y);
+      const shallow='rgba(130,205,245,.55)', foam='rgba(255,255,255,.7)';
+      if(N){rect(0,0,60,14,shallow);rect(0,0,60,7,PAL.shore);line(4,9,56,9,foam,1.6);}
+      if(S){rect(0,46,60,14,shallow);rect(0,53,60,7,PAL.shore);line(4,51,56,51,foam,1.6);}
+      if(W){rect(0,0,14,60,shallow);rect(0,0,7,60,PAL.shore);line(9,4,9,56,foam,1.6);}
+      if(E){rect(46,0,14,60,shallow);rect(53,0,7,60,PAL.shore);line(51,4,51,56,foam,1.6);}
+      // 对角陆地：角上小沙嘴
+      for(const [dx,dy,cx,cy] of [[-1,-1,0,0],[1,-1,60,0],[-1,1,0,60],[1,1,60,60]]){
+        const sideA=dx<0?W:E, sideB=dy<0?N:S;
+        if(!sideA&&!sideB&&!isWater(t.x+dx,t.y+dy)){oval(cx,cy,13,13,shallow);oval(cx,cy,7,7,PAL.shore);}
+      }
+      if(v>.7)oval(18+v*20,34,9,2.2,'rgba(255,255,255,.18)');
       return;
     }
-    const pal=t.owned?PAL.grassOwned:PAL.grass;
-    rect(0,0,60,60,pal[Math.floor(v*pal.length)]);
-    // 柔和斑块与草叶：按格坐标稳定散布
+    // 草地细节：稳定散布的明暗斑点、草叶与小花
     for(let i=0;i<3;i++){
       const hx=hash2(t.x,t.y,i)*52+4, hy=hash2(t.x,t.y,i+7)*52+4;
-      oval(hx,hy,7+hash2(t.x,t.y,i+3)*6,4,i%2?'rgba(255,255,200,.10)':'rgba(40,80,20,.10)');
+      oval(hx,hy,8+hash2(t.x,t.y,i+3)*7,4.5,i%2?'rgba(255,255,190,.12)':'rgba(30,90,20,.10)');
     }
+    // 临水一侧的草岸暗边
+    if(isWater(t.x,t.y+1))rect(0,56,60,4,'rgba(40,90,25,.35)');
     if(t.ground!=='road'&&!t.node&&t.site===undefined){
-      const n=Math.floor(hash2(t.x,t.y,11)*3);
+      const n=Math.floor(hash2(t.x,t.y,11)*4);
       for(let i=0;i<n;i++){
         const gx=hash2(t.x,t.y,20+i)*48+6, gy=hash2(t.x,t.y,30+i)*44+10;
-        line(gx,gy,gx-2,gy-6,PAL.grassDark,1.6);line(gx,gy,gx+3,gy-5,PAL.grassDark,1.6);
+        line(gx,gy,gx-2,gy-6,PAL.grassDark,1.5);line(gx,gy,gx+1,gy-7,PAL.grassDark,1.5);line(gx,gy,gx+3.5,gy-5,PAL.grassDark,1.5);
       }
-      if(hash2(t.x,t.y,40)>.86){
+      if(hash2(t.x,t.y,40)>.82){
         const fx=hash2(t.x,t.y,41)*44+8, fy=hash2(t.x,t.y,42)*40+12;
-        oval(fx,fy,2.4,2.4,hash2(t.x,t.y,43)>.5?'#fff2a8':'#f6b0c4');
+        const fc=hash2(t.x,t.y,43)>.5?'#fff3a0':'#ffffff';
+        oval(fx,fy,2.4,2.4,fc);oval(fx+5,fy+3,2,2,fc);
       }
     }
     if(t.ground==='road'){
+      // 道路：从格心向相邻道路的边画平头粗线，格界处无缝拼接；格心补圆形成路口。
       const r=(dx,dy)=>tileAt(t.x+dx,t.y+dy)?.ground==='road';
-      const e=r(1,0),w=r(-1,0),s=r(0,1),n=r(0,-1);
-      const h=e||w||!(n||s);
-      const segs=[];
-      if(h){segs.push([w?0:18,18,e?60:42,42]);}
-      if(n||s){segs.push([18,n?0:18,42,s?60:42]);}
-      for(const [x0,y0,x1,y1] of segs)rrect(x0,y0,x1-x0,y1-y0,6,PAL.roadEdge);
-      for(const [x0,y0,x1,y1] of segs)rrect(x0+2,y0+2,x1-x0-4,y1-y0-4,5,PAL.road);
-      for(let i=0;i<3;i++){
-        const px=hash2(t.x,t.y,50+i)*30+15, py=hash2(t.x,t.y,60+i)*30+15;
-        oval(px,py,2.2,1.5,PAL.roadLight);
+      const arms=dirs.filter(([dx,dy])=>r(dx,dy));
+      const stroke=(w,color,oy=0)=>{
+        ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineCap='butt';
+        for(const [dx,dy] of arms){ctx.beginPath();ctx.moveTo(30,30+oy);ctx.lineTo(30+dx*30,30+dy*30+oy);ctx.stroke();}
+        oval(30,30+oy,w/2,w/2,color);
+      };
+      stroke(30,'rgba(80,60,20,.16)',2);
+      stroke(30,PAL.roadEdge);
+      stroke(25,PAL.road);
+      for(let i=0;i<4;i++){
+        const px=hash2(t.x,t.y,50+i)*24+18, py=hash2(t.x,t.y,60+i)*24+18;
+        oval(px,py,2.4,1.6,i%2?PAL.roadLight:'rgba(160,120,60,.35)');
       }
     }
     if(t.field&&!t.node)wheatPatch(30,32);
   });
 }
+function terrain(t){terrainBase(t);terrainDetail(t);}
 function waterShimmer(t){
   inCell(t.x*CELL,t.y*CELL,()=>{
     const ph=(performance.now()/900+t.x*.7+t.y*.4);
     for(let i=0;i<2;i++){
       const yy=14+i*26+Math.sin(ph+i)*2;
-      line(8+i*10,yy,26+i*10,yy-1.5,'rgba(220,245,255,.55)',2);
+      line(10+i*14,yy,24+i*14,yy-1,'rgba(225,246,255,.5)',1.8);
     }
   });
 }
@@ -4693,12 +4772,14 @@ function cachedLayer(name,key,paint){
   if(c.key!==key||off.width!==canvas.width||off.height!==canvas.height){
     if(off.width!==canvas.width)off.width=canvas.width;
     if(off.height!==canvas.height)off.height=canvas.height;
+    if(typeof g.setTransform==='function')g.setTransform(1,0,0,1,0,0);
     g.clearRect(0,0,off.width,off.height);
+    if(typeof g.setTransform==='function')g.setTransform(RES,0,0,RES,0,0);
     const main=ctx;ctx=g;
     try{paint();}finally{ctx=main;}
     c.key=key;
   }
-  ctx.drawImage(off,0,0);
+  ctx.drawImage(off,0,0,WORLD_W,WORLD_H);
 }
 function drawFog(t){
   // 探索边缘渐隐，避免整格明暗切换形成硬方块。
@@ -4721,17 +4802,54 @@ function drawFog(t){
     rect(0,0,60,60,fill);
   });
 }
+// v0.31：迷雾改为「每格 1 像素」小画布 + 双线性放大，边缘自然柔和；未探明的远方叠薄云。
+// 无真实画布（测试桩）时回退逐格 drawFog。
+let fogSmall=null;
+function drawFogLayer(){
+  if(!fogSmall&&typeof document.createElement==='function')fogSmall=document.createElement('canvas');
+  const f=fogSmall?.getContext?.('2d');
+  if(!f||typeof f.fillRect!=='function'||typeof HTMLCanvasElement==='undefined'||!(fogSmall instanceof HTMLCanvasElement)){
+    for(const t of game.tiles)drawFog(t);return;
+  }
+  fogSmall.width=WIDTH+2;fogSmall.height=HEIGHT+2;
+  f.clearRect(0,0,WIDTH+2,HEIGHT+2);
+  f.fillStyle='rgba(22,40,50,.66)';f.fillRect(0,0,WIDTH+2,HEIGHT+2);
+  for(const t of game.tiles)if(t.visible)f.clearRect(t.x+1,t.y+1,1,1);
+  ctx.save();
+  ctx.imageSmoothingEnabled=true;
+  if('imageSmoothingQuality' in ctx)ctx.imageSmoothingQuality='high';
+  ctx.drawImage(fogSmall,-CELL*.5,-CELL*.5,(WIDTH+2)*CELL,(HEIGHT+2)*CELL);
+  ctx.restore();
+  // 深处薄云：只在四周 8 格都未探明的地块上，提示「这里还没去过」
+  for(const t of game.tiles){
+    if(t.visible||hash2(t.x,t.y,90)<.78)continue;
+    let deep=true;
+    for(let dy=-1;dy<=1&&deep;dy++)for(let dx=-1;dx<=1;dx++){const n=tileAt(t.x+dx,t.y+dy);if(n?.visible){deep=false;break;}}
+    if(!deep)continue;
+    const cx=(t.x+.5)*CELL,cy=(t.y+.5)*CELL,k=hash2(t.x,t.y,91);
+    ctx.save();ctx.globalAlpha=.07+k*.05;
+    oval(cx-CELL*.25,cy,CELL*.42,CELL*.22,'#eef6fa');
+    oval(cx+CELL*.18,cy-CELL*.1,CELL*.36,CELL*.24,'#eef6fa');
+    oval(cx+CELL*.05,cy+CELL*.12,CELL*.5,CELL*.18,'#eef6fa');
+    ctx.restore();
+  }
+}
 function drawFoliage(t){
   inCell(t.x*CELL,t.y*CELL,()=>{
     const revealedNode=t.visible&&t.node;
     if(t.ground==='trees'&&!revealedNode){
       const k=hash2(t.x,t.y,5);
-      if(k>.7){leafTree(20,44,30);pine(42,50,36,true);}
-      else{pine(20,40,32);pine(41,46,37,true);pine(46,26,24);}
+      const j=(i)=>(hash2(t.x,t.y,80+i)-.5)*8;
+      // 从后往前画，树冠略微越过格边，成片林地更连续
+      pine(14+j(0),24+j(1)*.5,26+j(2));
+      pine(44+j(3),20+j(4)*.5,28+j(5));
+      if(k>.62){leafTree(28+j(6),40,28);pine(52+j(7),50,30,true);pine(8,54,27,true);}
+      else{pine(29+j(6),40,34);pine(10+j(7)*.5,56,30,true);pine(49,56,33,true);}
     }
     if(t.ground==='rock'&&!revealedNode){
-      rock(26,40,15);rock(42,46,9);
-      if(hash2(t.x,t.y,6)>.5)rock(40,28,7);
+      rock(24,40,16);rock(43,46,10);
+      if(hash2(t.x,t.y,6)>.5)rock(40,26,8);
+      if(hash2(t.x,t.y,7)>.6){oval(12,52,3,2,PAL.stoneMid);oval(50,30,2.4,1.6,PAL.stoneMid);}
     }
   });
 }
@@ -4756,50 +4874,67 @@ function hpPips(x,y,w,ratio,color){
   rrect(x-1,y-1,w+2,6,3,'rgba(20,20,14,.75)');
   rrect(x,y,Math.max(0,w*Math.max(0,Math.min(ratio,1))),4,2,color);
 }
+// v0.31：圆塔 + 蓝色圆锥顶的童话石堡
+function coneTower(tx,baseY,topY,r,roof=PAL.roofBlue,roofD=PAL.roofBlueDark,roofL=PAL.roofBlueLight){
+  // 圆柱塔身：亮面 + 暗面 + 底部椭圆
+  rect(tx-r,topY,r*2,baseY-topY,PAL.stoneLight);
+  rect(tx+r*.25,topY,r*.75,baseY-topY,PAL.stone);
+  oval(tx,baseY,r,r*.35,PAL.stone);
+  ctx.strokeStyle=OUT;ctx.lineWidth=1.4;
+  ctx.beginPath();ctx.moveTo(tx-r,topY);ctx.lineTo(tx-r,baseY);ctx.ellipse(tx,baseY,r,r*.35,0,Math.PI,0,true);ctx.lineTo(tx+r,topY);ctx.stroke();
+  // 圆锥顶
+  const h=r*2.3;
+  ctx.beginPath();ctx.moveTo(tx-r-2.5,topY+1);ctx.quadraticCurveTo(tx-r*.4,topY-h*.5,tx,topY-h);
+  ctx.quadraticCurveTo(tx+r*.4,topY-h*.5,tx+r+2.5,topY+1);ctx.ellipse(tx,topY+1,r+2.5,(r+2.5)*.32,0,0,Math.PI);
+  ctx.closePath();ctx.fillStyle=roof;ctx.fill();ctx.strokeStyle=OUT;ctx.lineWidth=1.5;ctx.stroke();
+  path([[tx,topY-h],[tx+r*.4,topY-h*.5],[tx+r+2.5,topY+1],[tx+r*.5,topY+2]],roofD);
+  path([[tx-1,topY-h+2],[tx-r*.5,topY-h*.4],[tx-r*.9,topY-1],[tx-r*.45,topY-1]],roofL);
+  rrect(tx-2,topY+5,4,6,2,'#2c3a52');
+}
 function castleArt(x,y,big=1){
   ctx.save();ctx.translate(x,y);ctx.scale(big,big);
-  oval(2,20,34,10,PAL.shadow);
-  // 内院基座
-  path([[-30,16],[30,16],[34,10],[-26,10]],PAL.stoneDark,OUT,1.4);
-  // 后墙与两侧塔
-  rect(-26,-14,52,26,PAL.stone);ctx.strokeStyle=OUT;ctx.lineWidth=1.6;ctx.strokeRect(-26,-14,52,26);
-  for(let k=0;k<6;k++)rect(-26+k*9.2,-19,6,6,PAL.stone);
-  for(let k=0;k<6;k++){ctx.strokeRect(-26+k*9.2,-19,6,6);}
-  // 砖缝
-  for(let r=0;r<3;r++)line(-24,-6+r*7,24,-6+r*7,'rgba(90,80,60,.35)',1);
-  const tower=(tx,h,roof,roofD)=>{
-    rect(tx-8,-14-h,16,h+26,PAL.stoneLight);ctx.strokeStyle=OUT;ctx.lineWidth=1.6;ctx.strokeRect(tx-8,-14-h,16,h+26);
-    rect(tx+3,-14-h,5,h+26,PAL.stoneMid);
-    path([[tx-11,-14-h],[tx,-14-h-20],[tx+11,-14-h]],roof,OUT,1.6);
-    path([[tx,-14-h-20],[tx+11,-14-h],[tx+3,-14-h]],roofD);
-    rrect(tx-2.5,-6-h,5,7,2,'#3a2c1e');
-  };
-  tower(-26,10,PAL.roofBlue,PAL.roofBlueDark);
-  tower(26,10,PAL.roofBlue,PAL.roofBlueDark);
+  oval(3,18,36,11,PAL.shadow);
+  // 地基台阶
+  rrect(-31,8,62,12,4,PAL.stoneMid,OUT,1.4);
+  rect(-29,9,58,3,PAL.stone);
+  // 前幕墙 + 雉庠
+  rect(-26,-10,52,20,PAL.stoneLight);rect(10,-10,16,20,PAL.stone);
+  ctx.strokeStyle=OUT;ctx.lineWidth=1.5;ctx.strokeRect(-26,-10,52,20);
+  for(let k=0;k<6;k++){rect(-26+k*9.4,-15,6,5.5,PAL.stoneLight);ctx.strokeRect(-26+k*9.4,-15,6,5.5);}
+  for(let r=0;r<2;r++)for(let c=0;c<5;c++)rect(-22+c*10+(r%2)*5,-4+r*6,6,1.2,'rgba(120,105,80,.35)');
   // 中央主楼
-  rect(-11,-34,22,46,PAL.stoneLight);ctx.strokeStyle=OUT;ctx.lineWidth=1.6;ctx.strokeRect(-11,-34,22,46);
-  rect(4,-34,7,46,PAL.stoneMid);
-  path([[-15,-34],[0,-58],[15,-34]],PAL.roofBlue,OUT,1.8);
-  path([[0,-58],[15,-34],[5,-34]],PAL.roofBlueDark);
-  path([[-6,-40],[0,-52],[2,-48]],PAL.roofBlueLight);
-  // 旗
-  line(0,-58,0,-74,PAL.woodDark,2);
+  rect(-12,-36,24,30,PAL.stoneLight);rect(4,-36,8,30,PAL.stone);
+  ctx.strokeRect(-12,-36,24,30);
+  for(let k=0;k<4;k++){rect(-12+k*6.6,-40,4.2,4.5,PAL.stoneLight);ctx.strokeRect(-12+k*6.6,-40,4.2,4.5);}
+  // 主楼尖顶
+  coneTower(0,-38,-40,9);
+  // 两侧圆塔（前景）
+  coneTower(-27,12,-18,8);
+  coneTower(27,12,-18,8);
+  // 旗帜
   const wave=Math.sin(performance.now()/260)*2;
-  path([[0,-74],[16,-71+wave],[0,-66]],PAL.red,OUT,1.2);
-  // 城门
-  ctx.beginPath();ctx.moveTo(-7,12);ctx.lineTo(-7,0);ctx.arc(0,0,7,Math.PI,0);ctx.lineTo(7,12);ctx.closePath();
-  ctx.fillStyle='#3d2a18';ctx.fill();ctx.strokeStyle=OUT;ctx.stroke();
-  for(let i=-4;i<=4;i+=4)line(i,2,i,12,'#7a5530',1.2);
-  // 窗光
-  const glow=game?.phase==='night'?'#ffd36a':'#2f3b4a';
-  rrect(-4,-26,8,8,2,glow,OUT,1);
+  line(0,-61,0,-76,PAL.woodDark,2);
+  path([[0,-76],[15,-73+wave],[13,-69+wave*.5],[0,-67]],PAL.red,OUT,1.2);
+  path([[0,-76],[15,-73+wave],[8,-72]],'#ff8a6a');
+  // 拱形城门
+  ctx.beginPath();ctx.moveTo(-8,10);ctx.lineTo(-8,0);ctx.arc(0,0,8,Math.PI,0);ctx.lineTo(8,10);ctx.closePath();
+  ctx.fillStyle=PAL.stoneMid;ctx.fill();ctx.strokeStyle=OUT;ctx.lineWidth=1.4;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-6,10);ctx.lineTo(-6,1);ctx.arc(0,1,6,Math.PI,0);ctx.lineTo(6,10);ctx.closePath();
+  ctx.fillStyle='#6b4423';ctx.fill();
+  for(let i=-3;i<=3;i+=3)line(i,-3,i,10,'#4a2e16',1);
+  // 窗光：夜间暖黄
+  const glow=game?.phase==='night'?'#ffd36a':'#2c3a52';
+  ctx.beginPath();ctx.moveTo(-3,-17);ctx.lineTo(-3,-24);ctx.arc(0,-24,3,Math.PI,0);ctx.lineTo(3,-17);ctx.closePath();
+  ctx.fillStyle=glow;ctx.fill();ctx.strokeStyle=OUT;ctx.lineWidth=1;ctx.stroke();
   ctx.restore();
 }
 function structure(t){
   inCell(t.x*CELL,t.y*CELL,()=>{
     const b=t.building, x=30, y=35;
+    // v0.31：生产建筑整体放大 12%，与新城堡体量协调（inCell 已 save/restore，只影响画面）
+    if(isProductionBuilding(b)){ctx.translate(30,42);ctx.scale(1.12,1.12);ctx.translate(-30,-42);}
     if(b.type==='castle'){
-      castleArt(x,y-2,1);
+      castleArt(x,y-4,1.18);
       hpPips(x-24,y+20,48,game.castleHp/game.castleMax,game.castleHp<game.castleMax*.35?'#ff7a5a':'#ffd36a');
     } else if(b.type==='wall'){
       oval(x,y+10,24,6,PAL.shadow);
@@ -4826,7 +4961,7 @@ function structure(t){
       // 伐木场：木屋 + 原木堆 + 树桩斧头
       oval(x,y+12,26,7,PAL.shadow);
       pine(x+17,y-2,22,true);
-      houseBox(x-22,y-6,22,15,PAL.wood,PAL.woodDark,shadeHex(PAL.woodDark,-.18),{roofH:11,depth:5,side:PAL.woodDark});
+      houseBox(x-22,y-6,22,15,PAL.wood,PAL.roofRed,PAL.roofRedDark,{roofH:11,depth:5,side:PAL.woodDark});
       for(let k=0;k<3;k++)line(x-21,y-2+k*4,x-1,y-2+k*4,'rgba(48,40,30,.38)',1);
       for(let k=0;k<3;k++){oval(x+6+k*6,y+8,3.2,3.2,PAL.woodLight,OUT,1.2);oval(x+6+k*6,y+8,1.2,1.2,PAL.woodDark);}
       for(let k=0;k<2;k++){oval(x+9+k*6,y+3,3.2,3.2,PAL.woodLight,OUT,1.2);oval(x+9+k*6,y+3,1.2,1.2,PAL.woodDark);}
@@ -4865,19 +5000,26 @@ function structure(t){
       }
       if(b.hp<b.max)hpPips(x-17,y+19,34,b.hp/b.max,'#ffd36a');
     } else {
-      // 箭塔：石基木台 + 尖顶 + 旗
+      // 箭塔：圆石塔身 + 木制箭台 + 圆锥顶（蓝=1 级 / 红=2 级 / 紫=3 级）+ 旗
       const lv=b.level||0;
-      oval(x,y+12,16,6,PAL.shadow);
-      path([[x-12,y+12],[x-10,y-18],[x+10,y-18],[x+12,y+12]],PAL.stone,OUT,1.6);
-      path([[x+3,y-18],[x+10,y-18],[x+12,y+12],[x+4,y+12]],PAL.stoneMid);
-      for(let r=0;r<4;r++)line(x-11,y-10+r*7,x+11,y-10+r*7,'rgba(90,80,60,.35)',1);
-      rect(x-15,y-26,30,9,lv?'#b88a4a':PAL.wood);ctx.strokeStyle=OUT;ctx.lineWidth=1.4;ctx.strokeRect(x-15,y-26,30,9);
-      const roof=lv===2?'#6a5aa8':lv?PAL.roofRed:PAL.roofBlue, roofD=lv===2?'#463a7a':lv?PAL.roofRedDark:PAL.roofBlueDark;
-      path([[x-17,y-26],[x,y-44],[x+17,y-26]],roof,OUT,1.6);
-      path([[x,y-44],[x+17,y-26],[x+5,y-26]],roofD);
-      rrect(x-3,y-14,6,8,2,'#3a2c1e');
-      line(x,y-44,x,y-54,PAL.woodDark,1.6);
-      path([[x,y-54],[x+9,y-51],[x,y-48]],game.ranks.tower?'#c79cff':PAL.gold,OUT,1);
+      oval(x+2,y+12,17,6,PAL.shadow);
+      rect(x-10,y-16,20,28,PAL.stoneLight);rect(x+3,y-16,7,28,PAL.stone);
+      oval(x,y+12,10,3.5,PAL.stone);
+      ctx.strokeStyle=OUT;ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(x-10,y-16);ctx.lineTo(x-10,y+12);ctx.ellipse(x,y+12,10,3.5,0,Math.PI,0,true);ctx.lineTo(x+10,y-16);ctx.stroke();
+      for(let r=0;r<3;r++)rect(x-8+(r%2)*4,y-8+r*7,8,1.2,'rgba(120,105,80,.4)');
+      rrect(x-2.5,y-6,5,7,2.5,'#2c3a52');
+      // 木箭台
+      rrect(x-15,y-24,30,9,2,lv?PAL.woodLight:PAL.wood,OUT,1.4);
+      for(let k=0;k<4;k++)line(x-11+k*7.3,y-23,x-11+k*7.3,y-16,'rgba(60,35,15,.45)',1);
+      const roof=lv===2?'#8a5ad8':lv?PAL.roofRed:PAL.roofBlue, roofD=lv===2?'#5d3aa0':lv?PAL.roofRedDark:PAL.roofBlueDark;
+      const roofL=lv===2?'#c3a0ff':lv?PAL.roofRedLight:PAL.roofBlueLight;
+      ctx.beginPath();ctx.moveTo(x-17,y-23);ctx.quadraticCurveTo(x-6,y-34,x,y-46);ctx.quadraticCurveTo(x+6,y-34,x+17,y-23);
+      ctx.ellipse(x,y-23,17,4.5,0,0,Math.PI);ctx.closePath();ctx.fillStyle=roof;ctx.fill();ctx.strokeStyle=OUT;ctx.lineWidth=1.6;ctx.stroke();
+      path([[x,y-46],[x+6,y-34],[x+17,y-23],[x+6,y-22]],roofD);
+      path([[x-1,y-43],[x-6,y-32],[x-13,y-24],[x-7,y-24]],roofL);
+      line(x,y-46,x,y-56,PAL.woodDark,1.6);
+      path([[x,y-56],[x+10,y-53],[x,y-50]],game.ranks.tower?'#c79cff':PAL.gold,OUT,1);
       if(b.hp<b.max)hpPips(x-17,y+15,34,b.hp/b.max,'#ffd36a');
     }
   });
@@ -4956,14 +5098,17 @@ function fighter(e,hero=false){
     if(e.hurt>0){ctx.save();ctx.globalAlpha=Math.min(.7,e.hurt*3.2);oval(0,-3,15,17,'#ffb3a3');ctx.restore();}
   }else{
     // 敌军：绿皮掠夺者 / 重甲 / 首领
-    const skin=e.boss?'#725f78':e.heavy?'#68765b':'#74815d';
-    const armor=e.boss?'#493f4b':e.heavy?'#66676b':PAL.woodDark;
+    // v0.31：鲜明绿皮掠夺者 + 红褐皮甲，重甲铁灰、首领紫金，在亮色草地上一眼可辨
+    const skin=e.boss?'#a77ad0':e.heavy?'#7fae4e':'#9bd25a';
+    const armor=e.boss?'#5b2f7a':e.heavy?'#7d8796':'#b8452e';
     const fill=e.flash>0?'#fff1c8':armor;
     path([[-10,10],[-9,-5],[9,-5],[10,10]],fill,OUT,1.6);
-    if(e.heavy||e.boss){rect(-9,-4,18,4,e.boss?'#c79a3c':'#a7a5b0');}
+    if(e.heavy||e.boss){rect(-9,-4,18,4,e.boss?PAL.gold:'#c9d0da');}
+    else{rect(-9,-1,18,3,'#6e3a20');}
     oval(0,-11,7,6.5,e.flash>0?'#fff1c8':skin,OUT,1.4);
     path([[-7,-12],[-12,-15],[-6,-9]],skin,OUT,1);path([[7,-12],[12,-15],[6,-9]],skin,OUT,1);
-    rect(-4,-12,2.6,2.6,'#ffea7a');rect(1.6,-12,2.6,2.6,'#ffea7a');
+    rect(-4,-12,2.6,2.6,'#fff27a');rect(1.6,-12,2.6,2.6,'#fff27a');
+    rect(-3.4,-11.4,1.4,1.4,'#2b1d08');rect(2.2,-11.4,1.4,1.4,'#2b1d08');
     if(e.boss){path([[-7,-17],[-4,-24],[0,-18],[4,-24],[7,-17]],PAL.gold,OUT,1.2);}
     else if(e.heavy){path([[-7,-15],[0,-20],[7,-15]],'#9a98a4',OUT,1.2);}
     const raise=e.strike>0?-.9:0;
@@ -5054,9 +5199,10 @@ function drawCamp(c){
   inCell(t.x*CELL,t.y*CELL,()=>{
     const x=30, y=33;
     oval(x,y+11,22,6,PAL.shadow);
-    const tent=c.lost?PAL.stoneMid:c.running?PAL.thatch:PAL.stoneLight;
+    const tent=c.lost?PAL.stoneMid:c.running?'#f6ecd2':PAL.stoneLight;
     path([[x-21,y+10],[x,y-18],[x+21,y+10]],tent,OUT,1.8);
-    path([[x,y-18],[x+21,y+10],[x+6,y+10]],shadeHex(tent,-.18));
+    if(!c.lost){path([[x,y-18],[x-14,y+10],[x-8,y+10]],PAL.roofRed);path([[x,y-18],[x+8,y+10],[x+14,y+10]],PAL.roofRed);}
+    path([[x,y-18],[x+21,y+10],[x+6,y+10]],'rgba(60,40,20,.18)');
     path([[x-5,y+10],[x+1,y-4],[x+7,y+10]],'#4a3320');
     line(x,y-18,x,y-28,PAL.woodDark,1.8);
     path([[x,y-28],[x+11,y-25],[x,y-22]],c.lost?'#555':PAL.red,OUT,1);
@@ -5260,13 +5406,13 @@ let lightCanvas=null;
 function drawLighting(isNight){
   if(!isNight){
     // 白天暖光：能力检测（§5 契约）。测试 VM 的 createLinearGradient 可能返回空函数/undefined。
-    const g=typeof ctx.createLinearGradient==='function'?ctx.createLinearGradient(0,0,canvas.width,canvas.height):null;
+    const g=typeof ctx.createLinearGradient==='function'?ctx.createLinearGradient(0,0,WORLD_W,WORLD_H):null;
     if(!g?.addColorStop)return;
     g.addColorStop(0,'rgba(255,240,190,.10)');g.addColorStop(1,'rgba(40,70,30,.08)');
     // WP4：天亮后 1.5 秒暖光淡入；用 globalAlpha 整层插值，色标与渐变调用次数保持不变
     const fade=Math.min(1,Math.max(0,(game?.phaseElapsed||0)/1.5));
     ctx.save();ctx.globalAlpha=fade;
-    rect(0,0,canvas.width,canvas.height,g);
+    rect(0,0,WORLD_W,WORLD_H,g);
     ctx.restore();
     return;
   }
@@ -5277,12 +5423,13 @@ function drawLighting(isNight){
   // 无真实 2D 上下文（如 Node 测试桩）时跳过光照，只影响画面
   if(!l||typeof l.createRadialGradient!=='function'||!l.createRadialGradient(0,0,0,0,0,1)?.addColorStop)return;
   l.globalCompositeOperation='source-over';
-  l.clearRect(0,0,lightCanvas.width,lightCanvas.height);
+  if(typeof l.setTransform==='function')l.setTransform(lightCanvas.width/WORLD_W||1,0,0,lightCanvas.height/WORLD_H||1,0,0);
+  l.clearRect(0,0,WORLD_W,WORLD_H);
   l.fillStyle='rgba(14,24,56,.58)';
   // WP4：入夜后 1.5 秒夜幕 alpha 0→.58 线性；globalAlpha 插值，暗幕色值字面量不变
   const nightFade=Math.min(1,Math.max(0,(game?.clock||0)/1.5));
   l.save();l.globalAlpha=nightFade;
-  l.fillRect(0,0,lightCanvas.width,lightCanvas.height);
+  l.fillRect(0,0,WORLD_W,WORLD_H);
   l.restore();
   l.globalCompositeOperation='destination-out';
   const hole=(wx,wy,r,a=1)=>{
@@ -5295,7 +5442,7 @@ function drawLighting(isNight){
   if(game.hero.hp>0)hole(game.hero.x*CELL,game.hero.y*CELL,CELL*2.1*flick,.8);
   for(const t of game.tiles)if(t.building?.type==='tower')hole((t.x+.5)*CELL,(t.y+.3)*CELL,CELL*1.6*flick,.7);
   for(const c of game.camps)if(!c.lost){const t=campTile(c);hole((t.x+.5)*CELL,(t.y+.5)*CELL,CELL*1.5,.6);}
-  ctx.drawImage(lightCanvas,0,0);
+  ctx.drawImage(lightCanvas,0,0,WORLD_W,WORLD_H);
   // 暖色火光叠加：整体能力检测（§5 契约），不满足则整段跳过，不逐次 try/catch
   if(typeof ctx.createRadialGradient==='function'&&ctx.createRadialGradient(0,0,0,0,0,1)?.addColorStop){
     ctx.save();ctx.globalCompositeOperation='lighter';
@@ -5389,16 +5536,18 @@ function drawGates(){
 function draw(){
   if(!game)return;
   ctx.save();
+  RES=canvas.width/WORLD_W||1;
+  if(typeof ctx.setTransform==='function')ctx.setTransform(RES,0,0,RES,0,0);
   const sh=game.shake&&game.shake.t>0?game.shake:null;
   if(sh){
     const k=sh.t/.22,now=performance.now();
     ctx.translate(Math.sin(now*.09)*sh.mag*k,Math.cos(now*.11)*sh.mag*k);
   }
-  ctx.clearRect(-14,-14,canvas.width+28,canvas.height+28);
+  ctx.clearRect(-14,-14,WORLD_W+28,WORLD_H+28);
   const isNight=game.phase==='night';
   let owned=0,visible=0;
   for(const t of game.tiles){if(t.owned)owned++;if(t.visible)visible++;}
-  cachedLayer('terrain',navigationRevision()+'|'+owned+'|'+game.seed,()=>{for(const t of game.tiles)terrain(t);});
+  cachedLayer('terrain',navigationRevision()+'|'+owned+'|'+game.seed,()=>{for(const t of game.tiles)terrainBase(t);for(const t of game.tiles)terrainDetail(t);});
   for(const t of game.tiles)if(t.ground==='water')waterShimmer(t);
   boundaries(!game.castle);
   if(!game.castle){
@@ -5480,7 +5629,7 @@ function draw(){
   for(const sp of sprites)sp.fn();
   // 墙在精灵之后、迷雾之前：圈墙始终可读
   if(game.castle&&game.wallRings instanceof Map&&game.wallRings.size)drawWallRings();
-  cachedLayer('fog',visible+'|'+navigationRevision()+'|'+game.seed,()=>{for(const t of game.tiles)drawFog(t);});
+  cachedLayer('fog',visible+'|'+navigationRevision()+'|'+game.seed,drawFogLayer);
   drawSelection();
   // WP3 P7 ①b′：徽章晚绘 pass —— 只遍历 game.tiles（不用懒加载 Map），t.visible 守卫在 drawProductionBadge 内
   for(const t of game.tiles)if(t.building&&isProductionBuilding(t.building))drawProductionBadge(t);
@@ -5589,6 +5738,12 @@ function layoutHudChrome(){
     clearance=Math.max(compact?64:72,Math.ceil(fr.bottom-dr.top+10));
   }
   field.style.setProperty('--hud-bottom',clearance+'px');
+  // v0.31：左轨 / 右侧详情的顶边跟随简报栏实际高度（夜间战况行会把简报撑高），避免叠压
+  const brief=document.querySelector('.briefing');
+  if(hudPanelVisible(brief)){
+    const top=Math.max(56,Math.ceil(brief.getBoundingClientRect().bottom-fr.top+8));
+    field.style.setProperty('--hud-top',top+'px');
+  }
   // 仅窄屏底部 sheet 限额（max-width:600 才启用）；横屏右侧详情不受此影响
   let sheetMax=200;
   if(innerWidth<=600){
@@ -5612,9 +5767,16 @@ function sizeMapToCover(){
   const bw=board.clientWidth,bh=board.clientHeight;
   if(bw<1||bh<1)return;
   // 留出足够的平移余量，让领主移动时镜头能实际跟上。
-  const scale=Math.max(bw/canvas.width,bh/canvas.height)*1.35;
-  canvas.style.width=(canvas.width*scale)+'px';
-  canvas.style.height=(canvas.height*scale)+'px';
+  const scale=Math.max(bw/WORLD_W,bh/WORLD_H)*1.35;
+  canvas.style.width=(WORLD_W*scale)+'px';
+  canvas.style.height=(WORLD_H*scale)+'px';
+  // v0.31：画布像素跟随实际显示倍率（含 DPR），避免 CSS 拉伸导致地图发虚；上限 2 倍控制填充开销。
+  // 仅真实浏览器画布生效（Node 测试桩保持 1472×920）。
+  if(typeof HTMLCanvasElement!=='undefined'&&canvas instanceof HTMLCanvasElement){
+    const res=Math.min(2,Math.max(1,Math.ceil(scale*(window.devicePixelRatio||1)*4)/4));
+    const w=Math.round(WORLD_W*res),h=Math.round(WORLD_H*res);
+    if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;RES=res;}
+  }
 }
 function measureCameraViewport(){
   sizeMapToCover();
@@ -5665,14 +5827,14 @@ function measureCameraViewport(){
   camera.safeY=insetT+safeH/2;
   camera.insets={l:insetL,r:insetR,t:insetT,b:insetB,sideDock};
   const display=canvas.getBoundingClientRect();
-  camera.sx=display.width/canvas.width;
-  camera.sy=display.height/canvas.height;
+  camera.sx=display.width/WORLD_W;
+  camera.sy=display.height/WORLD_H;
   return camera;
 }
 function clampCamera(){
   if(!camera.sx||!camera.sy)return;
-  const worldW=canvas.width*camera.sx;
-  const worldH=canvas.height*camera.sy;
+  const worldW=WORLD_W*camera.sx;
+  const worldH=WORLD_H*camera.sy;
   const viewW=camera.vw,viewH=camera.vh;
   if(worldW>=viewW-0.5)camera.tx=Math.min(0,Math.max(viewW-worldW,camera.tx));
   else camera.tx=(viewW-worldW)/2;
@@ -5711,7 +5873,7 @@ function screenToWorld(clientX,clientY){
 function screenToGrid(clientX,clientY){
   const w=screenToWorld(clientX,clientY);
   if(!Number.isFinite(w.x)||!Number.isFinite(w.y))return null;
-  if(!(w.x>=0&&w.y>=0&&w.x<canvas.width&&w.y<canvas.height))return null;
+  if(!(w.x>=0&&w.y>=0&&w.x<WORLD_W&&w.y<WORLD_H))return null;
   const gx=Math.floor(w.x/CELL),gy=Math.floor(w.y/CELL);
   if(gx<0||gy<0||gx>=WIDTH||gy>=HEIGHT)return null;
   return tileAt(gx,gy);
@@ -5884,8 +6046,8 @@ function syncPlayHud(){
 }
 /* v0.30 图标：统一描边 + 亮色卡通风，全部内联 SVG（离线可用） */
 const GLYPHS={
-  castle:'<path d="M3 29h26v-3H3z" fill="#7d7462"/><rect x="6" y="14" width="20" height="13" fill="#e9e1cc" stroke="#2b2418" stroke-width="1.4"/><rect x="3" y="11" width="7" height="16" fill="#f4eedd" stroke="#2b2418" stroke-width="1.4"/><rect x="22" y="11" width="7" height="16" fill="#f4eedd" stroke="#2b2418" stroke-width="1.4"/><path d="M2 11l4.5-7L11 11z M21 11l4.5-7L30 11z" fill="#3f74c4" stroke="#2b2418" stroke-width="1.3"/><rect x="12" y="8" width="8" height="19" fill="#f4eedd" stroke="#2b2418" stroke-width="1.4"/><path d="M10.5 8L16 1l5.5 7z" fill="#3f74c4" stroke="#2b2418" stroke-width="1.3"/><path d="M13.5 27v-4a2.5 2.5 0 015 0v4z" fill="#4a3320"/>',
-  tower:'<path d="M9 29l1-17h12l1 17z" fill="#e9e1cc" stroke="#2b2418" stroke-width="1.4"/><rect x="7" y="9" width="18" height="5" fill="#a0703f" stroke="#2b2418" stroke-width="1.3"/><path d="M6 9.5L16 1l10 8.5z" fill="#3f74c4" stroke="#2b2418" stroke-width="1.3"/><rect x="14" y="18" width="4" height="6" rx="1.5" fill="#3a2c1e"/>',
+  castle:'<ellipse cx="16" cy="29" rx="14" ry="2.2" fill="#2a5a1e" opacity=".35"/><rect x="5" y="15" width="22" height="13" fill="#f2eee3" stroke="#3b2f22" stroke-width="1.3"/><path d="M5 15h22v-2.5h-3v1.5h-2v-1.5h-3v1.5h-2v-1.5h-3v1.5h-2v-1.5H5z" fill="#f2eee3" stroke="#3b2f22" stroke-width="1"/><rect x="11.5" y="8" width="9" height="20" fill="#f2eee3" stroke="#3b2f22" stroke-width="1.3"/><path d="M10 8.5Q13 5 16 1q3 4 6 7.5z" fill="#3c7fd8" stroke="#3b2f22" stroke-width="1.2"/><rect x="2" y="12" width="6" height="16" fill="#f2eee3" stroke="#3b2f22" stroke-width="1.2"/><rect x="24" y="12" width="6" height="16" fill="#f2eee3" stroke="#3b2f22" stroke-width="1.2"/><path d="M1 12.5Q3.5 9 5 5.5q1.5 3.5 4 7z M23 12.5Q25.5 9 27 5.5q1.5 3.5 4 7z" fill="#3c7fd8" stroke="#3b2f22" stroke-width="1.1"/><path d="M13.5 28v-4.5a2.5 2.5 0 015 0V28z" fill="#6b4423" stroke="#3b2f22" stroke-width=".9"/><path d="M16 1V-2" stroke="#6e4a28"/><path d="M16 1.2l4 1-4 1.2z" fill="#e2483a"/>',
+  tower:'<ellipse cx="16" cy="29" rx="9" ry="2" fill="#2a5a1e" opacity=".35"/><rect x="10" y="13" width="12" height="15" fill="#f2eee3" stroke="#3b2f22" stroke-width="1.3"/><rect x="18" y="13" width="4" height="15" fill="#dcd6c8"/><rect x="7" y="10" width="18" height="4.5" rx="1" fill="#a8743f" stroke="#3b2f22" stroke-width="1.2"/><path d="M6 10.5Q12 6 16 1q4 5 10 9.5z" fill="#3c7fd8" stroke="#3b2f22" stroke-width="1.2"/><path d="M15 3Q12 7 9 10h4z" fill="#86b8f2"/><rect x="14.5" y="18" width="3" height="5" rx="1.5" fill="#2c3a52"/>',
   wall:'<rect x="3" y="13" width="26" height="14" fill="#e9e1cc" stroke="#2b2418" stroke-width="1.4"/><path d="M3 9h5v4H3zM11 9h5v4h-5zM19 9h5v4h-5zM26 9h3v4h-3z" fill="#e9e1cc" stroke="#2b2418" stroke-width="1.2"/><path d="M3 20h26M10 13v7M20 20v7" stroke="#a99f88" stroke-width="1.2"/>',
   claim:'<path d="M8 29V4" stroke="#6e4a27" stroke-width="2.6" stroke-linecap="round"/><path d="M9 5l15 4-15 5z" fill="#d9533c" stroke="#2b2418" stroke-width="1.3"/><ellipse cx="14" cy="28" rx="10" ry="2.5" fill="#7fae4f"/>',
   camp:'<path d="M3 27L16 6l13 21z" fill="#e0b062" stroke="#2b2418" stroke-width="1.5"/><path d="M16 6l13 21h-9z" fill="#b98a3e"/><path d="M13 27l3-8 3 8z" fill="#4a3320"/><path d="M16 6V1" stroke="#6e4a27" stroke-width="1.6"/><path d="M16 1l6 2-6 2z" fill="#d9533c"/>',
@@ -5957,7 +6119,11 @@ function updateStocks(){
     const item=amount.parentElement;
     const outlook=item.querySelector('.income');
     const change=net?net[key]||0:null;
-    if(outlook)outlook.textContent=change===null?'—/夜':(change>0?'+':'')+change+'/夜';
+    if(outlook){
+      outlook.textContent=change===null?'—/夜':(change>0?'+':'')+change+'/夜';
+      outlook.classList?.toggle?.('pos',change>0);
+      outlook.classList?.toggle?.('neg',change<0);
+    }
     item.title=RESOURCE_LABELS[key]+' · 当前 '+value+' · '+(change===null?'本夜不结算普通收益':'预计净变化 '+(change>0?'+':'')+change+' / 夜');
     const previous=Number(amount.textContent);
     if(amount.textContent!==String(value)){
@@ -6215,6 +6381,43 @@ function destinationLabel(t){
   if(t.site!==undefined&&!game.castle)return '前往 '+(SITE_NAMES[t.site]||'城址')+coord;
   return '前往 空地'+coord;
 }
+// v0.31：详情卡插画直接复用地图绘制函数，和地图上看到的建筑一致；
+// 无真实画布（Node 测试桩）时回退 SVG 图标。
+function inspectArt(t,camp=null){
+  const wrap=document.createElement('div');
+  wrap.className='inspect-art';wrap.setAttribute('aria-hidden','true');
+  const kind=t.building?.type||(camp?'camp':t.node?.kind==='farm'?'farm':t.node?.kind==='wood'?'lumber':t.node?'quarry':'build');
+  const real=typeof HTMLCanvasElement!=='undefined';
+  const c=real?document.createElement('canvas'):null;
+  const g=c?.getContext?.('2d');
+  if(!g||typeof g.setTransform!=='function'){wrap.append(buildingGlyph(kind,64));return wrap;}
+  const dpr=Math.min(2,window.devicePixelRatio||1), W=300, H=104;
+  c.width=W*dpr;c.height=H*dpr;
+  const main=ctx;ctx=g;
+  try{
+    g.setTransform(dpr,0,0,dpr,0,0);
+    const sky=g.createLinearGradient(0,0,0,H);
+    sky.addColorStop(0,'#8fd3ff');sky.addColorStop(.62,'#dff3ff');sky.addColorStop(.63,PAL.grass[0]);sky.addColorStop(1,PAL.grassDark);
+    g.fillStyle=sky;g.fillRect(0,0,W,H);
+    oval(W*.18,H*.66,90,22,PAL.leaf);oval(W*.84,H*.68,100,24,PAL.leaf);
+    oval(W*.5,H*.86,170,30,PAL.grassLight);
+    oval(64,22,22,8,'rgba(255,255,255,.9)');oval(80,18,16,9,'rgba(255,255,255,.9)');oval(232,28,18,6,'rgba(255,255,255,.85)');
+    const zoom=kind==='castle'?1.45:1.7;
+    g.translate(W/2,H*.62);g.scale(zoom,zoom);g.translate(-(t.x+.5)*CELL,-(t.y+.62)*CELL);
+    if(kind==='castle')inCell(t.x*CELL,t.y*CELL,()=>castleArt(30,31,1.18));
+    else if(camp)drawCamp(camp);
+    else if(t.building)structure(t);
+    else if(t.node)nodeArt(t);
+  }catch(err){wrap.replaceChildren(buildingGlyph(kind,64));return wrap;}
+  finally{ctx=main;}
+  wrap.classList.add('painted');
+  wrap.append(c);
+  return wrap;
+}
+function placeInspectArt(heading,t,camp){
+  if(typeof heading.after!=='function'||typeof HTMLCanvasElement==='undefined')return;
+  heading.after(inspectArt(t,camp));
+}
 function inspect(){
   const parent=$('inspectBody'), t=game.tiles[game.selected];
   parent.replaceChildren();
@@ -6267,7 +6470,7 @@ function inspect(){
     }
   }
   const camp=campCore(t), day=game.phase==='day', disabled=!game.actions;
-  if(camp){inspectCamp(camp,heading,info,actions,parent);return;}
+  if(camp){inspectCamp(camp,heading,info,actions,parent);placeInspectArt(heading,t,camp);return;}
   if(t.site!==undefined&&!game.castle){
     heading.textContent=SITE_NAMES[t.site];
     info.textContent=t.site===0?'更靠近西侧首夜入口，入夜前优先布防。两处城址都有粮、木、石和低产金矿。':
@@ -6280,9 +6483,7 @@ function inspect(){
     const ring=game.wallRings?.get?.('home');
     const infoLine=document.createElement('p');
     infoLine.textContent='居民 '+game.residents.filter(r=>r.state!=='dead').length+' 人';
-    const art=document.createElement('div');
-    art.className='inspect-art';art.setAttribute('aria-hidden','true');
-    art.append(buildingGlyph('castle',64));
+    const art=inspectArt(t);
     const bars=document.createElement('div');bars.className='inspect-bars';
     const row=(id,label,cls)=>{
       const line=document.createElement('div');line.className='bar-row';
@@ -6331,6 +6532,7 @@ function inspect(){
   }
   if(t.node){
     const n=t.node;
+    placeInspectArt(heading,t);
     heading.textContent=NODE_NAMES[n.kind];
     info.textContent=YIELD[n.kind]?'':NODE_TEXT[n.kind];
     if(YIELD[n.kind]){
@@ -6378,6 +6580,7 @@ function inspect(){
     return;
   }
   const b=t.building;
+  if(b)placeInspectArt(heading,t);
   heading.textContent=b?(b.type==='wall'?'城墙':b.level===2?'重型塔':b.level===1?'强化箭塔':'箭塔'):'地块';
   info.textContent=b?BUILDS[b.type].info:'点空地可移动。';
   if(day&&b){
@@ -7141,7 +7344,8 @@ function newRun(){
 Object.keys(RESOURCE_LABELS).forEach((key,index)=>{
   const item=document.createElement('div');item.className='stock';
   const name=document.createElement('span');
-  name.append(buildingGlyph(key,22),RESOURCE_LABELS[key]);
+  const label=document.createElement('b');label.className='stock-name';label.textContent=RESOURCE_LABELS[key];
+  name.append(buildingGlyph(key,24),label);
   const amount=document.createElement('strong');
   const income=document.createElement('small');income.className='income';income.textContent='—/夜';
   item.append(name,amount,income);
@@ -7400,6 +7604,9 @@ function bindMinimap(){
   });
   const skip=$('cardSkip');
   if(skip)skip.addEventListener('click',()=>pickGrowthCard(null,'跳过'));
+  // v0.31：简报栏高度变化（换行 / 夜间战况）时同步左轨与详情顶边
+  const brief=document.querySelector('.briefing');
+  if(brief&&typeof ResizeObserver==='function')new ResizeObserver(()=>layoutHudChrome()).observe(brief);
 }
 const _draw=draw;
 draw=function(){
