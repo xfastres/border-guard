@@ -1,0 +1,60 @@
+{
+  "note": "夹具状态用 evaluate 布置；开发/派遣/移动/改派通过 CDP 鼠标或触屏真实点击。触屏为 Chrome Emulation，不是手机真机。",
+  "desktop": {
+    "wood": {
+      "developed": true,
+      "type": "lumber",
+      "cover": "none",
+      "id": "prod-1"
+    },
+    "atWork": {
+      "state": "working",
+      "atDock": true,
+      "x": 10.5,
+      "y": 4.600000000000003,
+      "buildingId": "prod-1"
+    },
+    "moved": {
+      "work": "idle",
+      "dist": 0,
+      "x": 7.5,
+      "y": 6.5,
+      "heroGoal": 0,
+      "heroX": 5.5,
+      "heroY": 3.5
+    },
+    "reassigned": {
+      "ok": true,
+      "state": "working"
+    },
+    "woodClick": {
+      "x": 529.198974609375,
+      "y": 276.79999999999995
+    },
+    "pageErrors": []
+  },
+  "touch": {
+    "worker": {
+      "working": true,
+      "x": 10.5,
+      "y": 4.600000000000003
+    },
+    "after": {
+      "dist": 0,
+      "hero": {
+        "x": 5.5,
+        "y": 3.5,
+        "goal": null
+      },
+      "work": "idle"
+    },
+    "pageErrors": []
+  },
+  "screenshots": [
+    "desktop-lumber-worker.png",
+    "desktop-resident-moved.png",
+    "desktop-four-buildings.png",
+    "desktop-farm-lumber-workers.png",
+    "touch-four-buildings.png"
+  ]
+}

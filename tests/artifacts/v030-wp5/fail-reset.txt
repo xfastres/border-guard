@@ -1,0 +1,34 @@
+# WP5 自然试玩 B · 不布防败局 / 诊断 / 新一局重置
+# 规则：状态变更只用真实输入与游戏自身时钟；eval 仅只读观测与坐标定位。
+# 末节「胜利页」为明确标注的夹具（非自然试玩）。
+
+[04:17:30] OPEN {"phase":"day","day":1,"clock":0,"elapsed":0,"ringHp":null,"kills":0,"enemies":0,"castle":false,"towers":0,"res":{"gold":14,"material":30,"food":4},"banner":""}
+[04:17:30] CLICK {"label":"普通难度","text":"普通难度 · 开始守卫推荐第一次试玩","at":[720,488]}
+[04:17:31] INITIAL-STATE {"phase":"day","day":1,"clock":0,"elapsed":0.8,"castle":false,"castleHp":50,"kills":0,"enemies":0,"finished":false,"result":null,"notes":0,"ledgerKeys":1,"wallRings":0,"cardPending":false,"cardModal":false,"actions":7,"res":{"gold":14,"material":30,"food":4},"hero":{"hp":100,"max":100},"residents":0,"towers":0,"developed":0,"dialogOpen":false,"goalTitle":"探路 · 选择城址","hint":"从底部选 A 或 B 前往探路"}
+[04:17:31] CLICK {"label":"前往 A","text":"前往 A · 西岭台地","at":[654,862]}
+[04:17:34] CLICK {"label":"查看 A","text":"查看 A · 西岭台地","at":[654,862]}
+[04:17:35] CLICK {"label":"在此建立城堡","text":"在此建立城堡","at":[1188,278]}
+[04:17:36] CLICK {"label":"选择强化","text":"选择强化","at":[780,132]}
+[04:17:36] CLICK {"label":"#cardRow button","text":"养精蓄锐领主最大生命提高 20，并恢复至满生命。选择","at":[488,485]}
+[04:17:37] BEFORE-EARLY-NIGHT {"phase":"day","day":1,"clock":0,"elapsed":5.8,"ringHp":600,"kills":0,"enemies":0,"castle":true,"towers":0,"res":{"gold":14,"material":30,"food":4},"banner":"城堡落成整圈城墙已立起 · 开发周边资源，入夜前在敌袭方向建箭塔"}
+[04:17:37] SHOT {"name":"20-undefended-day1"}
+[04:17:37] CLICK {"label":"提前入夜","text":"提前入夜","at":[1024,754]}
+[04:17:41] UNDEFENDED-NIGHT-START {"phase":"night","day":1,"clock":1,"elapsed":9.2,"ringHp":600,"kills":0,"enemies":0,"castle":true,"towers":0,"res":{"gold":14,"material":30,"food":4},"banner":"第 1 夜敌军从西侧来袭 · 计划 18 名 · 守住城墙"}
+[04:17:42] SHOT {"name":"21-undefended-night"}
+[04:18:04] WAIT-OK {"label":"undefended->lost","ms":22246,"state":{"phase":"lost","day":1,"clock":23.2,"elapsed":9.2,"ringHp":0,"kills":0,"enemies":0,"castle":true,"towers":0,"res":{"gold":14,"material":30,"food":4},"banner":"城堡失守右侧「败局复盘」说明了原因与下局建议"}}
+[04:18:04] LOST-STATE {"phase":"lost","day":1,"clock":23.2,"result":{"day":1,"early":false},"kills":0,"diagnosisText":"败局诊断第 1 夜 21 秒城墙倒塌（敌军从 西 侧集中拆墙），当时箭塔 0 座。下局在该侧城墙内放 2 座箭塔，入夜前修满城墙。本局发生了什么· 第 1 夜城堡耐久归零，本局结束· 第 1 夜城堡耐久跌破一半","diagnosisFn":"第 1 夜 21 秒城墙倒塌（敌军从 西 侧集中拆墙），当时箭塔 0 座。下局在该侧城墙内放 2 座箭塔，入夜前修满城墙。","notes":["第 1 夜城堡耐久归零，本局结束","第 1 夜城堡耐久跌破一半"],"collapseBooks":[{"night":"1","at":21,"side":"west","towers":0}],"goalText":"本局到达第 1 夜，共击退 0 名敌军。战功 0 · 军令达成 0 · 秘点 0/6。 本局发生了什么：第 1 夜城堡耐久归零，本局结束；第 1 夜城堡耐久跌破一半。 第 1 夜 21 秒城墙倒塌（敌军从 西 侧集中拆墙），当时箭塔 0 座。下局在该侧城墙内放 2 座箭塔，入夜前修满城墙。 缺 6 处秘点；示例：东侧山地、南侧河外（列出 2 个，共缺 6 处）。"}
+[04:18:04] SHOT {"name":"22-failure-diagnosis"}
+[04:18:04] RESET-BUTTON {"found":"开始新一局"}
+[04:18:04] CLICK {"label":"开始新一局","text":"开始新一局","at":[1160,380]}
+[04:18:05] RESET-STATE {"phase":"day","day":1,"clock":0,"elapsed":1.1,"castle":false,"castleHp":50,"kills":0,"enemies":0,"finished":false,"result":null,"notes":0,"ledgerKeys":1,"wallRings":0,"cardPending":false,"cardModal":false,"actions":7,"res":{"gold":14,"material":30,"food":4},"hero":{"hp":100,"max":100},"residents":0,"towers":0,"developed":0,"dialogOpen":false,"goalTitle":"探路 · 选择城址","hint":"从底部选 A 或 B 前往探路"}
+[04:18:05] RESET-VS-INITIAL {"diff":[],"initialLedgerKeys":1,"resetLedgerKeys":1}
+[04:18:05] RESET-CHECKS {"checks":{"day1":true,"phaseDay":true,"noCastle":true,"noEnemies":true,"kills0":true,"notFinished":true,"noResult":true,"notes0":true,"ledgerSameAsInitial":true,"wallRings0":true,"noTowers":true,"noDeveloped":true,"resourcesInitial":true,"heroFull":true,"noDialog":true,"identicalToFreshRun":true},"allPass":true}
+[04:18:06] SHOT {"name":"23-after-new-run-reset"}
+[04:18:08] CLICK {"label":"普通难度","text":"普通难度 · 开始守卫推荐第一次试玩","at":[720,488]}
+[04:18:09] FIXTURE-START {"phase":"day","day":1,"clock":0,"elapsed":0.8,"ringHp":null,"kills":0,"enemies":0,"castle":false,"towers":0,"res":{"gold":14,"material":30,"food":4},"banner":""}
+[04:18:09] FIXTURE-DAY5-HUD {"day":5,"phase":"day","steps":[{"text":"1 夜","boss":false,"current":false,"done":true},{"text":"2 夜","boss":false,"current":false,"done":true},{"text":"3 夜","boss":false,"current":false,"done":true},{"text":"4 夜","boss":false,"current":false,"done":true},{"text":"首领","boss":true,"current":true,"done":false}],"goalTitle":"探路 · 选择城址"}
+[04:18:09] SHOT {"name":"24-fixture-day5-hud"}
+[04:18:10] FIXTURE-VICTORY {"phase":"won","day":5,"victoryCard":true,"victoryHidden":false,"goalTitle":"你守住了边境","banner":"边境守住了！首领败退 · 共击退 0 名敌军"}
+[04:18:10] SHOT {"name":"25-fixture-victory-page"}
+[04:18:10] FIXTURE-DISCLAIMER {"text":"胜利页与第 5 夜 HUD 由夹具 game.day=5 / finish(true) 触发，不是自然试玩结论"}
+[04:18:10] PAGE-ERRORS {"main":[],"fixture":[]}

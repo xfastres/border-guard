@@ -1,0 +1,75 @@
+# WP5 自然试玩 A · 完整三夜
+# 规则：状态变更只用真实输入（真实点击 / 按键）与游戏自身时钟；eval 仅只读观测与坐标定位。
+# 视口 1440x900 / 普通难度 / 入口 Border-Guard-v0.29.html
+
+[04:01:54] OPEN {"phase":"day","day":1,"clock":0,"elapsed":0,"castleHp":null,"ringHp":null,"kills":0,"enemies":0,"effects":0,"actions":7,"res":{"gold":14,"material":30,"food":4},"towers":0,"developed":0,"working":0,"hint":"从底部选 A 或 B 前往探路","banner":""}
+[04:01:54] CLICK {"label":"普通难度","text":"普通难度 · 开始守卫推荐第一次试玩","at":[720,488]}
+[04:01:55] S1 {"phase":"day","day":1,"clock":0,"elapsed":0.9,"castleHp":null,"ringHp":null,"kills":0,"enemies":0,"effects":0,"actions":7,"res":{"gold":14,"material":30,"food":4},"towers":0,"developed":0,"working":0,"hint":"从底部选 A 或 B 前往探路","banner":""}
+[04:01:56] SHOT {"name":"01-day1-start"}
+[04:01:56] CLICK {"label":"前往 A","text":"前往 A · 西岭台地","at":[654,862]}
+[04:01:59] S1-travel {"hero":[5.5,4.6],"siteVisible":true}
+[04:01:59] CLICK {"label":"查看 A","text":"查看 A · 西岭台地","at":[654,862]}
+[04:01:59] CLICK {"label":"在此建立城堡","text":"在此建立城堡","at":[1188,278]}
+[04:02:00] S2-castle-built {"phase":"day","day":1,"clock":0,"elapsed":5.6,"castleHp":null,"ringHp":600,"kills":0,"enemies":0,"effects":0,"actions":7,"res":{"gold":14,"material":30,"food":4},"towers":0,"developed":0,"working":0,"hint":"先选择一项开局强化","banner":"城堡落成整圈城墙已立起 · 开发周边资源，入夜前在敌袭方向建箭塔"}
+[04:02:00] SHOT {"name":"02-castle-built"}
+[04:02:00] CLICK {"label":"选择强化","text":"选择强化","at":[780,132]}
+[04:02:01] S2-cards {"modal":true,"cards":3,"labels":["城垣协防每名民兵攻击伤害 +3。选择","领主的誓约领主攻击伤害 +5。选择","工匠值夜主城城墙恢复 120 点（不"]}
+[04:02:02] SHOT {"name":"03-growth-cards"}
+[04:02:02] CLICK {"label":"growth-card-defensive","text":"城垣协防每名民兵攻击伤害 +3。选择","at":[529,485]}
+[04:02:03] S3 {"phase":"day","day":1,"clock":0,"elapsed":6.7,"castleHp":null,"ringHp":600,"kills":0,"enemies":0,"effects":0,"actions":7,"res":{"gold":14,"material":30,"food":4},"towers":0,"developed":0,"working":0,"hint":"点领地内带金色 + 的资源点，开发成生产建筑","banner":"城堡落成整圈城墙已立起 · 开发周边资源，入夜前在敌袭方向建箭塔"}
+[04:02:03] RESOURCE-CANDIDATES [{"x":4,"y":3,"owned":true,"kind":"farm"},{"x":3,"y":5,"owned":true,"kind":"wood"},{"x":5,"y":6,"owned":true,"kind":"stone"}]
+[04:02:03] NODE-PANEL-1 {"tile":[3,5],"btns":["开发资源点2 材料 · 1 行动"]}
+[04:02:03] CLICK {"label":"开发资源点","text":"开发资源点2 材料 · 1 行动","at":[1188,281]}
+[04:02:04] DEVELOPED-1 {"dev":1,"actions":6,"types":["lumber"]}
+[04:02:05] NODE-PANEL-2 {"tile":[5,6],"btns":["开发资源点2 材料 · 1 行动"]}
+[04:02:05] CLICK {"label":"开发资源点","text":"开发资源点2 材料 · 1 行动","at":[1188,281]}
+[04:02:06] DEVELOPED-2 {"dev":2,"actions":5,"types":["lumber","quarry"]}
+[04:02:06] SHOT {"name":"04-two-developed"}
+[04:02:06] PROD-TILES [{"x":3,"y":5,"type":"lumber"},{"x":5,"y":6,"type":"quarry"}]
+[04:02:07] CLICK {"label":"prefix:派遣居民","text":"派遣居民 1","at":[1159,278]}
+[04:02:10] RESIDENT-ASSIGNED {"residents":[{"id":1,"state":"home","work":"working","at":[3.5,5.5]},{"id":2,"state":"home","work":"idle","at":[6.5,3.5]}],"working":1}
+[04:02:10] SHOT {"name":"05-resident-arrived"}
+[04:02:11] CLICK-WORLD {"label":"resident-1","world":[3.5,5.5],"at":[176,275]}
+[04:02:11] RESIDENT-PANEL {"btns":["移动暂停当前工作并前往","调回城堡","改派到林场 3,5","改派到采石场 5,6"]}
+[04:02:11] CLICK {"label":"prefix:移动","text":"移动暂停当前工作并前往","at":[1175,262]}
+[04:02:13] RESIDENT-MOVE {"dest":[5,5],"probe":{"phase":"day","day":1,"clock":0,"elapsed":16.6,"castleHp":null,"ringHp":600,"kills":0,"enemies":0,"effects":0,"actions":5,"res":{"gold":14,"material":26,"food":4},"towers":0,"developed":2,"working":0,"hint":"点生产建筑，派遣居民去工作","banner":"城堡落成整圈城墙已立起 · 开发周边资源，入夜前在敌袭方向建箭塔"}}
+[04:02:13] CLICK-WORLD {"label":"resident-1","world":[5.5,5.5],"at":[277,275]}
+[04:02:13] CLICK {"label":"prefix:调回城堡","text":"调回城堡","at":[1282,262]}
+[04:02:14] RESIDENT-RECALL [{"id":1,"state":"home","work":"idle"},{"id":2,"state":"home","work":"idle"}]
+[04:02:15] CLICK-WORLD {"label":"resident-1","world":[5.32,5.68],"at":[268,284]}
+[04:02:15] REASSIGN-OPTIONS [{"label":"改派到林场 3,5","disabled":false},{"label":"改派到采石场 5,6","disabled":false}]
+[04:02:15] CLICK {"label":"exact:改派到林场 3,5","text":"改派到林场 3,5","at":[1172,311]}
+[04:02:16] RESIDENT-REASSIGNED [{"id":1,"work":"working","building":"prod-1"},{"id":2,"work":"idle","building":null}]
+[04:02:16] S5 {"gate":[0,4],"side":"west","recommended":[[3,4],[3,3]],"hint":"今夜敌军从西侧来：在该侧城墙内建 1–2 座箭塔"}
+[04:02:16] SHOT {"name":"06-s5-recommend"}
+[04:02:16] CLICK {"label":"箭塔","text":"箭塔10 材料 · 4 金币","at":[418,825]}
+[04:02:17] TOWER-TOOL {"mode":"tower","preview":false}
+[04:02:19] S6 {"phase":"day","day":1,"clock":0,"elapsed":22.6,"castleHp":null,"ringHp":600,"kills":0,"enemies":0,"effects":0,"actions":3,"res":{"gold":6,"material":6,"food":4},"towers":2,"developed":2,"working":1,"hint":"准备好了可以提前入夜","banner":"城堡落成整圈城墙已立起 · 开发周边资源，入夜前在敌袭方向建箭塔"}
+[04:02:19] SHOT {"name":"07-two-towers-and-guide"}
+[04:02:19] CLICK {"label":"提前入夜","text":"提前入夜","at":[1024,741]}
+[04:02:23] NIGHT1-START {"phase":"night","day":1,"clock":1,"elapsed":26,"castleHp":null,"ringHp":600,"kills":0,"enemies":0,"effects":0,"actions":3,"res":{"gold":6,"material":6,"food":4},"towers":2,"developed":2,"working":1,"hint":"点地走路 · 点对象查看 · WASD 移动","banner":"第 1 夜敌军从西侧来袭 · 计划 18 名 · 守住城墙"}
+[04:02:23] SHOT {"name":"08-night1-begin"}
+[04:02:29] LORD-SORTIE {"to":[1,4]}
+[04:02:29] CLICK {"label":"领主攻击","text":"领主攻击空格 / 点敌人 / 点按钮","at":[609,829]}
+[04:02:31] SPACE-ATTACK {"keys":[],"hero":[5.5,5.5],"heroHp":100,"kills":5}
+[04:02:45] RALLY-CONTEXT {"nearby":1,"clock":23.1}
+[04:02:45] CLICK {"label":"号令齐射","text":"号令齐射本夜可用 1 次 · 领主周围 4 格","at":[831,829]}
+[04:02:46] RALLY-RESULT {"rallyCharges":0,"lastReport":"","toast":"号令齐射：领主周围 4 格内 1 名敌军受到 16 点伤害。"}
+[04:02:46] SHOT {"name":"09-night1-combat"}
+[04:03:27] WAIT-OK {"label":"night1->day2","ms":40670,"state":{"phase":"day","day":2,"clock":64.6,"elapsed":0.2,"castleHp":null,"ringHp":460,"kills":18,"enemies":0,"effects":2,"actions":7,"res":{"gold":12,"material":12,"food":4},"towers":2,"developed":2,"working":1,"hint":"点地走路 · 点对象查看 · WASD 移动","banner":"天亮了 · 第 2 日击退 18 名敌军 · 收获 6 材料"}}
+[04:03:27] DAWN2-CHECK {"forecast":{"gold":0,"material":6,"food":0},"banner":"天亮了 · 第 2 日击退 18 名敌军 · 收获 6 材料","floatTexts":[],"deltas":["+1","+6"],"developed":2}
+[04:03:27] SHOT {"name":"10-dawn2-banner-and-income"}
+[04:03:27] DAY2-START {"phase":"day","day":2,"clock":64.6,"elapsed":0.5,"castleHp":null,"ringHp":460,"kills":18,"enemies":0,"effects":2,"actions":7,"res":{"gold":12,"material":12,"food":4},"towers":2,"developed":2,"working":1,"hint":"点地走路 · 点对象查看 · WASD 移动","banner":"天亮了 · 第 2 日击退 18 名敌军 · 收获 6 材料"}
+[04:03:27] NOHIT {"label":"居民管理"}
+[04:03:28] WALL-REPAIR-BUTTON-2 {"button":null,"before":{"hp":460,"material":12,"cost":3}}
+[04:03:28] WALL-AFTER-2 {"hp":460,"material":12}
+[04:03:28] REINFORCE-SPOTS-2 {"spots":[[7,4]],"gate":{"x":31,"y":4,"ground":"trees","field":false,"visible":false,"owned":false,"node":null,"building":null,"variation":0.10918720066547394,"cover":"forest"}}
+[04:03:28] CLICK {"label":"箭塔","text":"箭塔10 材料 · 4 金币","at":[418,825]}
+[04:03:29] REINFORCE-DONE-2 {"towers":3,"towerPos":[[3,3],[3,4],[7,4]],"actions":6,"res":{"gold":8,"material":2}}
+[04:03:29] CLICK {"label":"提前入夜","text":"提前入夜","at":[1024,741]}
+[04:03:33] NIGHT2-START {"phase":"night","day":2,"clock":1,"elapsed":5.9,"castleHp":null,"ringHp":460,"kills":18,"enemies":0,"effects":0,"actions":6,"res":{"gold":8,"material":2,"food":4},"towers":3,"developed":2,"working":1,"hint":"点地走路 · 点对象查看 · WASD 移动","banner":"第 2 夜敌军从东侧来袭 · 计划 24 名 · 守住城墙"}
+[04:03:34] SHOT {"name":"11-night2-begin"}
+[04:03:34] NIGHT-REPAIR-BUTTON-2 {"button":{"label":"夜间抢修城墙6 材料 · 6 秒","disabled":true}}
+[04:04:52] WAIT-OK {"label":"night2->day3","ms":77202,"state":{"phase":"lost","day":2,"clock":79.2,"elapsed":5.9,"castleHp":null,"ringHp":0,"kills":39,"enemies":0,"effects":0,"actions":6,"res":{"gold":14,"material":2,"food":4},"towers":3,"developed":2,"working":1,"hint":"在战役面板查看失败原因，或重新开局。","banner":"城堡失守右侧「败局复盘」说明了原因与下局建议"}}
+[04:04:52] FINAL {"phase":"lost","day":2,"clock":79.2,"elapsed":5.9,"castleHp":null,"ringHp":0,"kills":39,"enemies":0,"effects":0,"actions":6,"res":{"gold":14,"material":2,"food":4},"towers":3,"developed":2,"working":1,"hint":"在战役面板查看失败原因，或重新开局。","banner":"城堡失守右侧「败局复盘」说明了原因与下局建议"}
+[04:04:52] PAGE-ERRORS {"logs":[]}

@@ -206,7 +206,7 @@ test('维修到时与致命墙伤同一步：先攻击倒塌，本步不复活',
     game.enemies = [{id:99, x:p.x, y:p.y, hp:100, max:100, speed:1.4, radius:DEMO.radii.normal,
       faction:'enemy', movement:'enemy', front:f, cooldown:0, next:null, routeRevision:-1,
       flash:0, strike:0, face:1, moving:false, heavy:false, boss:false}];
-    ring.hp = 11.5;
+    ring.hp = V029.wallHit.normal - .5; // 恰好一击致命（数值随配置）
     ring.repair = {usedNightId:game.day, status:'building', elapsed:5.96, duration:6,
       budgetHp:150, appliedHp:149, paid:{material:6}};
     advanceBattle(.04);

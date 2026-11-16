@@ -1,0 +1,298 @@
+TAP version 13
+# Subtest: 绕行优先，即使较短直路有墙
+ok 1 - 绕行优先，即使较短直路有墙
+  ---
+  duration_ms: 93.497
+  type: 'test'
+  ...
+# Subtest: 封死城堡近旁后，所有同点敌人能同时拆外墙，破墙后继续拆内墙
+ok 2 - 封死城堡近旁后，所有同点敌人能同时拆外墙，破墙后继续拆内墙
+  ---
+  duration_ms: 55.9504
+  type: 'test'
+  ...
+# Subtest: 不可达的地图边缘换到附近可进攻的入口
+ok 3 - 不可达的地图边缘换到附近可进攻的入口
+  ---
+  duration_ms: 30.8785
+  type: 'test'
+  ...
+# Subtest: 夜里修墙和升级有独立成本，可用性和实际收益一致
+ok 4 - 夜里修墙和升级有独立成本，可用性和实际收益一致
+  ---
+  duration_ms: 37.373
+  type: 'test'
+  ...
+# Subtest: 首日建城至少留一分钟，开局选择不消耗时间
+ok 5 - 首日建城至少留一分钟，开局选择不消耗时间
+  ---
+  duration_ms: 26.6888
+  type: 'test'
+  ...
+# Subtest: 未建城时敌军会继续接近领主
+ok 6 - 未建城时敌军会继续接近领主
+  ---
+  duration_ms: 56.8047
+  type: 'test'
+  ...
+# Subtest: 拆墙有受击反馈并能正常天亮
+ok 7 - 拆墙有受击反馈并能正常天亮
+  ---
+  duration_ms: 37.6255
+  type: 'test'
+  ...
+# Subtest: 资源贴边点击时打开详情，不改领主移动目标
+ok 8 - 资源贴边点击时打开详情，不改领主移动目标
+  ---
+  duration_ms: 24.6829
+  type: 'test'
+  ...
+# Subtest: 战役与战报居中，地点详情继续贴边
+ok 9 - 战役与战报居中，地点详情继续贴边
+  ---
+  duration_ms: 35.2955
+  type: 'test'
+  ...
+# Subtest: 重开重新选择难度并不消耗开局时间
+ok 10 - 重开重新选择难度并不消耗开局时间
+  ---
+  duration_ms: 45.219
+  type: 'test'
+  ...
+# Subtest: 敌人遇见领主进入交战，冷却期间停步，领主退出后继续进攻
+ok 11 - 敌人遇见领主进入交战，冷却期间停步，领主退出后继续进攻
+  ---
+  duration_ms: 51.7401
+  type: 'test'
+  ...
+# Subtest: 领主可以沿点击路线穿过塔与营地，敌人和城墙的碰撞保持
+ok 12 - 领主可以沿点击路线穿过塔与营地，敌人和城墙的碰撞保持
+  ---
+  duration_ms: 22.5658
+  type: 'test'
+  ...
+# Subtest: 民兵与守卫可下令移动，并从实际站位攻击，普通居民可调动
+ok 13 - 民兵与守卫可下令移动，并从实际站位攻击，普通居民可调动
+  ---
+  duration_ms: 30.6668
+  type: 'test'
+  ...
+# Subtest: 桌面占领空地后可直接点建造城墙，资源格仍提示用途
+ok 14 - 桌面占领空地后可直接点建造城墙，资源格仍提示用途
+  ---
+  duration_ms: 49.8174
+  type: 'test'
+  ...
+# Subtest: 点民兵、选移动、再点地图可下令，领主目标不变
+ok 15 - 点民兵、选移动、再点地图可下令，领主目标不变
+  ---
+  duration_ms: 74.7102
+  type: 'test'
+  ...
+# Subtest: 普通居民只移动，营地守卫攻击且不能被下令远程撤出营地
+ok 16 - 普通居民只移动，营地守卫攻击且不能被下令远程撤出营地
+  ---
+  duration_ms: 21.894
+  type: 'test'
+  ...
+# Subtest: 建城生成闭合主城圈与合法城门，己方过门敌方挡门
+ok 17 - 建城生成闭合主城圈与合法城门，己方过门敌方挡门
+  ---
+  duration_ms: 90.893
+  type: 'test'
+  ...
+# Subtest: 敌军实际更新攻击墙边扣共享HP，不同位置同圈，完整墙外不能打主城
+ok 18 - 敌军实际更新攻击墙边扣共享HP，不同位置同圈，完整墙外不能打主城
+  ---
+  duration_ms: 476.4309
+  type: 'test'
+  ...
+# Subtest: 墙归零当步全圈倒塌，残敌继续攻主城并可清场失守
+ok 19 - 墙归零当步全圈倒塌，残敌继续攻主城并可清场失守
+  ---
+  duration_ms: 462.6175
+  type: 'test'
+  ...
+# Subtest: 白天按缺血比例修满，夜间6秒施工，破墙中断且每夜一次
+ok 20 - 白天按缺血比例修满，夜间6秒施工，破墙中断且每夜一次
+  ---
+  duration_ms: 76.2709
+  type: 'test'
+  ...
+# Subtest: 扩地不回血不加上限，非法扩地不扣费
+ok 21 - 扩地不回血不加上限，非法扩地不扣费
+  ---
+  duration_ms: 65.7929
+  type: 'test'
+  ...
+# Subtest: 维修到时与致命墙伤同一步：先攻击倒塌，本步不复活
+ok 22 - 维修到时与致命墙伤同一步：先攻击倒塌，本步不复活
+  ---
+  duration_ms: 456.7822
+  type: 'test'
+  ...
+# Subtest: 实际 spawnEnemy 标记敌方，经门不可穿越
+ok 23 - 实际 spawnEnemy 标记敌方，经门不可穿越
+  ---
+  duration_ms: 363.2692
+  type: 'test'
+  ...
+# Subtest: 扩地堵住全部可过城门外侧时不扣费且不改归属
+ok 24 - 扩地堵住全部可过城门外侧时不扣费且不改归属
+  ---
+  duration_ms: 45.2174
+  type: 'test'
+  ...
+# Subtest: 点击实际墙边打开圈详情，不给领主误发移动令
+ok 25 - 点击实际墙边打开圈详情，不给领主误发移动令
+  ---
+  duration_ms: 55.9043
+  type: 'test'
+  ...
+# Subtest: 逐格建墙入口已移除
+ok 26 - 逐格建墙入口已移除
+  ---
+  duration_ms: 48.1346
+  type: 'test'
+  ...
+# Subtest: 顶栏展示金币材料粮食人口行动，不伪造木石分栏
+ok 27 - 顶栏展示金币材料粮食人口行动，不伪造木石分栏
+  ---
+  duration_ms: 96.8524
+  type: 'test'
+  ...
+# Subtest: 左侧图例与小地图节点存在，右侧主城区分城墙与主城血条
+ok 28 - 左侧图例与小地图节点存在，右侧主城区分城墙与主城血条
+  ---
+  duration_ms: 91.2023
+  type: 'test'
+  ...
+# Subtest: 图例与小地图默认折叠，选址底栏 compact，可按需展开
+ok 29 - 图例与小地图默认折叠，选址底栏 compact，可按需展开
+  ---
+  duration_ms: 53.0875
+  type: 'test'
+  ...
+# Subtest: 卡牌三选一独立模态冻结，不 inert main、不显示暂停遮罩
+ok 30 - 卡牌三选一独立模态冻结，不 inert main、不显示暂停遮罩
+  ---
+  duration_ms: 82.0927
+  type: 'test'
+  ...
+# Subtest: 暂停后再开卡牌，关闭应恢复原暂停
+ok 31 - 暂停后再开卡牌，关闭应恢复原暂停
+  ---
+  duration_ms: 68.8396
+  type: 'test'
+  ...
+# Subtest: 建城后镜头夹紧不留正方向空白，地图至少盖住视口
+ok 32 - 建城后镜头夹紧不留正方向空白，地图至少盖住视口
+  ---
+  duration_ms: 73.7574
+  type: 'test'
+  ...
+# Subtest: 主城详情含插图与双进度条，命令栏含图标
+ok 33 - 主城详情含插图与双进度条，命令栏含图标
+  ---
+  duration_ms: 76.2898
+  type: 'test'
+  ...
+# Subtest: 建造栏无逐格城墙，保留箭塔与真实费用
+ok 34 - 建造栏无逐格城墙，保留箭塔与真实费用
+  ---
+  duration_ms: 68.0277
+  type: 'test'
+  ...
+# Subtest: 建城自动触发首组三选一，非仅夹具
+ok 35 - 建城自动触发首组三选一，非仅夹具
+  ---
+  duration_ms: 45.4903
+  type: 'test'
+  ...
+# Subtest: 夜修施工中显示进度；vitals 专用节点持续刷新不被覆盖
+ok 36 - 夜修施工中显示进度；vitals 专用节点持续刷新不被覆盖
+  ---
+  duration_ms: 58.9879
+  type: 'test'
+  ...
+# Subtest: 工人派遣通过正常居民更新实际抵达工作建筑，不回主城两旁
+ok 37 - 工人派遣通过正常居民更新实际抵达工作建筑，不回主城两旁
+  ---
+  duration_ms: 73.7185
+  type: 'test'
+  ...
+# Subtest: 资源开发会清除原树石覆盖并创建对应生产建筑
+ok 38 - 资源开发会清除原树石覆盖并创建对应生产建筑
+  ---
+  duration_ms: 51.6393
+  type: 'test'
+  ...
+# Subtest: 居民详情必须提供可操作的移动入口
+ok 39 - 居民详情必须提供可操作的移动入口
+  ---
+  duration_ms: 52.2092
+  type: 'test'
+  ...
+# Subtest: 工作时点击移动会到达新位置并停留，随后可改派到另一建筑
+ok 40 - 工作时点击移动会到达新位置并停留，随后可改派到另一建筑
+  ---
+  duration_ms: 84.7126
+  type: 'test'
+  ...
+# Subtest: 六种资源开发前后己方均可穿行，且开发后旧图标与箭塔兜底不参与同格绘制
+ok 41 - 六种资源开发前后己方均可穿行，且开发后旧图标与箭塔兜底不参与同格绘制
+  ---
+  duration_ms: 175.3495
+  type: 'test'
+  ...
+# Subtest: 调回城堡按钮调用 recallHomeResident，不被营地 recallResident 覆写
+ok 42 - 调回城堡按钮调用 recallHomeResident，不被营地 recallResident 覆写
+  ---
+  duration_ms: 94.0139
+  type: 'test'
+  ...
+# Subtest: 开发后工人站在该建筑可见工作区内，而不是邻格
+ok 43 - 开发后工人站在该建筑可见工作区内，而不是邻格
+  ---
+  duration_ms: 51.9311
+  type: 'test'
+  ...
+# Subtest: 拆除生产建筑会释放岗位，不留双岗重复预约
+ok 44 - 拆除生产建筑会释放岗位，不留双岗重复预约
+  ---
+  duration_ms: 62.898
+  type: 'test'
+  ...
+# Subtest: 调回按钮按正常速度沿路返程，不能插值瞬移回城
+ok 45 - 调回按钮按正常速度沿路返程，不能插值瞬移回城
+  ---
+  duration_ms: 91.6113
+  type: 'test'
+  ...
+# Subtest: 拆除后 forecastIncome 为 0 且可重新 develop，天亮不双算
+ok 46 - 拆除后 forecastIncome 为 0 且可重新 develop，天亮不双算
+  ---
+  duration_ms: 61.0142
+  type: 'test'
+  ...
+# Subtest: 单塔守西门时，首夜一定会结束（天亮或失守），不会卡在清场
+ok 47 - 单塔守西门时，首夜一定会结束（天亮或失守），不会卡在清场
+  ---
+  duration_ms: 2802.0754
+  type: 'test'
+  ...
+# Subtest: 偏离格心的敌军可以斜着回到同行相邻格，不被当成穿角
+ok 48 - 偏离格心的敌军可以斜着回到同行相邻格，不被当成穿角
+  ---
+  duration_ms: 26.0756
+  type: 'test'
+  ...
+1..48
+# tests 48
+# suites 0
+# pass 48
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2975.3321
