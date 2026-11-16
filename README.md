@@ -20,6 +20,8 @@
 - **上一稳定对照：`Border-Guard-v0.26.html`** —— 同样可独立双击打开。
 - 历史版本 `Border-Guard-v0.17.html` … `Border-Guard-v0.28.html` 全部保留，每个都能独立打开，历史文件与历史验证证据均未改动。
 
+> **v0.30 打磨（当前分支 `codex/claude-gameplay-art-layout`）**：上面这个 `Border-Guard-v0.29.html` 已完成 WP1–WP5 打磨——明亮卡通渲染与金边玻璃 HUD、首日六步引导与悬停放置预览、七视口与触控适配、1.5 秒昼夜过渡 / 刷兵烟尘 / 三个新音效 / 圈墙受击火花与效果弱化。**入口文件名保持不变，仍是双击即可离线试玩的单文件**。设计方向、取舍、前后截图索引、测试命令与结果、自然试玩记录及剩余未验证项见 [`docs/v030-polish-report.md`](docs/v030-polish-report.md)；逐包进度与质量门结论见 [`docs/v030-polish-progress.md`](docs/v030-polish-progress.md)。
+
 ### v0.29 本轮试玩默认与限制
 
 - 主城耐久 **50**；主城圈墙 **600** 共享 HP，归零整圈倒塌。

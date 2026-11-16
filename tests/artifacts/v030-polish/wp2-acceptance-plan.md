@@ -1,6 +1,8 @@
 # WP2 · 验收用例计划（QA）
 
 > 文档类型：**验收用例 / 待执行清单**，不是执行报告，不含任何实测结论。
+>
+> ⚠️ **WP5 口径订正（2026-11-16，主理人）**：本文 §3.4 的「8 文件基线 77/77」是 WP2 时期的**静态 `test(` 声明统计**，不是执行结果，现已作废。有效基线由实跑确定：`node --test` 八个 `*.test.cjs` = **72 项**（WP3 +3、WP4 +8），计划 §4.1 六文件 = **48 项**，`v027-balance` 10/10、`v028-priority` 6/6。下文所有 `77` / `≥77 + 新增` 一律按此订正；判据以 `docs/v030-polish-report.md` 与 `docs/v030-polish-progress.md` 为准。**测试纪律（不得删断言/放宽阈值）不变**。
 > 编写：quality-lead（严守真） · 任务 WP2-QA-PLAN-01 · 团队 `border-guard-v030-polish`
 > 状态：**本轮只做规划**。未启动/操作任何 Chrome、未跑 `cdp.cjs`、未执行任何测试、未做任何 git 写操作、未动 `vp.json`。
 > 依据：`docs/v030-handoff-plan.md` §2 / §3 WP2 验收 / §4.1 / §4.2 / §4.3 / §5；`tests/artifacts/v030-polish/wp2-ux-spec.md`（design-strategist，651 行，§10 为验收项↔规格条款映射）。

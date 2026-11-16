@@ -1,0 +1,443 @@
+TAP version 13
+# Subtest: 建城生成闭合主城圈与合法城门，己方过门敌方挡门
+ok 1 - 建城生成闭合主城圈与合法城门，己方过门敌方挡门
+  ---
+  duration_ms: 78.083
+  type: 'test'
+  ...
+# Subtest: 敌军实际更新攻击墙边扣共享HP，不同位置同圈，完整墙外不能打主城
+ok 2 - 敌军实际更新攻击墙边扣共享HP，不同位置同圈，完整墙外不能打主城
+  ---
+  duration_ms: 483.4022
+  type: 'test'
+  ...
+# Subtest: 墙归零当步全圈倒塌，残敌继续攻主城并可清场失守
+ok 3 - 墙归零当步全圈倒塌，残敌继续攻主城并可清场失守
+  ---
+  duration_ms: 543.7789
+  type: 'test'
+  ...
+# Subtest: 白天按缺血比例修满，夜间6秒施工，破墙中断且每夜一次
+ok 4 - 白天按缺血比例修满，夜间6秒施工，破墙中断且每夜一次
+  ---
+  duration_ms: 96.0065
+  type: 'test'
+  ...
+# Subtest: 扩地不回血不加上限，非法扩地不扣费
+ok 5 - 扩地不回血不加上限，非法扩地不扣费
+  ---
+  duration_ms: 104.5205
+  type: 'test'
+  ...
+# Subtest: 维修到时与致命墙伤同一步：先攻击倒塌，本步不复活
+ok 6 - 维修到时与致命墙伤同一步：先攻击倒塌，本步不复活
+  ---
+  duration_ms: 479.486
+  type: 'test'
+  ...
+# Subtest: 实际 spawnEnemy 标记敌方，经门不可穿越
+ok 7 - 实际 spawnEnemy 标记敌方，经门不可穿越
+  ---
+  duration_ms: 394.7854
+  type: 'test'
+  ...
+# Subtest: 扩地堵住全部可过城门外侧时不扣费且不改归属
+ok 8 - 扩地堵住全部可过城门外侧时不扣费且不改归属
+  ---
+  duration_ms: 45.4086
+  type: 'test'
+  ...
+# Subtest: 点击实际墙边打开圈详情，不给领主误发移动令
+ok 9 - 点击实际墙边打开圈详情，不给领主误发移动令
+  ---
+  duration_ms: 72.5657
+  type: 'test'
+  ...
+# Subtest: 逐格建墙入口已移除
+ok 10 - 逐格建墙入口已移除
+  ---
+  duration_ms: 47.6568
+  type: 'test'
+  ...
+# Subtest: 顶栏展示金币材料粮食人口行动，不伪造木石分栏
+ok 11 - 顶栏展示金币材料粮食人口行动，不伪造木石分栏
+  ---
+  duration_ms: 107.4834
+  type: 'test'
+  ...
+# Subtest: 左侧图例与小地图节点存在，右侧主城区分城墙与主城血条
+ok 12 - 左侧图例与小地图节点存在，右侧主城区分城墙与主城血条
+  ---
+  duration_ms: 74.6513
+  type: 'test'
+  ...
+# Subtest: 图例与小地图默认折叠，选址底栏 compact，可按需展开
+ok 13 - 图例与小地图默认折叠，选址底栏 compact，可按需展开
+  ---
+  duration_ms: 60.1628
+  type: 'test'
+  ...
+# Subtest: 卡牌三选一独立模态冻结，不 inert main、不显示暂停遮罩
+ok 14 - 卡牌三选一独立模态冻结，不 inert main、不显示暂停遮罩
+  ---
+  duration_ms: 87.2974
+  type: 'test'
+  ...
+# Subtest: 暂停后再开卡牌，关闭应恢复原暂停
+ok 15 - 暂停后再开卡牌，关闭应恢复原暂停
+  ---
+  duration_ms: 80.4279
+  type: 'test'
+  ...
+# Subtest: 建城后镜头夹紧不留正方向空白，地图至少盖住视口
+ok 16 - 建城后镜头夹紧不留正方向空白，地图至少盖住视口
+  ---
+  duration_ms: 62.9005
+  type: 'test'
+  ...
+# Subtest: 主城详情含插图与双进度条，命令栏含图标
+ok 17 - 主城详情含插图与双进度条，命令栏含图标
+  ---
+  duration_ms: 76.6024
+  type: 'test'
+  ...
+# Subtest: 建造栏无逐格城墙，保留箭塔与真实费用
+ok 18 - 建造栏无逐格城墙，保留箭塔与真实费用
+  ---
+  duration_ms: 56.2687
+  type: 'test'
+  ...
+# Subtest: 建城自动触发首组三选一，非仅夹具
+ok 19 - 建城自动触发首组三选一，非仅夹具
+  ---
+  duration_ms: 58.5019
+  type: 'test'
+  ...
+# Subtest: 夜修施工中显示进度；vitals 专用节点持续刷新不被覆盖
+ok 20 - 夜修施工中显示进度；vitals 专用节点持续刷新不被覆盖
+  ---
+  duration_ms: 61.0917
+  type: 'test'
+  ...
+# Subtest: 工人派遣通过正常居民更新实际抵达工作建筑，不回主城两旁
+ok 21 - 工人派遣通过正常居民更新实际抵达工作建筑，不回主城两旁
+  ---
+  duration_ms: 84.3934
+  type: 'test'
+  ...
+# Subtest: 资源开发会清除原树石覆盖并创建对应生产建筑
+ok 22 - 资源开发会清除原树石覆盖并创建对应生产建筑
+  ---
+  duration_ms: 62.7191
+  type: 'test'
+  ...
+# Subtest: 居民详情必须提供可操作的移动入口
+ok 23 - 居民详情必须提供可操作的移动入口
+  ---
+  duration_ms: 59.6057
+  type: 'test'
+  ...
+# Subtest: 工作时点击移动会到达新位置并停留，随后可改派到另一建筑
+ok 24 - 工作时点击移动会到达新位置并停留，随后可改派到另一建筑
+  ---
+  duration_ms: 78.8173
+  type: 'test'
+  ...
+# Subtest: 六种资源开发前后己方均可穿行，且开发后旧图标与箭塔兜底不参与同格绘制
+ok 25 - 六种资源开发前后己方均可穿行，且开发后旧图标与箭塔兜底不参与同格绘制
+  ---
+  duration_ms: 164.9342
+  type: 'test'
+  ...
+# Subtest: 调回城堡按钮调用 recallHomeResident，不被营地 recallResident 覆写
+ok 26 - 调回城堡按钮调用 recallHomeResident，不被营地 recallResident 覆写
+  ---
+  duration_ms: 98.1677
+  type: 'test'
+  ...
+# Subtest: 开发后工人站在该建筑可见工作区内，而不是邻格
+ok 27 - 开发后工人站在该建筑可见工作区内，而不是邻格
+  ---
+  duration_ms: 64.2935
+  type: 'test'
+  ...
+# Subtest: 拆除生产建筑会释放岗位，不留双岗重复预约
+ok 28 - 拆除生产建筑会释放岗位，不留双岗重复预约
+  ---
+  duration_ms: 64.2555
+  type: 'test'
+  ...
+# Subtest: 调回按钮按正常速度沿路返程，不能插值瞬移回城
+ok 29 - 调回按钮按正常速度沿路返程，不能插值瞬移回城
+  ---
+  duration_ms: 97.2577
+  type: 'test'
+  ...
+# Subtest: 拆除后 forecastIncome 为 0 且可重新 develop，天亮不双算
+ok 30 - 拆除后 forecastIncome 为 0 且可重新 develop，天亮不双算
+  ---
+  duration_ms: 88.2337
+  type: 'test'
+  ...
+# Subtest: 单塔守西门时，首夜一定会结束（天亮或失守），不会卡在清场
+ok 31 - 单塔守西门时，首夜一定会结束（天亮或失守），不会卡在清场
+  ---
+  duration_ms: 3067.4203
+  type: 'test'
+  ...
+# Subtest: 偏离格心的敌军可以斜着回到同行相邻格，不被当成穿角
+ok 32 - 偏离格心的敌军可以斜着回到同行相邻格，不被当成穿角
+  ---
+  duration_ms: 24.2125
+  type: 'test'
+  ...
+# Subtest: 白天：createLinearGradient 能力缺失时静默跳过暖光 rect，不抛 TypeError、渲染流程走完
+ok 33 - 白天：createLinearGradient 能力缺失时静默跳过暖光 rect，不抛 TypeError、渲染流程走完
+  ---
+  duration_ms: 174.6675
+  type: 'test'
+  ...
+# Subtest: 夜间：两种渐变能力都缺失（§5 canvas 桩场景）时 draw() 不抛异常、渲染流程走完
+ok 34 - 夜间：两种渐变能力都缺失（§5 canvas 桩场景）时 draw() 不抛异常、渲染流程走完
+  ---
+  duration_ms: 476.3312
+  type: 'test'
+  ...
+# Subtest: 夜间：离屏层能力齐备但主 ctx 径向渐变缺失时，warm() 整段跳过且不抛异常
+ok 35 - 夜间：离屏层能力齐备但主 ctx 径向渐变缺失时，warm() 整段跳过且不抛异常
+  ---
+  duration_ms: 475.6948
+  type: 'test'
+  ...
+# Subtest: 能力齐备时白天仍走原线性渐变路径（色值与 rect 调用不变）
+ok 36 - 能力齐备时白天仍走原线性渐变路径（色值与 rect 调用不变）
+  ---
+  duration_ms: 84.0156
+  type: 'test'
+  ...
+# Subtest: 能力齐备时夜间仍走原暖光径向渐变路径（色值不变）
+ok 37 - 能力齐备时夜间仍走原暖光径向渐变路径（色值不变）
+  ---
+  duration_ms: 467.3601
+  type: 'test'
+  ...
+# Subtest: DPS-1 固定序列：窗口 (5,10] 内 14 点，DPS=2.8，N=36，>=30 秒不显示
+ok 38 - DPS-1 固定序列：窗口 (5,10] 内 14 点，DPS=2.8，N=36，>=30 秒不显示
+  ---
+  duration_ms: 55.2633
+  type: 'test'
+  ...
+# Subtest: DPS-2 窗口边界：t === now-W 严格排除，首条不计入 → DPS=1.4，N=72
+ok 39 - DPS-2 窗口边界：t === now-W 严格排除，首条不计入 → DPS=1.4，N=72
+  ---
+  duration_ms: 40.4196
+  type: 'test'
+  ...
+# Subtest: DPS-3 零伤害样本不显示估算，秒数为 Infinity
+ok 40 - DPS-3 零伤害样本不显示估算，秒数为 Infinity
+  ---
+  duration_ms: 43.506
+  type: 'test'
+  ...
+# Subtest: DPS-4 刚入夜 now<5 数据不足，即使有伤害样本也不显示
+ok 41 - DPS-4 刚入夜 now<5 数据不足，即使有伤害样本也不显示
+  ---
+  duration_ms: 43.9347
+  type: 'test'
+  ...
+# Subtest: DPS-5 回血只改分子：hp 100→200 秒数加倍，critical 按新值重判
+ok 42 - DPS-5 回血只改分子：hp 100→200 秒数加倍，critical 按新值重判
+  ---
+  duration_ms: 44.2262
+  type: 'test'
+  ...
+# Subtest: DPS-6 已倒塌 / 零血不估算；t===now 计入，t>now 与 NaN 伤害排除
+ok 43 - DPS-6 已倒塌 / 零血不估算；t===now 计入，t>now 与 NaN 伤害排除
+  ---
+  duration_ms: 50.5246
+  type: 'test'
+  ...
+# Subtest: DPS-7 采样挂在 damageWallRing()：净伤害 dealt 入样本、夜修回血不入样本、入夜重置
+ok 44 - DPS-7 采样挂在 damageWallRing()：净伤害 dealt 入样本、夜修回血不入样本、入夜重置
+  ---
+  duration_ms: 835.3148
+  type: 'test'
+  ...
+# Subtest: DPS-8 updateBattleHud() 低于 30 秒时同一 critical 胶囊含「城墙」与「约 N 秒破墙」
+ok 45 - DPS-8 updateBattleHud() 低于 30 秒时同一 critical 胶囊含「城墙」与「约 N 秒破墙」
+  ---
+  duration_ms: 452.3707
+  type: 'test'
+  ...
+# Subtest: DIAG-1 三字段齐全 → 完整模板逐字输出
+ok 46 - DIAG-1 三字段齐全 → 完整模板逐字输出
+  ---
+  duration_ms: 64.7241
+  type: 'test'
+  ...
+# Subtest: DIAG-2 缺 collapseSide → 省略方向从句、用「敌袭侧」，不出现 undefined
+ok 47 - DIAG-2 缺 collapseSide → 省略方向从句、用「敌袭侧」，不出现 undefined
+  ---
+  duration_ms: 56.4161
+  type: 'test'
+  ...
+# Subtest: DIAG-3 缺 towersAtCollapse → 省略塔数，不出现 NaN
+ok 48 - DIAG-3 缺 towersAtCollapse → 省略塔数，不出现 NaN
+  ---
+  duration_ms: 44.0799
+  type: 'test'
+  ...
+# Subtest: DIAG-4 只有 collapseAt → 只保留时间与建议
+ok 49 - DIAG-4 只有 collapseAt → 只保留时间与建议
+  ---
+  duration_ms: 41.1028
+  type: 'test'
+  ...
+# Subtest: DIAG-5 旧账本无三字段 → 完全走既有 6 条分支，不出现新模板
+ok 50 - DIAG-5 旧账本无三字段 → 完全走既有 6 条分支，不出现新模板
+  ---
+  duration_ms: 43.1911
+  type: 'test'
+  ...
+# Subtest: DIAG-6 多夜多次倒塌 → 取 collapseAt 有效且夜号最大的一笔
+ok 51 - DIAG-6 多夜多次倒塌 → 取 collapseAt 有效且夜号最大的一笔
+  ---
+  duration_ms: 45.2148
+  type: 'test'
+  ...
+# Subtest: DIAG-7 collapseWall() 写三字段：只增不改、方向取入口、秒数取夜内 clock
+ok 52 - DIAG-7 collapseWall() 写三字段：只增不改、方向取入口、秒数取夜内 clock
+  ---
+  duration_ms: 487.5092
+  type: 'test'
+  ...
+# Subtest: DIAG-8 败局复盘面板 \#primary .diagnosis 首行是「败局诊断」，战报仍在其后
+ok 53 - DIAG-8 败局复盘面板 \#primary .diagnosis 首行是「败局诊断」，战报仍在其后
+  ---
+  duration_ms: 42.2079
+  type: 'test'
+  ...
+# Subtest: GUIDE-1 六条固定文案逐字、不含 ▶、不含虚构资源名
+ok 54 - GUIDE-1 六条固定文案逐字、不含 ▶、不含虚构资源名
+  ---
+  duration_ms: 45.7276
+  type: 'test'
+  ...
+# Subtest: GUIDE-2 P5：未建城 + 卡牌待选异常并存时 S1 未建城优先
+ok 55 - GUIDE-2 P5：未建城 + 卡牌待选异常并存时 S1 未建城优先
+  ---
+  duration_ms: 25.5228
+  type: 'test'
+  ...
+# Subtest: GUIDE-3 累积式六步状态机 S3→S4→S5→S6，P2 一座塔即完成
+ok 56 - GUIDE-3 累积式六步状态机 S3→S4→S5→S6，P2 一座塔即完成
+  ---
+  duration_ms: 46.7405
+  type: 'test'
+  ...
+# Subtest: GUIDE-4 P3：该侧合法格不足 2 个只减少圈数，0 个也不改 S5 文案
+ok 57 - GUIDE-4 P3：该侧合法格不足 2 个只减少圈数，0 个也不改 S5 文案
+  ---
+  duration_ms: 45.5839
+  type: 'test'
+  ...
+# Subtest: GUIDE-5 推荐格全部合法（canBuildAt && !building）、按入口距离升序、建塔后圈消失
+ok 58 - GUIDE-5 推荐格全部合法（canBuildAt && !building）、按入口距离升序、建塔后圈消失
+  ---
+  duration_ms: 39.6435
+  type: 'test'
+  ...
+# Subtest: GUIDE-6 .next 每次 renderUI 显式 toggle：激活加、让位 / day2 / 夜间 / 胜利移除
+ok 59 - GUIDE-6 .next 每次 renderUI 显式 toggle：激活加、让位 / day2 / 夜间 / 胜利移除
+  ---
+  duration_ms: 44.9699
+  type: 'test'
+  ...
+# Subtest: GUIDE-7 悬停预览只写索引；destinationLabel 各分支无 undefined / NaN / 空括号
+ok 60 - GUIDE-7 悬停预览只写索引；destinationLabel 各分支无 undefined / NaN / 空括号
+  ---
+  duration_ms: 48.2717
+  type: 'test'
+  ...
+# Subtest: GUIDE-8 徽章人数口径与 S4 共用：0 人为「空」、派 1 人后不再是 S4
+ok 61 - GUIDE-8 徽章人数口径与 S4 共用：0 人为「空」、派 1 人后不再是 S4
+  ---
+  duration_ms: 43.6359
+  type: 'test'
+  ...
+# FILE = Border-Guard-v0.29.html | resolved = D:\\Work\\game\\border-guard\\Border-Guard-v0.29.html | typeof drawProductionBadge = function
+# Subtest: P7 绘制序：所有气泡先于所有徽章（min(badgeIndices) > max(bubbleIndices)）
+ok 62 - P7 绘制序：所有气泡先于所有徽章（min(badgeIndices) > max(bubbleIndices)）
+  ---
+  duration_ms: 239.4899
+  type: 'test'
+  ...
+# Subtest: baseline skip：待 P7 晚绘 pass 实现后启用 · 徽章计数与 t.visible 守卫
+ok 63 - baseline skip：待 P7 晚绘 pass 实现后启用 · 徽章计数与 t.visible 守卫
+  ---
+  duration_ms: 195.199
+  type: 'test'
+  ...
+# Subtest: 加载的 HTML 身份正证据（永不 skip，红/绿都执行都通过）
+ok 64 - 加载的 HTML 身份正证据（永不 skip，红/绿都执行都通过）
+  ---
+  duration_ms: 41.0873
+  type: 'test'
+  ...
+# Subtest: WP4-1 入夜后 1.5 秒夜幕 alpha 线性 0→1（game.clock 驱动，不改暗幕色值）
+ok 65 - WP4-1 入夜后 1.5 秒夜幕 alpha 线性 0→1（game.clock 驱动，不改暗幕色值）
+  ---
+  duration_ms: 493.9047
+  type: 'test'
+  ...
+# Subtest: WP4-2 天亮后 1.5 秒白天暖光淡入（game.phaseElapsed 驱动，色标不变）
+ok 66 - WP4-2 天亮后 1.5 秒白天暖光淡入（game.phaseElapsed 驱动，色标不变）
+  ---
+  duration_ms: 53.6012
+  type: 'test'
+  ...
+# Subtest: WP4-3 spawnEnemy 产生烟尘粒子，弱化模式不产生
+ok 67 - WP4-3 spawnEnemy 产生烟尘粒子，弱化模式不产生
+  ---
+  duration_ms: 461.2141
+  type: 'test'
+  ...
+# Subtest: WP4-6 40 敌夜晚弱化峰值 ≤ 标准一半，且 worldFx(ring) 在弱化下不推 effects
+ok 68 - WP4-6 40 敌夜晚弱化峰值 ≤ 标准一半，且 worldFx(ring) 在弱化下不推 effects
+  ---
+  duration_ms: 450.1508
+  type: 'test'
+  ...
+# Subtest: WP4-7 只翻转音效开关不改变 game.effects 峰值（音频与表现层解耦）
+ok 69 - WP4-7 只翻转音效开关不改变 game.effects 峰值（音频与表现层解耦）
+  ---
+  duration_ms: 382.169
+  type: 'test'
+  ...
+# Subtest: WP4-4 三音效音色：build 上扬三角波 / dawn 两音上行 / collapse 低频方波 130→65
+ok 70 - WP4-4 三音效音色：build 上扬三角波 / dawn 两音上行 / collapse 低频方波 130→65
+  ---
+  duration_ms: 147.8229
+  type: 'test'
+  ...
+# Subtest: WP4-4b 音效开关仍然有效：sound=false 不调度振荡器；关闭态 unlockAudio 不建 ctx
+ok 71 - WP4-4b 音效开关仍然有效：sound=false 不调度振荡器；关闭态 unlockAudio 不建 ctx
+  ---
+  duration_ms: 47.8289
+  type: 'test'
+  ...
+# Subtest: WP4-5 圈墙受击发且仅发 ringHit，不改伤害 / 不污染 structureHit / 保留 WP2 采样
+ok 72 - WP4-5 圈墙受击发且仅发 ringHit，不改伤害 / 不污染 structureHit / 保留 WP2 采样
+  ---
+  duration_ms: 411.747
+  type: 'test'
+  ...
+1..72
+# tests 72
+# suites 0
+# pass 72
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3219.5042

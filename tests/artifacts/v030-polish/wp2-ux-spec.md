@@ -1,6 +1,8 @@
 # WP2 · 新玩家引导与「我现在该做什么」实现规格
 
 > 文档类型：**实现规格 / 验收判定依据**（不是设计复述，也不是代码）
+>
+> ⚠️ **WP5 口径订正（2026-11-16，主理人）**：本文 §7 / §8 的「8 文件基线 77/77 / ≥77 + 新增」为 WP2 时期的**静态 `test(` 声明统计**，非执行结果，现已作废。有效基线由实跑确定：八个 `*.test.cjs` = **72 项**（WP3 +3、WP4 +8），计划 §4.1 六文件 = **48 项**，`v027-balance` 10/10、`v028-priority` 6/6。另：§0.1 第 4 项与 §3.2「绘制位置」已按 WP3 拍板 **①b′** 同步为顶层 `drawProductionBadge(t)` 晚绘（详见 `wp3-p7-ds-signoff.md` 与 `wp3-acceptance-report.md`）；`structure/nodeArt/drawFoliage` 函数名契约与按名调用不变。**测试纪律不变**。
 > 编写：design-strategist（文策渊） · 任务 WP2-UX-01 · 团队 `border-guard-v030-polish`
 > 基线：`Border-Guard-v0.29.html` @ `5320a02`（engineering-lead 的光照修复可能使行号偏移 1–2 行，**一律以函数名定位**）
 > 上游输入：`docs/v030-handoff-plan.md` §0 / §1.3 / §3 WP2 / §4.1 / §4.3 / §5
@@ -19,7 +21,7 @@
 | 1 | 悬停预览 | `bindMapGestures()` 加 `pointermove` / `pointerleave`，写 `game.hoverTile` |
 | 2 | 六步提示链 | `tutorialStep()` + `renderUI()` 给 `#mapHint` 加 `.next` |
 | 3 | 推荐布防格 | 新增纯函数 `recommendedDefenseTiles()` + 在 `draw()` 内绘制金色虚线圈 |
-| 4 | 生产建筑工人数徽章 | `structure()` 内追加绘制 |
+| 4 | 生产建筑工人数徽章 | WP3 拍板 ①b′：抽顶层 `drawProductionBadge(t)` 在 `drawSelection()` 之后、`drawLighting()` 之前晚绘一次（原 `structure()` 内追加绘制） |
 | 5 | 居民详情可读化 | `inspect()` 居民分支的 `dest` 文案 |
 | 6 | 城墙还能撑多久 | `damageWallRing()` 采样 + `updateBattleHud()` 估算与标红 |
 | 7 | 失败原因 | `collapseWall()` 写 `game.ledger[day]` 三字段 + `failureDiagnosis()` 新分支 |
@@ -345,7 +347,7 @@ const dest = r.order?.kind==='move' && game.tiles[r.order.tileId]
 | `b.active === false` | 按实际 `assignedResidentIds` 画；不额外加「停」字样（避免与 S4 口径分叉） |
 | `castle` / `wall` / `tower` / 无建筑 | **不画** |
 | 格内坐标 | 局部 `(≈46, ≈8)`（右上角，`CELL=46`）；用固定尺寸圆角底 + `fillText`，**不依赖 `ctx.measureText`**（测试 VM canvas 是桩） |
-| 绘制位置 | `structure()` 的 `inCell()` 回调内、所有建筑分支**之后**；不新建顶层绘制函数替换 `structure`（§5 函数名契约） |
+| 绘制位置 | **WP3 拍板 ①b′（本文原 A 方案已由主理人改判）**：徽章 6 行原样抽成顶层 `drawProductionBadge(t)`，在 `draw()` 的 `drawSelection()` 之后、`drawLighting()` 之前整批晚绘一次；加 `t.visible` 守卫，坐标/色值/字号一字符不改。**不替换 `structure`**，`structure/nodeArt/drawFoliage` 的函数名与 `draw()` 中按名调用均保留（§5 函数名契约不变）。依据：`wp3-p7-ds-signoff.md`、`wp3-acceptance-report.md`、新增测试 `tests/v030-wp3-badge-order.test.cjs` |
 
 ### 3.3 补充边界（非 team-lead 六问，但实现必须处理）
 
@@ -611,7 +613,7 @@ if (last) {
 | 10 | **`productionBuildings` 是懒加载 Map**（`ensureProductionMaps()` L1860 只保证 `instanceof Map`，不重建内容） | 旧存档 / 夹具读空 Map → S3 误判「无开发」、徽章全画「空」 | S3 用 `t.node.developed`（权威）；S4 / 徽章读 Map 前调 `ensureProductionMaps()`，取不到按 0 人兜底 |
 | 11 | **诊断三字段用 `freshNight()` 预置为 `0` / `'west'`** | `Number.isFinite(0)` 为真 → 每局都被误判「城墙倒塌过」 | 预置只能是 `null`；判定用 `Number.isFinite(b.collapseAt) && b.collapseAt != null` |
 | 12 | **`ctx` 是 `let`；测试 VM canvas 是桩**（§5 常见坑） | `cachedLayer()` 临时替换 `ctx` 后缓存引用失效；`createRadialGradient` / `measureText` 在 Node 测试里报错 | 新绘制用全局 `ctx`、不缓存 `const g=ctx`；徽章用固定尺寸 + `fillText`，不依赖渐变 / 文本测量 |
-| 13 | **改 `structure` / `nodeArt` / `drawFoliage` 的调用方式** | 绘制契约测试整体替换这三个函数名统计调用，改名或局部引用会红 | 徽章画在 `structure()` 内部末尾；`draw()` 仍按名字调用三者 |
+| 13 | **改 `structure` / `nodeArt` / `drawFoliage` 的调用方式** | 绘制契约测试整体替换这三个函数名统计调用，改名或局部引用会红 | WP3 后徽章改由顶层 `drawProductionBadge(t)` 晚绘（①b′），`structure()` 内那段已删除；`draw()` 仍按名字调用三者，函数名契约不变 |
 | 14 | **推荐格绘制写进 `cachedLayer('terrain')` 的缓存键** | 缓存键是 `navigationRevision()\|已占领格数\|seed`，加入动态层会导致画面不刷新或缓存错乱 | 推荐格在 `draw()` 的 `drawToolPreview()` 之后独立绘制，不进静态缓存 |
 | 15 | **`entrances()` 在 `game.castle===null` 时用 `game.hero` 位置**（L3346–3348） | S5 在无城时算出方向并画圈，与「未建城」提示冲突 | `recommendedDefenseTiles()` 首行判 `!game.castle` 返回 `[]`；S5 本身在 S1 之后，天然不会命中 |
 | 16 | **改了 `tutorialStep()` 却忘了 L6616 的 `!game.mode`** | 选中工具时提示链覆盖 modes 文案，玩家看不到「点领地空地放置箭塔」 | 按 §2.4 把门禁统一收进 `tutorialStep()`，或保留 L6616 原条件，二选一，不得两处都漏 |

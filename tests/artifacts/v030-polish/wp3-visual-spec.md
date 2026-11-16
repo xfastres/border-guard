@@ -8,6 +8,7 @@
 | 输出 | `tests/artifacts/v030-polish/wp3-visual-spec.md`（本文件，**未提交**） |
 | 依据 | `docs/v030-handoff-plan.md` §3 WP3 / §4.4 / §1.3 / §5；`wp1-visual-audit.md` 终版 §6.2 裁定 B、§6.3 剩余补图、§6.4 观察；`wp1-acceptance.json`；`wp2-ux-spec.md`（范围边界） |
 | 状态 | **规格待审**。实现须等 WP2 质量门由主理人放行后才开始 |
+| ⚠️ WP5 口径订正（2026-11-16，主理人） | 本文 §3.5 / §4.4 等处「8 文件基线 77/77 / ≥77 + WP3 新增」为 WP2 时期**静态 `test(` 声明统计**，非执行结果，现已作废。有效基线由实跑确定：八个 `*.test.cjs` = **72 项**（WP3 +3、WP4 +8），计划 §4.1 六文件 = **48 项**，`v027-balance` 10/10、`v028-priority` 6/6。判据以 `docs/v030-polish-report.md` 为准；**不得删断言/放宽阈值的纪律不变**。P7 最终拍板为 **①b′**（`drawProductionBadge(t)` 顶层晚绘），见 `wp3-p7-ds-signoff.md`。 |
 | 边界 | 本轮**未**改游戏代码、**未**启动/操作 Chrome、**未**跑 `cdp.cjs`/`scenes.sh`、**未**自行截图、**未**提交、**未** push |
 
 > ⚠️ **行号漂移警告（给实现者）**：本文件审读时 WP2 实现与 engineering-lead 的 `L5044` 能力检测修复正在改同一个 `Border-Guard-v0.29.html`，相对 WP1-ART-01 的行号已整体漂移约 **+114**（例：`PAL` 由 `L4345` → `L4459`，`structure()` 由 `L4601` → `L4715`，`drawMinimap()` 由 `L6983` → `L7161`，富/铁角标由 `L4663` → `L4777`）。**下表行号仅为本次快照，实现时一律以「函数名 + 代码锚点字符串」定位为准**，不要按数字硬找。
