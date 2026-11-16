@@ -3,6 +3,8 @@
 > 写给接手的 AI。照本文件逐步执行，每个工作包按「验收标准」自检通过后才进入下一包。
 > 所有工作都在 `D:\Work\game\border-guard` 原目录、`codex/claude-gameplay-art-layout` 分支上完成。
 > 不要克隆、不要建 worktree、不要另做演示页；不合并 `main`、不推送。
+>
+> **交付后状态更新（2026-11-16）**：WP1–WP5 全部完成并通过质量门后，用户授权解除了上面「不合并、不推送」的约束。实际执行：feature 分支 8 个提交已 push 到 `origin/codex/claude-gameplay-art-layout`，并由 merge commit `21d89f2` 合并进 `main`、push 到 `origin/main`。以下计划正文保留当时的执行约束原文供溯源；当前状态以 `docs/v030-polish-report.md` §10 与 `README.md` 为准。
 
 ---
 
@@ -231,6 +233,7 @@ BORDER_ARTIFACTS=tests/artifacts/v030-rings   node tests/v029-rings-ui-browser.c
 ### 4.5 提交与交付
 
 - 预期 5 个左右的清晰提交（WP1–WP5），全部在 `codex/claude-gameplay-art-layout` 分支；**不合并、不推送**。
+  - **（交付后订正）** 上述约束已于 2026-11-16 由用户解除；实际提交数为 **8 个**（`cd4437a` … `f4a6230`），已 push 并合并进 `main`，详见文档头「交付后状态更新」与 `docs/v030-polish-report.md` §10。
 - 仓库里不得残留临时后门（`grep -n "__wallHit\|window.__" Border-Guard-v0.29.html` 应无结果，`window.FW` 测试钩子除外）。
 - 不提交 `tests/artifacts/v030-baseline/`（改造前基线）以外的临时文件；`bg-scratch/` 不入库。
 - 交付说明包括：可玩文件、前后截图、测试命令和结果、自然试玩记录、设计取舍、剩余问题（至少列出「未做手机真机」和「未做真人试玩」）。

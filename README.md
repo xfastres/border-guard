@@ -16,11 +16,11 @@
 
 ## 当前试玩文件
 
-- **当前版：`Border-Guard-v0.29.html`** —— 双击即可用浏览器离线打开，无需服务器或网络。含整圈城墙（主城 50 HP、圈墙 600 HP 试玩默认）、生产岗位与参考图风格叠层 UI。
+- **当前版：`Border-Guard-v0.29.html`（v0.30 打磨版，文件名沿用）** —— 双击即可用浏览器离线打开，无需服务器或网络。含整圈城墙（主城 50 HP、圈墙 600 HP 试玩默认）、生产岗位与参考图风格叠层 UI。
 - **上一稳定对照：`Border-Guard-v0.26.html`** —— 同样可独立双击打开。
 - 历史版本 `Border-Guard-v0.17.html` … `Border-Guard-v0.28.html` 全部保留，每个都能独立打开，历史文件与历史验证证据均未改动。
 
-> **v0.30 打磨（当前分支 `codex/claude-gameplay-art-layout`）**：上面这个 `Border-Guard-v0.29.html` 已完成 WP1–WP5 打磨——明亮卡通渲染与金边玻璃 HUD、首日六步引导与悬停放置预览、七视口与触控适配、1.5 秒昼夜过渡 / 刷兵烟尘 / 三个新音效 / 圈墙受击火花与效果弱化。**入口文件名保持不变，仍是双击即可离线试玩的单文件**。设计方向、取舍、前后截图索引、测试命令与结果、自然试玩记录及剩余未验证项见 [`docs/v030-polish-report.md`](docs/v030-polish-report.md)；逐包进度与质量门结论见 [`docs/v030-polish-progress.md`](docs/v030-polish-progress.md)。
+> **v0.30 打磨（已合并到 `main` 并推送）**：上面这个 `Border-Guard-v0.29.html` 已完成 WP1–WP5 打磨——明亮卡通渲染与金边玻璃 HUD、首日六步引导与悬停放置预览、七视口与触控适配、1.5 秒昼夜过渡 / 刷兵烟尘 / 三个新音效 / 圈墙受击火花与效果弱化。**入口文件名保持不变，仍是双击即可离线试玩的单文件**。设计方向、取舍、前后截图索引、测试命令与结果、自然试玩记录及剩余未验证项见 [`docs/v030-polish-report.md`](docs/v030-polish-report.md)；逐包进度与质量门结论见 [`docs/v030-polish-progress.md`](docs/v030-polish-progress.md)。
 
 ### v0.29 本轮试玩默认与限制
 
@@ -124,4 +124,4 @@ CHROME_BIN="C:/Program Files/Google/Chrome/Application/chrome.exe" node tests/ru
 - [项目交接说明](PROJECT_HANDOFF.md)
 - [v0.25 更新说明](Border-Guard-v0.25-更新说明.md)
 
-`PROJECT_HANDOFF.md` 的部分段落仍指向 v0.24 / v0.25（例如「当前版本与打开方式」与「简短操作说明」），以本 README 与 [v0.26 更新说明](Border-Guard-v0.26-更新说明.md) 作为当前入口。
+`PROJECT_HANDOFF.md` 已在文件头补上 v0.30 当前状态；其下 v0.24 / v0.25 / v0.26 段落均为历史交接记录，不再作为当前入口。当前入口以本 README 与 [v0.30 交付报告](docs/v030-polish-report.md) 为准。

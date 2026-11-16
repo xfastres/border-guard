@@ -33,7 +33,7 @@
 
 **核心规则**（每次提交前自查，见计划 §0）：整圈城墙共享耐久、归零整圈倒塌；破墙后主城很快失守；居民真正走到建筑且到岗后仍可移动/召回/改派；资源地形不挡友军、开发后只显示生产建筑；顶栏只显示金币/材料/粮食/稀缺资源，天亮飘字 = `forecastIncome()`；**不得删断言、放宽阈值、改结果文件掩盖失败**。
 
-**边界**：单文件离线可玩、入口文件名不变；不合并 `main`、不 push；`bg-scratch/` 不入库；仓库不留临时后门。
+**边界**：单文件离线可玩、入口文件名不变；`bg-scratch/` 不入库；仓库不留临时后门。原交接计划要求「不合并 `main`、不 push」，该约束已于 2026-11-16 由用户解除，v0.30 已推送并合并进 `main`（实际状态见 §10）。
 
 ---
 
@@ -218,4 +218,9 @@ BORDER_ARTIFACTS=tests/artifacts/v030-wp5-rings node tests/v029-rings-ui-browser
 ---
 
 ## 10. 提交与交付状态
-WP1–WP5 共 **5 个左右清晰提交**全部在 `codex/claude-gameplay-art-layout` 分支，**未合并 `main`、未 push**；`grep -n "__wallHit\|window.__" Border-Guard-v0.29.html` 无结果（`window.FW` 测试钩子除外）；入口文件名不变。
+
+**已推送并合并进 `main`（2026-11-16）**。WP1–WP5 共 **8 个提交**在 `codex/claude-gameplay-art-layout` 分支完成（`cd4437a` … `f4a6230`），已 push 到 `origin/codex/claude-gameplay-art-layout`；随后由 merge commit `21d89f2 Merge v0.30 polish (WP1–WP5) into main` 合并进 `main` 并 push 到 `origin/main`。本次交付状态同步提交同时应用到两条分支，因此两个远端分支的树内容一致。
+
+原交接计划中的「不合并 `main`、不 push」是**开发期约束**，由用户在 WP1–WP5 全部验收通过后解除；计划正文保留原文并加「交付后状态更新」块供溯源。
+
+`grep -n "__wallHit\|window.__" Border-Guard-v0.29.html` 无结果（`window.FW` 测试钩子除外）；入口文件名不变；PNG 证据按仓库惯例留本地。
