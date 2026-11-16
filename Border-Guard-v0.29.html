@@ -575,6 +575,9 @@ dialog::backdrop{background:rgba(8,12,20,.66)}
   .card-title{font-size:16px;margin-bottom:6px}
   #eventBanner{top:52px}
 }
+/* WP4：菜单「效果：弱化」也要关掉 CSS 动画（上方 @media 规则只覆盖系统偏好）。
+   class 挂在 body 而非 documentElement，兼容 Node 测试 VM 的 DOM 桩。 */
+body.fx-weak *{animation:none!important;transition:none!important}
 </style>
 </head>
 <body data-page-node-id="fAhpMFwN1RMX21GwR7jUr9">
@@ -1044,6 +1047,12 @@ function damageWallRing(ringId,amount,sourceId,edgeId){
       const t=game.tiles[sample.insideTileId];
       if(t)markBuildingFlash(t);
     }
+    // WP4：圈墙受击走独立事件名 ringHit，不与单体可破坏建筑的 structureHit 计数混淆；
+    // 放在唯一权威采样点（WP2 wallDamageSamples）之后，不改伤害、不改样本内容。
+    const hitT=sample?game.tiles[sample.insideTileId]:null;
+    emitCombatEvent({kind:'ringHit',ringId,amount:dealt,
+      x:(hitT?hitT.x+.5:(game.castle?.x??0)+.5),
+      y:(hitT?hitT.y+.5:(game.castle?.y??0)+.5)});
   }
   if(ring.hp<=0)collapseWall(ringId);
   return {ok:true,hp:ring.hp,dealt};
@@ -1070,6 +1079,8 @@ function collapseWall(ringId){
   invalidateNavigation();
   if(game.fronts)for(const front of game.fronts)calculateRoutes(front);
   report(ringId==='home'?'主城城墙倒塌！敌军涌入。':'营地围墙倒塌。',true);
+  // WP4：整圈倒塌低频音，幂等 return 之后、账本三字段之后，一夜只响一次
+  if(ringId==='home')AudioKit.play('collapse');
   if(ringId==='home'&&typeof showBanner==='function'){
     showBanner('城墙倒塌！','整圈城墙已失效，主城即将失守 · 立刻回城接敌或急修','danger');
     if(typeof triggerShake==='function')triggerShake(6);
@@ -2935,7 +2946,8 @@ function showBanner(title,sub='',tone=''){
 function worldFx(kind,x,y,text,color){
   if(!game?.effects)return;
   const weak=effectsWeak();
-  if(kind==='ring'||kind==='build'){
+  // WP4：弱化时连环形波纹也不推入 effects，保证 40 敌夜晚峰值 ≤ 标准模式一半
+  if(!weak&&(kind==='ring'||kind==='build')){
     game.effects.push({type:'ring',x,y,r:kind==='build'?.9:.6,time:.7,max:.7,color:color||'#ffe08a'});
   }
   if(!weak&&(kind==='build'||kind==='burst')){
@@ -3029,6 +3041,7 @@ function chooseSite(index) {
     offerGrowthCards('城堡落成，选择一项开局强化。');
   }
   worldFx('build',x+.5,y+.5,'城堡落成','#ffe08a');
+  AudioKit.play('build');
   showBanner('城堡落成','整圈城墙已立起 · 开发周边资源，入夜前在敌袭方向建箭塔','good');
   announce('城堡建在'+SITE_NAMES[index]+'，两名居民已在城内。'+
     (heroOverlapsSite?'领主已安置到城堡外侧。':heroTargetsSite?'领主已改道至城堡外侧。':''));
@@ -3134,6 +3147,7 @@ function develop(t){
   if(game.dayActions)game.dayActions.developed++;
   const [yk,ya]=YIELD[t.node.kind];
   worldFx('build',t.x+.5,t.y+.5,PRODUCTION_LABELS[type]+'建成 · 天亮 +'+ya+' '+RESOURCE_LABELS[yk],'#ffe08a');
+  AudioKit.play('build');
   announce('已开发'+NODE_NAMES[t.node.kind]+'，建成'+PRODUCTION_LABELS[type]+'。正常产出将在天亮时结算。');
 }
 function build(t,type) {
@@ -3151,6 +3165,7 @@ function build(t,type) {
   invalidateNavigation();
   if(game.dayActions)game.dayActions.built++;
   worldFx('build',t.x+.5,t.y+.5,spec.label+'建成','#ffe08a');
+  AudioKit.play('build');
   // 连续建造：资源或行动用完才自动退出放置模式
   if(!game.actions||!canPay(spec.cost))game.mode=null;
   announce(spec.label+'已建成。'+(game.mode?'继续点空地可再放一座，Esc 或再点一次按钮结束。':''));
@@ -3602,6 +3617,8 @@ function spawnEnemy(front,entry){
     routeRevision:navigationRevision(),settled:false
   };
   game.enemies.push(e);
+  // WP4：刷兵烟尘（弱化模式由 worldFx 内的 !weak 门控自动拦截）
+  worldFx('burst',from.x+.5,from.y+.5,'','#c9b48a');
   if(isBoss){
     game.bossSpawned=true;front.bossPending=false;
     const book=nightBook();
@@ -3625,6 +3642,8 @@ function visualBudget(){
   return (game?.effects?.length||0)+(game?.floats?.length||0)+(game?.corpses?.length||0);
 }
 function unlockAudio(){
+  // WP4：关闭态不创建 AudioContext；用户重新打开音效时 #soundToggle 会再次调用本函数
+  if(game?.settings?.sound===false)return;
   if(unlockAudio.done)return;
   unlockAudio.done=true;
   AudioKit.unlock();
@@ -3642,23 +3661,36 @@ const AudioKit={
     // 音频不可用、被静音或尚未解锁都必须静默返回，不能中断战斗
     if(!this.supported||!this.ctx||this.ctx.state!=='running'||game?.settings?.sound===false)return;
     const now=performance.now();
-    const gap={swing:70,arrow:55,heavy:110,death:90,warn:600,victory:900,launch:55,castle:220,heroHit:80}[kind]||80;
+    const gap={swing:70,arrow:55,heavy:110,death:90,warn:600,victory:900,launch:55,castle:220,heroHit:80,
+      build:120,dawn:2000,collapse:2000}[kind]||80;
     if(now-(this.last[kind]||0)<gap)return;
     this.last[kind]=now;
     try{
-      const c=this.ctx,t=c.currentTime,osc=c.createOscillator(),gain=c.createGain();
-      const spec={swing:[430,170,'sawtooth',.09],arrow:[780,420,'triangle',.07],
+      const c=this.ctx,t=c.currentTime;
+      // WP4：只新增 3 个音色；dawn 用音符数组排两音上行，用 currentTime 排程（不用 setTimeout）。
+      // spec = [起始频率, 终止频率, 波形, 时长, 可选峰值]；既有 9 条色值逐字不动。
+      const def={swing:[430,170,'sawtooth',.09],arrow:[780,420,'triangle',.07],
         heavy:[150,70,'square',.12],death:[220,60,'sine',.18],warn:[520,300,'square',.13],
         victory:[520,990,'triangle',.42],launch:[600,300,'sine',.05],
-        castle:[190,90,'triangle',.14],heroHit:[240,90,'triangle',.12]}[kind]||[400,200,'sine',.08];
-      osc.type=spec[2];
-      osc.frequency.setValueAtTime(spec[0],t);
-      osc.frequency.exponentialRampToValueAtTime(Math.max(40,spec[1]),t+spec[3]);
-      gain.gain.setValueAtTime(.0001,t);
-      gain.gain.exponentialRampToValueAtTime(this.volume,t+.008);
-      gain.gain.exponentialRampToValueAtTime(.0001,t+spec[3]);
-      osc.connect(gain);gain.connect(c.destination);
-      osc.start(t);osc.stop(t+spec[3]+.02);
+        castle:[190,90,'triangle',.14],heroHit:[240,90,'triangle',.12],
+        build:[420,760,'triangle',.16,.14],
+        dawn:[[520,660,'triangle',.16,.14],[660,990,'triangle',.18,.14]],
+        collapse:[130,65,'square',.4,.14]}[kind]||[400,200,'sine',.08];
+      const notes=Array.isArray(def[0])?def:[def];
+      let offset=0;
+      for(const spec of notes){
+        const at=t+offset,peak=spec[4]??this.volume;
+        const osc=c.createOscillator(),gain=c.createGain();
+        osc.type=spec[2];
+        osc.frequency.setValueAtTime(spec[0],at);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(40,spec[1]),at+spec[3]);
+        gain.gain.setValueAtTime(.0001,at);
+        gain.gain.exponentialRampToValueAtTime(peak,at+.008);
+        gain.gain.exponentialRampToValueAtTime(.0001,at+spec[3]);
+        osc.connect(gain);gain.connect(c.destination);
+        osc.start(at);osc.stop(at+spec[3]+.02);
+        offset+=spec[3];
+      }
     }catch(e){/* 忽略音频设备异常 */}
   }
 };
@@ -3703,6 +3735,8 @@ function triggerShake(mag){
 function markBuildingFlash(t,time=.2){
   if(t&&game.buildingFlash)game.buildingFlash[at(t.x,t.y)]=time;
 }
+// WP4：圈墙受击音效独立节流（复用既有 castle 音色，不新增第 4 个音效 kind）
+let lastRingHitSound=0;
 function consumeCombatEvent(e){
   const weak=effectsWeak();
   switch(e.kind){
@@ -3727,6 +3761,11 @@ function consumeCombatEvent(e){
     case 'structureHit':
       if(!weak)spawnSparks(e.x,e.y,0,-1,2,'#d9c49b',e.id);
       AudioKit.play('castle');
+      break;
+    case 'ringHit':
+      if(!weak)spawnSparks(e.x,e.y,0,-1,2,'#d9c49b',e.id);
+      // 40 敌围拆时每秒可命中数十次，独立 500ms 节流避免机关枪式闷响
+      if(performance.now()-lastRingHitSound>=500){lastRingHitSound=performance.now();AudioKit.play('castle');}
       break;
     case 'heroHit':
       spawnSparks(e.x,e.y,e.dirX||0,e.dirY||1,weak?2:4,'#ffb0a0',e.id);
@@ -4269,6 +4308,7 @@ function dawn(){
   addIncome(income,'production','生产');
   const total=Object.fromEntries(Object.entries(income).filter(([,amount])=>amount>0));
   if(Object.keys(total).length)report('天亮产出 '+costText(total)+'。',true);
+  AudioKit.play('dawn');
   showBanner('天亮了 · 第 '+game.day+' 日','击退 '+game.waveKills+' 名敌军'+(Object.keys(total).length?' · 收获 '+costText(total):' · 还没有生产建筑产出'),'good');
   settleCampDawn();
   const finishedBook=openNight(finished);
@@ -5181,7 +5221,11 @@ function drawLighting(isNight){
     const g=typeof ctx.createLinearGradient==='function'?ctx.createLinearGradient(0,0,canvas.width,canvas.height):null;
     if(!g?.addColorStop)return;
     g.addColorStop(0,'rgba(255,240,190,.10)');g.addColorStop(1,'rgba(40,70,30,.08)');
+    // WP4：天亮后 1.5 秒暖光淡入；用 globalAlpha 整层插值，色标与渐变调用次数保持不变
+    const fade=Math.min(1,Math.max(0,(game?.phaseElapsed||0)/1.5));
+    ctx.save();ctx.globalAlpha=fade;
     rect(0,0,canvas.width,canvas.height,g);
+    ctx.restore();
     return;
   }
   if(!lightCanvas){lightCanvas=document.createElement('canvas');}
@@ -5193,7 +5237,11 @@ function drawLighting(isNight){
   l.globalCompositeOperation='source-over';
   l.clearRect(0,0,lightCanvas.width,lightCanvas.height);
   l.fillStyle='rgba(14,24,56,.58)';
+  // WP4：入夜后 1.5 秒夜幕 alpha 0→.58 线性；globalAlpha 插值，暗幕色值字面量不变
+  const nightFade=Math.min(1,Math.max(0,(game?.clock||0)/1.5));
+  l.save();l.globalAlpha=nightFade;
   l.fillRect(0,0,lightCanvas.width,lightCanvas.height);
+  l.restore();
   l.globalCompositeOperation='destination-out';
   const hole=(wx,wy,r,a=1)=>{
     const g=l.createRadialGradient(wx,wy,0,wx,wy,r);
@@ -6616,7 +6664,7 @@ function showVictoryPlace(t){
 }
 function drawVictoryMarks(){
   if(!game.castle)return;
-  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduce=effectsWeak();
   const cx=(game.castle.x+.5)*CELL, cy=(game.castle.y+.5)*CELL;
   ctx.save();
   ctx.globalAlpha=reduce?.45:.26+.1*Math.sin(performance.now()/700);
@@ -7129,6 +7177,8 @@ $('helpBtn').addEventListener('click',()=>dialog('操作指南',[
 function syncSettingsMenu(){
   $('soundToggle').textContent='音效：'+(game.settings.sound?'开（低音量）':'关');
   $('effectsToggle').textContent='效果：'+(game.settings.effects==='weak'?'弱化':'标准');
+  // WP4：菜单弱化同步关掉 CSS 动画（OS 未开 reduced-motion 时也生效）
+  if(document.body?.classList)document.body.classList.toggle('fx-weak',effectsWeak());
 }
 function toggleSettings(forceOpen){
   const box=$('settingsMenu');

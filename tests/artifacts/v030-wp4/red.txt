@@ -1,0 +1,194 @@
+TAP version 13
+# Subtest: WP4-1 入夜后 1.5 秒夜幕 alpha 线性 0→1（game.clock 驱动，不改暗幕色值）
+not ok 1 - WP4-1 入夜后 1.5 秒夜幕 alpha 线性 0→1（game.clock 驱动，不改暗幕色值）
+  ---
+  duration_ms: 379.8387
+  type: 'test'
+  location: 'D:\\Work\\game\\border-guard\\tests\\v030-wp4.test.cjs:61:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    clock=0：夜幕应只设置一次 globalAlpha
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\Work\game\border-guard\tests\v030-wp4.test.cjs:69:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: WP4-2 天亮后 1.5 秒白天暖光淡入（game.phaseElapsed 驱动，色标不变）
+not ok 2 - WP4-2 天亮后 1.5 秒白天暖光淡入（game.phaseElapsed 驱动，色标不变）
+  ---
+  duration_ms: 39.2846
+  type: 'test'
+  location: 'D:\\Work\\game\\border-guard\\tests\\v030-wp4.test.cjs:76:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    phaseElapsed=0：暖光应只设置一次 globalAlpha
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\Work\game\border-guard\tests\v030-wp4.test.cjs:83:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: WP4-3 spawnEnemy 产生烟尘粒子，弱化模式不产生
+not ok 3 - WP4-3 spawnEnemy 产生烟尘粒子，弱化模式不产生
+  ---
+  duration_ms: 345.7886
+  type: 'test'
+  location: 'D:\\Work\\game\\border-guard\\tests\\v030-wp4.test.cjs:91:1'
+  failureType: 'testCodeFailure'
+  error: '标准模式刷兵应产生烟尘粒子，实测 0'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (D:\Work\game\border-guard\tests\v030-wp4.test.cjs:101:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: WP4-6 40 敌夜晚弱化峰值 ≤ 标准一半，且 worldFx(ring) 在弱化下不推 effects
+not ok 4 - WP4-6 40 敌夜晚弱化峰值 ≤ 标准一半，且 worldFx(ring) 在弱化下不推 effects
+  ---
+  duration_ms: 356.308
+  type: 'test'
+  location: 'D:\\Work\\game\\border-guard\\tests\\v030-wp4.test.cjs:105:1'
+  failureType: 'testCodeFailure'
+  error: '标准模式 40 敌刷兵应有粒子峰值，实测 0'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (D:\Work\game\border-guard\tests\v030-wp4.test.cjs:119:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: WP4-7 只翻转音效开关不改变 game.effects 峰值（音频与表现层解耦）
+ok 5 - WP4-7 只翻转音效开关不改变 game.effects 峰值（音频与表现层解耦）
+  ---
+  duration_ms: 353.5914
+  type: 'test'
+  ...
+# Subtest: WP4-4 三音效音色：build 上扬三角波 / dawn 两音上行 / collapse 低频方波 130→65
+not ok 6 - WP4-4 三音效音色：build 上扬三角波 / dawn 两音上行 / collapse 低频方波 130→65
+  ---
+  duration_ms: 40.9482
+  type: 'test'
+  location: 'D:\\Work\\game\\border-guard\\tests\\v030-wp4.test.cjs:162:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    build 的起始频率序列，实测 [400]
+    + actual - expected
+    
+      [
+    +   400
+    -   420
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 420
+  actual:
+    0: 400
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\Work\game\border-guard\tests\v030-wp4.test.cjs:173:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: WP4-4b 音效开关仍然有效：sound=false 不调度振荡器；关闭态 unlockAudio 不建 ctx
+not ok 7 - WP4-4b 音效开关仍然有效：sound=false 不调度振荡器；关闭态 unlockAudio 不建 ctx
+  ---
+  duration_ms: 38.9942
+  type: 'test'
+  location: 'D:\\Work\\game\\border-guard\\tests\\v030-wp4.test.cjs:180:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    关闭态不应尝试 new AudioContext 而把 supported 置为 false
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\Work\game\border-guard\tests\v030-wp4.test.cjs:188:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: WP4-5 圈墙受击发且仅发 ringHit，不改伤害 / 不污染 structureHit / 保留 WP2 采样
+not ok 8 - WP4-5 圈墙受击发且仅发 ringHit，不改伤害 / 不污染 structureHit / 保留 WP2 采样
+  ---
+  duration_ms: 361.9331
+  type: 'test'
+  location: 'D:\\Work\\game\\border-guard\\tests\\v030-wp4.test.cjs:196:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    应发且仅发 1 条 ringHit
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\Work\game\border-guard\tests\v030-wp4.test.cjs:206:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 1
+# fail 7
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2018.0988

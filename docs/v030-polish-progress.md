@@ -45,11 +45,19 @@
 - **§5 四项补图完成**：箭塔三色顶（蓝/红/紫）、倒塌碎石相机、交互三态（沿用 WP2 真实输入证据）、卡牌第 3 张（七视口 + 真实选中）。
 - 目视两条观察项（932×430 折叠按钮与简报叠压、390×844 入夜横幅短时盖住简报）不判 FAIL，顺延 WP5 登记。
 
-## ⏳ 未完成（下一步）
+## ✅ WP4 表现力与节奏（2026-11-16 完成，质量门 PASS）
 
-### WP4 表现力与节奏（实现中）
-昼夜过渡、刷兵烟尘、三音效、圈墙受击火花、效果弱化与性能（规格见 `wp4-audio-spec.md`）。
-主理人拍板：圈墙受击采用新事件名 `ringHit`（不复用 `structureHit`，避免污染既有事件计数）；音效只认 `settings.sound`、不随效果弱化静音；`unlockAudio()` 关闭态不创建 AudioContext；弱化一致性用 `body.fx-weak` class（VM 桩无 `documentElement`）。
+详细报告：`tests/artifacts/v030-polish/wp4-acceptance-report.md`；改造前对照：`tests/artifacts/v030-wp4/baseline-note.md`。
+
+- **昼夜过渡**：`drawLighting()` 用 `game.clock / game.phaseElapsed` 在 1.5 秒内插值 `globalAlpha`，色标与渐变调用次数一字符不改。亮度曲线由改造前恒定 59.3–59.4 的阶跃，变为 93.9→82.0→70.4→59.7→59.4 的平滑下降。
+- **刷兵烟尘**：`spawnEnemy()` 发 `worldFx('burst')`；弱化模式由既有 `!weak` 门控拦截。
+- **三音效**：`build`（上扬三角波）、`dawn`（两音上行）、`collapse`（130→65 Hz 低频方波）；`AudioKit.play()` 支持音符数组与可选峰值，既有 9 条 spec/gap 不动；`unlockAudio()` 关闭态不创建 AudioContext。
+- **圈墙受击**：采用新事件名 `ringHit`，发在 `damageWallRing()` 的 `dealt>0` 块（WP2 采样之后）；`case 'ringHit'` 火花 + 独立 500 ms 节流复用既有 `castle` 音色，**不新增第 4 个音效 kind**，不污染 `structureHit` 计数。
+- **弱化一致性**：`body.fx-weak` CSS 关动画、`worldFx('ring')` 加 `!weak`、`syncSettingsMenu()` 同步 class、`drawVictoryMarks()` 改用 `effectsWeak()`。
+- **回归数字**：新增 `tests/v030-wp4.test.cjs` 8 项（红 7 fail / 绿 8/8）；Node 全量 **72/72**；`v027` 10/10、`v028` 6/6；三条浏览器 runner 全绿且六视口遮挡数值与改造前逐值一致；性能 `nightMs 2.95 / dayMs 1.93`（改造前 3.66 / 2.40）；弱化峰值 150 / 2（比值 0.013 ≤ 0.5）。
+- **分工记录**：曾派 engineering-lead，9 分钟无产出（判断为额度/限流阻塞，已取消），由主理人按 SOP 接手实现与验收。
+
+## ⏳ 未完成（下一步）
 
 ### WP5 试玩回归与交付（未开始）
 自然试玩 ≥3 夜、失败诊断与重置、`docs/v030-polish-report.md`、README 补充。
@@ -58,10 +66,11 @@
 - **P2**：耐久牌「改以进度条为主」不改信息架构，只改字号；进度条主导登记为 WP5 设计取舍。
 - **P4**：小地图内部分辨率维持 180×120（保守，规避测试 VM 桩风险）；非等比拉伸记为已知取舍。
 - **横滑**：手机端卡牌不引入横向滚动（改变可达性，未经用户同意不实施）。
-- **测试基线口径**：当前有效基线为 6 个 `*.test.cjs` / 61 项（`v027-balance`、`v028-priority` 属旧构建回归、不计入）；文档中「8 文件 77」为预研静态估算偏差。
+- **测试基线口径**：当前有效基线为 8 个 `*.test.cjs` / **72 项**（WP3 新增 3 + WP4 新增 8；`v027-balance`、`v028-priority` 属旧构建回归、单独跑但不计入）；文档中「8 文件 77」为预研静态估算偏差，WP5 需统一订正三份旧规格。
 
 ## ⚠️ 已知风险
 - 390×844 `siteFree` 余量 0.001：任何增高选址面板/底栏的改动都会破线，后续改动须每步跑 `v029-hud-occlusion-browser.cjs`（输出到 `v030-*` 新目录，禁止覆盖 `v029-*` 旧证据）。
 - ~~①b′ 夜间可读性未实拍~~ → **已于 2026-11-16 复拍通过**（`v030-wp3-reshoot/night-n0-*-badge.png`），P7 判定不再待复拍。
-- 三份旧规格文档仍写「8 文件 77/77」，有效基线为 7 个 `*.test.cjs` / 64 项；`wp2-ux-spec.md` §3.2 绘制位置一行待 WP5 同步为 ①b′。
+- 三份旧规格文档仍写「8 文件 77/77」，有效基线现为 8 个 `*.test.cjs` / 72 项；`wp2-ux-spec.md` §3.2 绘制位置一行待 WP5 同步为 ①b′。
+- `collapse` 低频 130→65 Hz 在小喇叭上基频可闻性存疑（规格 §1.3），真人试听前不得宣称听感合格。
 - 手机真机、真人试玩、音效真人试听均未做。
