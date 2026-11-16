@@ -2,7 +2,7 @@
 
 > 旧图来源：`D:/Work/game/bg-scratch/before/`（仓库外，改造前 v0.29 基线，**不入库**）与
 > `tests/artifacts/v029-hud-occlusion/cards-1440x900.png`（v0.29 时代卡牌证据）。
-> 新图来源：当前分支 `Border-Guard-v0.29.html` 实拍。PNG 按仓库惯例留本地、不入库，本文档入库作索引。
+> 新图来源：已合并进 `main` 的 `Border-Guard-v0.29.html`（v0.30 打磨版）实拍。PNG 按仓库惯例留本地、不入库，本文档入库作索引。
 
 | 组 | 改造前 | 改造后 | 拼接 | 看什么 |
 |---|---|---|---|---|

@@ -3,6 +3,7 @@
 > 日期：2026-11-16 · 分支：`codex/claude-gameplay-art-layout` · 基线版本 v0.26 → 打磨目标 v0.30
 > 依据：`docs/v030-handoff-plan.md` · 入口文件名保持 `Border-Guard-v0.29.html` 不变
 > 本文档由主理人维护，随提交更新；详细规格与验收证据见 `tests/artifacts/v030-polish/`。
+> **交付状态（2026-11-16）**：WP1–WP5 质量门全 PASS；feature 分支已 push，并由 merge commit `21d89f2` 合并进 `main` 后 push 到 `origin/main`。上方「分支」字段记录的是开发期所在分支，当前交付主干为 `main`。
 
 ## ✅ 已完成
 
