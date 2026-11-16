@@ -213,7 +213,7 @@ BORDER_ARTIFACTS=tests/artifacts/v030-wp5-rings node tests/v029-rings-ui-browser
 - **第 3 夜失守的材料缺口**（§6.2-2）与**引导只提单侧**（§6.2-1）待用户拍板是否调整规则。
 - **WP3 顺延的两条目视观察项**：932×430 折叠按钮与开局简报短时叠压、390×844 入夜横幅短时盖住简报；均不判 FAIL，未修。
 - **文档口径**：三份旧规格（`wp2-acceptance-plan.md`、`wp2-ux-spec.md`、`wp3-visual-spec.md`）已加「WP5 口径订正」块声明 `77/77` 作废、有效基线 72；`wp2-ux-spec.md` §0.1 / §3.2 / §7 已同步到 ①b′。原文数字保留供溯源。
-- **证据文件**：PNG 与 `browser.json` 按仓库惯例留本地未入库；入库的是文档、测量 JSONL、红绿日志、回归文本与测试代码。仓库 `.gitignore` 忽略 `*.log`，故试玩日志以**同源 `.txt` 入库**（`v030-wp5/playthrough.txt`、`fail-reset.txt`、`attempt1..3/playthrough.txt`、`regression-*.txt`），本地 `.log` 为逐字副本；`v030-wp4/*.log`（亮度/性能/弱化曲线）仅留本地，其结论已写进 `wp4-acceptance-report.md`。`bg-scratch/` 全程不入库。
+- **证据文件**：本轮新增的 WP3/WP4/WP5 取证 PNG 与 `browser.json` 按仓库惯例留本地未入库；`compare/` 的前后对比图（WP1/WP2 的 12 张 + 交付时补齐的开局/卡牌 4 张）随 `INDEX.md` 一并入库。其余入库的是文档、测量 JSONL、红绿日志、回归文本与测试代码。仓库 `.gitignore` 忽略 `*.log`，故试玩日志以**同源 `.txt` 入库**（`v030-wp5/playthrough.txt`、`fail-reset.txt`、`attempt1..3/playthrough.txt`、`regression-*.txt`），本地 `.log` 为逐字副本；`v030-wp4/*.log`（亮度/性能/弱化曲线）仅留本地，其结论已写进 `wp4-acceptance-report.md`。`bg-scratch/` 全程不入库。
 
 ---
 
