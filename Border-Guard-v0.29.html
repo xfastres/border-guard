@@ -338,30 +338,30 @@ body.touch-ui .victory-actions button,body.touch-ui #victoryNights button { min-
 #victoryHud{position:fixed;inset:0;z-index:12;pointer-events:none}
 #victoryHud button,#victoryHud [role="tab"],#victoryCard,#victoryMenu,#victoryLegend,#victoryInspect{pointer-events:auto}
 #victoryCard{position:fixed;z-index:2;width:min(400px,calc(100vw - 16px));max-height:calc(100dvh - 16px);overflow:auto;
-  background:#161d19d4;border:1px solid #c4a36a;border-radius:12px;box-shadow:0 12px 40px #05080699;color:var(--text)}
+  background:var(--glass);border:1.5px solid var(--glass-line);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(6px);color:var(--text)}
 #victoryHandle{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:12px 14px 4px;cursor:grab;touch-action:none;user-select:none}
-#victoryTitle{font-family:"Songti SC","SimSun",Georgia,serif;font-size:18px;line-height:1.35;color:#f3d7a2}
-#victoryHandle small{color:#cbb98a;font-size:12px}
+#victoryTitle{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:18px;line-height:1.35;color:#ffe7a6;font-weight:900;text-shadow:0 2px 0 #2b1d08}
+#victoryHandle small{color:var(--muted);font-size:12px}
 #victoryCore{padding:4px 14px 0}
 #victoryCore p,#victoryNightLine{margin:2px 0;font-size:14px;line-height:1.45}
 .victory-num,#victoryNightLine{font-variant-numeric:tabular-nums}
 #victoryNightLine{padding:6px 14px 0;color:#e7e1cf;font-size:13px}
 #victoryNights{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px 0}
-#victoryNights button[aria-selected="true"]{border-color:var(--accent);color:#ffd78d;background:#3a3728}
+#victoryNights button[aria-selected="true"]{border-color:var(--gold);color:#ffe7a6;background:rgba(242,193,78,.18)}
 .victory-actions{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px 12px}
 .victory-actions button{flex:1 1 96px;min-height:40px}
-#victoryPanel{margin:0 14px 12px;max-height:38vh;overflow:auto;border-top:1px solid #3e4e42;padding-top:8px;color:#d7dccb;font-size:13px}
+#victoryPanel{margin:0 14px 12px;max-height:38vh;overflow:auto;border-top:1px solid var(--ui-line);padding-top:8px;color:#d7dccb;font-size:13px}
 #victoryPanel p{margin:0 0 6px}
 #victoryGear,#victoryLegendBtn{position:fixed;z-index:3;top:10px;min-width:44px;min-height:40px;padding:6px 10px}
 #victoryGear{right:10px}
 #victoryLegendBtn{right:64px}
-#victoryMenu,#victoryLegend,#victoryInspect{position:fixed;z-index:4;background:#1c2620f2;border:1px solid #c4a36a;border-radius:10px;
+#victoryMenu,#victoryLegend,#victoryInspect{position:fixed;z-index:4;background:var(--glass);border:1.5px solid var(--glass-line);backdrop-filter:blur(6px);border-radius:12px;
   padding:10px;max-width:min(360px,calc(100vw - 16px));max-height:calc(100dvh - 24px);overflow:auto}
 #victoryMenu{top:56px;right:10px;display:grid;gap:6px}
 #victoryLegend{top:56px;right:10px;width:min(320px,calc(100vw - 16px))}
 #victoryInspect{left:10px;bottom:10px;width:min(320px,calc(100vw - 20px))}
 #victoryInspect h3{margin:0 0 4px;font-size:15px}
-#victoryTip{position:fixed;z-index:5;pointer-events:none;background:#121815ee;border:1px solid #80694a;color:#f3e6c8;font-size:12px;padding:3px 8px;border-radius:6px}
+#victoryTip{position:fixed;z-index:5;pointer-events:none;background:rgba(24,32,46,.94);border:1px solid var(--gold-line);color:#fff3d0;font-size:12px;padding:3px 8px;border-radius:6px}
 #victoryCard.enter{animation:victoryIn .35s ease}
 @keyframes victoryIn{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){#victoryCard.enter{animation:none}}
@@ -550,10 +550,13 @@ dialog::backdrop{background:rgba(8,12,20,.66)}
   .stock .glyph{width:18px;height:18px}
   .stock strong{font-size:14px}
   .stock span{font-size:0;gap:0}
-  .cmd-btn{min-width:72px;padding:4px 5px 5px}
-  .cmd-btn .cmd-icon{width:32px;height:32px}
-  .cmd-btn .cmd-icon .glyph{width:26px;height:26px}
-  .cmd-btn small{font-size:10px}
+  /* WP3 §4.3 P3：390×844 夜战 3 个战斗命令（领主攻击/自动攻击/号令齐射）与白天 4 个命令
+     须一屏完整显示——等比压缩图标与字号，不增高底栏（siteFree 余量仅 0.001） */
+  .cmd-btn{min-width:64px;padding:4px 4px 5px}
+  .cmd-btn .cmd-icon{width:26px;height:26px}
+  .cmd-btn .cmd-icon .glyph{width:20px;height:20px}
+  .cmd-btn .cmd-label{font-size:11px}
+  .cmd-btn small{font-size:9px}
   .growth-card{min-height:190px;padding:10px 6px 8px}
   .growth-card .card-art{width:56px;height:56px}
   .growth-card .card-art .glyph{width:40px;height:40px}
@@ -4774,7 +4777,12 @@ function structure(t){
       oval(x-16,y-4,2.4,2.4,tint,OUT,.8);oval(x+15,y-9,2.2,2.2,tint,OUT,.8);oval(x+6,y-15,1.8,1.8,tint);
       line(x-2,y+13,x+26,y+13,'#6b5a48',1.4);line(x-2,y+16,x+26,y+16,'#6b5a48',1.4);
       rrect(x+12,y+6,12,7,2,'#7d6a55',OUT,1.2);oval(x+14,y+5.5,2.5,1.8,tint);oval(x+19,y+5,2.8,2,tint);
-      if(ore==='rich'||ore==='iron'){rrect(x-26,y-26,16,12,4,'rgba(30,24,16,.8)');label(ore==='rich'?'富':'铁',x-18,y-20,9,tint);}
+      if(ore==='rich'||ore==='iron'){
+        // WP3 §3.1：富/铁角标去汉字，改为纯图形双编码（菱形=富金 / 方块=铁蓝灰），提升 50% 与手机端可读性
+        rrect(x-27,y-28,20,16,5,'rgba(28,36,24,.9)',OUT,1.2);
+        if(ore==='rich'){path([[x-17,y-24],[x-13,y-20],[x-17,y-16],[x-21,y-20]],tint,OUT,1.2);}
+        else{rect(x-21,y-24,8,8,tint,OUT,1.2);}
+      }
       if(b.hp<b.max)hpPips(x-17,y+19,34,b.hp/b.max,'#ffd36a');
     } else {
       // 箭塔：石基木台 + 尖顶 + 旗
@@ -4790,17 +4798,21 @@ function structure(t){
       rrect(x-3,y-14,6,8,2,'#3a2c1e');
       line(x,y-44,x,y-54,PAL.woodDark,1.6);
       path([[x,y-54],[x+9,y-51],[x,y-48]],game.ranks.tower?'#c79cff':PAL.gold,OUT,1);
-      if(lv>=1)label(lv===2?'重':'Ⅱ',x-9,y-21,7,'#fff3d0');
       if(b.hp<b.max)hpPips(x-17,y+15,34,b.hp/b.max,'#ffd36a');
     }
-    // WP2：生产建筑右上角工人数徽章（👤N / 灰色「空」），与 S4 共用人数读取口径
-    if(isProductionBuilding(b)){
-      const n=productionWorkerCountAt(t);
-      ctx.save();
-      rrect(36,1,24,15,5,n>0?'rgba(28,42,26,.88)':'rgba(84,90,96,.88)',OUT,1.2);
-      label(n>0?'👤'+n:'空',48,8.5,10,n>0?'#ffe9a8':'#cdd3d8','900');
-      ctx.restore();
-    }
+  });
+}
+// WP3 P7 ①b′：工人数徽章从 structure() 整体移出，改为 sprites 之后晚绘一次。
+// 名称契约：顶层函数声明；身份 test / 守卫 test 的 typeof 探测依赖此名，改名须同步断言。
+function drawProductionBadge(t){
+  const b=t.building;
+  if(!isProductionBuilding(b)||!t.visible)return;
+  const n=productionWorkerCountAt(t);
+  inCell(t.x*CELL,t.y*CELL,()=>{
+    ctx.save();
+    rrect(36,1,24,15,5,n>0?'rgba(28,42,26,.88)':'rgba(84,90,96,.88)',OUT,1.2);
+    label(n>0?'👤'+n:'空',48,8.5,10,n>0?'#ffe9a8':'#cdd3d8','900');
+    ctx.restore();
   });
 }
 function nodeArt(t){
@@ -4926,7 +4938,9 @@ function drawResident(r){
   ctx.restore();
   // 状态气泡：不随翻转，固定在头顶右侧
   const bx=pose.x*CELL+8*s, by=pose.y*CELL-22*s;
-  const bubble=(txt,bg)=>{rrect(bx-7*s,by-7*s,14*s,13*s,4*s,bg,OUT,1.2);label(txt,bx,by-.5*s,9*s,'#fff');};
+  // WP3 §3.2：作业气泡底 14*s→18*s、符号 9*s→11*s（50% 与手机端可读性）。
+  // P7 ①b′ 晚绘已保证徽章后绘，实色气泡不再遮挡 👤N/「空」徽章（§3.5）。
+  const bubble=(txt,bg)=>{rrect(bx-9*s,by-8.5*s,18*s,17*s,5*s,bg,OUT,1.2);label(txt,bx,by-.5*s,11*s,'#fff');};
   if(pose.badge==='!')bubble('!','#c4402f');
   else if(pose.badge==='休')bubble('休','#7a6a9a');
   else if(working)bubble(pose.role==='miner'?'⛏':pose.role==='wood'?'🪓':'⚒','#3f8a3c');
@@ -5068,16 +5082,16 @@ function drawWallRings(){
       path([[-15,-13],[0,-24],[15,-13]],PAL.roofBlue,OUT,1.4);
       ctx.restore();
     }
-    // 6) 统一圈耐久牌：置于圈上沿中点，避免压住主城
+    // 6) 统一圈耐久牌：置于圈下沿中点，避免压住主城
     let maxY=-Infinity,sx=0,n=0;
     for(const edge of edges){const e=edgeEndpoints(edge);if(!e)continue;maxY=Math.max(maxY,e[0].y,e[1].y);sx+=(e[0].x+e[1].x)/2;n++;}
     if(n){
       sx=sx/n*CELL;const sy=maxY*CELL+20;
-      const w=96;
+      const w=104;
       rrect(sx-w/2,sy-11,w,22,8,'rgba(28,36,24,.82)',ratio<.35?'#ff7a5a':'rgba(255,224,138,.8)',1.4);
       label('🛡',sx-w/2+11,sy,11,'#fff');
       hpPips(sx-w/2+21,sy-6,w-28,ratio,ratio<.35?'#ff7a5a':'#7fd36a');
-      label(Math.ceil(ring.hp)+' / '+ring.maxHp,sx+8,sy+4.5,9,'#fff7e0','700');
+      label(Math.ceil(ring.hp)+' / '+ring.maxHp,sx+8,sy+4.5,11,'#fff7e0','700');
     }
   }
 }
@@ -5378,6 +5392,8 @@ function draw(){
   if(game.castle&&game.wallRings instanceof Map&&game.wallRings.size)drawWallRings();
   cachedLayer('fog',visible+'|'+navigationRevision()+'|'+game.seed,()=>{for(const t of game.tiles)if(!t.visible)drawFog(t);});
   drawSelection();
+  // WP3 P7 ①b′：徽章晚绘 pass —— 只遍历 game.tiles（不用懒加载 Map），t.visible 守卫在 drawProductionBadge 内
+  for(const t of game.tiles)if(t.building&&isProductionBuilding(t.building))drawProductionBadge(t);
   drawLighting(isNight);
   if(isNight||game.presentation)drawCombatLayer();
   else drawDayFx();
@@ -7163,30 +7179,41 @@ function drawMinimap(){
   if(!mini||!game)return;
   const mctx=mini.getContext('2d');
   if(!mctx||typeof mctx.fillRect!=='function')return;
+  // WP3：小地图配色只读映射自 PAL（§1），不引入渐变/离屏画布/ measureText
+  const M={
+    bg:'#2f4a2a', unknown:PAL.grassDark,
+    grass:PAL.grass[1], owned:PAL.grassOwned[1],
+    water:PAL.water, road:PAL.road,
+    forest:PAL.leafDark, mountain:PAL.stoneMid,
+    castle:PAL.gold, wall:PAL.stoneLight, broken:PAL.red, gate:PAL.roofBlue,
+    hero:PAL.gold, view:PAL.gold, staging:PAL.gold
+  };
   const mw=mini.width,mh=mini.height;
-  mctx.fillStyle='#142019';mctx.fillRect(0,0,mw,mh);
+  mctx.fillStyle=M.bg;mctx.fillRect(0,0,mw,mh);
   const sx=mw/WIDTH,sy=mh/HEIGHT;
   for(const t of game.tiles){
     if(!t.visible&&game.castle)continue;
-    let color='#1d3328';
-    if(t.ground==='water')color='#2d4f4c';
-    else if(t.ground==='road')color='#7a6f52';
-    else if(tileCover(t)==='forest')color='#34553c';
-    else if(tileCover(t)==='mountain')color='#6a6e60';
-    else if(t.owned)color='#4d6a45';
+    let color=M.unknown;
+    if(t.ground==='water')color=M.water;
+    else if(t.ground==='road')color=M.road;
+    else if(tileCover(t)==='forest')color=M.forest;
+    else if(tileCover(t)==='mountain')color=M.mountain;
+    else if(t.owned)color=M.owned;
+    else color=M.grass;
     mctx.fillStyle=color;
     mctx.fillRect(t.x*sx,t.y*sy,Math.ceil(sx),Math.ceil(sy));
   }
   if(game.castle){
-    mctx.fillStyle='#efc47e';
+    mctx.fillStyle=M.castle;
     mctx.fillRect(game.castle.x*sx,game.castle.y*sy,Math.max(2,sx),Math.max(2,sy));
   }
   // 真实城墙圈 / 城门 / 破圈
   if(game.wallRings instanceof Map){
     for(const ring of game.wallRings.values()){
       if(!ring.edges)continue;
-      mctx.strokeStyle=ring.status==='broken'||ring.hp<=0?'#6a3a34':'#cfc8b0';
-      mctx.lineWidth=ring.status==='broken'?1:1.6;
+      const broken=ring.status==='broken'||ring.hp<=0;
+      mctx.strokeStyle=broken?M.broken:M.wall;
+      mctx.lineWidth=broken?1:1.6;
       for(const edge of ring.edges.values()){
         const ends=edgeEndpoints(edge);
         if(!ends)continue;
@@ -7194,9 +7221,9 @@ function drawMinimap(){
         mctx.beginPath();
         mctx.moveTo(a.x*sx,a.y*sy);mctx.lineTo(b.x*sx,b.y*sy);
         mctx.stroke();
-        if(isGateEdge(ring,edge.id)&&ring.status!=='broken'){
-          mctx.fillStyle='#4a82a4';
-          mctx.fillRect(((a.x+b.x)/2)*sx-1.5,((a.y+b.y)/2)*sy-1.5,3,3);
+        if(isGateEdge(ring,edge.id)){
+          if(broken){mctx.fillStyle=M.broken;mctx.beginPath();mctx.arc(((a.x+b.x)/2)*sx,((a.y+b.y)/2)*sy,2,0,Math.PI*2);mctx.fill();}
+          else {mctx.fillStyle=M.gate;mctx.fillRect(((a.x+b.x)/2)*sx-1.5,((a.y+b.y)/2)*sy-1.5,3,3);}
         }
       }
     }
@@ -7205,24 +7232,24 @@ function drawMinimap(){
   if(game.phase==='night'&&game.fronts){
     for(const front of game.fronts){
       for(const g of front.gates||[]){
-        mctx.fillStyle='#ed9a7c';
+        mctx.fillStyle=M.broken;
         mctx.beginPath();mctx.arc((g.x+.5)*sx,(g.y+.5)*sy,2.4,0,Math.PI*2);mctx.fill();
       }
       if(front.staging){
-        mctx.strokeStyle='#ed9a7c';mctx.lineWidth=1;
+        mctx.strokeStyle=M.staging;mctx.lineWidth=1;
         mctx.strokeRect(front.staging.x*sx,front.staging.y*sy,sx,sy);
       }
     }
   }
   if(game.hero){
-    mctx.fillStyle='#ffe9bd';
+    mctx.fillStyle=M.hero;
     mctx.beginPath();mctx.arc(game.hero.x*sx,game.hero.y*sy,2.2,0,Math.PI*2);mctx.fill();
   }
   // 视口框
   if(camera.sx&&camera.sy){
     const left=(-camera.tx/camera.sx)/CELL, top=(-camera.ty/camera.sy)/CELL;
     const vw=(camera.vw/camera.sx)/CELL, vh=(camera.vh/camera.sy)/CELL;
-    mctx.strokeStyle='#efc47e';mctx.lineWidth=1;
+    mctx.strokeStyle=M.view;mctx.lineWidth=1;
     mctx.strokeRect(left*sx,top*sy,vw*sx,vh*sy);
   }
 }

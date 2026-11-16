@@ -7,7 +7,10 @@
   "environment": {
     "repo": "D:/Work/game/border-guard",
     "branch": "codex/claude-gameplay-art-layout",
-    "head": "cd4437a",
+    "headAtStart": "cd4437a",
+    "headAfterFirstPass": "5320a02433214e05de4d35a5dcea75bc139c9276 (5320a02) — 原 prompt 第 8 条授权的 1 次提交已执行；随后 team-lead 补充指令要求「提交暂缓」，故本轮补充取证不再提交、不 push、不 reset",
+    "headConfirmed": "5320a02 (git log -1 实测，非 cd4437a)",
+    "htmlIdenticalToHead": "git diff --quiet HEAD -- Border-Guard-v0.29.html 通过；补充取证期间未改 HTML，所有截图前后一致",
     "worktreeTouched": false,
     "branchSwitched": false,
     "pushed": false,
@@ -22,7 +25,27 @@
     "codeOrCssChangesRequired": false,
     "consoleErrors": 0,
     "pageErrors": 0,
-    "note": "1–6 全部实测通过；最终 WP1 质量门放行由主理人判定"
+    "supplementaryChecksPassed": 4,
+    "supplementaryChecksFailed": 0,
+    "note": "原 6 项全部实测通过，补充 4 项也全部完成；最终 WP1 质量门放行由主理人判定。补充取证后按主理人指令不再提交、不 push、不改 HTML。",
+    "nodeRegressionRerun": { "tests": 48, "pass": 48, "fail": 0, "durationMs": 2837.616, "log": "/tmp/wp1-node-regression-rerun.log" },
+    "scenesRerun": {
+      "desktop": "bash scenes.sh D:/Work/game/bg-scratch/after 1440 900 — 3 张截图重出，无 EXC/CONSOLE error，日志 /tmp/wp1-scenes-desktop-rerun.log",
+      "mobile": "bash scenes.sh D:/Work/game/bg-scratch/after 390 844 touch — 3 张截图重出，无 EXC/CONSOLE error，日志 /tmp/wp1-scenes-mobile-rerun.log",
+      "note": "重跑的 6 张图覆盖 D:/Work/game/bg-scratch/after/；tests/artifacts/v030-polish/compare/ 内的 *-after.png 与 4 张 composite 仍是首轮同一 HTML 的快照副本，作为前后对比证据依然有效。"
+    },
+    "perfRerun": { "nightMs": 6.02, "dayMs": 2.95, "enemies": 40, "thresholds": "nightMs<=8, dayMs<=4", "status": "PASS", "log": "/tmp/wp1-perf-rerun.log" },
+    "browserRunnersNotRerun": "三条 v029 浏览器 runner 的证据目录 tests/artifacts/v030-{hud,work,rings}/ 已在首轮产出并随 5320a02 提交；因 HTML 逐字节未变，重跑只会覆盖已提交的证据文件，故本轮不重复产出，首轮 OK / afterCollapseSeconds 2.0 / pageErrors=[] 结论继续有效。",
+    "wp1QA02": {
+      "ruling": "已确认收到裁定 (a)：保留 5320a02，不回滚、不 amend、不新增提交、不 push、不合并 main。",
+      "evidenceItems": 4,
+      "evidenceItemsPassed": 4,
+      "newScreenshots": 6,
+      "s9Covered": true,
+      "gitWriteOperations": 0,
+      "htmlChanges": 0,
+      "details": "见 supplementaryEvidence.item5_wp1QA02Evidence"
+    }
   },
   "acceptance": [
     {
@@ -268,6 +291,264 @@
       "observedDifference": "旧版暗橄榄绿、扁平象形图标、灰墙；新版明亮嫩绿草地/亮蓝水/暖黄路、2.5D 描边建筑(蓝顶主城/箭塔)、金边深蓝玻璃 HUD 与金色渐变按钮、圈下沿 600/600 耐久牌、夜间冷蓝暗幕配暖光孔。"
     }
   ],
+  "supplementaryEvidence": {
+    "instruction": "team-lead 补充指令：提交暂缓，补 4 项取证；不改 HTML、不提交、不 push。本段为补充取证结果，全部基于当前 HEAD 5320a02 与未改动的 Border-Guard-v0.29.html。",
+    "item1_dayNightDrawConsole": {
+      "title": "白天 / 夜间各显式触发一次 draw()，原文记录 cdp.cjs 输出",
+      "status": "PASS",
+      "dayCommand": "node cdp.cjs \"open 1440 900 ;; clicktext 普通难度 ;; wait 600 ;; evalfile fx/day-scene.js ;; wait 3500 ;; eval (()=>{const t=performance.now();draw();return {phase:game.phase,drawCallMs:+(performance.now()-t).toFixed(2),exercised:'L5044-5045 createLinearGradient day branch'}})()\"",
+      "nightCommand": "node cdp.cjs \"open 1440 900 ;; clicktext 普通难度 ;; wait 600 ;; evalfile fx/day-scene.js ;; wait 500 ;; evalfile fx/night.js ;; wait 9000 ;; eval (()=>{const t=performance.now();draw();return {phase:game.phase,drawCallMs:+(performance.now()-t).toFixed(2),exercised:'L5054 createRadialGradient night branch'}})()\"",
+      "dayStdoutVerbatim": [
+        "clicked [720,487.625,\"普通难度 · 开始守卫推荐第一次试玩\"]",
+        "{\"prods\":[\"quarry\",\"lumber\",\"mine\",\"farm\"],\"res\":{\"gold\":34,\"material\":52,\"food\":4,\"rare\":0}}",
+        "{\"phase\":\"day\",\"drawCallMs\":4.4,\"exercised\":\"L5044-5045 createLinearGradient day branch\"}"
+      ],
+      "nightStdoutVerbatim": [
+        "clicked [720,487.625,\"普通难度 · 开始守卫推荐第一次试玩\"]",
+        "{\"prods\":[\"farm\",\"mine\",\"lumber\",\"quarry\"],\"res\":{\"gold\":34,\"material\":52,\"food\":4,\"rare\":0}}",
+        "\"night\"",
+        "{\"phase\":\"night\",\"drawCallMs\":5.5,\"exercised\":\"L5054 createRadialGradient night branch\"}"
+      ],
+      "twoVerdictSentencesVerbatim": [
+        "白天 draw() 触发后，cdp.cjs 输出中未出现 EXC，也未出现 CONSOLE error（原文见 dayStdoutVerbatim，共 3 行，无错误行）。",
+        "夜间 draw() 触发后，cdp.cjs 输出中未出现 EXC，也未出现 CONSOLE error（原文见 nightStdoutVerbatim，共 4 行，无错误行）。"
+      ],
+      "twoResultLinesVerbatim": [
+        "白天（phase=day）draw()：EXC 0 / CONSOLE error 0 / EVAL-ERR 0 / ERR 0 —— 对应会话 CDP-SESSION-DAY-DRAW，日志 /tmp/wp1-day-draw.log",
+        "夜间（phase=night）draw()：EXC 0 / CONSOLE error 0 / EVAL-ERR 0 / ERR 0 —— 对应会话 CDP-SESSION-NIGHT-DRAW，日志 /tmp/wp1-night-draw.log"
+      ],
+      "sessionIdentification": {
+        "baseline": "首轮 WP1-QA-01 的 12 次 cdp.cjs 会话全程 EXC=0 / CONSOLE error=0；本项复用并明确指向其中新增的两次显式 draw() 会话，而非笼统引用 12 次统计。",
+        "daySession": {
+          "id": "CDP-SESSION-DAY-DRAW",
+          "log": "/tmp/wp1-day-draw.log",
+          "phase": "day",
+          "whyThisPhase": "open 1440 900 → clicktext 普通难度 → evalfile fx/day-scene.js → wait 3500 → eval 内显式 draw()；返回 {\"phase\":\"day\",\"drawCallMs\":4.4}",
+          "stdoutLineCount": 3,
+          "EXC": 0,
+          "CONSOLE_error": 0
+        },
+        "nightSession": {
+          "id": "CDP-SESSION-NIGHT-DRAW",
+          "log": "/tmp/wp1-night-draw.log",
+          "phase": "night",
+          "whyThisPhase": "open 1440 900 → clicktext 普通难度 → evalfile fx/day-scene.js → evalfile fx/night.js → wait 9000 → eval 内显式 draw()；返回 {\"phase\":\"night\",\"drawCallMs\":5.5}",
+          "stdoutLineCount": 4,
+          "EXC": 0,
+          "CONSOLE_error": 0
+        },
+        "note": "两次会话的 cdp.cjs 原始 stdout 中本来就不存在任何 EXC / CONSOLE error 行，故「结果原文两行」以 twoResultLinesVerbatim 中两条零错误结论行记录；逐行原始 stdout 见 dayStdoutVerbatim / nightStdoutVerbatim 与对应日志。"
+      },
+      "grepScan": {
+        "command": "grep -nE \"EXC |CONSOLE |EVAL-ERR|^ERR \" /tmp/wp1-day-draw.log /tmp/wp1-night-draw.log",
+        "output": "NO MATCHES: no EXC, no CONSOLE error/warn, no EVAL-ERR, no ERR"
+      },
+      "rawNumbers": { "dayDrawCallMs": 4.4, "nightDrawCallMs": 5.5, "EXC": 0, "CONSOLE_error": 0 },
+      "logs": ["/tmp/wp1-day-draw.log", "/tmp/wp1-night-draw.log"],
+      "conclusion": "L5044–5045 白天线性渐变路径在真实 Chrome 里执行成功，未抛异常；这与「VM 桩若返回空函数会抛 TypeError」的静态推断并不矛盾——真浏览器原生支持 createLinearGradient。",
+      "fixtureNote": "day-scene.js / night.js 为状态夹具，仅用于构造白天/夜晚状态，不是自然流程证据。"
+    },
+    "item2_wallHitFlash": {
+      "title": "夜战圈墙受击瞬间帧 + 整圈墙身闪白 / 耐久牌不闪白确认",
+      "status": "PASS",
+      "fixtureNote": "状态夹具，非自然流程证据。使用 fx/night.js 进入夜晚；用 fx/wall-control.js 冻结渲染循环并清 hitFlash，用游戏自身的 damageWallRing('home',7,'qa-probe')（L995–1015，写入 ring.hitFlash=performance.now()）或 fx/wall-flash-only.js 直接置 hitFlash，再手动 draw() 一次以保留 L4891 的 160ms 闪白窗口。",
+      "codeFacts": {
+        "L4891": "const hitFlash=ring.hitFlash&&t-ring.hitFlash<160; (t=performance.now())",
+        "L4892": "const body=hitFlash?'#fff1c8':ratio<.35?'#c9a99a':PAL.stone; — 作用于墙身 L4902、雉堞 L4917、拐角塔楼 L4931/L4933",
+        "L4955": "耐久牌 rrect 边框色由 ratio 决定，完全不读 hitFlash",
+        "L4949_vs_L4951": "注释写「圈上沿」，代码用 maxY 取下沿；截图确认牌在圈下沿、不压主城，代码行为正确，仅注释过时"
+      },
+      "objectivePixelAB": {
+        "command": "evalfile D:/Work/game/bg-scratch/fx/wall-pixel-ab.js（同一 eval 内 flash OFF / ON 各 draw() 一次并读同一像素）",
+        "sampleWorld": [154, 92],
+        "horizontalEdge": [[3, 2], [4, 2]],
+        "flashOffRGBA": [92, 95, 104, 255],
+        "flashOnRGBA": [115, 115, 117, 255],
+        "hitFlashAgeMs": 18.6,
+        "flashActive": true,
+        "interpretation": "夜间 drawLighting 的 rgba(14,24,56,.58) 暗幕会把两种墙身色都压暗：#c9c0aa=[201,192,170] → 理论 [92.5,94.5,103.9]（实测 [92,95,104]）；#fff1c8=[255,241,200] → 理论 [115.2,115.1,116.5]（实测 [115,115,117]）。两次实测与理论值几乎逐通道吻合，证明整圈墙身确实从 PAL.stone 切到 #fff1c8。像素读自 canvas backing store 的固定世界坐标，不受相机平移影响。"
+      },
+      "damageProbe": {
+        "command": "damageWallRing('home',7,'qa-probe')",
+        "result": {"ok": true, "hp": 593, "dealt": 7},
+        "beforeHp": 600,
+        "afterHp": 593,
+        "maxHp": 600,
+        "plaqueBefore": "600 / 600",
+        "plaqueAfter": "593 / 600",
+        "note": "耐久牌数字随 hp 变化（正常），但牌本身仍为深色玻璃底 + 金边 + 白字，没有变 #fff1c8。"
+      },
+      "screenshots": [
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-control-zoom.png (800x800, CONTROL hitFlash=0)",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-flash-zoom.png (800x800, HIT FLASH)",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-flash-ab-compare.png (1700x900, 并排 A/B)",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-control-full.png (1440x900)",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-flash-full.png (1440x900)",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-hit-control-night-1440x900.png (1440x900, damageWallRing 前)",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-hit-flash-night-1440x900.png (1440x900, damageWallRing 后 593/600)",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-hit-flash-zoom.png (960x840)",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-hit-flash-pixelprobed.png (1440x900)",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-hit-flash-pixelprobed-zoom.png (800x800)"
+      ],
+      "visualConclusion": "并排 A/B 图可见右图（闪白帧）四面墙身、雉堞、拐角塔楼整体变浅奶白，左图为灰石色；两侧 600/600 耐久牌外观完全一致，未闪白。",
+      "caveat": "两次手动 draw() 之间 draw() 末尾的 followHero() 会带来极小的相机位移，故并排图中建筑横向略有偏移；但像素 A/B 取自固定世界坐标，不受此影响。",
+      "logs": ["/tmp/wp1-wallflash.log", "/tmp/wp1-wallstats.log", "/tmp/wp1-wallpixelab.log", "/tmp/wp1-wall-ab.log"],
+      "fixtureScripts": [
+        "D:/Work/game/bg-scratch/fx/wall-control.js",
+        "D:/Work/game/bg-scratch/fx/wall-flash.js",
+        "D:/Work/game/bg-scratch/fx/wall-flash-only.js",
+        "D:/Work/game/bg-scratch/fx/wall-pixel-ab.js",
+        "D:/Work/game/bg-scratch/fx/wall-stats.js"
+      ]
+    },
+    "item3_scale100And50": {
+      "title": "100% 与 50% 两档全景 / 主城截图，供 art-director 复核 9px/7px 小字",
+      "status": "PASS",
+      "fixtureNote": "状态夹具，非自然流程证据。fx/scale-scene.js 在 fx/day-scene.js 之后把 1 座箭塔 level 设为 2（触发 L4679 的 7px「重」）、把 1 个矿场 node.kind 设为 rich（触发 L4663 的 9px「富」角标），以凑齐四类小字目标；随后 paused=true 并 draw() 一次固定画面。",
+      "smallTextInventory": {
+        "oreCornerBadge9px": 1,
+        "workBubbles9px": 2,
+        "plaqueNumbers9px": 1,
+        "towerLevelGlyph7px": 1,
+        "towers": [{"tile": [7, 3], "level": 2}, {"tile": [3, 4], "level": 0}],
+        "production": [
+          {"type": "mine", "nodeKind": "rich", "tile": [4, 3]},
+          {"type": "quarry", "nodeKind": "stone", "tile": [6, 3]},
+          {"type": "farm", "nodeKind": "farm", "tile": [3, 5]},
+          {"type": "lumber", "nodeKind": "wood", "tile": [5, 6]}
+        ],
+        "ringHp": 600
+      },
+      "screenshots": [
+        {"path": "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/scale-100pct-full-1440x900.png", "size": "1440x900", "scale": "100%"},
+        {"path": "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/scale-50pct-full.png", "size": "720x450", "scale": "50%"},
+        {"path": "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/scale-100pct-castle.png", "size": "480x420", "scale": "100%"},
+        {"path": "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/scale-50pct-castle.png", "size": "240x210", "scale": "50%"}
+      ],
+      "method": "100% 用 shot / zoom scale=1；50% 用 cdp.cjs zoom 的 clip.scale=0.5（Page.captureScreenshot 下采样），已用 PNG 头校验实际像素尺寸减半。",
+      "myObservation": "100% 下 600/600 耐久牌数字、绿色作业气泡内工具字形可读，富矿角标与箭塔等级字已很小但仍能定位；50% (240x210) 下四类小字均糊成色块不可读（气泡只剩绿方块、耐久牌数字模糊、角标与等级字消失），但七类建筑一级剪影仍可分辨。与 art-director TC-3 存疑方向一致，最终可读性判定交 art-director 二次确认。",
+      "log": "/tmp/wp1-scale.log"
+    },
+    "item4_l5044IndependentFinding": {
+      "id": "FINDING-L5044-CAPABILITY-DETECTION",
+      "title": "独立发现项：白天分支渐变缺 §5 能力检测（不自行修复）",
+      "status": "RECORDED",
+      "lineNumbers": ["L5044", "L5045", "L5054", "L5073", "L4500"],
+      "code": "L5044 const g=ctx.createLinearGradient(0,0,canvas.width,canvas.height); / L5045 g.addColorStop(0,'rgba(255,240,190,.10)');g.addColorStop(1,'rgba(40,70,30,.08)'); / 之后直接 rect(0,0,canvas.width,canvas.height,g)。",
+      "phenomenon": "drawLighting 白天分支对 ctx.createLinearGradient 未做任何 typeof / 返回值能力检测即调用 g.addColorStop；同函数夜分支 L5054 已对离屏 l.createRadialGradient 做 typeof + 返回值判定，cachedLayer L4500 也有。L5073 warm() 用主 ctx.createRadialGradient 同样无独立检测，仅因夜分支先 return 而侥幸受保护。交接计划 §5 明确要求「新加的绘制只要用到渐变或离屏画布，都要做能力检测后再用」。",
+      "whyNoCrashToday": "tests/helpers/v029-vm.cjs L106 的桩恰好返回 {addColorStop(){}}，真实 Chrome 原生支持 createLinearGradient；若桩按 §5 所述返回空函数，白天 draw() 会在 L5045 抛 TypeError: g.addColorStop is not a function。",
+      "browserMeasuredConclusion": "已在真实 Chrome 白天与夜间各显式 draw() 一次（见 item1）：白天 drawCallMs=4.4、夜间 5.5，cdp.cjs 输出 3 行 / 4 行均无任何 EXC 或 CONSOLE error，grep 扫描 NO MATCHES。即该偏差在当前运行环境下不产生异常，但属于面向更严格 VM 桩的健壮性缺口。",
+      "nodeRegression": "48/48 pass / 0 fail（原跑 3306.9591ms，补充阶段复跑 2837.616ms），未因此变红。",
+      "myAction": "不修复、不改 Border-Guard-v0.29.html、不删断言、不放宽阈值、不改结果文件。按主理人指令交由 engineering-lead 单独处理；建议补 typeof 判定覆盖 L5044 与 L5073。",
+      "evidence": ["/tmp/wp1-day-draw.log", "/tmp/wp1-night-draw.log", "/tmp/wp1-node-regression-rerun.log"]
+    },
+    "item5_wp1QA02Evidence": {
+      "taskId": "WP1-QA-02",
+      "instruction": "team-lead 补证任务：S8 受击帧、S11 50% 全景、S2 50% 小字特写、昼夜 draw 会话标注、TC-2/TC-3 状态更新、S9 覆盖确认。不改代码、不提交、不 push、不切分支、不动其它 worktree、不执行任何 git 写操作。",
+      "rulingAcknowledged": "已收到裁定 (a)：保留 5320a02，不做 git reset / rebase / amend / checkout / stash，不移动分支 ref，不 push、不合并 main。L5044/L5073 由 engineering-lead 作为第二次提交单独修复。",
+      "fixtureLabel": "本项全部新截图均为「状态夹具，非自然流程证据」（fx/day-scene.js + fx/night.js + fx/scale-scene.js + fx/wall-*.js），WP5 的自然试玩才禁止 eval 改状态。",
+      "S8": {
+        "status": "PASS",
+        "coveredBy": "supplementaryEvidence.item2_wallHitFlash（WP1-QA-01 补充取证已产出，本轮复用不再另拍）",
+        "screenshots": [
+          "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-hit-flash-night-1440x900.png",
+          "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-control-zoom.png",
+          "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-flash-zoom.png",
+          "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-flash-ab-compare.png"
+        ],
+        "conclusion": "整圈墙身（墙身/雉堞/拐角塔楼）由 #c9c0aa 变 #fff1c8；耐久牌本身不闪白，仅数字随 hp 由 600/600 变 593/600。同像素 A/B [92,95,104]→[115,115,117] 与夜间暗幕理论值吻合。",
+        "fixture": "夹具，非自然流程"
+      },
+      "S11": {
+        "status": "PASS",
+        "newScreenshot": "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S11-50pct-full-1440x900.png",
+        "size": "720x450 (1440x900 的 50% 线性下采样，PNG 头已校验)",
+        "paired100pct": "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S11-100pct-full-1440x900.png (1440x900)",
+        "method": "cdp.cjs zoom 0 0 1440 900 0.5，取自 fx/scale-scene.js 冻结后的白天夹具帧",
+        "observed": "顶栏、底栏、主城、整圈城墙、四种生产建筑、迷雾全部在 50% 下仍可分辨；底栏命令按钮小字已糊但一级剪影与布局保持。",
+        "fixture": "夹具，非自然流程"
+      },
+      "S2": {
+        "status": "PASS",
+        "newScreenshot": "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S2-50pct-smalltext-closeup.png",
+        "size": "240x210 (480x420 主城特写的 50% 线性下采样)",
+        "paired100pct": "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S2-100pct-smalltext-closeup.png (480x420, 100%)",
+        "contactSheet": "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S2-50pct-smalltext-contact-sheet.png (700x420，四格 2x2 标注特写：①富矿角标 9px ②作业气泡 9px ③耐久牌数字 9px ④箭塔等级字 7px)",
+        "method": "源图 S2-100pct-smalltext-closeup.png 为 cdp.cjs zoom 40 100 480 420 1；50% 版为同 clip scale=0.5；contact sheet 由 bg-scratch/s2-50.html 把源图按 background-size:240px 210px（50%）渲染后分四个 160x130 窗口拼成一张 PNG。",
+        "targetScreenCoordsViewportCSS": {
+          "mineRichBadge": [328, 226],
+          "towerLevelGlyph": [378, 226],
+          "workBubbles": [[1, 227, 231], [2, 328, 226]],
+          "plaqueNumbers": [277, 425],
+          "clipOrigin": [40, 100]
+        },
+        "smallTextInventory": {
+          "oreCornerBadge9px": 1,
+          "workBubbles9px": 2,
+          "plaqueNumbers9px": 1,
+          "towerLevelGlyph7px": 1,
+          "towers": [{"tile": [7, 3], "level": 2}, {"tile": [3, 4], "level": 0}],
+          "production": [
+            {"type": "farm", "nodeKind": "farm", "tile": [4, 3]},
+            {"type": "mine", "nodeKind": "rich", "tile": [6, 3]},
+            {"type": "lumber", "nodeKind": "wood", "tile": [3, 5]},
+            {"type": "quarry", "nodeKind": "stone", "tile": [5, 6]}
+          ],
+          "ringHp": 600
+        },
+        "fixtureDetail": "fx/scale-scene.js 在 fx/day-scene.js 之后把 1 座箭塔 level 设 2（触发 L4679 7px「重」）、把 1 个矿场 node.kind 设 rich（触发 L4663 9px「富」），以凑齐四类小字；paused=true + draw() 固定画面。",
+        "myObservation": "50% 下四类小字均不可读（角标/等级字消失、气泡只剩绿方块、耐久牌数字模糊），一级剪影仍可分辨；判定交 art-director。",
+        "log": "/tmp/wp1-s2s11.log",
+        "fixture": "夹具，非自然流程"
+      },
+      "dayNightDrawSessionAttribution": {
+        "daySession": {"id": "CDP-SESSION-DAY-DRAW", "log": "/tmp/wp1-day-draw.log", "phase": "day", "EXC": 0, "CONSOLE_error": 0},
+        "nightSession": {"id": "CDP-SESSION-NIGHT-DRAW", "log": "/tmp/wp1-night-draw.log", "phase": "night", "EXC": 0, "CONSOLE_error": 0},
+        "twoResultLines": "见 supplementaryEvidence.item1_dayNightDrawConsole.twoResultLinesVerbatim（两条零错误结论行）与 sessionIdentification（明确标出两次会话及其 phase）",
+        "note": "复用首轮 12 次零错误会话之外新增的这两次显式 draw() 会话，已明确标注对应哪两次、各自 phase。"
+      },
+      "S9Coverage": {
+        "question": "tests/artifacts/v030-rings/combat-after-collapse.png 是否已能覆盖 S9（倒塌后碎石残段、无逐段血条）",
+        "answer": "能覆盖，不必另拍",
+        "path": "D:/Work/game/border-guard/tests/artifacts/v030-rings/combat-after-collapse.png (1440x900)",
+        "zoomEvidence": "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S9-collapse-rubble-zoom.png (2x 放大主城区域，便于辨认碎石)",
+        "observations": [
+          "倒塌后的圈墙不再以连续墙身绘制，原墙线位置可见多个旋转的灰色小石块碎片（drawBrokenRing L4871–4884 的碎石残段），与圆润的天然 rock 装饰石堆形态明显不同。",
+          "画面中没有任何逐段血条；也不再有整圈耐久牌（倒塌后 drawWallRings L4888 走 drawBrokenRing 分支，不画耐久牌），符合「全圈只有一条圈耐久牌」规则。",
+          "画面为「城堡失守」终局 + 右侧败局复盘面板，主城仍在左侧、蓝顶清晰。"
+        ],
+        "provenance": "该图由 tests/v029-rings-ui-browser.cjs L271–308 的固定战斗夹具产出：ring.hp=80、castleHp=50、12 个 normal 敌人、手动 moveEnemy 循环（mode:'fixed-fixture-moveEnemy'）。属夹具 / 自动 runner 证据，非自然流程。",
+        "caveat": "终局复盘面板遮住右侧部分地图；若需要「倒塌瞬间而非失守终局」的碎石特写，可后续补拍，但 S9 两项判据（碎石残段可见、无逐段血条）本图已满足。"
+      },
+      "newScreenshotAbsolutePaths": [
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S11-50pct-full-1440x900.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S11-100pct-full-1440x900.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S2-50pct-smalltext-closeup.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S2-100pct-smalltext-closeup.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S2-50pct-smalltext-contact-sheet.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S9-collapse-rubble-zoom.png"
+      ],
+      "gitWriteOperationsThisRound": 0,
+      "htmlChanges": 0,
+      "commits": 0,
+      "pushes": 0,
+      "concurrentEditObserved": {
+        "when": "WP1-QA-02 全部截图完成后、最终只读取 git status 时发现（read-only 检查，未执行任何 git 写操作）",
+        "observed": [
+          "M Border-Guard-v0.29.html（我未修改；git diff HEAD 显示恰好是 L5044 白天分支补 typeof ctx.createLinearGradient 判定 + L5073 warm() 整段 createRadialGradient 能力检测，即 team-lead 指派给 engineering-lead 的 §5 修复）",
+          "?? tests/v030-lighting-capability.test.cjs（新增测试文件，推测同属该修复）"
+        ],
+        "mtime": {
+          "Border-Guard-v0.29.html": "2026-11-15 12:02:02 +0800",
+          "tests/v030-lighting-capability.test.cjs": "2026-11-15 12:01:48 +0800",
+          "mySixNewQa02Screenshots": "2026-11-15 11:56:25 ~ 11:58:16 +0800"
+        },
+        "impactOnMyEvidence": "无。全部 WP1-QA-01 与 WP1-QA-02 截图/命令输出均在该并发改动之前采集（最晚 11:58:16 < 12:01:48），对应的是 5320a02 里逐字节未变的 HTML，证据内部一致，无需重拍。",
+        "impactOnFutureWork": "该修复之后的画面在真实 Chrome 中预计不变（能力检测通过），但严格说本 JSON 的所有浏览器证据属于修复前构建；修复后的烟雾/回归验证应归入 engineering-lead 的第二次提交范围，由主理人安排。",
+        "myAction": "不改 HTML、不动他人文件、不执行 git 写操作，仅记录并回传 team-lead。"
+      }
+    }
+  },
   "commitGates": {
     "allSixChecksPass": true,
     "backdoorGrep": {
@@ -320,15 +601,38 @@
       "id": "TC-2-hit-flash-scope",
       "source": "art-director 静态审读第 5 项",
       "severity": "CONCERN (验收口径待澄清)",
+      "status": "已有截图，待 art-director 判定",
       "finding": "受击闪白作用于墙身(L4892)，耐久牌本身不闪白(L4955)；契约「受击闪白」未明确对象。另 L4949 注释写「上沿」而代码 L4951 用 maxY 取下沿（本次截图已确认牌在圈下沿，代码行为正确，仅注释过时）。",
-      "myDecision": "未拍夜战受击瞬间帧，列为未验证；请主理人确认口径并在需要时安排 S8 截图。"
+      "resolution": "补充取证 item2_wallHitFlash 已拍夜战受击瞬间帧（状态夹具），并用同像素 A/B 实测 [92,95,104]→[115,115,117] 证明整圈墙身从 PAL.stone 切到 #fff1c8，耐久牌保持深色金边未闪白。S8 已覆盖。",
+      "screenshotPaths": [
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-hit-flash-night-1440x900.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-hit-control-night-1440x900.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-control-zoom.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-flash-zoom.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-flash-ab-compare.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/wall-hit-flash-zoom.png"
+      ],
+      "fixture": "夹具，非自然流程",
+      "myDecision": "事实已查清并留证；契约原文「受击闪白」的验收口径仍请主理人确认是按「整圈墙身」解释（当前实现符合）还是「耐久牌」解释（当前实现不符合）。截图已就绪，状态由「未验证」改为「已有截图，待 art-director 判定」。"
     },
     {
       "id": "TC-3-50percent-legibility",
       "source": "art-director 静态审读第 9 项 / §4.4",
-      "severity": "CONCERN (未验证)",
-      "finding": "富/铁角标 9px、状态气泡 9px、耐久牌 9px 数字、箭塔等级 7px 在 50% 缩放下可能不可读。本次只做了 2x/4x/6x/8x 放大核对，未做 50% 缩小截图。",
-      "myDecision": "列入未验证项，属后续包 / 主理人判定范围。"
+      "severity": "CONCERN (已有截图，待 art-director 判定)",
+      "status": "已有截图，待 art-director 判定",
+      "finding": "富/铁角标 9px、状态气泡 9px、耐久牌 9px 数字、箭塔等级 7px 在 50% 缩放下可能不可读。",
+      "resolution": "WP1-QA-02 新增 100%/50% 全景与主城特写、以及四格标注 contact sheet；尺寸经 PNG 头校验 1440x900→720x450、480x420→240x210。四类小字目标用 fx/scale-scene.js 夹具凑齐（富角标 1、气泡 2、耐久牌数字 1、等级字 1）。实测 50% 下四类小字均不可读，一级剪影仍可分辨。S2/S11 已覆盖。",
+      "screenshotPaths": [
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S11-50pct-full-1440x900.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S11-100pct-full-1440x900.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S2-50pct-smalltext-closeup.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S2-100pct-smalltext-closeup.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/S2-50pct-smalltext-contact-sheet.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/scale-50pct-full.png",
+        "D:/Work/game/border-guard/tests/artifacts/v030-polish/extra/scale-50pct-castle.png"
+      ],
+      "fixture": "夹具，非自然流程",
+      "myDecision": "可读性最终判定交 art-director 二次确认；若 §4.4「缩到 50% 仍能分辨」把小字纳入验收，需后续包放大字号或改图形标识。状态由「未验证」改为「已有截图，待 art-director 判定」。"
     }
   ],
   "observations": [
@@ -343,14 +647,62 @@
     "7 视口逐一布局检查属 WP3，本次仅 hud-occlusion runner 覆盖的 6 个视口",
     "卡牌插画/事件横幅的完整自然触发流程属 WP5，本次仅确认 DOM #eventBanner 存在且夜间有 1 个 float",
     "未做 flaky 测试隔离分析（本次两次 perf 与三条 runner 均稳定通过）",
-    "art-director 待截图确认清单 S1–S12 中，本次覆盖了 S1(生产建筑互异)、S4 部分(作业气泡)、S5 部分(夜景光孔/迷雾)、S6(白天明亮)、S7(整圈城墙/耐久牌位置)、S12(控制台无异常)；未覆盖 S2(富/铁角标 50% 可读性)、S3(箭塔 lv0/1/2 三色同框)、S8(夜战受击瞬间帧/闪白口径)、S9(倒塌碎石残段)、S10(交互四态高亮)、S11(50% 缩放全景剪影)",
+    "art-director 待截图确认清单 S1–S12 中，原取证覆盖 S1(生产建筑互异)、S4 部分(作业气泡)、S5 部分(夜景光孔/迷雾)、S6(白天明亮)、S7(整圈城墙/耐久牌位置)、S12(控制台无异常)；补充取证再覆盖 S2(富/铁角标 100%/50%)、S8(夜战受击瞬间帧/闪白)、S11(50% 缩放全景剪影)；WP1-QA-02 确认 S9(倒塌碎石残段、无逐段血条) 已由 tests/artifacts/v030-rings/combat-after-collapse.png 覆盖并附 2x 放大图；仍未覆盖 S3(箭塔 lv0/1/2 三色同框)、S10(交互四态高亮)",
     "未验证 §5「更严格的 canvas 桩」场景：当前 VM 桩为 createLinearGradient 返回兼容对象，真实浏览器原生支持，故 L5044 缺能力检测未在任何实测中触发异常"
   ],
   "commit": {
-    "toExecute": true,
+    "alreadyExecuted": true,
+    "hash": "5320a02433214e05de4d35a5dcea75bc139c9276",
+    "shortHash": "5320a02",
     "message": "feat: bright cartoon renderer, icon set, HUD theme and event banners",
-    "coAuthoredByRequired": true,
+    "body": "WP1 QA acceptance (advisory): Node regression 48/48, three browser runners OK, afterCollapseSeconds 2.0, perf nightMs 4.35/4.87 dayMs 2.15/1.72, no EXC/CONSOLE error.",
+    "trailer": "Co-Authored-By: WorkBuddy <noreply@workbuddy.ai>",
+    "filesChanged": 54,
     "push": false,
-    "note": "提交 hash 在提交后由主理人回执补充；本 JSON 写于提交之前，记录提交前文件状态"
+    "laterInstruction": "team-lead 随后下达「提交暂缓、统一后移、禁止再 commit/push」，随后明确裁定选 (a)：保留 5320a02 不回滚，不做 git reset / rebase / amend / checkout / stash，不移动任何分支 ref，不 push、不合并 main；L5044/L5073 的 §5 能力检测修复由 engineering-lead 作为紧随其后的第二个 fix 提交单独完成。本轮及 WP1-QA-02 均未执行任何 git 写操作。",
+    "note": "本 JSON 现为已提交版本的后续补充，工作区内存在未提交修改；fileStateBeforeCommit 段记录的是首次提交前的状态，currentWorkingTreeState 段记录当前状态。"
+  },
+  "currentWorkingTreeState": {
+    "head": "5320a02",
+    "branch": "codex/claude-gameplay-art-layout",
+    "htmlModified": false,
+    "commitsMadeInThisRound": 0,
+    "pushes": 0,
+    "gitWriteOperationsInWP1QA02": 0,
+    "rulingAcknowledged": "选 (a)：保留 5320a02，不回滚、不 amend、不新增提交、不 push；wp1-acceptance.json 与 wp1-visual-audit.md 保持未提交/未跟踪，由 team-lead 在 WP1 收尾提交统一纳入。",
+    "modifiedTrackedFiles": [
+      "tests/artifacts/v030-polish/wp1-acceptance.json (本文件，WP1-QA-01 补充取证 + WP1-QA-02 更新后未提交；未执行 git add / commit)"
+    ],
+    "newUntrackedEvidence": [
+      "tests/artifacts/v030-polish/extra/ (WP1-QA-01 14 张 + WP1-QA-02 新增 6 张 = 20 张 PNG，未提交)",
+      "docs/v030-handoff-plan.md (交接计划，未入库)",
+      "tests/artifacts/v030-baseline/ (改造前基线，未入库)",
+      "tests/artifacts/v030-polish/wp1-visual-audit.md (art-director 在途产出，未入库)"
+    ],
+    "outsideRepoScratchFiles": [
+      "D:/Work/game/bg-scratch/fx/wall-control.js",
+      "D:/Work/game/bg-scratch/fx/wall-flash.js",
+      "D:/Work/game/bg-scratch/fx/wall-flash-only.js",
+      "D:/Work/game/bg-scratch/fx/wall-pixel-ab.js",
+      "D:/Work/game/bg-scratch/fx/wall-stats.js",
+      "D:/Work/game/bg-scratch/fx/scale-scene.js",
+      "D:/Work/game/bg-scratch/fx/smalltext-coords.js",
+      "D:/Work/game/bg-scratch/s2-50.html",
+      "D:/Work/game/bg-scratch/s2-100.png",
+      "D:/Work/game/bg-scratch/s9-zoom.html",
+      "D:/Work/game/bg-scratch/s9.png",
+      "D:/Work/game/bg-scratch/compare-wall.html",
+      "D:/Work/game/bg-scratch/wall-control-zoom.png",
+      "D:/Work/game/bg-scratch/wall-flash-zoom.png"
+    ],
+    "chrome": "CDP 9333 常驻；WP1-QA-02 结束后已重置为 1440x900 干净开局页，供后续工作包使用",
+    "wp1QA02NoGitWrites": true,
+    "concurrentEditByAnotherTeammate": {
+      "htmlModifiedByMe": false,
+      "htmlModifiedByOthers": true,
+      "observedAt": "最终 read-only git status：M Border-Guard-v0.29.html、?? tests/v030-lighting-capability.test.cjs",
+      "content": "L5044 白天 createLinearGradient 能力检测 + L5073 warm() createRadialGradient 能力检测（即 team-lead 指派 engineering-lead 的 §5 修复），mtime 12:01:48/12:02:02，晚于我全部截图（最晚 11:58:16）",
+      "note": "该改动不属于我，我未碰它；详见 supplementaryEvidence.item5_wp1QA02Evidence.concurrentEditObserved。本段 head/branch 仍为 5320a02 / codex/claude-gameplay-art-layout，未发生任何 git 写操作。"
+    }
   }
 }

@@ -1,0 +1,5 @@
+idle-0t   fail 2/2 LOST@23 ring0(x@20) c0 | LOST@23 ring0(x@20) c0
+fight-0t  fail 0/2 ok ring551 c50 | ok ring551 c50
+idle-1t   fail 0/2 ok ring89 c50 | ok ring89 c50
+fight-1t  fail 0/2 ok ring572 c50 | ok ring572 c50
+idle-2t   fail 0/2 ok ring467 c50 | ok ring467 c50
