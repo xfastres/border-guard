@@ -181,7 +181,7 @@ class HexWorld{
     }
     // 起始区域确保可通行，地图边缘也保留探索路线。
     for(let q=4;q<=11;q++)for(let r=6;r<=12;r++){
-      const t=this.get(q,r);if(t&&t.terrain==="water")t.terrain="plain";
+      const t=this.get(q,r);if(t&&(t.terrain==="water"||t.terrain==="mountain"))t.terrain="plain";
     }
     for(const p of POIS){
       const t=this.get(p.q,p.r);if(!t)continue;
@@ -218,7 +218,7 @@ class FogOfWar{
     return this.discoveries.splice(0);
   }
   revealBlocked(t){
-    if(t){t.explored=true;t.visible=true;}
+    if(t){t.explored=true;t.visible=false;}
   }
 }
 class Pathfinder{
@@ -379,7 +379,7 @@ class HexWorldGame{
     this.world=new HexWorld();this.pathfinder=new Pathfinder(this.world);this.fog=new FogOfWar(this.world);
     this.castle={q:7,r:9};this.lord={q:8,r:9};
     this.phase="day";this.day=1;this.phaseElapsed=0;this.paused=true;
-    this.path=[];this.currentMove=null;this.selected={q:this.lord.q,r:this.lord.r};
+    this.path=[];this.currentMove=null;this.pendingGoal=null;this.cancelAfterStep=false;this.selected={q:this.lord.q,r:this.lord.r};
     this.events=[];this.lastTime=0;this.toastTimer=0;this.discoveredCount=0;
     this.fog.update([{q:this.castle.q,r:this.castle.r,radius:3},{q:this.lord.q,r:this.lord.r,radius:2}]);
     this.renderer=new WorldRenderer($("world"),this.world,this);this.renderer.centerOn(this.lord);
@@ -418,10 +418,18 @@ class HexWorldGame{
     if(t.explored&&!this.world.passable(t)){this.notify(TERRAIN[t.terrain].name+"无法通行。");this.selected=pos;this.updatePanel();return;}
     const route=this.pathfinder.find(this.lord,pos);
     if(route===null){this.notify("这条路线目前无法到达。");return;}
+    if(this.currentMove){
+      this.selected=pos;this.pendingGoal=pos;this.path=[];this.cancelAfterStep=false;this.updatePanel();
+      this.notify("目的地已更新，领主走完当前这一格后会转向。");return;
+    }
     if(route.length===0){this.selected=pos;this.updatePanel();if(t.poi)this.notify(t.poi.name+"："+t.poi.desc);return;}
-    this.selected=pos;this.path=route;this.currentMove=null;this.updatePanel();
+    this.selected=pos;this.pendingGoal=null;this.cancelAfterStep=false;this.path=route;this.updatePanel();
   }
-  cancelMove(){this.path=[];this.currentMove=null;this.updatePanel();this.notify("已取消移动。");}
+  cancelMove(){
+    this.path=[];this.pendingGoal=null;
+    if(this.currentMove){this.cancelAfterStep=true;this.notify("当前这一格走完后停止移动。");}
+    else{this.cancelAfterStep=false;this.updatePanel();this.notify("已取消移动。");}
+  }
   moveDuration(tile){return .48*(TERRAIN[tile.terrain]?.speed||1);}
   updateMovement(dt){
     if(!this.currentMove&&this.path.length){
@@ -438,6 +446,13 @@ class HexWorldGame{
         this.lord.q=this.currentMove.to.q;this.lord.r=this.currentMove.to.r;this.currentMove=null;
         const found=this.fog.update([{q:this.castle.q,r:this.castle.r,radius:3},{q:this.lord.q,r:this.lord.r,radius:2}]);
         for(const poi of found){this.discoveredCount++;this.addEvent("发现 "+poi.name+"："+poi.desc);this.notify("新发现："+poi.name);}
+        if(this.cancelAfterStep){this.cancelAfterStep=false;this.path=[];}
+        else if(this.pendingGoal){
+          const goal=this.pendingGoal;this.pendingGoal=null;
+          const route=this.pathfinder.find(this.lord,goal);
+          this.path=route||[];
+          if(route===null)this.notify("新位置无法继续前往刚才的目的地。");
+        }
         this.updatePanel();
       }
     }
