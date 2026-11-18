@@ -1,4 +1,4 @@
-> **实验重构线提示（2026-11-18）**：当前分支正在从六边形世界地图重新搭建玩法。第一份可玩原型是 [prototypes/hex-world-v0.1.html](prototypes/hex-world-v0.1.html)，只验证六边形地图、战争迷雾、领主实时逐格移动和昼夜位置连续性。它不是完整游戏，也不替代下方存档的 v0.32。重构迭代方式见 [docs/redesign/README.md](docs/redesign/README.md)；上一版存档分支为 `archive/v0.32-2026-11-18`。
+> **实验重构线提示（2026-11-18）**：当前分支正在从六边形世界地图重新搭建玩法。最新视觉原型为 [Hex World v0.2](prototypes/hex-world-v0.2.html)，只验证六边形地图、连续自然地貌、战争迷雾、领主实时逐格移动和昼夜位置连续性。v0.1 保留作视觉对照。它们都不是完整游戏，也不替代 v0.32。重构迭代方式见 [docs/redesign/README.md](docs/redesign/README.md)，视觉变化见 [v0.2 记录](docs/redesign/hex-world-v0.2-visual-notes.md)；上一版存档分支为 `archive/v0.32-2026-11-18`。
 
 ---
 
