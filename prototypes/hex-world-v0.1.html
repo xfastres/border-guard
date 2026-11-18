@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#183b3b">
+<title>边境守卫 · Hex World 001</title>
+<style>
+:root{color-scheme:dark;--ink:#eef5df;--muted:#aab9a2;--panel:#173b3b;--panel2:#204949;--gold:#e6c36b;--mint:#8fc8a2;--line:rgba(220,231,194,.18)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{overflow:hidden;background:#142b2d;color:var(--ink);font:14px/1.5 "Segoe UI","Microsoft YaHei",sans-serif}
+button{font:inherit;color:inherit;border:1px solid var(--line);background:#285653;border-radius:9px;padding:8px 11px;cursor:pointer}
+button:hover{background:#367064;border-color:rgba(230,195,107,.55)}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.shell{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 292px;gap:0}
+.stage{min-width:0;min-height:0;position:relative;background:#294a42;overflow:hidden}
+canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+.topbar{position:absolute;z-index:2;left:14px;right:14px;top:12px;display:flex;gap:8px;align-items:center;pointer-events:none}
+.pill{background:rgba(17,48,48,.92);border:1px solid rgba(230,195,107,.35);box-shadow:0 8px 24px #10232266;border-radius:11px;padding:8px 12px;backdrop-filter:blur(8px)}
+.phase{font-weight:800;color:var(--gold);min-width:105px}
+.clock{min-width:145px}
+.clock strong{font-variant-numeric:tabular-nums;font-size:17px}
+.track{height:4px;background:#0e2828;border-radius:10px;margin-top:5px;overflow:hidden}
+.track i{height:100%;display:block;background:var(--gold);width:100%;transition:width .15s linear}
+.topnote{margin-left:auto;max-width:min(42%,430px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e5edcf}
+.maptools{position:absolute;z-index:2;left:14px;bottom:14px;display:flex;gap:7px}
+.maptools button{background:rgba(17,48,48,.92);min-width:39px}
+.toast{position:absolute;z-index:5;left:50%;bottom:75px;transform:translateX(-50%);max-width:min(88%,520px);background:#102c2c;border:1px solid rgba(230,195,107,.65);border-radius:12px;padding:10px 15px;box-shadow:0 10px 30px #0006;opacity:0;pointer-events:none;transition:opacity .18s}
+.toast.show{opacity:1}
+.side{background:linear-gradient(180deg,#173b3b,#122e30);border-left:1px solid rgba(230,195,107,.22);padding:18px 16px;overflow:auto}
+.brand{font-size:12px;letter-spacing:.13em;color:var(--gold);font-weight:800}
+h1{font-size:21px;line-height:1.25;margin:5px 0 14px}
+h2{font-size:14px;margin:18px 0 8px;color:#f1d98d}
+.copy{color:var(--muted);font-size:12px}
+.card{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
+.card p{margin:5px 0}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.label{color:var(--muted);font-size:12px}
+.value{font-weight:700;font-variant-numeric:tabular-nums}
+.hint{border-left:3px solid var(--gold);padding:8px 10px;background:rgba(230,195,107,.07);border-radius:0 8px 8px 0;color:#e8e8cf;font-size:12px}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;color:var(--muted)}
+.swatch{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px;border:1px solid #ffffff30}
+.events{padding:0;margin:0;list-style:none;display:grid;gap:7px}
+.events li{font-size:12px;color:#cbd8c5;border-bottom:1px solid #ffffff12;padding-bottom:6px}
+.events li:last-child{border:0}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.controls button{font-size:12px}
+.small{font-size:11px;color:#91a99c;margin-top:13px}
+.intro{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%);width:min(440px,calc(100% - 32px));background:rgba(18,48,48,.96);border:1px solid rgba(230,195,107,.62);border-radius:16px;padding:20px;box-shadow:0 20px 70px #071b1bd9}
+.intro h2{font-size:19px;margin:0 0 8px;color:#f3d98e}
+.intro p{font-size:13px;color:#d2ddca}
+.intro .action{width:100%;margin-top:10px;background:#bb9450;color:#192d25;font-weight:800}
+@media(max-width:780px){
+ .shell{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) 220px}
+ .side{border-left:0;border-top:1px solid rgba(230,195,107,.22);padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+ .side h1{font-size:17px;margin-bottom:5px}
+ .side .introcopy{grid-column:1/-1}
+ .side h2{margin:8px 0 5px}
+ .card{margin:5px 0;padding:9px}
+ .topbar{left:8px;right:8px;top:8px;gap:5px}
+ .pill{padding:6px 8px}
+ .topnote{display:none}
+ .maptools{left:8px;bottom:8px}
+}
+@media(max-width:430px){
+ .shell{grid-template-rows:minmax(0,1fr) 235px}
+ .side{grid-template-columns:1fr 1fr;padding:9px}
+ .legend{gap:4px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <main class="stage" id="stage">
+    <canvas id="world" aria-label="六边形世界地图"></canvas>
+    <div class="topbar">
+      <div class="pill phase" id="phaseLabel">第 1 日 · 白天</div>
+      <div class="pill clock">
+        <div class="row"><span class="label">阶段剩余</span><strong id="clockText">01:10</strong></div>
+        <div class="track"><i id="clockBar"></i></div>
+      </div>
+      <div class="pill topnote" id="topNote">领主位置会跨越昼夜保留</div>
+    </div>
+    <div class="maptools">
+      <button id="zoomOut" aria-label="缩小地图">−</button>
+      <button id="zoomIn" aria-label="放大地图">＋</button>
+      <button id="center" title="镜头回到领主">◎ 领主</button>
+      <button id="pause">暂停</button>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="intro" id="intro">
+      <h2>边境之外，还有未知世界</h2>
+      <p>城堡只照亮了附近一小片土地。点击已知地块，或点击已探索边缘外的一格，让领主亲自走过去。随着领主移动，周围地形会逐渐显现。</p>
+      <p>拖拽地图可以平移，滚轮可以缩放。昼夜会自然交替；夜晚开始时，领主不会自动回城，仍然留在当前位置，也仍然可以移动。</p>
+      <p class="copy">本轮是地图架构原型：暂不包含战斗、建设与经济系统，先验证探索和移动是否自然。</p>
+      <button class="action" id="start">进入边境</button>
+    </div>
+  </main>
+  <aside class="side">
+    <div class="introcopy">
+      <div class="brand">BORDER GUARD · PROTOTYPE 001</div>
+      <h1>六边形世界地图</h1>
+      <div class="copy">探索、发现、昼夜连续移动</div>
+    </div>
+    <section class="card">
+      <div class="row"><span class="label">领主位置</span><span class="value" id="lordCoords">—</span></div>
+      <div class="row"><span class="label">脚下地形</span><span class="value" id="lordTerrain">—</span></div>
+      <div class="row"><span class="label">视野地块</span><span class="value" id="visibleCount">—</span></div>
+      <div class="row"><span class="label">移动状态</span><span class="value" id="moveStatus">待命</span></div>
+    </section>
+    <section>
+      <h2>地图图例</h2>
+      <div class="card legend">
+        <div><i class="swatch" style="background:#91b85e"></i>平原</div>
+        <div><i class="swatch" style="background:#3f8156"></i>森林</div>
+        <div><i class="swatch" style="background:#b49a62"></i>丘陵</div>
+        <div><i class="swatch" style="background:#84949a"></i>山地</div>
+        <div><i class="swatch" style="background:#3f86a0"></i>水域</div>
+        <div><i class="swatch" style="background:#182c31"></i>未探索</div>
+      </div>
+    </section>
+    <section>
+      <h2>最近发现</h2>
+      <div class="card"><ul class="events" id="events"><li>还没有新的发现。试着向迷雾边缘移动。</li></ul></div>
+    </section>
+    <section>
+      <h2>操作提示</h2>
+      <div class="hint">点击地块：移动领主<br>拖拽空白地图：平移视角<br>滚轮：缩放地图<br>右键：取消当前移动</div>
+      <div class="controls">
+        <button id="cancelMove">取消移动</button>
+        <button id="restart">重新开始</button>
+      </div>
+      <div class="small">第一轮只验证地图、战争迷雾、实时逐格移动与昼夜位置连续性。发现的地点目前仅展示，不可采集或建造。</div>
+    </section>
+  </aside>
+</div>
+<script>
+(function(){
+"use strict";
+const HEX=33, WIDTH=27, HEIGHT=20, SQRT3=Math.sqrt(3);
+const DAY_SECONDS=70, NIGHT_SECONDS=42;
+const DIRS=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
+const TERRAIN={
+  plain:{name:"平原",color:"#91b85e",speed:1},
+  forest:{name:"森林",color:"#4a8753",speed:1.32},
+  hill:{name:"丘陵",color:"#b49b68",speed:1.55},
+  mountain:{name:"山地",color:"#87969a",speed:1.8},
+  water:{name:"水域",color:"#468aa0",speed:1.8}
+};
+const POIS=[
+  {q:17,r:8,kind:"gold",name:"富金矿",desc:"一处裸露的金矿脉。"},
+  {q:13,r:15,kind:"iron",name:"铁矿",desc:"山脚下发现了铁矿。"},
+  {q:21,r:13,kind:"ruin",name:"古代遗迹",desc:"被藤蔓覆盖的古代石构建筑。"},
+  {q:4,r:3,kind:"den",name:"怪物巢穴",desc:"附近有危险生物活动的痕迹。"},
+  {q:23,r:4,kind:"wood",name:"密林资源区",desc:"一片茂密、值得进一步调查的林地。"}
+];
+const $=id=>document.getElementById(id);
+const key=(q,r)=>q+","+r;
+const hexDist=(a,b)=> (Math.abs(a.q-b.q)+Math.abs(a.q+a.r-b.q-b.r)+Math.abs(a.r-b.r))/2;
+const hash=(q,r)=>{const v=Math.sin(q*127.1+r*311.7+19.19)*43758.5453;return v-Math.floor(v);};
+function hexToWorld(q,r){return {x:HEX*SQRT3*(q+r/2),y:HEX*1.5*r};}
+function worldToHex(x,y){
+  const q=(SQRT3/3*x-1/3*y)/HEX, r=(2/3*y)/HEX;
+  let cx=q,cz=r,cy=-cx-cz;
+  let rx=Math.round(cx),ry=Math.round(cy),rz=Math.round(cz);
+  const dx=Math.abs(rx-cx),dy=Math.abs(ry-cy),dz=Math.abs(rz-cz);
+  if(dx>dy&&dx>dz)rx=-ry-rz;else if(dy>dz)ry=-rx-rz;else rz=-rx-ry;
+  return {q:rx,r:rz};
+}
+function neighbors(q,r){return DIRS.map(d=>({q:q+d[0],r:r+d[1]}));}
+class HexWorld{
+  constructor(){
+    this.tiles=new Map();
+    for(let q=0;q<WIDTH;q++)for(let r=0;r<HEIGHT;r++){
+      let n=hash(q,r),terrain="plain";
+      if(n<.075)terrain="water";else if(n<.145)terrain="mountain";else if(n<.31)terrain="hill";else if(n<.58)terrain="forest";
+      if(q<2||r<2||q>WIDTH-3||r>HEIGHT-3){if(hash(q+31,r+11)>.42)terrain="water";}
+      const tile={q,r,terrain,explored:false,visible:false,poi:null,discovered:false};
+      this.tiles.set(key(q,r),tile);
+    }
+    // 起始区域确保可通行，地图边缘也保留探索路线。
+    for(let q=4;q<=11;q++)for(let r=6;r<=12;r++){
+      const t=this.get(q,r);if(t&&t.terrain==="water")t.terrain="plain";
+    }
+    for(const p of POIS){
+      const t=this.get(p.q,p.r);if(!t)continue;
+      if(t.terrain==="water"||t.terrain==="mountain")t.terrain="hill";
+      t.poi=p;
+    }
+  }
+  get(q,r){return this.tiles.get(key(q,r))||null;}
+  all(){return this.tiles.values();}
+  passable(t){return !!t&&t.terrain!=="water"&&t.terrain!=="mountain";}
+  adjacentToExplored(t){
+    return neighbors(t.q,t.r).some(n=>this.get(n.q,n.r)?.explored);
+  }
+}
+class FogOfWar{
+  constructor(world){this.world=world;this.visibleCount=0;this.discoveries=[];}
+  update(sources){
+    for(const t of this.world.all())t.visible=false;
+    for(const s of sources){
+      for(const t of this.world.all()){
+        if(hexDist(s,t)<=s.radius){
+          t.visible=true;t.explored=true;
+        }
+      }
+    }
+    this.visibleCount=0;
+    for(const t of this.world.all()){
+      if(t.visible)this.visibleCount++;
+      if(t.visible&&t.poi&&!t.discovered){
+        t.discovered=true;
+        this.discoveries.push(t.poi);
+      }
+    }
+    return this.discoveries.splice(0);
+  }
+  revealBlocked(t){
+    if(t){t.explored=true;t.visible=true;}
+  }
+}
+class Pathfinder{
+  constructor(world){this.world=world;}
+  find(start,goal){
+    const goalTile=this.world.get(goal.q,goal.r);
+    if(!goalTile)return null;
+    if(!goalTile.explored&&!this.world.adjacentToExplored(goalTile))return null;
+    const open=[{q:start.q,r:start.r,g:0,f:hexDist(start,goal)}];
+    const came=new Map(),score=new Map([[key(start.q,start.r),0]]),closed=new Set();
+    while(open.length){
+      open.sort((a,b)=>a.f-b.f);
+      const cur=open.shift(),ck=key(cur.q,cur.r);
+      if(closed.has(ck))continue;
+      if(cur.q===goal.q&&cur.r===goal.r){
+        const path=[];let k=ck;
+        while(came.has(k)){const [q,r]=k.split(",").map(Number);path.unshift({q,r});k=came.get(k);}
+        return path;
+      }
+      closed.add(ck);
+      for(const n of neighbors(cur.q,cur.r)){
+        const t=this.world.get(n.q,n.r);if(!t)continue;
+        const nk=key(n.q,n.r);
+        if(closed.has(nk))continue;
+        const isUnknownGoal=n.q===goal.q&&n.r===goal.r&&!t.explored;
+        if(!t.explored&&!isUnknownGoal)continue;
+        if(t.explored&&!this.world.passable(t))continue;
+        const cost=cur.g+(t.explored?TERRAIN[t.terrain].speed:1);
+        if(cost>=(score.get(nk)??Infinity))continue;
+        came.set(nk,ck);score.set(nk,cost);
+        open.push({q:n.q,r:n.r,g:cost,f:cost+hexDist(n,goal)});
+      }
+    }
+    return null;
+  }
+}
+class WorldRenderer{
+  constructor(canvas,world,game){
+    this.canvas=canvas;this.ctx=canvas.getContext("2d");this.world=world;this.game=game;
+    this.camera={x:0,y:0,zoom:1};
+    this.width=1;this.height=1;this.dpr=1;
+    this.resize();
+  }
+  resize(){
+    const rect=this.canvas.getBoundingClientRect();
+    this.width=Math.max(1,rect.width);this.height=Math.max(1,rect.height);
+    this.dpr=Math.min(2,window.devicePixelRatio||1);
+    this.canvas.width=Math.round(this.width*this.dpr);this.canvas.height=Math.round(this.height*this.dpr);
+    this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);
+  }
+  centerOn(pos){const p=hexToWorld(pos.q,pos.r);this.camera.x=p.x;this.camera.y=p.y;}
+  screenToHex(sx,sy){
+    const x=(sx-this.width/2)/this.camera.zoom+this.camera.x;
+    const y=(sy-this.height/2)/this.camera.zoom+this.camera.y;
+    return worldToHex(x,y);
+  }
+  zoomAt(factor,sx=this.width/2,sy=this.height/2){
+    const before={x:(sx-this.width/2)/this.camera.zoom+this.camera.x,y:(sy-this.height/2)/this.camera.zoom+this.camera.y};
+    this.camera.zoom=Math.max(.48,Math.min(1.65,this.camera.zoom*factor));
+    this.camera.x=before.x-(sx-this.width/2)/this.camera.zoom;
+    this.camera.y=before.y-(sy-this.height/2)/this.camera.zoom;
+  }
+  polygon(x,y,fill,stroke="#405b42",line=1){
+    const c=this.ctx;c.beginPath();
+    for(let i=0;i<6;i++){const a=(Math.PI/180)*(-90+i*60),px=x+HEX*Math.cos(a),py=y+HEX*Math.sin(a);if(i===0)c.moveTo(px,py);else c.lineTo(px,py);}
+    c.closePath();c.fillStyle=fill;c.fill();c.strokeStyle=stroke;c.lineWidth=line;c.stroke();
+  }
+  drawTerrain(t,p){
+    const c=this.ctx,x=p.x,y=p.y,n=hash(t.q+41,t.r+83);
+    if(t.terrain==="plain"){
+      c.strokeStyle="#d7e7a35c";c.lineWidth=1;
+      for(let i=0;i<3;i++){const ox=(hash(t.q+i,t.r+3)-.5)*30,oy=(hash(t.q+8,t.r+i)-.5)*20;c.beginPath();c.moveTo(x+ox,y+oy);c.lineTo(x+ox-2,y+oy-4);c.stroke();}
+    }else if(t.terrain==="forest"){
+      for(let i=0;i<3;i++){const ox=(i-1)*13+(n-.5)*3,oy=(i%2)*7-4;
+        c.fillStyle="#294f39";c.fillRect(x+ox-2,y+oy+7,4,9);
+        c.fillStyle=i===1?"#285c40":"#34734a";c.beginPath();c.moveTo(x+ox,y+oy-13);c.lineTo(x+ox-9,y+oy+7);c.lineTo(x+ox+9,y+oy+7);c.closePath();c.fill();
+        c.fillStyle="#75a65d88";c.beginPath();c.moveTo(x+ox,y+oy-11);c.lineTo(x+ox-5,y+oy+2);c.lineTo(x+ox+1,y+oy+2);c.closePath();c.fill();
+      }
+    }else if(t.terrain==="hill"){
+      c.fillStyle="#806b49";c.beginPath();c.ellipse(x+4,y+4,17,10,-.2,0,Math.PI*2);c.fill();
+      c.fillStyle="#c9b17a";c.beginPath();c.ellipse(x-2,y-1,15,9,-.2,Math.PI,Math.PI*2);c.fill();
+      c.strokeStyle="#e0c68c99";c.beginPath();c.arc(x-2,y-1,12,Math.PI*1.1,Math.PI*1.8);c.stroke();
+    }else if(t.terrain==="mountain"){
+      c.fillStyle="#65777c";c.beginPath();c.moveTo(x-20,y+14);c.lineTo(x-5,y-17);c.lineTo(x+3,y-3);c.lineTo(x+13,y-22);c.lineTo(x+23,y+14);c.closePath();c.fill();
+      c.fillStyle="#e0e2d8";c.beginPath();c.moveTo(x-5,y-17);c.lineTo(x+3,y-3);c.lineTo(x-1,y+1);c.closePath();c.fill();
+      c.beginPath();c.moveTo(x+13,y-22);c.lineTo(x+20,y-1);c.lineTo(x+11,y-6);c.closePath();c.fill();
+    }else if(t.terrain==="water"){
+      c.strokeStyle="#9ad6d7a8";c.lineWidth=1.6;
+      for(let i=-1;i<=1;i++){c.beginPath();c.moveTo(x-14,y+i*7);c.quadraticCurveTo(x,y+i*7-3,x+14,y+i*7);c.stroke();}
+      c.fillStyle="#d7e8ca66";c.beginPath();c.ellipse(x-9,y-10,5,2,-.3,0,Math.PI*2);c.fill();
+    }
+  }
+  drawPoi(t,p){
+    if(!t.poi||!t.discovered)return;
+    const c=this.ctx,labels={gold:"金",iron:"铁",ruin:"遗",den:"巢",wood:"林"};
+    const colors={gold:"#e7bd58",iron:"#aebbc0",ruin:"#b99bdb",den:"#d87959",wood:"#8dc57e"};
+    c.fillStyle="#173334eF";c.strokeStyle=colors[t.poi.kind];c.lineWidth=2;
+    c.beginPath();c.arc(p.x+15,p.y-14,10,0,Math.PI*2);c.fill();c.stroke();
+    c.fillStyle="#fff5d9";c.font="bold 10px Microsoft YaHei, sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillText(labels[t.poi.kind],p.x+15,p.y-14);
+  }
+  drawCastle(){
+    const c=this.ctx,p=hexToWorld(this.game.castle.q,this.game.castle.r),x=p.x,y=p.y;
+    c.fillStyle="#355642";c.beginPath();c.ellipse(x,y+15,23,9,0,0,Math.PI*2);c.fill();
+    c.fillStyle="#e8e0c8";c.strokeStyle="#493d2d";c.lineWidth=2;
+    c.fillRect(x-15,y-12,30,28);c.strokeRect(x-15,y-12,30,28);
+    c.fillRect(x-21,y-19,10,25);c.strokeRect(x-21,y-19,10,25);
+    c.fillRect(x+11,y-19,10,25);c.strokeRect(x+11,y-19,10,25);
+    c.fillStyle="#4d86c6";
+    for(const ox of [-16,16,0]){c.beginPath();c.moveTo(x+ox-6,y-19);c.lineTo(x+ox,y-31);c.lineTo(x+ox+6,y-19);c.closePath();c.fill();}
+    c.fillStyle="#70482d";c.fillRect(x-4,y+3,8,13);
+  }
+  drawLord(pos){
+    const c=this.ctx,x=pos.x,y=pos.y;
+    c.fillStyle="#243d34aa";c.beginPath();c.ellipse(x,y+13,11,5,0,0,Math.PI*2);c.fill();
+    c.fillStyle="#e8c16a";c.beginPath();c.arc(x,y-5,7,0,Math.PI*2);c.fill();
+    c.fillStyle="#3d6fbc";c.beginPath();c.moveTo(x-8,y+9);c.lineTo(x-5,y-1);c.lineTo(x+5,y-1);c.lineTo(x+8,y+9);c.closePath();c.fill();
+    c.fillStyle="#f0d9a1";c.beginPath();c.arc(x,y-7,4,0,Math.PI*2);c.fill();
+    c.strokeStyle="#4b3425";c.lineWidth=2;c.beginPath();c.moveTo(x+5,y+1);c.lineTo(x+13,y-7);c.stroke();
+  }
+  render(){
+    const c=this.ctx,w=this.width,h=this.height,cam=this.camera,g=this.game;
+    c.setTransform(this.dpr,0,0,this.dpr,0,0);c.clearRect(0,0,w,h);
+    c.fillStyle=g.phase==="night"?"#182c35":"#789b65";c.fillRect(0,0,w,h);
+    c.save();c.translate(w/2,h/2);c.scale(cam.zoom,cam.zoom);c.translate(-cam.x,-cam.y);
+    for(const t of this.world.all()){
+      const p=hexToWorld(t.q,t.r);
+      if(p.x<cam.x-w/(2*cam.zoom)-60||p.x>cam.x+w/(2*cam.zoom)+60||p.y<cam.y-h/(2*cam.zoom)-60||p.y>cam.y+h/(2*cam.zoom)+60)continue;
+      if(!t.explored){this.polygon(p.x,p.y,"#172b30","#263d40",1.1);continue;}
+      this.polygon(p.x,p.y,TERRAIN[t.terrain].color,t.visible?"#d7dcae":"#52665a",1);
+      this.drawTerrain(t,p);
+      this.drawPoi(t,p);
+      if(!t.visible){c.fillStyle="#12272e88";c.beginPath();for(let i=0;i<6;i++){const a=-Math.PI/2+i*Math.PI/3,xx=p.x+HEX*Math.cos(a),yy=p.y+HEX*Math.sin(a);if(i===0)c.moveTo(xx,yy);else c.lineTo(xx,yy);}c.closePath();c.fill();}
+    }
+    // 移动路线只沿已知地图显示。
+    if(g.path.length||g.currentMove){
+      const route=[];route.push(hexToWorld(g.lord.q,g.lord.r));g.path.forEach(t=>route.push(hexToWorld(t.q,t.r)));
+      if(g.currentMove){route.unshift(hexToWorld(g.currentMove.from.q,g.currentMove.from.r));}
+      c.strokeStyle="#f1d477";c.lineWidth=3;c.setLineDash([5,5]);c.beginPath();
+      route.forEach((p,i)=>{if(i===0)c.moveTo(p.x,p.y);else c.lineTo(p.x,p.y);});c.stroke();c.setLineDash([]);
+    }
+    this.drawCastle();
+    let lp=hexToWorld(g.lord.q,g.lord.r);
+    if(g.currentMove){
+      const m=g.currentMove,k=Math.min(1,m.elapsed/m.duration),a=hexToWorld(m.from.q,m.from.r),b=hexToWorld(m.to.q,m.to.r);
+      lp={x:a.x+(b.x-a.x)*k,y:a.y+(b.y-a.y)*k};
+    }
+    this.drawLord(lp);
+    if(g.selected){const t=this.world.get(g.selected.q,g.selected.r);if(t?.explored){const p=hexToWorld(t.q,t.r);c.strokeStyle="#ffe28c";c.lineWidth=2.5;c.beginPath();for(let i=0;i<6;i++){const a=-Math.PI/2+i*Math.PI/3,x=p.x+HEX*Math.cos(a),y=p.y+HEX*Math.sin(a);if(i===0)c.moveTo(x,y);else c.lineTo(x,y);}c.closePath();c.stroke();}}
+    if(g.phase==="night"){
+      c.fillStyle="#0c203533";c.fillRect(cam.x-w/(2*cam.zoom),cam.y-h/(2*cam.zoom),w/cam.zoom,h/cam.zoom);
+    }
+    c.restore();
+    // 城堡和领主视野外的未知世界不可被 canvas 上其它元素泄露。
+  }
+}
+class HexWorldGame{
+  constructor(){
+    this.world=new HexWorld();this.pathfinder=new Pathfinder(this.world);this.fog=new FogOfWar(this.world);
+    this.castle={q:7,r:9};this.lord={q:8,r:9};
+    this.phase="day";this.day=1;this.phaseElapsed=0;this.paused=true;
+    this.path=[];this.currentMove=null;this.selected={q:this.lord.q,r:this.lord.r};
+    this.events=[];this.lastTime=0;this.toastTimer=0;this.discoveredCount=0;
+    this.fog.update([{q:this.castle.q,r:this.castle.r,radius:3},{q:this.lord.q,r:this.lord.r,radius:2}]);
+    this.renderer=new WorldRenderer($("world"),this.world,this);this.renderer.centerOn(this.lord);
+    this.bind();this.updatePanel();this.loop=this.loop.bind(this);requestAnimationFrame(this.loop);
+  }
+  bind(){
+    const canvas=$("world");let pointer=null;
+    canvas.addEventListener("pointerdown",e=>{canvas.setPointerCapture(e.pointerId);pointer={x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false};});
+    canvas.addEventListener("pointermove",e=>{
+      if(!pointer)return;
+      const dx=e.clientX-pointer.lastX,dy=e.clientY-pointer.lastY;
+      if(Math.hypot(e.clientX-pointer.x,e.clientY-pointer.y)>5)pointer.moved=true;
+      if(pointer.moved){this.renderer.camera.x-=dx/this.renderer.camera.zoom;this.renderer.camera.y-=dy/this.renderer.camera.zoom;}
+      pointer.lastX=e.clientX;pointer.lastY=e.clientY;
+    });
+    canvas.addEventListener("pointerup",e=>{
+      if(!pointer)return;const p=pointer;pointer=null;
+      if(!p.moved){const rect=canvas.getBoundingClientRect(),hex=this.renderer.screenToHex(e.clientX-rect.left,e.clientY-rect.top);this.clickHex(hex);}
+    });
+    canvas.addEventListener("pointercancel",()=>pointer=null);
+    canvas.addEventListener("contextmenu",e=>{e.preventDefault();this.cancelMove();});
+    canvas.addEventListener("wheel",e=>{e.preventDefault();const rect=canvas.getBoundingClientRect();this.renderer.zoomAt(e.deltaY<0?1.12:.89,e.clientX-rect.left,e.clientY-rect.top);},{passive:false});
+    $("zoomIn").onclick=()=>this.renderer.zoomAt(1.15);
+    $("zoomOut").onclick=()=>this.renderer.zoomAt(.87);
+    $("center").onclick=()=>this.renderer.centerOn(this.lord);
+    $("pause").onclick=()=>{this.paused=!this.paused;$("pause").textContent=this.paused?"继续":"暂停";this.notify(this.paused?"已暂停。":"时间继续流动。");};
+    $("cancelMove").onclick=()=>this.cancelMove();
+    $("restart").onclick=()=>location.reload();
+    $("start").onclick=()=>{$("intro").style.display="none";this.paused=false;$("pause").textContent="暂停";};
+    window.addEventListener("resize",()=>this.renderer.resize());
+  }
+  clickHex(pos){
+    const t=this.world.get(pos.q,pos.r);
+    if(!t){this.notify("地图边界之外。");return;}
+    if(!t.explored&&!this.world.adjacentToExplored(t)){this.notify("先向已知世界的边缘移动，才能继续探索。");return;}
+    if(t.explored&&!this.world.passable(t)){this.notify(TERRAIN[t.terrain].name+"无法通行。");this.selected=pos;this.updatePanel();return;}
+    const route=this.pathfinder.find(this.lord,pos);
+    if(route===null){this.notify("这条路线目前无法到达。");return;}
+    if(route.length===0){this.selected=pos;this.updatePanel();if(t.poi)this.notify(t.poi.name+"："+t.poi.desc);return;}
+    this.selected=pos;this.path=route;this.currentMove=null;this.updatePanel();
+  }
+  cancelMove(){this.path=[];this.currentMove=null;this.updatePanel();this.notify("已取消移动。");}
+  moveDuration(tile){return .48*(TERRAIN[tile.terrain]?.speed||1);}
+  updateMovement(dt){
+    if(!this.currentMove&&this.path.length){
+      const next=this.path.shift(),tile=this.world.get(next.q,next.r);
+      if(!tile)return;
+      if(!tile.explored&&!this.world.passable(tile)){
+        this.fog.revealBlocked(tile);this.notify("前方发现"+TERRAIN[tile.terrain].name+"，无法直接通过。");this.updatePanel();return;
+      }
+      this.currentMove={from:{q:this.lord.q,r:this.lord.r},to:next,elapsed:0,duration:this.moveDuration(tile)};
+    }
+    if(this.currentMove){
+      this.currentMove.elapsed+=dt;
+      if(this.currentMove.elapsed>=this.currentMove.duration){
+        this.lord.q=this.currentMove.to.q;this.lord.r=this.currentMove.to.r;this.currentMove=null;
+        const found=this.fog.update([{q:this.castle.q,r:this.castle.r,radius:3},{q:this.lord.q,r:this.lord.r,radius:2}]);
+        for(const poi of found){this.discoveredCount++;this.addEvent("发现 "+poi.name+"："+poi.desc);this.notify("新发现："+poi.name);}
+        this.updatePanel();
+      }
+    }
+  }
+  addEvent(text){
+    this.events.unshift(text);this.events=this.events.slice(0,5);
+    const list=$("events");list.replaceChildren();
+    this.events.forEach(item=>{const li=document.createElement("li");li.textContent=item;list.append(li);});
+  }
+  notify(text){
+    const el=$("toast");el.textContent=text;el.classList.add("show");this.toastTimer=2.5;
+  }
+  transition(){
+    this.phaseElapsed=0;
+    if(this.phase==="day"){
+      this.phase="night";this.addEvent("第 "+this.day+" 夜开始。领主留在当前位置，夜晚仍可移动。");
+      this.notify("入夜了。领主没有自动回城，仍可继续移动。");
+    }else{
+      this.phase="day";this.day++;this.addEvent("天亮了。第 "+this.day+" 日开始。");
+      this.notify("天亮了。可以继续向未知区域探索。");
+    }
+    this.updatePanel();
+  }
+  updatePanel(){
+    $("lordCoords").textContent="("+this.lord.q+", "+this.lord.r+")";
+    const here=this.world.get(this.lord.q,this.lord.r);
+    $("lordTerrain").textContent=TERRAIN[here.terrain].name;
+    $("visibleCount").textContent=this.fog.visibleCount+" 格";
+    $("moveStatus").textContent=this.currentMove?"移动中":this.path.length?"沿路径前进":"待命";
+    $("phaseLabel").textContent="第 "+this.day+" 日 · "+(this.phase==="day"?"白天":"夜晚");
+  }
+  loop(now){
+    const dt=this.lastTime?Math.min(.05,(now-this.lastTime)/1000):0;this.lastTime=now;
+    if(!this.paused){
+      this.phaseElapsed+=dt;this.updateMovement(dt);
+      if(this.phaseElapsed>=(this.phase==="day"?DAY_SECONDS:NIGHT_SECONDS))this.transition();
+    }
+    const left=Math.max(0,(this.phase==="day"?DAY_SECONDS:NIGHT_SECONDS)-this.phaseElapsed);
+    const min=Math.floor(left/60),sec=Math.floor(left%60);
+    $("clockText").textContent=String(min).padStart(2,"0")+":"+String(sec).padStart(2,"0");
+    $("clockBar").style.width=(left/(this.phase==="day"?DAY_SECONDS:NIGHT_SECONDS)*100)+"%";
+    if(this.phase==="night")$("clockBar").style.background="#8db2d3";else $("clockBar").style.background="#e6c36b";
+    if(this.toastTimer>0){this.toastTimer-=dt;if(this.toastTimer<=0)$("toast").classList.remove("show");}
+    this.renderer.render();
+    requestAnimationFrame(this.loop);
+  }
+}
+const game=new HexWorldGame();
+})();
+</script>
+</body>
+</html>
