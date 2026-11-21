@@ -664,7 +664,8 @@ function makeGame(seed = Math.floor(Math.random() * 999999) + 1){
     artisanTimer: TICK_INTERVAL,
     speed: 1,
     autoAttack: true,
-    mode: null, // 'arrow' | 'cannon' | 'frost' | 'expand' | null
+    mode: null, // 'arrow' | 'cannon' | 'frost' | 'expand' | 'move' | null
+    movingTowerFrom: null,
     selectedTile: null,
     hoverTile: null,
 
@@ -924,6 +925,48 @@ function sellTower(t){
   AudioKit.play('coin');
   toast(`已拆除并返还 ${matBack} 材料 · ${goldBack} 金币。`);
   game.selectedTile = null;
+  if (game.movingTowerFrom === idxOf(t.x, t.y)) { game.movingTowerFrom = null; game.mode = null; }
+  renderUI();
+  return true;
+}
+
+function startMoveTower(t){
+  if (game.phase !== 'day' || t?.building?.type !== 'tower') return false;
+  game.mode = 'move';
+  game.movingTowerFrom = idxOf(t.x, t.y);
+  toast(`已选中搬迁【${TOWERS[t.building.kind].name}】，请点击城内高亮草地新位置（免费 · 保留等级）。`);
+  renderUI();
+  return true;
+}
+
+function moveTowerTo(dest){
+  if (game.phase !== 'day' || game.mode !== 'move' || game.movingTowerFrom == null) return false;
+  const src = game.tiles[game.movingTowerFrom];
+  if (!src || src.building?.type !== 'tower') {
+    game.mode = null; game.movingTowerFrom = null; renderUI(); return false;
+  }
+  if (dest === src) {
+    game.mode = null; game.movingTowerFrom = null;
+    toast('已取消移动塔位。');
+    renderUI();
+    return false;
+  }
+  if (!canBuildTower(dest)) {
+    if (dest?.cover && dest.cover !== 'none') toast('不能搬到树林或山石上！', true);
+    else if (dest?.ground === 'road' || isGateInteriorTile(dest)) toast('道路与城门通道需保持畅通，请选择城墙内侧草地！', true);
+    else toast('请选择领地内干净的空草地作为新塔位。', true);
+    return false;
+  }
+  const tower = src.building;
+  dest.building = tower;
+  src.building = null;
+  game.mode = null;
+  game.movingTowerFrom = null;
+  game.selectedTile = idxOf(dest.x, dest.y);
+  addRing(dest.x + 0.5, dest.y + 0.5, '#7be8ff', 1.0);
+  addFloat(dest.x + 0.5, dest.y + 0.2, `${TOWERS[tower.kind].name}已迁移`, '#9ef0ff');
+  AudioKit.play('build');
+  toast(`${TOWERS[tower.kind].name}（Lv.${tower.level}）已免费搬迁到新位置！`);
   renderUI();
   return true;
 }
@@ -1010,7 +1053,7 @@ function repairWallDay(){
 }
 
 function repairCastleNight(){
-  if (game.phase !== 'night') return false;
+  if (game.phase !== 'night' || paused) return false;
   if (game.castleHp >= game.castleMax) { toast('主城耐久已满。'); return false; }
   if (!spend({ gold:6 })) { toast('需要 6 金币才能紧急修复主城。', true); return false; }
   const before = game.castleHp;
@@ -1026,7 +1069,7 @@ function repairCastleNight(){
 
 /* ---------- Hero Active Skills ---------- */
 function castWhirlwind(){
-  if (game.phase !== 'night') return false;
+  if (game.phase !== 'night' || paused) return false;
   const h = game.hero;
   if (h.downTimer > 0) { toast('领主休整中，稍候回场。', true); return false; }
   if (h.qCd > 0) { toast(`旋风重斩冷却中（${h.qCd.toFixed(1)}s）。`, true); return false; }
@@ -1063,7 +1106,7 @@ function castWhirlwind(){
 }
 
 function castDash(){
-  if (game.phase !== 'night') return false;
+  if (game.phase !== 'night' || paused) return false;
   const h = game.hero;
   if (h.downTimer > 0) { toast('领主休整中。', true); return false; }
   if (h.eCd > 0) { toast(`战术冲刺冷却中（${h.eCd.toFixed(1)}s）。`, true); return false; }
@@ -1095,7 +1138,7 @@ function castDash(){
 }
 
 function castRally(){
-  if (game.phase !== 'night') return false;
+  if (game.phase !== 'night' || paused) return false;
   const h = game.hero;
   if (h.rallyCharges <= 0) { toast('本夜号令齐射已用尽。', true); return false; }
   h.rallyCharges--;
@@ -1131,6 +1174,7 @@ function startNight(early = false){
   }
   game.phase = 'night';
   game.mode = null;
+  game.movingTowerFrom = null;
   game.selectedTile = null;
   game.nightClock = 0;
   game.castleShield = 0;
@@ -1934,30 +1978,35 @@ function drawTile(t){
 function drawToolHighlights(){
   const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 220);
   const isTower = !!TOWERS[game.mode];
+  const isMove = game.mode === 'move';
+  const movingTile = isMove && game.movingTowerFrom != null ? game.tiles[game.movingTowerFrom] : null;
   for (const t of game.tiles) {
-    const ok = isTower ? canBuildTower(t) : game.mode === 'expand' ? canExpandTile(t) : false;
+    const ok = (isTower || isMove) ? canBuildTower(t) : game.mode === 'expand' ? canExpandTile(t) : false;
     if (!ok) continue;
     const x = t.x * CELL, y = t.y * CELL;
-    ctx.fillStyle = isTower ? `rgba(255,230,115,${0.18 + 0.12 * pulse})` : `rgba(130,245,155,${0.18 + 0.12 * pulse})`;
+    ctx.fillStyle = isMove
+      ? `rgba(123,232,255,${0.20 + 0.12 * pulse})`
+      : isTower ? `rgba(255,230,115,${0.18 + 0.12 * pulse})`
+      : `rgba(130,245,155,${0.18 + 0.12 * pulse})`;
     ctx.fillRect(x + 2, y + 2, CELL - 4, CELL - 4);
-    ctx.strokeStyle = isTower ? '#ffe070' : '#96f7a8';
+    ctx.strokeStyle = isMove ? '#7be8ff' : isTower ? '#ffe070' : '#96f7a8';
     ctx.lineWidth = 2;
     ctx.strokeRect(x + 3, y + 3, CELL - 6, CELL - 6);
   }
   if (game.hoverTile != null) {
     const ht = game.tiles[game.hoverTile];
     if (ht) {
-      const ok = isTower ? canBuildTower(ht) : game.mode === 'expand' ? canExpandTile(ht) : false;
+      const ok = (isTower || isMove) ? canBuildTower(ht) : game.mode === 'expand' ? canExpandTile(ht) : false;
       ctx.save();
-      ctx.strokeStyle = ok ? '#fff5b5' : '#ff6b52';
+      ctx.strokeStyle = ok ? (isMove ? '#b8f4ff' : '#fff5b5') : '#ff6b52';
       ctx.lineWidth = 3;
       ctx.strokeRect(ht.x * CELL + 1.5, ht.y * CELL + 1.5, CELL - 3, CELL - 3);
-      if (ok && isTower) {
-        const lv = TOWERS[game.mode].levels[0];
+      if (ok && (isTower || (isMove && movingTile?.building?.type === 'tower'))) {
+        const bSpec = isTower ? TOWERS[game.mode].levels[0] : TOWERS[movingTile.building.kind].levels[movingTile.building.level - 1];
         ctx.beginPath();
-        ctx.arc((ht.x + 0.5) * CELL, (ht.y + 0.5) * CELL, lv.range * CELL, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,226,118,0.12)'; ctx.fill();
-        ctx.setLineDash([6, 5]); ctx.strokeStyle = 'rgba(255,230,126,0.85)'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.arc((ht.x + 0.5) * CELL, (ht.y + 0.5) * CELL, bSpec.range * CELL, 0, Math.PI * 2);
+        ctx.fillStyle = isMove ? 'rgba(123,232,255,0.14)' : 'rgba(255,226,118,0.12)'; ctx.fill();
+        ctx.setLineDash([6, 5]); ctx.strokeStyle = isMove ? 'rgba(140,238,255,0.9)' : 'rgba(255,230,126,0.85)'; ctx.lineWidth = 2; ctx.stroke();
       } else if (!ok) {
         ctx.beginPath();
         ctx.moveTo(ht.x * CELL + 12, ht.y * CELL + 12);
@@ -2371,9 +2420,11 @@ function renderUI(){
   $('wavePreview').textContent = isNight ? `第 ${game.day} 夜：${cfg.preview}` : `今夜敌袭：${cfg.preview}`;
 
   if (game.mode) {
-    $('subHint').textContent = game.mode === 'expand'
-      ? '点城墙外高亮绿格扩建领地（6 金币）· Esc 取消'
-      : `点城墙内高亮草地建造【${TOWERS[game.mode].name}】（严禁建在树/路/门上）· Esc 取消`;
+    $('subHint').textContent = game.mode === 'move'
+      ? '点城内任意高亮草地免费搬迁防御塔（保留等级）· 右键 / Esc 取消'
+      : game.mode === 'expand'
+      ? '点城墙外高亮绿格扩建领地（6 金币）· 右键 / Esc 取消'
+      : `点城墙内高亮草地建造【${TOWERS[game.mode].name}】（严禁建在树/路/门上）· 右键 / Esc 取消`;
   } else if (isDay) {
     const devCount = game.tiles.filter(t => t.owned && t.node?.developed).length;
     const towerCount = game.tiles.filter(t => t.building?.type === 'tower').length;
@@ -2381,7 +2432,7 @@ function renderUI(){
       ? '① 先点城内带 + 号的资源点开发（每 5 秒自动产出）！'
       : towerCount === 0
       ? '② 选底栏「箭塔 / 炮塔 / 冰塔」，摆在今夜来袭侧的草地塔位上！'
-      : '继续开发/招人/扩地，准备好随时点右下「立即开战」！';
+      : '点已建防御塔可免费「移动塔位」或升级，准备好点右下「立即开战」！';
   } else if (isNight) {
     $('subHint').textContent = 'WASD 或点地走位 · Q 旋风重斩 · E 冲刺 · R 号令齐射';
   }
@@ -2454,6 +2505,7 @@ function renderDock(){
         dockBtns[kind] = makeDockBtn(kind, {
           icon: s.icon, name: s.name, sub: `${s.cost.material}材 ${s.cost.gold}金`, key: s.hotkey,
           onClick: () => {
+            game.movingTowerFrom = null;
             game.mode = game.mode === kind ? null : kind;
             game.selectedTile = null;
             if (game.mode) toast(`已选中【${s.name}】，请点击城内高亮草地放置。`);
@@ -2465,6 +2517,7 @@ function renderDock(){
       dockBtns.expand = makeDockBtn('expand', {
         icon: '🚩', name: '扩建领地', sub: '6 金币', key: '4',
         onClick: () => {
+          game.movingTowerFrom = null;
           game.mode = game.mode === 'expand' ? null : 'expand';
           game.selectedTile = null;
           if (game.mode) toast('已选中【扩建领地】，请点击城墙外高亮绿格。');
@@ -2544,7 +2597,8 @@ function inspectorKey(t){
   const affordSig = `${canAfford({gold:6,food:3})?1:0}${canAfford({material:2})?1:0}${canAfford({material:6,gold:4})?1:0}${canAfford({gold:6})?1:0}${game.resources.material>0?1:0}${b?.type==='tower'&&canAfford(TOWERS[b.kind].upCost)?1:0}`;
   const wallFlag = game.wall.broken ? 'B' : (game.wall.hp >= game.wall.maxHp ? 'F' : 'D');
   const castleFlag = game.castleHp >= game.castleMax ? 'F' : 'D';
-  return [game.phase, game.selectedTile, t.owned?1:0, b?.type||'', b?.kind||'', b?.level||0, n?.kind||'', n?.developed?1:0, n?.level||0, n?.workerId||0, rSig, affordSig, wallFlag, castleFlag].join('|');
+  const moveFlag = game.mode === 'move' && game.movingTowerFrom === game.selectedTile ? 'M' : '';
+  return [game.phase, game.selectedTile, t.owned?1:0, b?.type||'', b?.kind||'', b?.level||0, n?.kind||'', n?.developed?1:0, n?.level||0, n?.workerId||0, rSig, affordSig, wallFlag, castleFlag, moveFlag].join('|');
 }
 
 function renderInspector(){
@@ -2573,8 +2627,9 @@ function renderInspector(){
   const addAct = (label, sub, fn, opts = {}) => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'btn' + (opts.gold ? ' gold' : '') + (opts.danger ? ' danger' : '');
+    b.className = 'btn' + (opts.gold ? ' gold' : '') + (opts.active ? ' active' : '') + (opts.danger ? ' danger' : '');
     b.disabled = !!opts.disabled;
+    if (opts.id) b.dataset.act = opts.id;
     b.innerHTML = `<span>${label}</span>${sub ? `<small>${sub}</small>` : ''}`;
     b.addEventListener('click', fn);
     actions.append(b);
@@ -2615,13 +2670,18 @@ function renderInspector(){
   if (t.building?.type === 'tower') {
     const spec = TOWERS[t.building.kind];
     const lv = spec.levels[t.building.level - 1];
+    const isMovingThis = game.mode === 'move' && game.movingTowerFrom === idxOf(t.x, t.y);
     title.textContent = `${spec.icon} ${spec.name} · Lv.${t.building.level}`;
-    desc.textContent = `${spec.desc}（当前伤害 ${lv.dmg} · 射程 ${lv.range} 格 · 间隔 ${lv.cd}s）`;
+    desc.textContent = `${spec.desc}（伤害 ${lv.dmg} · 射程 ${lv.range} 格 · 间隔 ${lv.cd}s · 扩墙后可免费搬迁）`;
     if (game.phase === 'day') {
+      addAct(isMovingThis ? '取消移动' : '移动塔位', isMovingThis ? '点高亮草地搬迁' : '免费搬迁 · 保留等级', () => {
+        if (isMovingThis) { game.mode = null; game.movingTowerFrom = null; renderUI(); }
+        else startMoveTower(t);
+      }, { id:'moveTower', active: isMovingThis });
       if (t.building.level < 2) {
-        addAct('升级 Lv.2', costStr(spec.upCost), () => upgradeTower(t), { gold:true, disabled: !canAfford(spec.upCost) });
+        addAct('升级 Lv.2', costStr(spec.upCost), () => upgradeTower(t), { id:'upgradeTower', gold:true, disabled: !canAfford(spec.upCost) });
       }
-      addAct('拆除返还', '返还 70% 资源', () => sellTower(t), { danger:true });
+      addAct('拆除返还', '返还 70% 资源', () => sellTower(t), { id:'sellTower', danger:true });
     }
     return;
   }
@@ -2783,6 +2843,7 @@ function handleMapClick(wx, wy){
   if (!t) return;
 
   if (game.phase === 'day' && game.mode) {
+    if (game.mode === 'move') { moveTowerTo(t); return; }
     if (TOWERS[game.mode]) { buildTower(t, game.mode); return; }
     if (game.mode === 'expand') { expandTile(t); return; }
   }
@@ -2795,8 +2856,11 @@ function handleMapClick(wx, wy){
     return;
   }
 
-  // Inspect castle / tower / workshop / wild node
-  if (t.building || t.node) {
+  // Inspect: during night, only Castle/Tower opens inspector so clicking workshops/enemies smoothly moves Hero
+  const canInspect = game.phase === 'day'
+    ? (t.building || t.node)
+    : (t.building?.type === 'castle' || t.building?.type === 'tower');
+  if (canInspect) {
     const idx = idxOf(t.x, t.y);
     game.selectedTile = game.selectedTile === idx ? null : idx;
     renderUI();
@@ -2818,17 +2882,17 @@ window.addEventListener('keydown', e => {
     return;
   }
   if (k === 'escape') {
-    if (game.mode) { game.mode = null; renderUI(); }
+    if (game.mode) { game.mode = null; game.movingTowerFrom = null; renderUI(); }
     else if (game.selectedTile != null) { game.selectedTile = null; renderUI(); }
     else if (paused) { paused = false; renderUI(); }
     return;
   }
   if (k === 'f') { game.speed = game.speed === 2 ? 1 : 2; renderUI(); return; }
   if (game.phase === 'day') {
-    if (k === '1') { game.mode = game.mode === 'arrow' ? null : 'arrow'; renderUI(); return; }
-    if (k === '2') { game.mode = game.mode === 'cannon' ? null : 'cannon'; renderUI(); return; }
-    if (k === '3') { game.mode = game.mode === 'frost' ? null : 'frost'; renderUI(); return; }
-    if (k === '4') { game.mode = game.mode === 'expand' ? null : 'expand'; renderUI(); return; }
+    if (k === '1') { game.movingTowerFrom = null; game.mode = game.mode === 'arrow' ? null : 'arrow'; renderUI(); return; }
+    if (k === '2') { game.movingTowerFrom = null; game.mode = game.mode === 'cannon' ? null : 'cannon'; renderUI(); return; }
+    if (k === '3') { game.movingTowerFrom = null; game.mode = game.mode === 'frost' ? null : 'frost'; renderUI(); return; }
+    if (k === '4') { game.movingTowerFrom = null; game.mode = game.mode === 'expand' ? null : 'expand'; renderUI(); return; }
   } else if (game.phase === 'night') {
     if (k === 'q') { castWhirlwind(); return; }
     if (k === 'e') { castDash(); return; }
@@ -2850,9 +2914,9 @@ $('helpBtn').addEventListener('click', showIntroModal);
 $('resetBtn').addEventListener('click', () => startNewRun());
 $('cardsBtn').addEventListener('click', showOwnedCardsModal);
 $('centerBtn').addEventListener('click', centerOnCastle);
-$('inspClose').addEventListener('click', () => { game.selectedTile = null; renderUI(); });
+$('inspClose').addEventListener('click', () => { game.selectedTile = null; if (game.mode === 'move') { game.mode = null; game.movingTowerFrom = null; } renderUI(); });
 canvas.addEventListener('contextmenu', e => {
-  if (game?.mode) { e.preventDefault(); game.mode = null; renderUI(); }
+  if (game?.mode) { e.preventDefault(); game.mode = null; game.movingTowerFrom = null; renderUI(); }
 });
 window.addEventListener('resize', resizeCanvas);
 
@@ -2899,10 +2963,14 @@ window.BG40 = {
   startNewRun, rebuildWallRing,
   canBuildTower, canDevelopNode, canExpandTile, isGateInteriorTile,
   developNode, upgradeWorkshop, buildTower, upgradeTower, sellTower,
+  startMoveTower, moveTowerTo,
   expandTile, recruitResident, toggleResidentRole, repairWallDay, repairCastleNight,
   startNight, castWhirlwind, castDash, castRally, pickCard, tick,
   TOWERS, CARDS, NODE_META, ENEMY_TYPES, NIGHT_CONFIG,
-  tileAt, idxOf, currentRates, workshopYield
+  tileAt, idxOf, currentRates, workshopYield,
+  worldToScreen(wx, wy){
+    return { x: (wx * CELL - cam.x) * cam.zoom + cam.w / 2, y: (wy * CELL - cam.y) * cam.zoom + cam.h / 2 };
+  }
 };
 </script>
 </body>
