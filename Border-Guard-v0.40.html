@@ -1,0 +1,2825 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#102b32">
+<title>边境守卫 · Border Guard v0.40</title>
+<style>
+:root{
+  --bg:#0d232a;
+  --panel:linear-gradient(180deg,rgba(22,58,64,.94),rgba(11,33,40,.96));
+  --panel-solid:#12333b;
+  --border:rgba(232,194,114,.55);
+  --border-soft:rgba(165,212,208,.24);
+  --gold:#ffd670;
+  --gold-deep:#c98a2c;
+  --text:#eef6ec;
+  --muted:#a8c6c2;
+  --good:#88e070;
+  --bad:#ff8066;
+  --ice:#80dcff;
+  --shadow:0 10px 28px rgba(0,0,0,.42);
+  --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font);user-select:none}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+button:disabled{opacity:.44;cursor:not-allowed}
+
+/* ===== Main layout ===== */
+#app{position:relative;width:100%;height:100%;overflow:hidden}
+#gameCanvas{display:block;width:100%;height:100%;touch-action:none;cursor:pointer}
+
+/* ===== Top HUD ===== */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:30;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:8px 12px;
+  background:linear-gradient(180deg,rgba(15,44,50,.96),rgba(10,30,36,.92));
+  border-bottom:1.5px solid var(--border);
+  box-shadow:0 4px 18px rgba(0,0,0,.35);
+  backdrop-filter:blur(8px);
+}
+.brand{
+  display:flex;align-items:center;gap:7px;font-weight:900;font-size:15px;letter-spacing:.5px;
+  color:var(--gold);padding-right:6px;white-space:nowrap;
+}
+.brand .ver{font-size:11px;font-weight:700;color:#bce0da;background:rgba(255,255,255,.08);padding:2px 6px;border-radius:999px}
+.phase-box{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 11px;border-radius:999px;
+  background:rgba(9,26,32,.78);border:1px solid var(--border);
+  min-width:190px;position:relative;overflow:hidden;
+}
+.phase-box .time-fill{
+  position:absolute;left:0;bottom:0;height:3px;width:100%;
+  background:linear-gradient(90deg,#f5b952,#ffe594);transition:width .18s linear;
+}
+.phase-box.night .time-fill{background:linear-gradient(90deg,#ff6e54,#ffae70)}
+.phase-icon{font-size:15px}
+.phase-label{font-weight:800;font-size:13px;color:#fff4d2;white-space:nowrap}
+.phase-clock{font-size:12px;color:#d6e9e4;margin-left:auto;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.stocks{display:flex;align-items:center;gap:6px;flex:1;min-width:220px;flex-wrap:wrap}
+.stock{
+  display:flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:999px;
+  background:rgba(9,27,33,.78);border:1px solid var(--border-soft);
+  font-size:13px;position:relative;
+}
+.stock .ico{font-size:14px;line-height:1}
+.stock .sname{font-size:11px;color:var(--muted);font-weight:600}
+.stock strong{font-size:14px;font-weight:900;color:#fff6dc;font-variant-numeric:tabular-nums}
+.stock .rate{
+  font-size:11px;font-weight:800;padding:1px 6px;border-radius:999px;
+  background:rgba(136,224,112,.16);color:#a7f58d;border:1px solid rgba(136,224,112,.32);
+}
+.stock .rate.zero{background:rgba(255,255,255,.06);color:#8eb0ac;border-color:transparent}
+.stock.pulse{animation:stockPulse .38s ease}
+@keyframes stockPulse{0%{transform:scale(1)}40%{transform:scale(1.09);border-color:var(--gold)}100%{transform:scale(1)}}
+
+.top-actions{display:flex;align-items:center;gap:6px;margin-left:auto}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  padding:6px 11px;border-radius:10px;font-size:12px;font-weight:800;
+  background:linear-gradient(180deg,rgba(35,88,92,.92),rgba(20,56,64,.95));
+  border:1px solid rgba(164,218,210,.36);color:var(--text);
+  box-shadow:0 2px 8px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.12);
+  transition:transform .1s ease,border-color .15s ease,filter .15s ease;
+  white-space:nowrap;
+}
+.btn:hover:not(:disabled){border-color:var(--gold);filter:brightness(1.1)}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn.gold{
+  background:linear-gradient(180deg,#ffdf86,#d8962e);
+  color:#2b1a04;border-color:#fff2bd;
+  box-shadow:0 4px 14px rgba(216,150,46,.38),inset 0 1px rgba(255,255,255,.55);
+}
+.btn.active{
+  border-color:var(--gold);
+  box-shadow:0 0 0 2px rgba(255,214,112,.38),0 4px 12px rgba(0,0,0,.3);
+  background:linear-gradient(180deg,rgba(56,118,112,.96),rgba(28,74,78,.98));
+}
+.btn.danger{
+  background:linear-gradient(180deg,#c94f3a,#8a2c20);border-color:#ffaa8e;color:#fff4ee;
+}
+
+/* ===== Sub-status strip ===== */
+.subbar{
+  position:fixed;left:12px;right:12px;top:calc(var(--top-h, 52px) + 6px);z-index:25;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  padding:6px 12px;border-radius:12px;
+  background:rgba(13,37,44,.86);border:1px solid var(--border-soft);
+  backdrop-filter:blur(6px);pointer-events:auto;
+}
+.sub-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px}
+.sub-hint{color:#e6f3ea;font-weight:700}
+.wave-pill{
+  padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;
+  background:rgba(190,68,48,.32);border:1px solid rgba(255,134,104,.6);color:#ffd7cc;
+}
+.vital-pills{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.vpill{
+  padding:2px 9px;border-radius:999px;font-size:12px;font-weight:800;
+  background:rgba(8,24,30,.82);border:1px solid var(--border-soft);color:#e4f2eb;
+  font-variant-numeric:tabular-nums;
+}
+.vpill.warn{background:rgba(168,42,30,.58);border-color:#ff8668;color:#fff1ea;animation:warnBlink 1.1s ease-in-out infinite}
+.vpill.shield{border-color:#7be0ff;color:#ccf3ff}
+@keyframes warnBlink{0%,100%{box-shadow:0 0 0 0 rgba(255,112,84,0)}50%{box-shadow:0 0 12px 1px rgba(255,112,84,.55)}}
+.sub-right{display:flex;align-items:center;gap:6px}
+
+/* ===== Banner & Toast ===== */
+#banner{
+  position:fixed;left:50%;top:calc(var(--sub-bottom, 102px) + 8px);transform:translateX(-50%);z-index:40;
+  padding:10px 22px;border-radius:14px;text-align:center;
+  background:linear-gradient(180deg,rgba(24,66,70,.97),rgba(11,36,44,.97));
+  border:1.5px solid var(--gold);box-shadow:var(--shadow);
+  pointer-events:none;min-width:250px;max-width:90vw;
+  transition:opacity .25s ease,transform .25s ease;
+}
+#banner.good{background:linear-gradient(180deg,rgba(36,96,56,.97),rgba(18,54,36,.97));border-color:#b2f285}
+#banner.night{background:linear-gradient(180deg,rgba(38,54,96,.97),rgba(19,30,58,.97));border-color:#9ebaff}
+#banner.danger{background:linear-gradient(180deg,rgba(122,42,32,.97),rgba(68,22,20,.97));border-color:#ff9478}
+#banner b{display:block;font-size:18px;font-weight:900;color:#fff0bd;letter-spacing:.6px}
+#banner span{display:block;font-size:12px;color:#e0eee6;margin-top:2px}
+#banner[hidden]{display:none}
+
+#toast{
+  position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:45;
+  padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800;
+  background:rgba(16,49,54,.96);border:1px solid var(--gold);color:#fff0c4;
+  box-shadow:0 6px 18px rgba(0,0,0,.38);pointer-events:none;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis;
+}
+#toast.bad{border-color:#ff8b70;color:#ffe2da}
+#toast[hidden]{display:none}
+
+/* ===== Inspector Side Card ===== */
+#inspector{
+  position:fixed;right:12px;top:106px;z-index:32;width:276px;max-width:calc(100vw - 24px);
+  max-height:calc(100vh - 210px);overflow-y:auto;
+  padding:12px 14px;border-radius:15px;
+  background:var(--panel);border:1.5px solid var(--border);box-shadow:var(--shadow);
+  backdrop-filter:blur(8px);
+}
+#inspector[hidden]{display:none}
+.insp-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.insp-head h3{font-size:15px;font-weight:900;color:var(--gold)}
+.insp-desc{font-size:12px;color:#d6e8e2;line-height:1.5;margin-bottom:10px}
+.insp-stats{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.bar-row{display:flex;align-items:center;gap:7px;font-size:12px}
+.bar-row .blabel{width:38px;color:var(--muted);font-weight:700}
+.bar-track{flex:1;height:8px;border-radius:999px;background:rgba(6,19,24,.85);overflow:hidden;border:1px solid rgba(255,255,255,.1)}
+.bar-track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#62d66a,#b4f57a);transition:width .18s}
+.bar-track.wall i{background:linear-gradient(90deg,#e4b457,#ffe69a)}
+.bar-val{font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
+.insp-actions{display:flex;flex-wrap:wrap;gap:6px}
+.insp-actions .btn{flex:1 1 46%;flex-direction:column;padding:7px 9px;gap:2px}
+.insp-actions .btn small{font-size:10px;font-weight:600;color:#cde4de;opacity:.92}
+.insp-actions .btn.gold small{color:#493008}
+.res-list{margin-top:10px;border-top:1px solid var(--border-soft);padding-top:8px;display:flex;flex-direction:column;gap:6px}
+.res-row{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:12px;background:rgba(7,22,27,.55);padding:5px 8px;border-radius:9px}
+.res-row .rrole{font-weight:700;color:#eef6ec}
+.res-row .rsub{font-size:11px;color:var(--muted)}
+
+/* ===== Bottom Command Dock ===== */
+.dock{
+  position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:30;
+  display:flex;align-items:center;gap:7px;
+  padding:8px 10px;border-radius:16px;
+  background:var(--panel);border:1.5px solid var(--border);box-shadow:var(--shadow);
+  backdrop-filter:blur(8px);max-width:calc(100vw - 16px);overflow-x:auto;
+}
+.cmd-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  min-width:92px;padding:7px 10px;border-radius:12px;position:relative;
+  background:linear-gradient(180deg,rgba(31,79,84,.92),rgba(18,50,57,.96));
+  border:1px solid rgba(164,218,210,.34);color:var(--text);
+  transition:transform .1s,border-color .15s,filter .15s;flex:0 0 auto;
+}
+.cmd-btn:hover:not(:disabled){border-color:var(--gold);filter:brightness(1.1)}
+.cmd-btn:active:not(:disabled){transform:translateY(1px)}
+.cmd-btn.active{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,214,112,.45);background:linear-gradient(180deg,rgba(54,116,108,.96),rgba(24,68,72,.98))}
+.cmd-btn.gold{background:linear-gradient(180deg,#ffe088,#d8952c);color:#2a1904;border-color:#fff2bd}
+.cmd-btn.gold .csub{color:#4b3006}
+.cmd-btn .cico{font-size:17px;line-height:1.1}
+.cmd-btn .cname{font-size:12px;font-weight:900;white-space:nowrap}
+.cmd-btn .csub{font-size:10px;font-weight:700;color:#b8d7d2;white-space:nowrap}
+.cmd-btn .ckey{
+  position:absolute;top:4px;left:5px;font-size:10px;font-weight:900;
+  padding:0 4px;border-radius:4px;background:rgba(0,0,0,.38);color:#ffe49b;
+}
+.cmd-btn.gold .ckey{background:rgba(42,25,4,.22);color:#2a1904}
+.cmd-btn .cd-mask{
+  position:absolute;inset:0;border-radius:12px;background:rgba(8,20,26,.72);
+  display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#ffe18f;
+}
+
+/* ===== Modals (Cards / Intro / Victory / Loss / Cards List) ===== */
+.modal-backdrop{
+  position:fixed;inset:0;z-index:60;
+  display:flex;align-items:center;justify-content:center;padding:16px;
+  background:rgba(6,17,22,.68);backdrop-filter:blur(5px);
+}
+.modal-backdrop[hidden]{display:none}
+.modal-card{
+  width:min(760px,96vw);max-height:90vh;overflow-y:auto;
+  padding:20px 22px;border-radius:18px;
+  background:linear-gradient(155deg,#183f45,#0e272f);
+  border:1.5px solid var(--gold);box-shadow:0 22px 60px rgba(0,0,0,.6);
+}
+.modal-card h2{font-size:21px;font-weight:900;color:#ffe69e;text-align:center;margin-bottom:6px}
+.modal-card .msub{font-size:13px;color:#cde3dd;text-align:center;margin-bottom:16px;line-height:1.55}
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pick-card{
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;
+  padding:16px 12px;border-radius:15px;color:#1d2b28;
+  background:linear-gradient(180deg,#eef8ff,#d8ecfa);
+  border:2px solid #8bc3e8;box-shadow:0 8px 20px rgba(0,0,0,.28);
+  transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease;
+}
+.pick-card.tone-tower{background:linear-gradient(180deg,#e9fbf2,#cdeee0);border-color:#72cfa4}
+.pick-card.tone-hero{background:linear-gradient(180deg,#f5efff,#e3d6fa);border-color:#b090ea}
+.pick-card.tone-econ{background:linear-gradient(180deg,#fff9e6,#f7e5b0);border-color:#e5b755}
+.pick-card:hover{transform:translateY(-4px);border-color:#ffd670;box-shadow:0 12px 26px rgba(0,0,0,.38)}
+.pick-card .cbadge{
+  width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:26px;background:rgba(255,255,255,.78);border:2px solid rgba(0,0,0,.1);
+}
+.pick-card .ctag{font-size:10px;font-weight:900;padding:2px 8px;border-radius:999px;background:rgba(20,40,48,.12);color:#26464e}
+.pick-card b{font-size:15px;font-weight:900;color:#182a2e}
+.pick-card p{font-size:12px;line-height:1.45;color:#2f494e}
+.pick-card .cgo{
+  margin-top:auto;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:900;
+  background:linear-gradient(180deg,#ffe088,#d8952c);color:#2b1a04;
+}
+.modal-footer{display:flex;justify-content:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+.intro-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.intro-box{
+  padding:11px 12px;border-radius:12px;background:rgba(8,25,30,.66);border:1px solid var(--border-soft);
+}
+.intro-box b{display:block;font-size:13px;color:var(--gold);margin-bottom:4px}
+.intro-box p{font-size:12px;color:#d6e8e2;line-height:1.5}
+.summary-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.sum-item{padding:10px 12px;border-radius:11px;background:rgba(8,25,30,.72);border:1px solid var(--border-soft);text-align:center}
+.sum-item span{display:block;font-size:11px;color:var(--muted)}
+.sum-item strong{display:block;font-size:18px;font-weight:900;color:#ffe69e;margin-top:2px}
+
+@media (max-width:720px){
+  .topbar{padding:6px 8px;gap:5px}
+  .brand .ver,.stock .sname{display:none}
+  .phase-box{min-width:146px;padding:4px 9px}
+  .subbar{left:8px;right:8px;padding:5px 8px}
+  #inspector{right:8px;left:8px;top:auto;bottom:84px;width:auto;max-height:42vh}
+  .dock{bottom:6px;padding:6px 7px;gap:5px}
+  .cmd-btn{min-width:74px;padding:6px 7px}
+  .cards-grid,.intro-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="gameCanvas" aria-label="边境守卫战场地图"></canvas>
+
+  <!-- Top HUD -->
+  <header class="topbar">
+    <div class="brand">🛡️ 边境守卫 <span class="ver">v0.40 MVP</span></div>
+    <div class="phase-box" id="phaseBox">
+      <span class="phase-icon" id="phaseIcon">☀️</span>
+      <span class="phase-label" id="phaseLabel">第 1 日 · 白天</span>
+      <span class="phase-clock" id="phaseClock">01:15</span>
+      <i class="time-fill" id="timeFill"></i>
+    </div>
+    <div class="stocks">
+      <div class="stock" id="stockGold" title="金币：建造与升级防御塔、扩建领地、招募居民、夜间急修">
+        <span class="ico">🪙</span><span class="sname">金币</span><strong id="valGold">22</strong><span class="rate zero" id="rateGold">+0/5s</span>
+      </div>
+      <div class="stock" id="stockMat" title="材料：开发资源点、建造防御塔、修补城墙">
+        <span class="ico">🪵</span><span class="sname">材料</span><strong id="valMat">26</strong><span class="rate zero" id="rateMat">+0/5s</span>
+      </div>
+      <div class="stock" id="stockFood" title="粮食：用于招募更多居民，无扣粮惩罚">
+        <span class="ico">🌾</span><span class="sname">粮食</span><strong id="valFood">6</strong><span class="rate zero" id="rateFood">+0/5s</span>
+      </div>
+      <div class="stock" id="stockPop" title="居民：自动进驻生产建筑提产，夜间守卫协防">
+        <span class="ico">👥</span><span class="sname">居民</span><strong id="valPop">3</strong>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn" id="speedBtn" type="button" title="切换倍速 (F)">1×</button>
+      <button class="btn" id="pauseBtn" type="button">暂停</button>
+      <button class="btn" id="soundBtn" type="button">🔊</button>
+      <button class="btn" id="helpBtn" type="button">说明</button>
+      <button class="btn" id="resetBtn" type="button">重开</button>
+    </div>
+  </header>
+
+  <!-- Sub-bar -->
+  <div class="subbar" id="subbar">
+    <div class="sub-left">
+      <span class="wave-pill" id="wavePreview">今夜敌袭：西侧</span>
+      <span class="sub-hint" id="subHint">点带 + 号的资源点开发（每 5 秒实时产出），在西门两侧草地建塔！</span>
+    </div>
+    <div class="vital-pills" id="vitalPills">
+      <span class="vpill" id="pillCastle">🏰 主城 100/100</span>
+      <span class="vpill" id="pillWall">🧱 城墙 600/600</span>
+      <span class="vpill" id="pillHero">⚔️ 领主 120/120</span>
+      <span class="vpill" id="pillEnemies" hidden>👾 残敌 0</span>
+    </div>
+    <div class="sub-right">
+      <button class="btn" id="cardsBtn" type="button">强化 0</button>
+      <button class="btn" id="centerBtn" type="button">回主城</button>
+    </div>
+  </div>
+
+  <!-- Transient Banner & Toast -->
+  <div id="banner" hidden><b id="bannerTitle"></b><span id="bannerSub"></span></div>
+  <div id="toast" hidden></div>
+
+  <!-- Right Inspector -->
+  <aside id="inspector" hidden>
+    <div class="insp-head">
+      <h3 id="inspTitle">地点详情</h3>
+      <button class="btn" id="inspClose" type="button">关闭</button>
+    </div>
+    <p class="insp-desc" id="inspDesc"></p>
+    <div class="insp-stats" id="inspStats"></div>
+    <div class="insp-actions" id="inspActions"></div>
+    <div class="res-list" id="inspList" hidden></div>
+  </aside>
+
+  <!-- Bottom Command Dock -->
+  <nav class="dock" id="dock" aria-label="快捷指令栏"></nav>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <div class="modal-card" id="modalCard"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* =========================================================================
+   Border Guard v0.40 MVP
+   Core Skeleton:
+   - Day: 75s real-time economy (workshops tick every 5s with floating popups),
+     auto-assigned residents, clean 5x5 inner-production / clear-gates /
+     outer-tower-ring layout, strict no-build on trees/rocks/roads/gates,
+     free expansion pushing the wall ring outward, ready-anytime "立即开战".
+   - Night: 3 distinct towers (Arrow / Cannon / Frost, upgradable to Lv2),
+     4 distinct enemies + Night 5 Siege Boss with telegraphed AoE slam,
+     Hero active skills (Q Whirlwind, E Dash+Shield, R Rally), instant gold
+     drops on kill, and 8 transformative Roguelike cards after each night.
+   ========================================================================= */
+
+const WIDTH = 22;
+const HEIGHT = 15;
+const CELL = 56;
+const WORLD_W = WIDTH * CELL;
+const WORLD_H = HEIGHT * CELL;
+const LAST_NIGHT = 5;
+const CASTLE_X = 10;
+const CASTLE_Y = 7;
+const TICK_INTERVAL = 5.0; // Daytime real-time production tick (seconds)
+const DAY_DURATION = 75;   // Daytime timer (seconds), skippable anytime
+
+const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
+
+const NODE_META = {
+  farm:  { name:'肥沃粮田', prod:'农场',   res:'food',     base:1, worker:2, icon:'🌾', color:'#e5c158' },
+  wood:  { name:'青松林地', prod:'林场',   res:'material', base:1, worker:2, icon:'🪵', color:'#67c260' },
+  stone: { name:'采石岩脉', prod:'采石场', res:'material', base:1, worker:2, icon:'🪨', color:'#b8c4c8' },
+  mine:  { name:'浅层金矿', prod:'金矿场', res:'gold',     base:1, worker:2, icon:'🪙', color:'#ffd666' },
+  rich:  { name:'北境富金矿', prod:'富金矿场', res:'gold', base:2, worker:4, icon:'💎', color:'#ffe169' },
+  iron:  { name:'灰脊铁矿', prod:'精铁矿场', res:'material', base:2, worker:4, icon:'⚒️', color:'#9fd0f0' }
+};
+
+const RES_LABELS = { gold:'金币', material:'材料', food:'粮食' };
+
+const TOWERS = {
+  arrow: {
+    key:'arrow', name:'箭塔', icon:'🏹', hotkey:'1',
+    cost:{ material:6, gold:4 }, upCost:{ material:8, gold:6 },
+    desc:'高射速单体点杀，专克高速狼骑与远程弓手。',
+    levels:[
+      { range:3.3, cd:0.60, dmg:15, splash:0, slow:0 },
+      { range:3.8, cd:0.48, dmg:24, splash:0, slow:0 }
+    ]
+  },
+  cannon: {
+    key:'cannon', name:'火炮塔', icon:'💣', hotkey:'2',
+    cost:{ material:10, gold:8 }, upCost:{ material:10, gold:8 },
+    desc:'范围轰炸溅射，专克聚集拆墙的大波敌群。',
+    levels:[
+      { range:3.5, cd:1.62, dmg:28, splash:1.35, slow:0 },
+      { range:3.9, cd:1.42, dmg:44, splash:1.65, slow:0 }
+    ]
+  },
+  frost: {
+    key:'frost', name:'寒冰塔', icon:'❄️', hotkey:'3',
+    cost:{ material:8, gold:6 }, upCost:{ material:8, gold:6 },
+    desc:'大范围冰霜减速，配合火炮塔与箭塔打出成倍火力。',
+    levels:[
+      { range:3.1, cd:1.15, dmg:9,  splash:1.45, slow:0.45, slowDur:2.6 },
+      { range:3.6, cd:1.00, dmg:15, splash:1.75, slow:0.55, slowDur:3.2 }
+    ]
+  }
+};
+
+const CARDS = [
+  { key:'multishot',   name:'连珠箭雨', tag:'箭塔质变', tone:'tower', icon:'🏹',
+    desc:'所有箭塔改为双发连射（单发 65% 伤害，总伤 +30% 且清杂更快）。' },
+  { key:'lava',        name:'熔岩炮弹', tag:'炮塔质变', tone:'tower', icon:'🔥',
+    desc:'火炮塔爆炸留下 3 秒灼烧焦土，每秒对区域内敌军造成 12 点火焰伤害。' },
+  { key:'shatter',     name:'深寒碎冰', tag:'冰霜联动', tone:'tower', icon:'❄️',
+    desc:'被寒冰塔减速的敌人受到来自塔、领主与守卫的所有伤害提高 30%。' },
+  { key:'vamp',        name:'血战旋风', tag:'领主续航', tone:'hero',  icon:'🌪️',
+    desc:'领主 Q 旋风重斩每命中 1 名敌人回复 5 点生命，并提升 20% 斩击范围。' },
+  { key:'swift',       name:'迅捷统帅', tag:'领主机动', tone:'hero',  icon:'⚡',
+    desc:'领主移速 +25%，E 战术冲刺冷却缩短 2 秒，且护盾提高至 45 点。' },
+  { key:'artisan',     name:'工匠值守', tag:'城防续航', tone:'econ',  icon:'🛠️',
+    desc:'昼夜每 5 秒自动修补主城城墙 +18 耐久，稳固防线。' },
+  { key:'militia_all', name:'全城皆兵', tag:'全民协防', tone:'econ',  icon:'🛡️',
+    desc:'夜间主城所有居民都参与城墙弩箭协防（不再仅限守卫）。' },
+  { key:'bounty',      name:'赏金号角', tag:'经济爆发', tone:'econ',  icon:'💰',
+    desc:'立即获得 +12 金币，且击杀重甲破城锤与远程弓手掉落双倍金币。' }
+];
+
+const ENEMY_TYPES = {
+  goblin: { name:'哥布林步兵', hpBase:34, hpPerDay:8,  speed:1.55, wallDmg:7,  heroDmg:6,  gold:2, radius:0.22, color:'#6eb84f', accent:'#3e702a' },
+  wolf:   { name:'疾风狼骑',   hpBase:24, hpPerDay:6,  speed:2.45, wallDmg:6,  heroDmg:7,  gold:3, radius:0.22, color:'#c98744', accent:'#6e421b' },
+  ram:    { name:'铁甲破城锤', hpBase:95, hpPerDay:22, speed:0.92, wallDmg:18, heroDmg:10, gold:6, radius:0.30, color:'#7e8c99', accent:'#3a454f' },
+  archer: { name:'荒原弓手',   hpBase:28, hpPerDay:7,  speed:1.30, wallDmg:5,  heroDmg:7,  gold:4, radius:0.21, color:'#b85880', accent:'#662442', ranged:true, range:2.7 },
+  boss:   { name:'裂城统领',   hpBase:620, hpPerDay:0, speed:0.84, wallDmg:24, heroDmg:16, gold:25, radius:0.38, color:'#c83d32', accent:'#4a1210', boss:true }
+};
+
+const NIGHT_CONFIG = {
+  1: {
+    sides:['west'], preview:'西侧（步兵 · 狼骑）',
+    waves:[
+      { at:1.5, side:'west', list:['goblin','goblin','goblin','goblin'] },
+      { at:12,  side:'west', list:['goblin','goblin','wolf','wolf','goblin'] },
+      { at:23,  side:'west', list:['goblin','wolf','goblin','wolf','goblin'] }
+    ]
+  },
+  2: {
+    sides:['east'], preview:'东侧（狼骑 · 远程弓手）',
+    waves:[
+      { at:1.5, side:'east', list:['goblin','goblin','archer','goblin','goblin'] },
+      { at:12,  side:'east', list:['wolf','wolf','goblin','archer','archer'] },
+      { at:24,  side:'east', list:['goblin','goblin','wolf','wolf','archer','goblin'] }
+    ]
+  },
+  3: {
+    sides:['west','east'], preview:'西 + 东双路（铁甲破城锤登场！）',
+    waves:[
+      { at:1.5, side:'west', list:['ram','goblin','goblin','archer'] },
+      { at:6,   side:'east', list:['wolf','wolf','goblin','goblin','archer'] },
+      { at:18,  side:'west', list:['ram','goblin','wolf','archer'] },
+      { at:22,  side:'east', list:['ram','goblin','goblin','wolf','archer'] }
+    ]
+  },
+  4: {
+    sides:['west','east','north'], preview:'西 + 东 + 北三路高压',
+    waves:[
+      { at:1.5, side:'west',  list:['ram','goblin','goblin','archer','archer'] },
+      { at:5,   side:'east',  list:['wolf','wolf','wolf','ram','goblin'] },
+      { at:14,  side:'north', list:['ram','goblin','goblin','wolf','archer'] },
+      { at:24,  side:'west',  list:['ram','wolf','wolf','archer','goblin'] },
+      { at:27,  side:'east',  list:['ram','goblin','archer','archer','wolf'] }
+    ]
+  },
+  5: {
+    sides:['west','east','north'], preview:'终局首领战 · 裂城统领来袭！',
+    waves:[
+      { at:1.5, side:'west',  list:['boss','goblin','goblin','archer','archer'] },
+      { at:8,   side:'east',  list:['ram','wolf','wolf','goblin','archer'] },
+      { at:20,  side:'north', list:['ram','goblin','goblin','wolf','wolf'] },
+      { at:32,  side:'west',  list:['ram','archer','archer','wolf','goblin'] }
+    ]
+  }
+};
+
+/* ---------- Utility & Seeded RNG ---------- */
+const $ = id => document.getElementById(id);
+function mulberry32(seed){
+  let a = seed >>> 0;
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function hash2(x, y, s=0){
+  let n = Math.imul(x + 37, 374761393) ^ Math.imul(y + 91, 668265263) ^ Math.imul(s + 13, 1442695041);
+  n = (n ^ (n >>> 13)) * 1274126177;
+  return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
+}
+function inside(x, y){ return x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT; }
+function idxOf(x, y){ return y * WIDTH + x; }
+function tileAt(x, y){ return inside(x, y) ? game.tiles[idxOf(x, y)] : null; }
+function dist(a, b){ return Math.hypot(a.x - b.x, a.y - b.y); }
+function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+/* ---------- Lightweight Web Audio SFX ---------- */
+const AudioKit = {
+  ctx: null,
+  enabled: true,
+  last: {},
+  unlock(){
+    if (!this.enabled) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!this.ctx) {
+      try { this.ctx = new AC(); } catch { this.ctx = null; }
+    }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().catch(()=>{});
+  },
+  play(kind){
+    if (!this.enabled || !this.ctx || this.ctx.state !== 'running') return;
+    const now = performance.now();
+    const gap = { arrow:55, cannon:90, frost:80, slash:70, hit:55, coin:60, build:90, skill:120, alarm:400, dawn:600 }[kind] || 60;
+    if (now - (this.last[kind] || 0) < gap) return;
+    this.last[kind] = now;
+    const defs = {
+      arrow:  [[760, 420, 'triangle', 0.06, 0.09]],
+      cannon: [[145, 52,  'sawtooth', 0.16, 0.16]],
+      frost:  [[980, 1420,'sine',     0.10, 0.09]],
+      slash:  [[420, 160, 'sawtooth', 0.09, 0.12]],
+      skill:  [[320, 740, 'triangle', 0.15, 0.15],[740, 520, 'sine', 0.10, 0.10]],
+      dash:   [[520, 240, 'sine',     0.11, 0.11]],
+      coin:   [[880, 1320,'sine',     0.08, 0.08]],
+      build:  [[420, 680, 'triangle', 0.12, 0.12]],
+      alarm:  [[240, 180, 'square',   0.22, 0.11]],
+      dawn:   [[523, 659, 'triangle', 0.12, 0.13],[659, 987, 'triangle', 0.18, 0.13]],
+      victory:[[523, 659, 'triangle', 0.14, 0.15],[659, 784, 'triangle', 0.14, 0.15],[784, 1046, 'triangle', 0.28, 0.16]],
+      hit:    [[210, 95,  'square',   0.07, 0.08]]
+    };
+    const notes = defs[kind];
+    if (!notes) return;
+    try {
+      let t = this.ctx.currentTime;
+      for (const [f0, f1, type, dur, vol] of notes) {
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(f0, t);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t + dur);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        osc.connect(g); g.connect(this.ctx.destination);
+        osc.start(t); osc.stop(t + dur + 0.02);
+        t += dur * 0.85;
+      }
+    } catch {}
+  }
+};
+
+/* ---------- Game State Construction ---------- */
+let game = null;
+let paused = false;
+let introSeen = false;
+
+function buildMap(seed){
+  const rnd = mulberry32(seed);
+  const tiles = [];
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 0; x < WIDTH; x++) {
+      // River bend in bottom-right / top-left corners (never blocks spawn roads)
+      const water = (y === 0 && x >= 15) || (y === HEIGHT - 1 && x <= 5) ||
+                    (y === HEIGHT - 2 && x <= 3) || (x === WIDTH - 1 && y <= 2);
+      const road = (y === CASTLE_Y) || (x === CASTLE_X && y <= CASTLE_Y) || (x === CASTLE_X && y >= CASTLE_Y && y <= 11);
+      let ground = water ? 'water' : road ? 'road' : 'grass';
+      let cover = 'none';
+      const inCastleBox = Math.abs(x - CASTLE_X) <= 2 && Math.abs(y - CASTLE_Y) <= 2;
+      const nearSpawn = (x <= 1 && Math.abs(y - CASTLE_Y) <= 1) ||
+                        (x >= WIDTH - 2 && Math.abs(y - CASTLE_Y) <= 1) ||
+                        (y <= 1 && Math.abs(x - CASTLE_X) <= 1);
+      if (ground === 'grass' && !inCastleBox && !nearSpawn) {
+        const r = rnd();
+        if (r < 0.16) cover = 'forest';
+        else if (r < 0.22) cover = 'mountain';
+      }
+      tiles.push({
+        x, y, ground, cover,
+        owned: inCastleBox,
+        node: null,
+        building: null,
+        variation: rnd()
+      });
+    }
+  }
+
+  // Place Castle at center
+  const castleTile = tiles[idxOf(CASTLE_X, CASTLE_Y)];
+  castleTile.ground = 'grass';
+  castleTile.cover = 'none';
+  castleTile.building = { type:'castle' };
+
+  // Clean 5x5 inner-ring resource nodes (NEVER on gates or front tower strip!)
+  const innerNodes = [
+    [CASTLE_X - 1, CASTLE_Y - 1, 'farm'],
+    [CASTLE_X + 1, CASTLE_Y - 1, 'wood'],
+    [CASTLE_X - 1, CASTLE_Y + 1, 'stone'],
+    [CASTLE_X + 1, CASTLE_Y + 1, 'mine']
+  ];
+  for (const [nx, ny, kind] of innerNodes) {
+    const t = tiles[idxOf(nx, ny)];
+    t.ground = 'grass'; t.cover = 'none';
+    t.node = { kind, developed:false, level:1, workerId:null };
+  }
+
+  // Wild high-yield & extra resource nodes outside the 5x5 walls (for expansion!)
+  const wildNodes = [
+    [CASTLE_X + 4, CASTLE_Y - 1, 'rich'],   // East rich gold mine
+    [CASTLE_X - 4, CASTLE_Y + 1, 'wood'],   // West outer forest
+    [CASTLE_X - 1, CASTLE_Y + 4, 'iron'],   // South rich iron vein
+    [CASTLE_X + 3, CASTLE_Y + 3, 'farm'],   // Southeast farm
+    [CASTLE_X - 3, CASTLE_Y - 3, 'stone'],  // Northwest quarry
+    [CASTLE_X + 3, CASTLE_Y - 3, 'mine']    // Northeast gold
+  ];
+  for (const [nx, ny, kind] of wildNodes) {
+    const t = tiles[idxOf(nx, ny)];
+    if (!t || t.ground === 'water' || t.ground === 'road') continue;
+    t.ground = 'grass'; t.cover = 'none';
+    t.node = { kind, developed:false, level:1, workerId:null };
+  }
+
+  return { tiles, rnd };
+}
+
+function makeGame(seed = Math.floor(Math.random() * 999999) + 1){
+  const { tiles, rnd } = buildMap(seed);
+  const g = {
+    seed, rnd, tiles,
+    phase: 'day', // 'day' | 'night' | 'won' | 'lost'
+    day: 1,
+    dayTimer: DAY_DURATION,
+    nightClock: 0,
+    prodTickTimer: TICK_INTERVAL,
+    artisanTimer: TICK_INTERVAL,
+    speed: 1,
+    autoAttack: true,
+    mode: null, // 'arrow' | 'cannon' | 'frost' | 'expand' | null
+    selectedTile: null,
+    hoverTile: null,
+
+    resources: { gold: 22, material: 26, food: 6 },
+    castleHp: 100, castleMax: 100, castleShield: 0,
+    wall: { hp: 600, maxHp: 600, broken: false, edges: [], gates: [], gateTiles: new Set() },
+
+    hero: {
+      x: CASTLE_X - 0.8, y: CASTLE_Y + 0.5,
+      hp: 120, maxHp: 120, shield: 0, shieldTimer: 0,
+      face: 1, moving: false, goal: null,
+      atkCd: 0, invuln: 0, downTimer: 0,
+      swing: null,
+      qCd: 0, eCd: 0, rallyCharges: 1
+    },
+
+    residents: [],
+    nextResId: 1,
+    guardCd: 0,
+
+    cards: new Set(),
+    cardList: [],
+    cardChoices: null,
+
+    enemies: [],
+    nextEnemyId: 1,
+    wavePlan: [],
+    projectiles: [],
+    zones: [],     // lava zones & boss telegraphs
+    effects: [],
+    floats: [],
+    shake: 0,
+
+    stats: { kills: 0, goldEarned: 0, towersBuilt: 0, expansions: 0, cardsPicked: 0 }
+  };
+
+  // Spawn 3 initial residents (2 artisans/workers + 1 guard)
+  for (let i = 0; i < 3; i++) {
+    g.residents.push({
+      id: g.nextResId++,
+      role: i === 2 ? 'guard' : 'worker',
+      x: CASTLE_X + 0.5 + (i - 1) * 0.42,
+      y: CASTLE_Y + 0.85,
+      workTile: null,
+      bob: i * 1.7
+    });
+  }
+  return g;
+}
+
+/* ---------- Wall Ring Geometry (Closed Perimeter + 4 Cardinal Gates) ---------- */
+function rebuildWallRing(g = game){
+  const edges = [];
+  const gates = [];
+  const gateTiles = new Set();
+
+  for (const t of g.tiles) {
+    if (!t.owned) continue;
+    const checks = [
+      { dir:'N', dx:0, dy:-1, x1:t.x,   y1:t.y,   x2:t.x+1, y2:t.y   },
+      { dir:'S', dx:0, dy:1,  x1:t.x,   y1:t.y+1, x2:t.x+1, y2:t.y+1 },
+      { dir:'W', dx:-1,dy:0,  x1:t.x,   y1:t.y,   x2:t.x,   y2:t.y+1 },
+      { dir:'E', dx:1, dy:0,  x1:t.x+1, y1:t.y,   x2:t.x+1, y2:t.y+1 }
+    ];
+    for (const c of checks) {
+      const nb = tileAt(t.x + c.dx, t.y + c.dy);
+      if (!nb || !nb.owned) {
+        edges.push({
+          id: `${t.x},${t.y},${c.dir}`,
+          tx: t.x, ty: t.y, dir: c.dir,
+          x1: c.x1, y1: c.y1, x2: c.x2, y2: c.y2,
+          mx: (c.x1 + c.x2) / 2, my: (c.y1 + c.y2) / 2,
+          isGate: false
+        });
+      }
+    }
+  }
+
+  // Pick 1 best gate per cardinal direction aligned with castle axis / road
+  for (const dir of ['W','E','N','S']) {
+    const candidates = edges.filter(e => e.dir === dir);
+    if (!candidates.length) continue;
+    candidates.sort((a, b) => {
+      const aRoad = tileAt(a.tx, a.ty)?.ground === 'road' ? 0 : 1;
+      const bRoad = tileAt(b.tx, b.ty)?.ground === 'road' ? 0 : 1;
+      if (aRoad !== bRoad) return aRoad - bRoad;
+      const da = Math.abs(a.mx - (CASTLE_X + 0.5)) + Math.abs(a.my - (CASTLE_Y + 0.5));
+      const db = Math.abs(b.mx - (CASTLE_X + 0.5)) + Math.abs(b.my - (CASTLE_Y + 0.5));
+      return da - db;
+    });
+    candidates[0].isGate = true;
+    gates.push(candidates[0]);
+    gateTiles.add(idxOf(candidates[0].tx, candidates[0].ty));
+  }
+
+  g.wall.edges = edges;
+  g.wall.gates = gates;
+  g.wall.gateTiles = gateTiles;
+}
+
+/* ---------- Strict Terrain & Placement Rules ---------- */
+function isGateInteriorTile(t){
+  return !!t && game.wall.gateTiles.has(idxOf(t.x, t.y));
+}
+
+function canBuildTower(t){
+  if (!t || !t.owned) return false;
+  if (t.ground !== 'grass') return false;   // NEVER on road or water
+  if (t.cover !== 'none') return false;     // NEVER on forest/trees or mountain/rock
+  if (t.node || t.building) return false;   // NEVER on resources or existing buildings
+  if (isGateInteriorTile(t)) return false;  // NEVER blocking behind a gate
+  return true;
+}
+
+function canDevelopNode(t){
+  return !!t && t.owned && !!t.node && !t.node.developed && !t.building;
+}
+
+function canExpandTile(t){
+  if (!t || t.owned || t.ground === 'water') return false;
+  return DIRS.some(([dx, dy]) => tileAt(t.x + dx, t.y + dy)?.owned);
+}
+
+/* ---------- Economy Helpers ---------- */
+function canAfford(cost){
+  return Object.entries(cost).every(([k, v]) => (game.resources[k] || 0) >= v);
+}
+function spend(cost){
+  if (!canAfford(cost)) return false;
+  for (const [k, v] of Object.entries(cost)) game.resources[k] -= v;
+  return true;
+}
+function addRes(res, amount, fxX, fxY, label){
+  if (!amount) return;
+  game.resources[res] = (game.resources[res] || 0) + amount;
+  if (res === 'gold') game.stats.goldEarned += amount;
+  const elMap = { gold:'stockGold', material:'stockMat', food:'stockFood' };
+  const el = $(elMap[res]);
+  if (el) { el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); }
+  if (fxX != null) {
+    const color = res === 'gold' ? '#ffe074' : res === 'food' ? '#b8f285' : '#e8d5b0';
+    addFloat(fxX, fxY, label || `+${amount} ${RES_LABELS[res]}`, color);
+  }
+}
+
+function workshopYield(t){
+  if (!t?.node?.developed) return 0;
+  const meta = NODE_META[t.node.kind];
+  if (!meta) return 0;
+  const hasWorker = !!t.node.workerId && game.residents.some(r => r.id === t.node.workerId);
+  const lvlBonus = (t.node.level || 1) - 1;
+  return (hasWorker ? meta.worker : meta.base) + lvlBonus;
+}
+
+function currentRates(){
+  const r = { gold:0, material:0, food:0 };
+  for (const t of game.tiles) {
+    if (t.owned && t.node?.developed) {
+      const meta = NODE_META[t.node.kind];
+      r[meta.res] += workshopYield(t);
+    }
+  }
+  return r;
+}
+
+function autoAssignResidents(){
+  // Free invalid assignments
+  for (const r of game.residents) {
+    if (r.workTile != null) {
+      const t = game.tiles[r.workTile];
+      if (!t || !t.owned || !t.node?.developed || t.node.workerId !== r.id) r.workTile = null;
+    }
+  }
+  // Assign idle non-guard (or guard if needed) workers to empty developed workshops
+  const emptyWorkshops = game.tiles.filter(t => t.owned && t.node?.developed && !t.node.workerId);
+  for (const t of emptyWorkshops) {
+    const idle = game.residents.find(r => r.workTile == null && r.role === 'worker') ||
+                 game.residents.find(r => r.workTile == null);
+    if (!idle) break;
+    idle.workTile = idxOf(t.x, t.y);
+    t.node.workerId = idle.id;
+  }
+}
+
+/* ---------- Player Actions ---------- */
+function developNode(t){
+  if (game.phase !== 'day') { toast('只能在白天开发资源点。', true); return false; }
+  if (!canDevelopNode(t)) { toast('只能开发领地内未开发的资源点。', true); return false; }
+  if (!spend({ material:2 })) { toast('材料不足（需要 2 材料）。', true); return false; }
+  t.node.developed = true;
+  t.node.level = 1;
+  t.cover = 'none';
+  autoAssignResidents();
+  const meta = NODE_META[t.node.kind];
+  addRing(t.x + 0.5, t.y + 0.5, '#ffe074', 0.9);
+  addFloat(t.x + 0.5, t.y + 0.2, `${meta.prod}建成 · +${workshopYield(t)}/5s`, '#ffe694');
+  AudioKit.play('build');
+  toast(`${meta.prod}已建成！每 5 秒实时产出 ${meta.res === 'gold' ? '金币' : meta.res === 'food' ? '粮食' : '材料'}。`);
+  renderUI();
+  return true;
+}
+
+function upgradeWorkshop(t){
+  if (game.phase !== 'day' || !t?.node?.developed) return false;
+  if (t.node.level >= 2) { toast('已达最高等级。', true); return false; }
+  if (!spend({ material:6, gold:4 })) { toast('需要 6 材料 · 4 金币。', true); return false; }
+  t.node.level = 2;
+  addRing(t.x + 0.5, t.y + 0.5, '#a8f582', 0.9);
+  addFloat(t.x + 0.5, t.y + 0.2, `升级 Lv.2 · +${workshopYield(t)}/5s`, '#b6f78c');
+  AudioKit.play('build');
+  renderUI();
+  return true;
+}
+
+function buildTower(t, kind){
+  if (game.phase !== 'day') { toast('只能在白天建造防御塔。', true); return false; }
+  const spec = TOWERS[kind];
+  if (!spec) return false;
+  if (!canBuildTower(t)) {
+    if (t?.cover && t.cover !== 'none') toast('不能在树林或山石上建造防御塔！', true);
+    else if (t?.ground === 'road' || isGateInteriorTile(t)) toast('道路与城门通道需保持畅通，请建在城墙两侧草地！', true);
+    else toast('请选择领地内干净的草地塔位。', true);
+    return false;
+  }
+  if (!spend(spec.cost)) { toast(`资源不足（需要 ${costStr(spec.cost)}）。`, true); return false; }
+  t.building = { type:'tower', kind, level:1, cd:0, angle:0 };
+  game.stats.towersBuilt++;
+  addRing(t.x + 0.5, t.y + 0.5, '#ffe074', 0.95);
+  addFloat(t.x + 0.5, t.y + 0.2, `${spec.name}建成`, '#ffe694');
+  AudioKit.play('build');
+  if (!canAfford(spec.cost)) game.mode = null;
+  renderUI();
+  return true;
+}
+
+function upgradeTower(t){
+  if (game.phase !== 'day' || t?.building?.type !== 'tower') return false;
+  const spec = TOWERS[t.building.kind];
+  if (t.building.level >= 2) { toast('该防御塔已满级。', true); return false; }
+  if (!spend(spec.upCost)) { toast(`资源不足（需要 ${costStr(spec.upCost)}）。`, true); return false; }
+  t.building.level = 2;
+  addRing(t.x + 0.5, t.y + 0.5, '#ffe074', 1.1);
+  addFloat(t.x + 0.5, t.y + 0.2, `${spec.name} Lv.2`, '#ffe694');
+  AudioKit.play('build');
+  renderUI();
+  return true;
+}
+
+function sellTower(t){
+  if (game.phase !== 'day' || t?.building?.type !== 'tower') return false;
+  const spec = TOWERS[t.building.kind];
+  const matBack = Math.round((spec.cost.material + (t.building.level > 1 ? spec.upCost.material : 0)) * 0.7);
+  const goldBack = Math.round((spec.cost.gold + (t.building.level > 1 ? spec.upCost.gold : 0)) * 0.7);
+  t.building = null;
+  addRes('material', matBack, t.x + 0.3, t.y + 0.3);
+  addRes('gold', goldBack, t.x + 0.7, t.y + 0.6);
+  AudioKit.play('coin');
+  toast(`已拆除并返还 ${matBack} 材料 · ${goldBack} 金币。`);
+  game.selectedTile = null;
+  renderUI();
+  return true;
+}
+
+function expandTile(t){
+  if (game.phase !== 'day') { toast('只能在白天扩建领地。', true); return false; }
+  if (!canExpandTile(t)) { toast('请选择紧邻现有城墙的陆地格进行扩建。', true); return false; }
+  if (!spend({ gold:6 })) { toast('需要 6 金币才能扩建领地。', true); return false; }
+  const ratio = game.wall.broken ? 0 : (game.wall.hp / Math.max(1, game.wall.maxHp));
+  t.owned = true;
+  if (!t.node && t.cover !== 'none') t.cover = 'none'; // Expanding clears wild brush cleanly
+  game.wall.maxHp += 25;
+  if (!game.wall.broken) game.wall.hp = Math.min(game.wall.maxHp, Math.round(game.wall.maxHp * ratio) + 25);
+  rebuildWallRing();
+  game.stats.expansions++;
+  addRing(t.x + 0.5, t.y + 0.5, '#92f582', 1.0);
+  addFloat(t.x + 0.5, t.y + 0.2, '领地 +1 · 城墙扩建', '#b2f792');
+  AudioKit.play('build');
+  if (!canAfford({ gold:6 })) game.mode = null;
+  renderUI();
+  return true;
+}
+
+function recruitResident(){
+  if (game.phase !== 'day') { toast('只能在白天招募居民。', true); return false; }
+  if (game.residents.length >= 10) { toast('主城居民已达上限（10 人）。', true); return false; }
+  if (!spend({ gold:6, food:3 })) { toast('需要 6 金币 · 3 粮食。', true); return false; }
+  const r = {
+    id: game.nextResId++,
+    role: 'worker',
+    x: CASTLE_X + 0.5 + (game.rnd() - 0.5) * 0.6,
+    y: CASTLE_Y + 0.9,
+    workTile: null,
+    bob: game.rnd() * 6
+  };
+  game.residents.push(r);
+  autoAssignResidents();
+  addFloat(CASTLE_X + 0.5, CASTLE_Y + 0.1, '新居民报到！', '#b8f285');
+  AudioKit.play('coin');
+  toast('招募成功！居民会自动进驻空余工坊，也可切换为守卫。');
+  renderUI();
+  return true;
+}
+
+function toggleResidentRole(resId){
+  if (game.phase !== 'day') return;
+  const r = game.residents.find(x => x.id === resId);
+  if (!r) return;
+  if (r.role === 'worker') {
+    if (r.workTile != null) {
+      const wt = game.tiles[r.workTile];
+      if (wt?.node && wt.node.workerId === r.id) wt.node.workerId = null;
+      r.workTile = null;
+    }
+    r.role = 'guard';
+    toast(`居民 ${r.id} 转为城墙守卫（夜间自动弩箭协防）。`);
+  } else {
+    r.role = 'worker';
+    autoAssignResidents();
+    toast(`居民 ${r.id} 转为工匠（自动进驻生产建筑提产）。`);
+  }
+  renderUI();
+}
+
+function repairWallDay(){
+  if (game.phase !== 'day') return false;
+  const cur = game.wall.broken ? 0 : game.wall.hp;
+  const missing = game.wall.maxHp - cur;
+  if (missing <= 0 && !game.wall.broken) { toast('城墙耐久已满。'); return false; }
+  const need = Math.max(1, Math.ceil(missing / 60));
+  const avail = game.resources.material;
+  if (avail <= 0) { toast(`需要材料才能修墙（修满需 ${need} 材料）。`, true); return false; }
+  const pay = Math.min(avail, need);
+  spend({ material: pay });
+  const heal = pay >= need ? missing : Math.min(missing, pay * 60);
+  game.wall.hp = Math.min(game.wall.maxHp, cur + heal);
+  game.wall.broken = false;
+  addRing(CASTLE_X + 0.5, CASTLE_Y + 0.5, '#ffe074', 2.2);
+  addFloat(CASTLE_X + 0.5, CASTLE_Y - 0.1, `城墙 +${heal}`, '#ffe694');
+  AudioKit.play('build');
+  toast(pay >= need ? `城墙已修满（花费 ${pay} 材料）。` : `已用现有 ${pay} 材料部分修补城墙 +${heal} 耐久。`);
+  renderUI();
+  return true;
+}
+
+function repairCastleNight(){
+  if (game.phase !== 'night') return false;
+  if (game.castleHp >= game.castleMax) { toast('主城耐久已满。'); return false; }
+  if (!spend({ gold:6 })) { toast('需要 6 金币才能紧急修复主城。', true); return false; }
+  const before = game.castleHp;
+  game.castleHp = Math.min(game.castleMax, game.castleHp + 30);
+  game.castleShield = 3.5;
+  addRing(CASTLE_X + 0.5, CASTLE_Y + 0.5, '#7de0ff', 1.5);
+  addFloat(CASTLE_X + 0.5, CASTLE_Y, `急修 +${Math.round(game.castleHp - before)} · 减伤护盾`, '#9cebff');
+  AudioKit.play('skill');
+  toast('主城急修完成，并获得 3.5 秒 50% 减伤护盾！');
+  renderUI();
+  return true;
+}
+
+/* ---------- Hero Active Skills ---------- */
+function castWhirlwind(){
+  if (game.phase !== 'night') return false;
+  const h = game.hero;
+  if (h.downTimer > 0) { toast('领主休整中，稍候回场。', true); return false; }
+  if (h.qCd > 0) { toast(`旋风重斩冷却中（${h.qCd.toFixed(1)}s）。`, true); return false; }
+  h.qCd = 7.0;
+  const hasVamp = game.cards.has('vamp');
+  const radius = hasVamp ? 2.55 : 2.15;
+  addRing(h.x, h.y, '#ffbe5c', radius);
+  game.effects.push({ type:'whirl', x:h.x, y:h.y, r:radius, t:0.35, max:0.35 });
+  game.shake = Math.max(game.shake, 5);
+  AudioKit.play('skill');
+
+  let hits = 0;
+  for (const e of game.enemies) {
+    if (e.hp <= 0) continue;
+    const d = dist(h, e);
+    if (d <= radius + e.radius) {
+      hits++;
+      damageEnemy(e, 44, 'hero');
+      // Strong knockback away from hero
+      if (!e.boss && d > 0.01) {
+        const push = 1.1;
+        e.x = clamp(e.x + (e.x - h.x) / d * push, 0.3, WIDTH - 0.3);
+        e.y = clamp(e.y + (e.y - h.y) / d * push, 0.3, HEIGHT - 0.3);
+        e.stun = Math.max(e.stun || 0, 0.45);
+      }
+    }
+  }
+  if (hasVamp && hits > 0) {
+    const heal = hits * 5;
+    h.hp = Math.min(h.maxHp, h.hp + heal);
+    addFloat(h.x, h.y - 0.4, `+${heal} 生命`, '#8cf27a');
+  }
+  return true;
+}
+
+function castDash(){
+  if (game.phase !== 'night') return false;
+  const h = game.hero;
+  if (h.downTimer > 0) { toast('领主休整中。', true); return false; }
+  if (h.eCd > 0) { toast(`战术冲刺冷却中（${h.eCd.toFixed(1)}s）。`, true); return false; }
+  const swift = game.cards.has('swift');
+  h.eCd = swift ? 4.0 : 6.0;
+  // Determine direction from keys or goal or facing
+  let dx = Number(keys.has('d') || keys.has('arrowright')) - Number(keys.has('a') || keys.has('arrowleft'));
+  let dy = Number(keys.has('s') || keys.has('arrowdown')) - Number(keys.has('w') || keys.has('arrowup'));
+  if (!dx && !dy && h.goal) { dx = h.goal.x - h.x; dy = h.goal.y - h.y; }
+  if (!dx && !dy) { dx = h.face; dy = 0; }
+  const len = Math.hypot(dx, dy) || 1;
+  dx /= len; dy /= len;
+  const steps = 10, totalDist = 3.2;
+  const ox = h.x, oy = h.y;
+  for (let i = 1; i <= steps; i++) {
+    const nx = clamp(ox + dx * (totalDist * i / steps), 0.4, WIDTH - 0.4);
+    const ny = clamp(oy + dy * (totalDist * i / steps), 0.4, HEIGHT - 0.4);
+    const t = tileAt(Math.floor(nx), Math.floor(ny));
+    if (t && t.ground !== 'water') { h.x = nx; h.y = ny; }
+  }
+  h.goal = null;
+  h.invuln = Math.max(h.invuln, 0.45);
+  h.shield = swift ? 45 : 30;
+  h.shieldTimer = 3.2;
+  game.effects.push({ type:'dash', x1:ox, y1:oy, x2:h.x, y2:h.y, t:0.32, max:0.32 });
+  addFloat(h.x, h.y - 0.4, `冲刺护盾 +${h.shield}`, '#8ae8ff');
+  AudioKit.play('dash');
+  return true;
+}
+
+function castRally(){
+  if (game.phase !== 'night') return false;
+  const h = game.hero;
+  if (h.rallyCharges <= 0) { toast('本夜号令齐射已用尽。', true); return false; }
+  h.rallyCharges--;
+  addRing(CASTLE_X + 0.5, CASTLE_Y + 0.5, '#ffe074', 5.2);
+  game.shake = Math.max(game.shake, 5);
+  AudioKit.play('skill');
+  if (h.downTimer <= 0) h.hp = Math.min(h.maxHp, h.hp + 20);
+
+  // Every tower immediately fires a 2x volley at nearest enemy within extended range
+  const alive = game.enemies.filter(e => e.hp > 0);
+  let shots = 0;
+  for (const t of game.tiles) {
+    if (t.building?.type !== 'tower') continue;
+    const spec = TOWERS[t.building.kind];
+    const lv = spec.levels[t.building.level - 1];
+    const target = alive.slice().sort((a, b) => dist(a, {x:t.x+0.5, y:t.y+0.5}) - dist(b, {x:t.x+0.5, y:t.y+0.5}))[0];
+    if (target && dist(target, {x:t.x+0.5, y:t.y+0.5}) <= lv.range + 2.4) {
+      fireTowerProjectile(t, target, 1.9);
+      shots++;
+    }
+  }
+  addFloat(CASTLE_X + 0.5, CASTLE_Y - 0.3, `号令齐射！（${shots} 塔响应）`, '#ffe58f');
+  renderUI();
+  return true;
+}
+
+/* ---------- Night Start / Spawning / Combat / Dawn ---------- */
+function startNight(early = false){
+  if (game.phase !== 'day') return;
+  if (early && game.dayTimer >= 10) {
+    const bonus = Math.min(5, Math.floor(game.dayTimer / 15));
+    if (bonus > 0) addRes('gold', bonus, CASTLE_X + 0.5, CASTLE_Y - 0.2, `提前备战 +${bonus} 金币`);
+  }
+  game.phase = 'night';
+  game.mode = null;
+  game.selectedTile = null;
+  game.nightClock = 0;
+  game.castleShield = 0;
+  game.hero.rallyCharges = 1;
+  game.hero.qCd = 0;
+  game.hero.eCd = 0;
+  game.hero.downTimer = 0;
+  game.hero.hp = Math.min(game.hero.maxHp, Math.max(game.hero.hp, Math.round(game.hero.maxHp * 0.75)));
+  game.enemies = [];
+  game.projectiles = [];
+  game.zones = [];
+
+  // Build wave spawn queue
+  const cfg = NIGHT_CONFIG[game.day] || NIGHT_CONFIG[LAST_NIGHT];
+  game.wavePlan = [];
+  for (const w of cfg.waves) {
+    w.list.forEach((kind, i) => {
+      game.wavePlan.push({ at: w.at + i * 0.85, side: w.side, kind, spawned: false });
+    });
+  }
+  AudioKit.play('alarm');
+  showBanner(
+    game.day === LAST_NIGHT ? '第 5 夜 · 首领终战！' : `第 ${game.day} 夜 · 敌军来袭`,
+    `来袭方向：${cfg.preview}`,
+    game.day === LAST_NIGHT ? 'danger' : 'night'
+  );
+  renderUI();
+}
+
+function spawnPointFor(side){
+  if (side === 'west')  return { x: 0.45, y: CASTLE_Y + 0.5 + (game.rnd() - 0.5) * 1.4 };
+  if (side === 'east')  return { x: WIDTH - 0.45, y: CASTLE_Y + 0.5 + (game.rnd() - 0.5) * 1.4 };
+  return { x: CASTLE_X + 0.5 + (game.rnd() - 0.5) * 1.6, y: 0.45 };
+}
+
+function spawnEnemy(kind, side, customPos = null){
+  const spec = ENEMY_TYPES[kind];
+  const pos = customPos || spawnPointFor(side);
+  const hp = spec.hpBase + spec.hpPerDay * (game.day - 1);
+  const e = {
+    id: game.nextEnemyId++,
+    kind, name: spec.name,
+    x: pos.x, y: pos.y,
+    hp, maxHp: hp,
+    speed: spec.speed,
+    wallDmg: spec.wallDmg,
+    heroDmg: spec.heroDmg,
+    gold: spec.gold,
+    radius: spec.radius,
+    ranged: !!spec.ranged,
+    range: spec.range || 0,
+    boss: !!spec.boss,
+    cd: 0.4, slow: 0, slowTimer: 0, stun: 0, flash: 0,
+    bossSkillTimer: 6.5,
+    face: pos.x > CASTLE_X + 0.5 ? -1 : 1
+  };
+  game.enemies.push(e);
+  addRing(e.x, e.y, '#e8b688', 0.5);
+  return e;
+}
+
+function damageEnemy(e, rawAmount, source){
+  if (!e || e.hp <= 0) return;
+  let dmg = rawAmount;
+  if (game.cards.has('shatter') && e.slowTimer > 0) dmg = Math.round(dmg * 1.3);
+  e.hp -= dmg;
+  e.flash = 0.11;
+  addFloat(e.x, e.y - 0.35, `-${dmg}`, source === 'frost' ? '#9ceeff' : source === 'lava' ? '#ff9654' : '#ffe8a8');
+  if (e.hp <= 0) {
+    game.stats.kills++;
+    let g = e.gold;
+    if (game.cards.has('bounty') && (e.kind === 'ram' || e.kind === 'archer')) g *= 2;
+    addRes('gold', g, e.x, e.y - 0.1, `+${g} 金`);
+    addRing(e.x, e.y, '#ffbe6b', e.boss ? 1.8 : 0.55);
+    AudioKit.play('coin');
+  }
+}
+
+function damageWall(amount, hitX, hitY){
+  if (game.wall.broken) return;
+  game.wall.hp = Math.max(0, game.wall.hp - amount);
+  addRing(hitX, hitY, '#d8ccb0', 0.45);
+  AudioKit.play('hit');
+  if (game.wall.hp <= 0) {
+    game.wall.broken = true;
+    game.shake = 7;
+    // Wall collapse stun + emergency rally charge
+    for (const e of game.enemies) {
+      if (e.hp > 0 && !e.boss) e.stun = Math.max(e.stun || 0, 1.3);
+    }
+    if (game.hero.rallyCharges <= 0) game.hero.rallyCharges = 1;
+    showBanner('城墙倒塌！', '碎石阻滞敌军 1.3 秒 · 已补发紧急号令，快回城保护主城！', 'danger');
+    AudioKit.play('alarm');
+    renderUI();
+  }
+}
+
+function damageCastle(amount){
+  const dealt = game.castleShield > 0 ? Math.max(1, Math.floor(amount * 0.5)) : amount;
+  game.castleHp = Math.max(0, game.castleHp - dealt);
+  game.shake = Math.max(game.shake, 4);
+  addFloat(CASTLE_X + 0.5, CASTLE_Y - 0.2, `-${dealt}`, '#ff7e66');
+  AudioKit.play('hit');
+  if (game.castleHp <= 0) finishGame(false);
+}
+
+function damageHero(amount){
+  const h = game.hero;
+  if (h.downTimer > 0 || h.invuln > 0) return;
+  h.invuln = 0.25; // Prevents 1-frame burst deletion
+  let rem = amount;
+  if (h.shield > 0) {
+    const abs = Math.min(h.shield, rem);
+    h.shield -= abs; rem -= abs;
+  }
+  if (rem > 0) {
+    h.hp = Math.max(0, h.hp - rem);
+    addFloat(h.x, h.y - 0.4, `-${rem}`, '#ff9482');
+    AudioKit.play('hit');
+  }
+  if (h.hp <= 0) {
+    h.downTimer = 8.0;
+    toast('领主重伤撤回主城，8 秒后重返战场！', true);
+  }
+}
+
+function fireTowerProjectile(t, target, dmgMul = 1){
+  const spec = TOWERS[t.building.kind];
+  const lv = spec.levels[t.building.level - 1];
+  const ox = t.x + 0.5, oy = t.y + 0.35;
+  const speed = t.building.kind === 'arrow' ? 14 : t.building.kind === 'frost' ? 10 : 8.5;
+  const fireOne = (mul, delayOffset = 0) => {
+    const d = Math.max(0.12, dist({x:ox, y:oy}, target) / speed);
+    game.projectiles.push({
+      kind: t.building.kind,
+      sx: ox, sy: oy, x: ox, y: oy,
+      tx: target.x, ty: target.y,
+      targetId: target.id,
+      t: -delayOffset, dur: d,
+      dmg: Math.round(lv.dmg * mul),
+      splash: lv.splash, slow: lv.slow, slowDur: lv.slowDur || 0
+    });
+  };
+  if (t.building.kind === 'arrow' && game.cards.has('multishot')) {
+    fireOne(dmgMul * 0.65, 0);
+    fireOne(dmgMul * 0.65, 0.08);
+  } else {
+    fireOne(dmgMul, 0);
+  }
+  AudioKit.play(t.building.kind === 'cannon' ? 'cannon' : t.building.kind === 'frost' ? 'frost' : 'arrow');
+}
+
+function nearestWallEdge(x, y){
+  let best = null, bestD = Infinity;
+  for (const edge of game.wall.edges) {
+    const d = Math.hypot(edge.mx - x, edge.my - y);
+    if (d < bestD) { bestD = d; best = edge; }
+  }
+  return { edge: best, d: bestD };
+}
+
+function endNightToDawn(){
+  if (game.day >= LAST_NIGHT) {
+    finishGame(true);
+    return;
+  }
+  game.phase = 'day';
+  game.day++;
+  game.dayTimer = DAY_DURATION;
+  game.prodTickTimer = TICK_INTERVAL;
+  game.enemies = [];
+  game.projectiles = [];
+  game.zones = [];
+  game.castleShield = 0;
+  game.hero.downTimer = 0;
+  game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + 40);
+  AudioKit.play('dawn');
+  showBanner(`天亮了 · 第 ${game.day} 日`, '选择一项质变强化，准备迎接更强敌军！', 'good');
+  offerCards();
+  renderUI();
+}
+
+function offerCards(){
+  const pool = CARDS.filter(c => !game.cards.has(c.key));
+  const choices = [];
+  const copy = pool.slice();
+  while (choices.length < 3 && copy.length) {
+    const idx = Math.floor(game.rnd() * copy.length);
+    choices.push(copy.splice(idx, 1)[0]);
+  }
+  if (!choices.length) return;
+  game.cardChoices = choices;
+  showCardModal();
+}
+
+function pickCard(key){
+  const card = CARDS.find(c => c.key === key);
+  if (!card) return;
+  game.cards.add(card.key);
+  game.cardList.push(card);
+  game.cardChoices = null;
+  game.stats.cardsPicked++;
+  if (card.key === 'bounty') addRes('gold', 12, CASTLE_X + 0.5, CASTLE_Y, '赏金号角 +12 金');
+  closeModal();
+  AudioKit.play('coin');
+  toast(`已获得强化【${card.name}】！`);
+  renderUI();
+}
+
+function finishGame(victory){
+  game.phase = victory ? 'won' : 'lost';
+  game.mode = null;
+  game.speed = 1;
+  AudioKit.play(victory ? 'victory' : 'alarm');
+  showEndModal(victory);
+  renderUI();
+}
+
+/* ---------- Simulation Tick ---------- */
+function tick(dt){
+  if (!game || !['day','night'].includes(game.phase)) return;
+  if (paused || !$('modalBackdrop').hidden) return;
+
+  updateEffects(dt);
+  updateHero(dt);
+  updateResidents(dt);
+
+  // Artisan auto wall repair card works day & night
+  if (game.cards.has('artisan') && !game.wall.broken && game.wall.hp < game.wall.maxHp) {
+    game.artisanTimer -= dt;
+    if (game.artisanTimer <= 0) {
+      game.artisanTimer = TICK_INTERVAL;
+      const before = game.wall.hp;
+      game.wall.hp = Math.min(game.wall.maxHp, game.wall.hp + 18);
+      if (game.wall.hp > before) addFloat(CASTLE_X + 0.5, CASTLE_Y - 0.5, `工匠修墙 +${game.wall.hp - before}`, '#a6f28a');
+    }
+  }
+
+  if (game.phase === 'day') {
+    game.dayTimer -= dt;
+    game.prodTickTimer -= dt;
+    if (game.prodTickTimer <= 0) {
+      game.prodTickTimer = TICK_INTERVAL;
+      runProductionTick();
+    }
+    if (game.dayTimer <= 0) {
+      game.dayTimer = 0;
+      startNight(false);
+    }
+    return;
+  }
+
+  // Night simulation
+  game.nightClock += dt;
+  if (game.castleShield > 0) game.castleShield = Math.max(0, game.castleShield - dt);
+
+  // 1. Spawn scheduled enemies
+  for (const w of game.wavePlan) {
+    if (!w.spawned && game.nightClock >= w.at) {
+      w.spawned = true;
+      spawnEnemy(w.kind, w.side);
+    }
+  }
+
+  // 2. Towers & Wall Guards fire
+  updateTowersAndGuards(dt);
+
+  // 3. Projectiles & Zones (lava / boss slam telegraphs)
+  updateProjectiles(dt);
+  updateZones(dt);
+
+  // 4. Enemies move & attack
+  updateEnemies(dt);
+
+  // Clean dead enemies
+  game.enemies = game.enemies.filter(e => e.hp > 0);
+  if (game.phase !== 'night') return;
+
+  // Check night clear
+  const allSpawned = game.wavePlan.every(w => w.spawned);
+  if (allSpawned && game.enemies.length === 0 && game.projectiles.length === 0) {
+    endNightToDawn();
+  }
+}
+
+function runProductionTick(){
+  let any = false;
+  for (const t of game.tiles) {
+    if (!t.owned || !t.node?.developed) continue;
+    const meta = NODE_META[t.node.kind];
+    const amt = workshopYield(t);
+    if (amt > 0) {
+      addRes(meta.res, amt, t.x + 0.5, t.y + 0.25);
+      any = true;
+    }
+  }
+  if (any) AudioKit.play('coin');
+}
+
+function updateHero(dt){
+  const h = game.hero;
+  h.atkCd = Math.max(0, h.atkCd - dt);
+  h.invuln = Math.max(0, h.invuln - dt);
+  h.qCd = Math.max(0, h.qCd - dt);
+  h.eCd = Math.max(0, h.eCd - dt);
+  if (h.shieldTimer > 0) {
+    h.shieldTimer = Math.max(0, h.shieldTimer - dt);
+    if (h.shieldTimer === 0) h.shield = 0;
+  }
+  if (h.swing) {
+    h.swing.t += dt;
+    if (h.swing.t >= 0.24) h.swing = null;
+  }
+  if (h.downTimer > 0) {
+    h.downTimer = Math.max(0, h.downTimer - dt);
+    if (h.downTimer === 0) {
+      h.x = CASTLE_X - 0.8; h.y = CASTLE_Y + 0.5;
+      h.hp = Math.round(h.maxHp * 0.65);
+      h.invuln = 1.5;
+      addFloat(h.x, h.y - 0.3, '领主重返战场！', '#ffe694');
+    }
+    return;
+  }
+
+  // Movement (WASD or click-to-move)
+  const spd = 4.2 * (game.cards.has('swift') ? 1.25 : 1);
+  let dx = Number(keys.has('d') || keys.has('arrowright')) - Number(keys.has('a') || keys.has('arrowleft'));
+  let dy = Number(keys.has('s') || keys.has('arrowdown')) - Number(keys.has('w') || keys.has('arrowup'));
+  if (dx || dy) {
+    h.goal = null;
+    const len = Math.hypot(dx, dy);
+    dx /= len; dy /= len;
+    if (dx) h.face = dx < 0 ? -1 : 1;
+    moveHeroBy(dx * spd * dt, dy * spd * dt);
+    h.moving = true;
+  } else if (h.goal) {
+    const d = dist(h, h.goal);
+    if (d <= 0.14) { h.goal = null; h.moving = false; }
+    else {
+      const mx = (h.goal.x - h.x) / d, my = (h.goal.y - h.y) / d;
+      if (Math.abs(mx) > 0.05) h.face = mx < 0 ? -1 : 1;
+      moveHeroBy(mx * spd * dt, my * spd * dt);
+      h.moving = true;
+    }
+  } else {
+    h.moving = false;
+  }
+
+  // Night melee slash (auto or Space)
+  if (game.phase === 'night' && h.atkCd <= 0) {
+    const targets = game.enemies
+      .filter(e => e.hp > 0 && dist(h, e) <= 1.65 + e.radius)
+      .sort((a, b) => dist(h, a) - dist(h, b))
+      .slice(0, 3);
+    if (keys.has(' ') || (game.autoAttack && targets.length)) {
+      h.atkCd = 0.44;
+      if (targets[0]) h.face = targets[0].x < h.x ? -1 : 1;
+      h.swing = { t: 0, face: h.face };
+      AudioKit.play('slash');
+      for (const e of targets) damageEnemy(e, 24, 'hero');
+    }
+  }
+}
+
+function moveHeroBy(dx, dy){
+  const h = game.hero;
+  const nx = clamp(h.x + dx, 0.35, WIDTH - 0.35);
+  const ny = clamp(h.y + dy, 0.35, HEIGHT - 0.35);
+  const tx = tileAt(Math.floor(nx), Math.floor(h.y));
+  if (tx && tx.ground !== 'water') h.x = nx;
+  const ty = tileAt(Math.floor(h.x), Math.floor(ny));
+  if (ty && ty.ground !== 'water') h.y = ny;
+}
+
+function updateResidents(dt){
+  for (let i = 0; i < game.residents.length; i++) {
+    const r = game.residents[i];
+    r.bob += dt * 4.5;
+    let targetX = CASTLE_X + 0.5 + Math.cos(i * 1.4) * 0.65;
+    let targetY = CASTLE_Y + 0.8 + Math.sin(i * 1.4) * 0.35;
+    if (r.role === 'worker' && r.workTile != null) {
+      const wt = game.tiles[r.workTile];
+      if (wt) { targetX = wt.x + 0.5; targetY = wt.y + 0.72; }
+    } else if (r.role === 'guard' && game.wall.gates.length) {
+      const g = game.wall.gates[i % game.wall.gates.length];
+      targetX = g.tx + 0.5; targetY = g.ty + 0.5;
+    }
+    const d = Math.hypot(targetX - r.x, targetY - r.y);
+    if (d > 0.08) {
+      const step = Math.min(d, 2.8 * dt);
+      r.x += (targetX - r.x) / d * step;
+      r.y += (targetY - r.y) / d * step;
+    }
+  }
+}
+
+function updateTowersAndGuards(dt){
+  const alive = game.enemies.filter(e => e.hp > 0);
+  if (!alive.length) return;
+  const castleC = { x: CASTLE_X + 0.5, y: CASTLE_Y + 0.5 };
+
+  for (const t of game.tiles) {
+    if (t.building?.type !== 'tower') continue;
+    const b = t.building;
+    b.cd = Math.max(0, b.cd - dt);
+    if (b.cd > 0) continue;
+    const spec = TOWERS[b.kind];
+    const lv = spec.levels[b.level - 1];
+    const origin = { x: t.x + 0.5, y: t.y + 0.5 };
+    const inRange = alive.filter(e => dist(origin, e) <= lv.range);
+    if (!inRange.length) continue;
+    // Frost tower prioritizes un-slowed enemies; others prioritize closest to castle
+    inRange.sort((a, c) => {
+      if (b.kind === 'frost' && (a.slowTimer <= 0) !== (c.slowTimer <= 0)) return a.slowTimer <= 0 ? -1 : 1;
+      return dist(a, castleC) - dist(c, castleC);
+    });
+    b.cd = lv.cd;
+    fireTowerProjectile(t, inRange[0], 1);
+  }
+
+  // Wall guards (or all residents if militia_all card picked) fire supporting bolts
+  game.guardCd = Math.max(0, game.guardCd - dt);
+  if (game.guardCd <= 0) {
+    const shooters = game.cards.has('militia_all')
+      ? game.residents
+      : game.residents.filter(r => r.role === 'guard');
+    if (shooters.length) {
+      const target = alive.slice().sort((a, b) => dist(a, castleC) - dist(b, castleC))[0];
+      if (target && dist(target, castleC) <= 4.6) {
+        game.guardCd = 0.85;
+        const from = shooters[0];
+        game.projectiles.push({
+          kind: 'arrow', sx: from.x, sy: from.y, x: from.x, y: from.y,
+          tx: target.x, ty: target.y, targetId: target.id,
+          t: 0, dur: 0.22, dmg: shooters.length * 8, splash: 0, slow: 0, slowDur: 0
+        });
+      }
+    }
+  }
+}
+
+function updateProjectiles(dt){
+  for (const p of game.projectiles) {
+    p.t += dt;
+    if (p.t < 0) continue;
+    if (p.enemyArrow) {
+      const u = clamp(p.t / p.dur, 0, 1);
+      p.x = p.sx + (p.tx - p.sx) * u;
+      p.y = p.sy + (p.ty - p.sy) * u;
+      if (u >= 1) {
+        p.done = true;
+        if (p.targetKind === 'hero') damageHero(p.dmg);
+        else if (p.targetKind === 'wall') damageWall(p.dmg, p.tx, p.ty);
+        else damageCastle(p.dmg);
+      }
+      continue;
+    }
+    const tgt = game.enemies.find(e => e.id === p.targetId && e.hp > 0);
+    if (tgt) { p.tx = tgt.x; p.ty = tgt.y; }
+    const u = clamp(p.t / p.dur, 0, 1);
+    p.x = p.sx + (p.tx - p.sx) * u;
+    p.y = p.sy + (p.ty - p.sy) * u;
+    if (u >= 1) {
+      p.done = true;
+      if (p.splash > 0) {
+        addRing(p.tx, p.ty, p.kind === 'frost' ? '#8ce8ff' : '#ff9848', p.splash);
+        for (const e of game.enemies) {
+          if (e.hp > 0 && dist(e, {x:p.tx, y:p.ty}) <= p.splash + e.radius) {
+            damageEnemy(e, p.dmg, p.kind);
+            if (p.slow > 0) {
+              e.slow = Math.max(e.slow, p.slow);
+              e.slowTimer = Math.max(e.slowTimer, p.slowDur);
+            }
+          }
+        }
+        if (p.kind === 'cannon' && game.cards.has('lava')) {
+          game.zones.push({ kind:'lava', x:p.tx, y:p.ty, r:1.25, t:3.0, max:3.0, tick:0.5 });
+        }
+      } else if (tgt) {
+        damageEnemy(tgt, p.dmg, p.kind);
+      }
+    }
+  }
+  game.projectiles = game.projectiles.filter(p => !p.done);
+}
+
+function updateZones(dt){
+  for (const z of game.zones) {
+    z.t -= dt;
+    if (z.kind === 'lava') {
+      z.tick -= dt;
+      if (z.tick <= 0) {
+        z.tick = 0.5;
+        for (const e of game.enemies) {
+          if (e.hp > 0 && dist(e, z) <= z.r + e.radius) damageEnemy(e, 6, 'lava');
+        }
+      }
+    } else if (z.kind === 'bossSlam' && z.t <= 0) {
+      z.done = true;
+      addRing(z.x, z.y, '#ff5b42', z.r);
+      game.shake = 7;
+      AudioKit.play('cannon');
+      if (game.hero.downTimer <= 0 && dist(game.hero, z) <= z.r) damageHero(28);
+      if (!game.wall.broken && nearestWallEdge(z.x, z.y).d <= z.r + 0.3) damageWall(45, z.x, z.y);
+      else if (game.wall.broken && dist({x:CASTLE_X+0.5, y:CASTLE_Y+0.5}, z) <= z.r + 0.5) damageCastle(24);
+    }
+  }
+  game.zones = game.zones.filter(z => z.t > 0 && !z.done);
+}
+
+function updateEnemies(dt){
+  const castleC = { x: CASTLE_X + 0.5, y: CASTLE_Y + 0.5 };
+  const h = game.hero;
+
+  for (const e of game.enemies) {
+    if (e.hp <= 0) continue;
+    e.cd = Math.max(0, e.cd - dt);
+    e.flash = Math.max(0, e.flash - dt);
+    if (e.slowTimer > 0) {
+      e.slowTimer = Math.max(0, e.slowTimer - dt);
+      if (e.slowTimer === 0) e.slow = 0;
+    }
+    if (e.stun > 0) { e.stun = Math.max(0, e.stun - dt); continue; }
+
+    // Boss special: telegraphed slam + goblin summon every 8s
+    if (e.boss) {
+      e.bossSkillTimer -= dt;
+      if (e.bossSkillTimer <= 0) {
+        e.bossSkillTimer = 8.0;
+        const slamTarget = !game.wall.broken ? nearestWallEdge(e.x, e.y).edge : castleC;
+        const sx = slamTarget?.mx ?? castleC.x;
+        const sy = slamTarget?.my ?? castleC.y;
+        game.zones.push({ kind:'bossSlam', x:sx, y:sy, r:1.75, t:1.75, max:1.75 });
+        addFloat(e.x, e.y - 0.5, '裂城重击蓄力！', '#ff8c70');
+        // Summon 2 goblins
+        spawnEnemy('goblin', 'west', { x: clamp(e.x - 0.4, 0.5, WIDTH-0.5), y: clamp(e.y - 0.5, 0.5, HEIGHT-0.5) });
+        spawnEnemy('goblin', 'west', { x: clamp(e.x - 0.4, 0.5, WIDTH-0.5), y: clamp(e.y + 0.5, 0.5, HEIGHT-0.5) });
+      }
+    }
+
+    // Melee hit hero if hero is right next to enemy
+    if (h.downTimer <= 0 && dist(e, h) <= 0.85 + e.radius) {
+      e.face = h.x < e.x ? -1 : 1;
+      if (e.cd <= 0) {
+        damageHero(e.heroDmg);
+        e.cd = 0.95;
+      }
+      continue;
+    }
+
+    const curSpeed = e.speed * (1 - (e.slow || 0));
+    const wallHit = !game.wall.broken ? nearestWallEdge(e.x, e.y) : null;
+
+    // Ranged archer stops at range and fires arrows
+    if (e.ranged) {
+      const heroNear = h.downTimer <= 0 && dist(e, h) <= e.range;
+      const wallNear = wallHit && wallHit.d <= e.range;
+      const castleNear = game.wall.broken && dist(e, castleC) <= e.range;
+      if (heroNear || wallNear || castleNear) {
+        const tx = heroNear ? h.x : wallNear ? wallHit.edge.mx : castleC.x;
+        const ty = heroNear ? h.y : wallNear ? wallHit.edge.my : castleC.y;
+        e.face = tx < e.x ? -1 : 1;
+        if (e.cd <= 0) {
+          e.cd = 1.45;
+          game.projectiles.push({
+            enemyArrow: true, kind:'enemyArrow',
+            sx:e.x, sy:e.y, x:e.x, y:e.y, tx, ty,
+            t:0, dur:0.28,
+            dmg: heroNear ? e.heroDmg : e.wallDmg,
+            targetKind: heroNear ? 'hero' : wallNear ? 'wall' : 'castle'
+          });
+        }
+        continue;
+      }
+    }
+
+    // Attack wall if wall is intact and close
+    if (wallHit && wallHit.d <= 0.52 + e.radius) {
+      e.face = wallHit.edge.mx < e.x ? -1 : 1;
+      if (e.cd <= 0) {
+        damageWall(e.wallDmg, wallHit.edge.mx, wallHit.edge.my);
+        e.cd = e.boss ? 1.05 : 0.92;
+      }
+      continue;
+    }
+
+    // Attack castle if wall broken and close
+    if (game.wall.broken && dist(e, castleC) <= 0.95 + e.radius) {
+      e.face = castleC.x < e.x ? -1 : 1;
+      if (e.cd <= 0) {
+        damageCastle(e.boss ? 16 : e.kind === 'ram' ? 12 : 6);
+        e.cd = 1.0;
+      }
+      continue;
+    }
+
+    // Move toward nearest wall edge (if intact) or castle
+    const goal = (!game.wall.broken && wallHit?.edge) ? { x: wallHit.edge.mx, y: wallHit.edge.my } : castleC;
+    const d = Math.max(0.001, dist(e, goal));
+    const mx = (goal.x - e.x) / d, my = (goal.y - e.y) / d;
+    if (Math.abs(mx) > 0.05) e.face = mx < 0 ? -1 : 1;
+    e.x = clamp(e.x + mx * curSpeed * dt, 0.25, WIDTH - 0.25);
+    e.y = clamp(e.y + my * curSpeed * dt, 0.25, HEIGHT - 0.25);
+  }
+
+  // Gentle unit separation so enemies don't stack into 1 pixel
+  for (let i = 0; i < game.enemies.length; i++) {
+    const a = game.enemies[i];
+    if (a.hp <= 0) continue;
+    for (let j = i + 1; j < game.enemies.length; j++) {
+      const b = game.enemies[j];
+      if (b.hp <= 0) continue;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.hypot(dx, dy);
+      const minD = a.radius + b.radius;
+      if (d > 0.001 && d < minD) {
+        const push = (minD - d) * 0.35;
+        const ux = dx / d * push, uy = dy / d * push;
+        a.x -= ux; a.y -= uy; b.x += ux; b.y += uy;
+      }
+    }
+  }
+}
+
+/* ---------- Visual Effects Helpers ---------- */
+function addRing(x, y, color, r){
+  game.effects.push({ type:'ring', x, y, r, t:0.42, max:0.42, color });
+}
+function addFloat(x, y, text, color){
+  const near = game.floats.filter(f => Math.hypot(f.x - x, f.y - y) < 1.2).length;
+  game.floats.push({ x, y: y - near * 0.34, text, color, t:1.05, max:1.05 });
+}
+function updateEffects(dt){
+  for (const fx of game.effects) fx.t -= dt;
+  game.effects = game.effects.filter(fx => fx.t > 0);
+  for (const fl of game.floats) { fl.t -= dt; fl.y -= dt * 0.45; }
+  game.floats = game.floats.filter(fl => fl.t > 0);
+  if (game.shake > 0) game.shake = Math.max(0, game.shake - dt * 24);
+}
+
+/* ---------- Camera & Input ---------- */
+const canvas = $('gameCanvas');
+const ctx = canvas.getContext('2d');
+const cam = { x: WORLD_W / 2, y: WORLD_H / 2, zoom: 1, w: 1280, h: 720 };
+const keys = new Set();
+
+function syncBarOffsets(){
+  const topEl = document.querySelector('.topbar');
+  const subEl = $('subbar');
+  const topH = topEl ? Math.ceil(topEl.getBoundingClientRect().height) : 52;
+  document.documentElement.style.setProperty('--top-h', topH + 'px');
+  const subBot = subEl ? Math.ceil(subEl.getBoundingClientRect().bottom) : (topH + 46);
+  document.documentElement.style.setProperty('--sub-bottom', Math.max(topH + 44, subBot) + 'px');
+}
+
+function resizeCanvas(){
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cam.w = window.innerWidth;
+  cam.h = window.innerHeight;
+  canvas.width = Math.round(cam.w * dpr);
+  canvas.height = Math.round(cam.h * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  syncBarOffsets();
+  // Fit world cleanly inside viewport
+  const topSafe = cam.w <= 720 ? 180 : 112;
+  const botSafe = 86;
+  const availW = cam.w - 24;
+  const availH = Math.max(240, cam.h - topSafe - botSafe);
+  cam.zoom = clamp(Math.min(availW / WORLD_W, availH / WORLD_H), 0.58, 1.35);
+  clampCam();
+}
+function clampCam(){
+  const halfW = cam.w / (2 * cam.zoom), halfH = cam.h / (2 * cam.zoom);
+  if (WORLD_W <= halfW * 2) cam.x = WORLD_W / 2;
+  else cam.x = clamp(cam.x, halfW - 40, WORLD_W - halfW + 40);
+  if (WORLD_H <= halfH * 2) cam.y = WORLD_H / 2;
+  else cam.y = clamp(cam.y, halfH - 90, WORLD_H - halfH + 80);
+}
+function centerOnCastle(){
+  cam.x = (CASTLE_X + 0.5) * CELL;
+  cam.y = (CASTLE_Y + 0.5) * CELL;
+  clampCam();
+}
+function screenToWorld(sx, sy){
+  const wx = (sx - cam.w / 2) / cam.zoom + cam.x;
+  const wy = (sy - cam.h / 2) / cam.zoom + cam.y;
+  return { x: wx / CELL, y: wy / CELL };
+}
+
+/* ---------- Canvas Rendering (Bright Cartoon Medieval Style) ---------- */
+function draw(){
+  if (!game) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = '#183d2e';
+  ctx.fillRect(0, 0, cam.w, cam.h);
+
+  ctx.save();
+  const sx = game.shake > 0 ? (Math.random() - 0.5) * game.shake * 1.4 : 0;
+  const sy = game.shake > 0 ? (Math.random() - 0.5) * game.shake * 1.4 : 0;
+  ctx.translate(cam.w / 2 + sx, cam.h / 2 + sy);
+  ctx.scale(cam.zoom, cam.zoom);
+  ctx.translate(-cam.x, -cam.y);
+
+  // 1. Terrain tiles
+  for (const t of game.tiles) drawTile(t);
+
+  // 2. Tool placement highlight + hover preview
+  if (game.phase === 'day' && game.mode) drawToolHighlights();
+
+  // 3. Spawn direction markers (Day preview & Night active)
+  drawSpawnMarkers();
+
+  // 4. Wall Ring & Gates
+  drawWallRing();
+
+  // 5. Zones (lava & boss slam telegraph)
+  drawZones();
+
+  // 6. Foliage (wild forests/mountains), Resource Nodes & Buildings
+  for (const t of game.tiles) {
+    if (t.cover === 'forest') drawForest(t);
+    else if (t.cover === 'mountain') drawMountain(t);
+    if (t.node) drawResourceNode(t);
+    if (t.building) drawBuilding(t);
+  }
+
+  // 7. Selected tower range preview
+  if (game.selectedTile != null) {
+    const st = game.tiles[game.selectedTile];
+    if (st) {
+      ctx.save();
+      ctx.strokeStyle = '#ffe074';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(st.x * CELL + 2, st.y * CELL + 2, CELL - 4, CELL - 4);
+      if (st.building?.type === 'tower') {
+        const lv = TOWERS[st.building.kind].levels[st.building.level - 1];
+        ctx.beginPath();
+        ctx.arc((st.x + 0.5) * CELL, (st.y + 0.5) * CELL, lv.range * CELL, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,224,116,0.12)'; ctx.fill();
+        ctx.setLineDash([7, 6]); ctx.strokeStyle = 'rgba(255,224,116,0.85)'; ctx.lineWidth = 2; ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  // 8. Residents, Hero, Enemies (sorted by Y for clean 2.5D overlap)
+  const actors = [];
+  for (const r of game.residents) actors.push({ y: r.y, draw: () => drawResident(r) });
+  if (game.hero.downTimer <= 0) actors.push({ y: game.hero.y, draw: () => drawHero(game.hero) });
+  for (const e of game.enemies) if (e.hp > 0) actors.push({ y: e.y, draw: () => drawEnemy(e) });
+  actors.sort((a, b) => a.y - b.y);
+  for (const a of actors) a.draw();
+
+  // 9. Projectiles, Effects, Night Tint, Floating Texts
+  drawProjectiles();
+  drawEffects();
+
+  if (game.phase === 'night') {
+    ctx.fillStyle = 'rgba(12, 22, 54, 0.28)';
+    ctx.fillRect(-100, -100, WORLD_W + 200, WORLD_H + 200);
+  }
+  drawFloats();
+
+  ctx.restore();
+}
+
+function drawTile(t){
+  const x = t.x * CELL, y = t.y * CELL;
+  if (t.ground === 'water') {
+    ctx.fillStyle = '#3b98d8';
+    ctx.fillRect(x, y, CELL + 0.5, CELL + 0.5);
+    ctx.fillStyle = 'rgba(186,232,255,0.28)';
+    ctx.fillRect(x + 8, y + 16 + Math.sin(performance.now() / 600 + t.x) * 3, 24, 3);
+    return;
+  }
+  const checker = (t.x + t.y) % 2 === 0;
+  ctx.fillStyle = t.owned
+    ? (checker ? '#86ce58' : '#7ec750')
+    : (checker ? '#69b145' : '#62a93f');
+  ctx.fillRect(x, y, CELL + 0.5, CELL + 0.5);
+
+  if (t.ground === 'road') {
+    ctx.fillStyle = '#dfc082';
+    ctx.fillRect(x + 6, y + 6, CELL - 12, CELL - 12);
+    // Connect adjacent roads
+    if (tileAt(t.x - 1, t.y)?.ground === 'road') ctx.fillRect(x, y + 8, 12, CELL - 16);
+    if (tileAt(t.x + 1, t.y)?.ground === 'road') ctx.fillRect(x + CELL - 12, y + 8, 12, CELL - 16);
+    if (tileAt(t.x, t.y - 1)?.ground === 'road') ctx.fillRect(x + 8, y, CELL - 16, 12);
+    if (tileAt(t.x, t.y + 1)?.ground === 'road') ctx.fillRect(x + 8, y + CELL - 12, CELL - 16, 12);
+  } else if (t.owned && !t.node && !t.building && t.cover === 'none' && !isGateInteriorTile(t)) {
+    // Subtle clean grass blade accent
+    ctx.strokeStyle = 'rgba(42,102,26,0.28)';
+    ctx.lineWidth = 1.5;
+    const gx = x + 16 + hash2(t.x, t.y, 1) * 24;
+    const gy = y + 22 + hash2(t.x, t.y, 2) * 20;
+    ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx - 3, gy - 6); ctx.moveTo(gx, gy); ctx.lineTo(gx + 3, gy - 5); ctx.stroke();
+  }
+}
+
+function drawToolHighlights(){
+  const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 220);
+  const isTower = !!TOWERS[game.mode];
+  for (const t of game.tiles) {
+    const ok = isTower ? canBuildTower(t) : game.mode === 'expand' ? canExpandTile(t) : false;
+    if (!ok) continue;
+    const x = t.x * CELL, y = t.y * CELL;
+    ctx.fillStyle = isTower ? `rgba(255,230,115,${0.18 + 0.12 * pulse})` : `rgba(130,245,155,${0.18 + 0.12 * pulse})`;
+    ctx.fillRect(x + 2, y + 2, CELL - 4, CELL - 4);
+    ctx.strokeStyle = isTower ? '#ffe070' : '#96f7a8';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x + 3, y + 3, CELL - 6, CELL - 6);
+  }
+  if (game.hoverTile != null) {
+    const ht = game.tiles[game.hoverTile];
+    if (ht) {
+      const ok = isTower ? canBuildTower(ht) : game.mode === 'expand' ? canExpandTile(ht) : false;
+      ctx.save();
+      ctx.strokeStyle = ok ? '#fff5b5' : '#ff6b52';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(ht.x * CELL + 1.5, ht.y * CELL + 1.5, CELL - 3, CELL - 3);
+      if (ok && isTower) {
+        const lv = TOWERS[game.mode].levels[0];
+        ctx.beginPath();
+        ctx.arc((ht.x + 0.5) * CELL, (ht.y + 0.5) * CELL, lv.range * CELL, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,226,118,0.12)'; ctx.fill();
+        ctx.setLineDash([6, 5]); ctx.strokeStyle = 'rgba(255,230,126,0.85)'; ctx.lineWidth = 2; ctx.stroke();
+      } else if (!ok) {
+        ctx.beginPath();
+        ctx.moveTo(ht.x * CELL + 12, ht.y * CELL + 12);
+        ctx.lineTo((ht.x + 1) * CELL - 12, (ht.y + 1) * CELL - 12);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+}
+
+function drawSpawnMarkers(){
+  const cfg = NIGHT_CONFIG[game.day] || NIGHT_CONFIG[LAST_NIGHT];
+  const pulse = 0.65 + 0.35 * Math.sin(performance.now() / 220);
+  for (const side of cfg.sides) {
+    const gx = side === 'west' ? 0 : side === 'east' ? WIDTH - 1 : CASTLE_X;
+    const gy = side === 'north' ? 0 : CASTLE_Y;
+    const cx = (gx + 0.5) * CELL, cy = (gy + 0.5) * CELL;
+    ctx.save();
+    ctx.fillStyle = `rgba(226,72,56,${0.25 * pulse})`;
+    ctx.beginPath(); ctx.arc(cx, cy, 24, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#a83226'; ctx.strokeStyle = '#331c14'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, 15, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    // Arrow pointing toward castle
+    const ang = Math.atan2((CASTLE_Y + 0.5) * CELL - cy, (CASTLE_X + 0.5) * CELL - cx);
+    ctx.translate(cx, cy); ctx.rotate(ang);
+    ctx.fillStyle = '#ffe074';
+    ctx.beginPath(); ctx.moveTo(8, 0); ctx.lineTo(-5, -6); ctx.lineTo(-5, 6); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    drawPillText(cx, cy + 22, game.phase === 'day' ? '今夜敌袭' : '来袭中', '#fff', '#8f271d');
+  }
+}
+
+function drawWallRing(){
+  const broken = game.wall.broken;
+  ctx.save();
+  for (const e of game.wall.edges) {
+    const x1 = e.x1 * CELL, y1 = e.y1 * CELL, x2 = e.x2 * CELL, y2 = e.y2 * CELL;
+    ctx.strokeStyle = '#352a1e';
+    ctx.lineWidth = broken ? 4 : 11;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+
+    ctx.strokeStyle = broken ? '#7d6c5d' : '#ded6c4';
+    ctx.lineWidth = broken ? 2 : 7.5;
+    if (broken) ctx.setLineDash([5, 7]);
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (e.isGate && !broken) {
+      const mx = e.mx * CELL, my = e.my * CELL;
+      ctx.fillStyle = '#3c7fd8'; ctx.strokeStyle = '#2d231a'; ctx.lineWidth = 1.8;
+      ctx.beginPath(); ctx.roundRect(mx - 12, my - 11, 24, 22, 5); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#6b4222';
+      ctx.fillRect(mx - 6, my - 3, 12, 11);
+    }
+  }
+  ctx.restore();
+}
+
+function drawForest(t){
+  const cx = (t.x + 0.5) * CELL, cy = (t.y + 0.5) * CELL;
+  for (const [ox, oy, s] of [[-11, -8, 12], [11, -6, 13], [0, 8, 15]]) {
+    ctx.fillStyle = 'rgba(18,45,14,0.28)';
+    ctx.beginPath(); ctx.ellipse(cx + ox, cy + oy + 8, s * 0.8, s * 0.35, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2b7d3b'; ctx.strokeStyle = '#1f361c'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(cx + ox, cy + oy - s); ctx.lineTo(cx + ox - s * 0.85, cy + oy + 6); ctx.lineTo(cx + ox + s * 0.85, cy + oy + 6); ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+}
+
+function drawMountain(t){
+  const cx = (t.x + 0.5) * CELL, cy = (t.y + 0.5) * CELL;
+  ctx.fillStyle = '#9aa19d'; ctx.strokeStyle = '#332e26'; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(cx - 18, cy + 14); ctx.lineTo(cx - 4, cy - 14); ctx.lineTo(cx + 10, cy + 14); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#b9c0bc';
+  ctx.beginPath(); ctx.moveTo(cx + 1, cy + 16); ctx.lineTo(cx + 12, cy - 6); ctx.lineTo(cx + 22, cy + 16); ctx.closePath(); ctx.fill(); ctx.stroke();
+}
+
+function drawResourceNode(t){
+  const meta = NODE_META[t.node.kind];
+  const cx = (t.x + 0.5) * CELL, cy = (t.y + 0.5) * CELL;
+  ctx.save();
+  if (!t.node.developed) {
+    // Raw node with clear glowing '+' badge
+    ctx.fillStyle = 'rgba(20,40,20,0.22)';
+    ctx.beginPath(); ctx.ellipse(cx, cy + 12, 18, 8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = meta.color; ctx.strokeStyle = '#342718'; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.roundRect(cx - 16, cy - 12, 32, 24, 7); ctx.fill(); ctx.stroke();
+    ctx.font = '18px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(meta.icon, cx, cy);
+    if (t.owned) {
+      ctx.fillStyle = '#ffd65a'; ctx.strokeStyle = '#3a2709'; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.arc(cx + 16, cy - 14, 9, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#2d1c05'; ctx.font = '900 13px sans-serif';
+      ctx.fillText('+', cx + 16, cy - 13.5);
+    }
+  } else {
+    // Developed Workshop roof + icon + live yield badge
+    ctx.fillStyle = 'rgba(18,38,16,0.28)';
+    ctx.beginPath(); ctx.ellipse(cx, cy + 15, 20, 8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#e8dec8'; ctx.strokeStyle = '#342718'; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.roundRect(cx - 17, cy - 6, 34, 21, 4); ctx.fill(); ctx.stroke();
+    // Pitched roof colored by resource type
+    ctx.fillStyle = t.node.kind === 'farm' ? '#e5b343' : t.node.kind === 'wood' ? '#589e4b' : t.node.kind === 'stone' ? '#6d8794' : '#d69731';
+    ctx.beginPath(); ctx.moveTo(cx - 21, cy - 4); ctx.lineTo(cx, cy - 22); ctx.lineTo(cx + 21, cy - 4); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.font = '15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(meta.icon, cx, cy + 5);
+    // Worker & Level badge
+    const badge = t.node.workerId ? `👤${t.node.level > 1 ? '★' : ''}+${workshopYield(t)}` : `空 +${workshopYield(t)}`;
+    drawPillText(cx, cy - 24, badge, t.node.workerId ? '#eaffd6' : '#ffd8cc', t.node.workerId ? 'rgba(20,58,42,0.92)' : 'rgba(96,38,28,0.92)');
+  }
+  ctx.restore();
+}
+
+function drawBuilding(t){
+  const cx = (t.x + 0.5) * CELL, cy = (t.y + 0.5) * CELL;
+  if (t.building.type === 'castle') {
+    ctx.save();
+    // Castle shadow
+    ctx.fillStyle = 'rgba(18,38,18,0.32)';
+    ctx.beginPath(); ctx.ellipse(cx, cy + 18, 28, 11, 0, 0, Math.PI * 2); ctx.fill();
+    // Main stone keep
+    ctx.fillStyle = '#eee8da'; ctx.strokeStyle = '#352a1e'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(cx - 21, cy - 12, 42, 30, 5); ctx.fill(); ctx.stroke();
+    // Side turrets + central spire with blue fairy-tale roofs
+    for (const [ox, w, h, top] of [[-18, 12, 24, 16], [18, 12, 24, 16], [0, 18, 32, 22]]) {
+      ctx.fillStyle = '#f5f0e4';
+      ctx.fillRect(cx + ox - w / 2, cy + 16 - h, w, h);
+      ctx.strokeRect(cx + ox - w / 2, cy + 16 - h, w, h);
+      ctx.fillStyle = '#3c80dc';
+      ctx.beginPath();
+      ctx.moveTo(cx + ox - w / 2 - 3, cy + 16 - h);
+      ctx.lineTo(cx + ox, cy + 16 - h - top);
+      ctx.lineTo(cx + ox + w / 2 + 3, cy + 16 - h);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    // Red banner flag
+    ctx.fillStyle = '#e64d3d';
+    ctx.beginPath(); ctx.moveTo(cx, cy - 38); ctx.lineTo(cx + 12, cy - 34); ctx.lineTo(cx, cy - 30); ctx.closePath(); ctx.fill();
+    // Castle door
+    ctx.fillStyle = '#683f1f';
+    ctx.beginPath(); ctx.roundRect(cx - 6, cy + 3, 12, 15, [6,6,0,0]); ctx.fill();
+    // Shield aura if active
+    if (game.castleShield > 0) {
+      ctx.strokeStyle = '#7be6ff'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(cx, cy, 32, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
+    return;
+  }
+
+  if (t.building.type === 'tower') {
+    const b = t.building;
+    const isLv2 = b.level >= 2;
+    ctx.save();
+    ctx.fillStyle = 'rgba(18,38,18,0.30)';
+    ctx.beginPath(); ctx.ellipse(cx, cy + 16, 17, 7, 0, 0, Math.PI * 2); ctx.fill();
+    // Base tower body
+    ctx.fillStyle = b.kind === 'frost' ? '#d4eef7' : b.kind === 'cannon' ? '#cfc9be' : '#e6dfd0';
+    ctx.strokeStyle = '#33281d'; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.roundRect(cx - 13, cy - 10, 26, 26, 4); ctx.fill(); ctx.stroke();
+    // Top roof / turret
+    const roofColor = b.kind === 'arrow' ? '#3d82de' : b.kind === 'cannon' ? '#d95738' : '#35b3db';
+    ctx.fillStyle = roofColor;
+    ctx.beginPath();
+    ctx.moveTo(cx - 17, cy - 8); ctx.lineTo(cx, cy - (isLv2 ? 28 : 23)); ctx.lineTo(cx + 17, cy - 8);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    // Tower icon
+    ctx.font = '15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(TOWERS[b.kind].icon, cx, cy + 4);
+    if (isLv2) drawPillText(cx, cy - 28, '★2', '#2c1c04', '#ffd86b');
+    ctx.restore();
+  }
+}
+
+function drawResident(r){
+  const px = r.x * CELL, py = r.y * CELL + Math.sin(r.bob) * 1.6;
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.beginPath(); ctx.ellipse(px, py + 7, 7, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = r.role === 'guard' ? '#4a85c9' : '#d69948';
+  ctx.strokeStyle = '#2b2218'; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.roundRect(px - 6, py - 4, 12, 11, 4); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#ffe0b8';
+  ctx.beginPath(); ctx.arc(px, py - 8, 5.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+
+function drawHero(h){
+  const px = h.x * CELL, py = h.y * CELL;
+  ctx.save();
+  if (h.invuln > 0 && Math.floor(performance.now() / 60) % 2 === 0) ctx.globalAlpha = 0.6;
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.32)';
+  ctx.beginPath(); ctx.ellipse(px, py + 11, 12, 5, 0, 0, Math.PI * 2); ctx.fill();
+  // Shield ring
+  if (h.shield > 0) {
+    ctx.strokeStyle = '#7be6ff'; ctx.lineWidth = 2.6;
+    ctx.beginPath(); ctx.arc(px, py - 2, 18, 0, Math.PI * 2); ctx.stroke();
+  }
+  // Cape & armor
+  ctx.fillStyle = '#2d74d6'; ctx.strokeStyle = '#281f16'; ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.roundRect(px - 9, py - 6, 18, 16, 5); ctx.fill(); ctx.stroke();
+  // Head + helmet + red plume
+  ctx.fillStyle = '#e7edf2';
+  ctx.beginPath(); ctx.arc(px, py - 12, 7.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#e64c3c';
+  ctx.beginPath(); ctx.moveTo(px, py - 20); ctx.lineTo(px - h.face * 7, py - 24); ctx.lineTo(px + h.face * 2, py - 17); ctx.closePath(); ctx.fill();
+  // Sword
+  ctx.strokeStyle = '#fff5cf'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(px + h.face * 9, py - 1); ctx.lineTo(px + h.face * 19, py - 11); ctx.stroke();
+
+  // Swing arc
+  if (h.swing) {
+    const a0 = h.swing.face > 0 ? -1.1 : Math.PI - 1.1;
+    ctx.strokeStyle = 'rgba(255,240,175,0.88)'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.arc(px, py - 2, 1.35 * CELL, a0, a0 + 2.2); ctx.stroke();
+  }
+  // Hero HP bar
+  drawMiniBar(px, py - 27, 28, h.hp / h.maxHp, '#7ef070');
+  ctx.restore();
+}
+
+function drawEnemy(e){
+  const spec = ENEMY_TYPES[e.kind];
+  const px = e.x * CELL, py = e.y * CELL;
+  const r = e.radius * CELL;
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.28)';
+  ctx.beginPath(); ctx.ellipse(px, py + r * 0.7, r * 0.9, r * 0.4, 0, 0, Math.PI * 2); ctx.fill();
+
+  ctx.fillStyle = e.flash > 0 ? '#ffffff' : e.slowTimer > 0 ? '#7ad8ff' : spec.color;
+  ctx.strokeStyle = '#291c18'; ctx.lineWidth = e.boss ? 2.6 : 1.7;
+  ctx.beginPath();
+  if (e.kind === 'ram' || e.boss) {
+    ctx.roundRect(px - r, py - r * 0.9, r * 2, r * 1.7, 6);
+  } else {
+    ctx.arc(px, py - 2, r, 0, Math.PI * 2);
+  }
+  ctx.fill(); ctx.stroke();
+
+  // Distinguish silhouette accent
+  ctx.fillStyle = spec.accent;
+  if (e.boss) {
+    // Crown horns
+    ctx.beginPath(); ctx.moveTo(px - 10, py - r); ctx.lineTo(px - 16, py - r - 10); ctx.lineTo(px - 3, py - r); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(px + 10, py - r); ctx.lineTo(px + 16, py - r - 10); ctx.lineTo(px + 3, py - r); ctx.fill();
+  } else if (e.ranged) {
+    ctx.strokeStyle = '#ffe5a8'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(px + e.face * 6, py - 2, 7, -1, 1); ctx.stroke();
+  }
+
+  if (e.hp < e.maxHp || e.boss) {
+    drawMiniBar(px, py - r - 9, e.boss ? 44 : 24, e.hp / e.maxHp, e.boss ? '#ff6a52' : '#ff9468');
+  }
+  ctx.restore();
+}
+
+function drawZones(){
+  for (const z of game.zones) {
+    const cx = z.x * CELL, cy = z.y * CELL, rad = z.r * CELL;
+    ctx.save();
+    if (z.kind === 'lava') {
+      ctx.fillStyle = `rgba(255,104,40,${0.32 * (z.t / z.max)})`;
+      ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,190,82,0.75)'; ctx.lineWidth = 2; ctx.stroke();
+    } else if (z.kind === 'bossSlam') {
+      const prog = 1 - z.t / z.max;
+      ctx.fillStyle = 'rgba(255,66,46,0.20)';
+      ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,66,46,0.36)';
+      ctx.beginPath(); ctx.arc(cx, cy, rad * prog, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#ff6e54'; ctx.lineWidth = 2.5; ctx.setLineDash([6, 4]);
+      ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+function drawProjectiles(){
+  for (const p of game.projectiles) {
+    if (p.t < 0) continue;
+    const u = clamp(p.t / p.dur, 0, 1);
+    const arc = (p.kind === 'cannon') ? Math.sin(u * Math.PI) * 28 : Math.sin(u * Math.PI) * 8;
+    const px = p.x * CELL, py = p.y * CELL - arc;
+    ctx.save();
+    if (p.enemyArrow) {
+      ctx.fillStyle = '#ff8570'; ctx.beginPath(); ctx.arc(px, py, 3.6, 0, Math.PI * 2); ctx.fill();
+    } else if (p.kind === 'cannon') {
+      ctx.fillStyle = '#2a2a2e'; ctx.strokeStyle = '#ffb357'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(px, py, 6.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    } else if (p.kind === 'frost') {
+      ctx.fillStyle = '#92ecff'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.arc(px, py, 5.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    } else {
+      ctx.fillStyle = '#ffe994'; ctx.beginPath(); ctx.arc(px, py, 3.8, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+function drawEffects(){
+  for (const fx of game.effects) {
+    const a = clamp(fx.t / fx.max, 0, 1);
+    ctx.save(); ctx.globalAlpha = a;
+    if (fx.type === 'ring') {
+      const r = fx.r * CELL * (1.15 - a * 0.55);
+      ctx.strokeStyle = fx.color; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(fx.x * CELL, fx.y * CELL, Math.max(2, r), 0, Math.PI * 2); ctx.stroke();
+    } else if (fx.type === 'whirl') {
+      ctx.fillStyle = 'rgba(255,190,82,0.22)';
+      ctx.strokeStyle = '#ffdc7d'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.arc(fx.x * CELL, fx.y * CELL, fx.r * CELL, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    } else if (fx.type === 'dash') {
+      ctx.strokeStyle = '#8ee8ff'; ctx.lineWidth = 6; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(fx.x1 * CELL, fx.y1 * CELL); ctx.lineTo(fx.x2 * CELL, fx.y2 * CELL); ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+function drawFloats(){
+  ctx.save();
+  ctx.font = '900 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const f of game.floats) {
+    ctx.globalAlpha = clamp(f.t / f.max * 1.4, 0, 1);
+    ctx.strokeStyle = 'rgba(18,22,18,0.88)'; ctx.lineWidth = 3.2;
+    ctx.strokeText(f.text, f.x * CELL, f.y * CELL);
+    ctx.fillStyle = f.color;
+    ctx.fillText(f.text, f.x * CELL, f.y * CELL);
+  }
+  ctx.restore();
+}
+
+function drawMiniBar(cx, y, w, ratio, color){
+  ctx.fillStyle = 'rgba(12,18,16,0.78)';
+  ctx.fillRect(cx - w / 2 - 1, y - 1, w + 2, 6);
+  ctx.fillStyle = color;
+  ctx.fillRect(cx - w / 2, y, w * clamp(ratio, 0, 1), 4);
+}
+
+function drawPillText(cx, cy, text, fg, bg){
+  ctx.save();
+  ctx.font = '800 11px sans-serif';
+  const tw = ctx.measureText(text).width;
+  ctx.fillStyle = bg;
+  ctx.beginPath(); ctx.roundRect(cx - tw / 2 - 6, cy - 9, tw + 12, 18, 9); ctx.fill();
+  ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, cx, cy);
+  ctx.restore();
+}
+
+/* ---------- UI Rendering ---------- */
+let toastTimer = null;
+function toast(msg, bad = false){
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = bad ? 'bad' : '';
+  el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+}
+
+let bannerTimer = null;
+function showBanner(title, sub, tone = ''){
+  $('bannerTitle').textContent = title;
+  $('bannerSub').textContent = sub;
+  $('banner').className = tone;
+  $('banner').hidden = false;
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => { $('banner').hidden = true; }, 2600);
+}
+
+function costStr(cost){
+  return Object.entries(cost).map(([k, v]) => `${v} ${RES_LABELS[k]}`).join(' · ');
+}
+function fmtTime(sec){
+  const s = Math.max(0, Math.ceil(sec));
+  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+}
+
+function renderUI(){
+  if (!game) return;
+  const isDay = game.phase === 'day', isNight = game.phase === 'night';
+  const rates = currentRates();
+
+  $('phaseBox').classList.toggle('night', isNight);
+  $('phaseIcon').textContent = isNight ? '🌙' : '☀️';
+  $('phaseLabel').textContent = isNight ? `第 ${game.day} 夜 · 守卫中` : game.phase === 'won' ? '边境守卫成功！' : game.phase === 'lost' ? '主城失守' : `第 ${game.day} 日 · 白天`;
+  $('phaseClock').textContent = isDay ? `距开战 ${fmtTime(game.dayTimer)}` : isNight ? `已守 ${fmtTime(game.nightClock)}` : '';
+  $('timeFill').style.width = isDay ? `${clamp(game.dayTimer / DAY_DURATION * 100, 0, 100)}%` : '100%';
+
+  $('valGold').textContent = game.resources.gold;
+  $('valMat').textContent = game.resources.material;
+  $('valFood').textContent = game.resources.food;
+  $('valPop').textContent = game.residents.length;
+
+  for (const [key, elId] of [['gold','rateGold'],['material','rateMat'],['food','rateFood']]) {
+    const el = $(elId);
+    el.textContent = `+${rates[key]}/5s`;
+    el.classList.toggle('zero', rates[key] <= 0);
+  }
+
+  $('speedBtn').textContent = `${game.speed}×`;
+  $('speedBtn').classList.toggle('active', game.speed === 2);
+  $('pauseBtn').textContent = paused ? '继续' : '暂停';
+  $('soundBtn').textContent = AudioKit.enabled ? '🔊' : '🔇';
+  $('cardsBtn').textContent = `强化 ${game.cardList.length}`;
+
+  const cfg = NIGHT_CONFIG[game.day] || NIGHT_CONFIG[LAST_NIGHT];
+  $('wavePreview').textContent = isNight ? `第 ${game.day} 夜：${cfg.preview}` : `今夜敌袭：${cfg.preview}`;
+
+  if (game.mode) {
+    $('subHint').textContent = game.mode === 'expand'
+      ? '点城墙外高亮绿格扩建领地（6 金币）· Esc 取消'
+      : `点城墙内高亮草地建造【${TOWERS[game.mode].name}】（严禁建在树/路/门上）· Esc 取消`;
+  } else if (isDay) {
+    const devCount = game.tiles.filter(t => t.owned && t.node?.developed).length;
+    const towerCount = game.tiles.filter(t => t.building?.type === 'tower').length;
+    $('subHint').textContent = devCount === 0
+      ? '① 先点城内带 + 号的资源点开发（每 5 秒自动产出）！'
+      : towerCount === 0
+      ? '② 选底栏「箭塔 / 炮塔 / 冰塔」，摆在今夜来袭侧的草地塔位上！'
+      : '继续开发/招人/扩地，准备好随时点右下「立即开战」！';
+  } else if (isNight) {
+    $('subHint').textContent = 'WASD 或点地走位 · Q 旋风重斩 · E 冲刺 · R 号令齐射';
+  }
+
+  // Vitals
+  const pC = $('pillCastle'), pW = $('pillWall'), pH = $('pillHero'), pE = $('pillEnemies');
+  pC.textContent = `🏰 主城 ${Math.ceil(game.castleHp)}/${game.castleMax}${game.castleShield > 0 ? ' 🛡️' : ''}`;
+  pC.className = 'vpill' + (game.castleHp < game.castleMax * 0.4 ? ' warn' : game.castleShield > 0 ? ' shield' : '');
+  pW.textContent = game.wall.broken ? '🧱 城墙 已破！' : `🧱 城墙 ${Math.ceil(game.wall.hp)}/${game.wall.maxHp}`;
+  pW.className = 'vpill' + (game.wall.broken || game.wall.hp < game.wall.maxHp * 0.35 ? ' warn' : '');
+  pH.textContent = game.hero.downTimer > 0
+    ? `⚔️ 领主 ${Math.ceil(game.hero.downTimer)}s 回场`
+    : `⚔️ 领主 ${Math.ceil(game.hero.hp)}/${game.hero.maxHp}${game.hero.shield > 0 ? ` +${Math.ceil(game.hero.shield)}` : ''}`;
+  pH.className = 'vpill' + (game.hero.downTimer > 0 || game.hero.hp < game.hero.maxHp * 0.35 ? ' warn' : '');
+  const remEnemies = game.enemies.filter(e => e.hp > 0).length + game.wavePlan.filter(w => !w.spawned).length;
+  pE.hidden = !isNight;
+  pE.textContent = `👾 剩余敌军 ${remEnemies}`;
+
+  renderDock();
+  renderInspector();
+}
+
+function renderDock(){
+  const dock = $('dock');
+  dock.replaceChildren();
+  const addBtn = ({ icon, name, sub, key, active, gold, disabled, cd, onClick }) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'cmd-btn' + (active ? ' active' : '') + (gold ? ' gold' : '');
+    b.disabled = !!disabled;
+    b.innerHTML = `${key ? `<span class="ckey">${key}</span>` : ''}<span class="cico">${icon}</span><span class="cname">${name}</span><span class="csub">${sub}</span>${cd > 0 ? `<span class="cd-mask">${cd.toFixed(1)}s</span>` : ''}`;
+    b.addEventListener('click', onClick);
+    dock.append(b);
+  };
+
+  if (game.phase === 'day') {
+    for (const kind of ['arrow','cannon','frost']) {
+      const s = TOWERS[kind];
+      addBtn({
+        icon: s.icon, name: s.name, sub: `${s.cost.material}材 ${s.cost.gold}金`, key: s.hotkey,
+        active: game.mode === kind, disabled: !canAfford(s.cost),
+        onClick: () => { game.mode = game.mode === kind ? null : kind; game.selectedTile = null; renderUI(); }
+      });
+    }
+    addBtn({
+      icon: '🚩', name: '扩建领地', sub: '6 金币', key: '4',
+      active: game.mode === 'expand', disabled: !canAfford({ gold:6 }),
+      onClick: () => { game.mode = game.mode === 'expand' ? null : 'expand'; game.selectedTile = null; renderUI(); }
+    });
+    addBtn({
+      icon: '👥', name: '招募居民', sub: game.residents.length >= 10 ? '已满 10 人' : '6金 3粮',
+      disabled: game.residents.length >= 10 || !canAfford({ gold:6, food:3 }),
+      onClick: recruitResident
+    });
+    const wallMissing = game.wall.broken ? game.wall.maxHp : (game.wall.maxHp - game.wall.hp);
+    const needMat = wallMissing > 0 ? Math.max(1, Math.ceil(wallMissing / 60)) : 0;
+    addBtn({
+      icon: '🧱', name: game.wall.broken ? '重建城墙' : '加固城防',
+      sub: wallMissing <= 0 ? '耐久已满' : `需 ${needMat} 材 (可部分修)`,
+      disabled: wallMissing <= 0 || game.resources.material <= 0,
+      onClick: repairWallDay
+    });
+    addBtn({
+      icon: '⚔️', name: '立即开战', sub: game.dayTimer >= 15 ? '提前入夜有奖' : `迎接第 ${game.day} 夜`,
+      gold: true,
+      onClick: () => startNight(true)
+    });
+  } else if (game.phase === 'night') {
+    const h = game.hero;
+    addBtn({
+      icon: '🌪️', name: '旋风重斩', sub: '范围高伤击退', key: 'Q',
+      gold: h.qCd <= 0 && h.downTimer <= 0, disabled: h.downTimer > 0 || h.qCd > 0, cd: h.qCd,
+      onClick: castWhirlwind
+    });
+    addBtn({
+      icon: '⚡', name: '战术冲刺', sub: '突进 + 护盾', key: 'E',
+      disabled: h.downTimer > 0 || h.eCd > 0, cd: h.eCd,
+      onClick: castDash
+    });
+    addBtn({
+      icon: '📯', name: '号令齐射', sub: h.rallyCharges > 0 ? `可用 ${h.rallyCharges} 次` : '本夜已用', key: 'R',
+      gold: h.rallyCharges > 0, disabled: h.rallyCharges <= 0,
+      onClick: castRally
+    });
+    addBtn({
+      icon: '🛠️', name: '城堡急修', sub: '6金 · +30血+盾',
+      disabled: game.castleHp >= game.castleMax || !canAfford({ gold:6 }),
+      onClick: repairCastleNight
+    });
+    addBtn({
+      icon: '🤖', name: '自动普攻', sub: game.autoAttack ? '已开启' : '已关闭',
+      active: game.autoAttack,
+      onClick: () => { game.autoAttack = !game.autoAttack; renderUI(); }
+    });
+  }
+}
+
+function renderInspector(){
+  const box = $('inspector');
+  if (game.selectedTile == null) { box.hidden = true; return; }
+  const t = game.tiles[game.selectedTile];
+  if (!t) { box.hidden = true; return; }
+  box.hidden = false;
+
+  const title = $('inspTitle'), desc = $('inspDesc'), stats = $('inspStats'), actions = $('inspActions'), list = $('inspList');
+  stats.replaceChildren(); actions.replaceChildren(); list.replaceChildren(); list.hidden = true;
+
+  const addAct = (label, sub, fn, opts = {}) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'btn' + (opts.gold ? ' gold' : '') + (opts.danger ? ' danger' : '');
+    b.disabled = !!opts.disabled;
+    b.innerHTML = `<span>${label}</span>${sub ? `<small>${sub}</small>` : ''}`;
+    b.addEventListener('click', fn);
+    actions.append(b);
+  };
+
+  if (t.building?.type === 'castle') {
+    title.textContent = '🏰 主城与居民管理';
+    desc.textContent = '居民默认自动进驻空余工坊提产，也可随时切换为「守卫」在夜间协防射击。';
+    stats.innerHTML = `
+      <div class="bar-row"><span class="blabel">主城</span><div class="bar-track"><i style="width:${game.castleHp/game.castleMax*100}%"></i></div><span class="bar-val">${Math.ceil(game.castleHp)}/${game.castleMax}</span></div>
+      <div class="bar-row"><span class="blabel">城墙</span><div class="bar-track wall"><i style="width:${game.wall.broken?0:game.wall.hp/game.wall.maxHp*100}%"></i></div><span class="bar-val">${game.wall.broken?'已破':`${Math.ceil(game.wall.hp)}/${game.wall.maxHp}`}</span></div>
+    `;
+    if (game.phase === 'day') {
+      addAct('招募居民', '6 金币 · 3 粮食', recruitResident, { gold:true, disabled: game.residents.length >= 10 || !canAfford({ gold:6, food:3 }) });
+      addAct('加固城防', '按现有材料修墙', repairWallDay, { disabled: !game.wall.broken && game.wall.hp >= game.wall.maxHp || game.resources.material <= 0 });
+    } else if (game.phase === 'night') {
+      addAct('主城急修', '6 金币 · +30血+减伤盾', repairCastleNight, { gold:true, disabled: game.castleHp >= game.castleMax || !canAfford({ gold:6 }) });
+    }
+    list.hidden = false;
+    for (const r of game.residents) {
+      const row = document.createElement('div');
+      row.className = 'res-row';
+      const wt = r.workTile != null ? game.tiles[r.workTile] : null;
+      const jobText = r.role === 'guard' ? '城墙守卫 · 夜间协防' : wt?.node ? `工匠 · ${NODE_META[wt.node.kind].prod}作业中` : '工匠 · 待命中';
+      row.innerHTML = `<div><div class="rrole">居民 #${r.id}</div><div class="rsub">${jobText}</div></div>`;
+      if (game.phase === 'day') {
+        const sw = document.createElement('button');
+        sw.type = 'button'; sw.className = 'btn';
+        sw.textContent = r.role === 'worker' ? '转守卫' : '转工匠';
+        sw.addEventListener('click', () => toggleResidentRole(r.id));
+        row.append(sw);
+      }
+      list.append(row);
+    }
+    return;
+  }
+
+  if (t.building?.type === 'tower') {
+    const spec = TOWERS[t.building.kind];
+    const lv = spec.levels[t.building.level - 1];
+    title.textContent = `${spec.icon} ${spec.name} · Lv.${t.building.level}`;
+    desc.textContent = `${spec.desc}（当前伤害 ${lv.dmg} · 射程 ${lv.range} 格 · 间隔 ${lv.cd}s）`;
+    if (game.phase === 'day') {
+      if (t.building.level < 2) {
+        addAct('升级 Lv.2', costStr(spec.upCost), () => upgradeTower(t), { gold:true, disabled: !canAfford(spec.upCost) });
+      }
+      addAct('拆除返还', '返还 70% 资源', () => sellTower(t), { danger:true });
+    }
+    return;
+  }
+
+  if (t.node) {
+    const meta = NODE_META[t.node.kind];
+    title.textContent = `${meta.icon} ${t.node.developed ? `${meta.prod} Lv.${t.node.level}` : meta.name}`;
+    if (!t.owned) {
+      desc.textContent = `位于城墙外的野外资源。扩建领地圈入后可开发，每 5 秒产出 +${meta.worker} ${RES_LABELS[meta.res]}！`;
+      if (game.phase === 'day' && canExpandTile(t)) {
+        addAct('扩建到此格', '6 金币', () => expandTile(t), { gold:true, disabled: !canAfford({ gold:6 }) });
+      }
+    } else if (!t.node.developed) {
+      desc.textContent = `开发成【${meta.prod}】后，居民将自动进驻，白天每 5 秒实时产出 +${meta.worker} ${RES_LABELS[meta.res]}。`;
+      if (game.phase === 'day') {
+        addAct(`开发${meta.prod}`, '2 材料', () => developNode(t), { gold:true, disabled: !canAfford({ material:2 }) });
+      }
+    } else {
+      const hasW = !!t.node.workerId;
+      desc.textContent = `当前每 5 秒实时产出 +${workshopYield(t)} ${RES_LABELS[meta.res]}（${hasW ? `居民 #${t.node.workerId} 作业中` : '暂无工人，招募居民后产量翻倍'}）。`;
+      if (game.phase === 'day' && t.node.level < 2) {
+        addAct('升级工坊 Lv.2', '6 材料 · 4 金币 · 产量 +1', () => upgradeWorkshop(t), { gold:true, disabled: !canAfford({ material:6, gold:4 }) });
+      }
+    }
+    return;
+  }
+
+  box.hidden = true;
+}
+
+/* ---------- Modals ---------- */
+function openModal(html){
+  $('modalCard').innerHTML = html;
+  $('modalBackdrop').hidden = false;
+}
+function closeModal(){
+  $('modalBackdrop').hidden = true;
+}
+
+function showIntroModal(){
+  openModal(`
+    <h2>🛡️ 欢迎来到《边境守卫 v0.40》</h2>
+    <p class="msub">白天实时种田建城、自由摆塔，夜晚领主放技能守家爆金币，撑过 5 夜击败首领！</p>
+    <div class="intro-grid">
+      <div class="intro-box"><b>☀️ 白天（75 秒 · 实时产出）</b><p>点带 <b>+</b> 号的资源点 1 键开发，居民自动开工，<b>每 5 秒实时飘字涨资源</b>。准备好随时点「立即开战」！</p></div>
+      <div class="intro-box"><b>🏹 三种防御塔 · 清晰分区</b><p>城内已清光杂物：内圈生产、十字门道畅通、贴墙草地摆 <b>箭塔 / 火炮塔 / 寒冰塔</b>（严禁建在树或路上）。</p></div>
+      <div class="intro-box"><b>⚔️ 夜晚（领主技能 + 爆金币）</b><p>WASD 或点地走位（默认自动普攻），<b>Q 旋风重斩</b>击退清怪，<b>E 战术冲刺</b>切后排，<b>R 号令齐射</b>救场！</p></div>
+      <div class="intro-box"><b>🃏 战后肉鸽质变三选一</b><p>每守过一夜立刻三选一质变强化（双发箭雨、熔岩灼烧、冰霜碎冰、旋风吸血等），越打越爽！</p></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn gold" id="startBtn" type="button" style="padding:10px 26px;font-size:15px">开始守卫边境</button>
+    </div>
+  `);
+  $('startBtn').addEventListener('click', () => {
+    introSeen = true;
+    AudioKit.unlock();
+    closeModal();
+    showBanner('第 1 日 · 白天准备', '先开发城内带 + 的资源点，再在西门两侧草地摆塔！', 'good');
+  });
+}
+
+function showCardModal(){
+  const choices = game.cardChoices || [];
+  openModal(`
+    <h2>🃏 第 ${game.day - 1} 夜守卫成功 · 选择一项质变强化</h2>
+    <p class="msub">挑选一张改变流派的肉鸽强化卡，立即生效！</p>
+    <div class="cards-grid">
+      ${choices.map(c => `
+        <button class="pick-card tone-${c.tone}" data-card="${c.key}" type="button">
+          <span class="ctag">${c.tag}</span>
+          <div class="cbadge">${c.icon}</div>
+          <b>${c.name}</b>
+          <p>${c.desc}</p>
+          <span class="cgo">选择此强化</span>
+        </button>
+      `).join('')}
+    </div>
+  `);
+  $('modalCard').querySelectorAll('[data-card]').forEach(btn => {
+    btn.addEventListener('click', () => pickCard(btn.dataset.card));
+  });
+}
+
+function showOwnedCardsModal(){
+  const list = game.cardList;
+  openModal(`
+    <h2>🃏 当前已拥有强化（${list.length}）</h2>
+    <p class="msub">${list.length ? '以下质变强化正在本局生效：' : '守过第 1 夜后即可解锁三选一质变强化！'}</p>
+    <div class="cards-grid">
+      ${list.map(c => `
+        <div class="pick-card tone-${c.tone}" style="cursor:default">
+          <span class="ctag">${c.tag}</span>
+          <div class="cbadge">${c.icon}</div>
+          <b>${c.name}</b>
+          <p>${c.desc}</p>
+        </div>
+      `).join('')}
+    </div>
+    <div class="modal-footer">
+      <button class="btn gold" id="closeCardsBtn" type="button">返回战场</button>
+    </div>
+  `);
+  $('closeCardsBtn').addEventListener('click', closeModal);
+}
+
+function showEndModal(victory){
+  openModal(`
+    <h2>${victory ? '🏆 胜利！你守住了边境！' : '💀 主城失守 · 再战一局'}</h2>
+    <p class="msub">${victory ? '裂城统领已被击退，整座边城欢呼雀跃！' : `坚持到第 ${game.day} 夜。提示：寒冰塔减速 + 火炮塔轰炸配合 Q 旋风重斩能极大减轻城墙压力！`}</p>
+    <div class="summary-list">
+      <div class="sum-item"><span>到达夜次</span><strong>第 ${game.day} 夜</strong></div>
+      <div class="sum-item"><span>击退敌军</span><strong>${game.stats.kills} 名</strong></div>
+      <div class="sum-item"><span>累计金币</span><strong>${game.stats.goldEarned}</strong></div>
+      <div class="sum-item"><span>建造防御塔</span><strong>${game.stats.towersBuilt} 座</strong></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn gold" id="againBtn" type="button" style="padding:10px 24px;font-size:15px">再来一局</button>
+    </div>
+  `);
+  $('againBtn').addEventListener('click', () => { closeModal(); startNewRun(); });
+}
+
+/* ---------- Map Pointer & Keyboard Bindings ---------- */
+let dragState = null;
+canvas.addEventListener('pointerdown', e => {
+  AudioKit.unlock();
+  dragState = { id: e.pointerId, sx: e.clientX, sy: e.clientY, cx: cam.x, cy: cam.y, moved: false };
+});
+window.addEventListener('pointermove', e => {
+  if (dragState && dragState.id === e.pointerId) {
+    const dx = e.clientX - dragState.sx, dy = e.clientY - dragState.sy;
+    if (Math.hypot(dx, dy) > 8) dragState.moved = true;
+    if (dragState.moved) {
+      cam.x = dragState.cx - dx / cam.zoom;
+      cam.y = dragState.cy - dy / cam.zoom;
+      clampCam();
+    }
+    return;
+  }
+  const wp = screenToWorld(e.clientX, e.clientY);
+  const t = tileAt(Math.floor(wp.x), Math.floor(wp.y));
+  game.hoverTile = t ? idxOf(t.x, t.y) : null;
+});
+window.addEventListener('pointerup', e => {
+  if (!dragState || dragState.id !== e.pointerId) return;
+  const wasDrag = dragState.moved;
+  dragState = null;
+  if (wasDrag) return;
+  const wp = screenToWorld(e.clientX, e.clientY);
+  handleMapClick(wp.x, wp.y);
+});
+canvas.addEventListener('wheel', e => {
+  const factor = e.deltaY < 0 ? 1.09 : 0.92;
+  cam.zoom = clamp(cam.zoom * factor, 0.55, 1.65);
+  clampCam();
+}, { passive:true });
+
+function handleMapClick(wx, wy){
+  if (!game || !['day','night'].includes(game.phase)) return;
+  const t = tileAt(Math.floor(wx), Math.floor(wy));
+  if (!t) return;
+
+  if (game.phase === 'day' && game.mode) {
+    if (TOWERS[game.mode]) { buildTower(t, game.mode); return; }
+    if (game.mode === 'expand') { expandTile(t); return; }
+  }
+
+  // Day quick 1-click develop on owned undeveloped resource node
+  if (game.phase === 'day' && canDevelopNode(t)) {
+    developNode(t);
+    game.selectedTile = idxOf(t.x, t.y);
+    renderInspector();
+    return;
+  }
+
+  // Inspect castle / tower / workshop / wild node
+  if (t.building || t.node) {
+    const idx = idxOf(t.x, t.y);
+    game.selectedTile = game.selectedTile === idx ? null : idx;
+    renderUI();
+    return;
+  }
+
+  // Otherwise move hero to clicked point
+  game.selectedTile = null;
+  if (t.ground !== 'water') {
+    game.hero.goal = { x: clamp(wx, 0.4, WIDTH - 0.4), y: clamp(wy, 0.4, HEIGHT - 0.4) };
+  }
+  renderUI();
+}
+
+window.addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (!$('modalBackdrop').hidden) {
+    if (k === 'escape' && !game.cardChoices && game.phase !== 'won' && game.phase !== 'lost') closeModal();
+    return;
+  }
+  if (k === 'escape') {
+    if (game.mode) { game.mode = null; renderUI(); }
+    else if (game.selectedTile != null) { game.selectedTile = null; renderUI(); }
+    else if (paused) { paused = false; renderUI(); }
+    return;
+  }
+  if (k === 'f') { game.speed = game.speed === 2 ? 1 : 2; renderUI(); return; }
+  if (game.phase === 'day') {
+    if (k === '1') { game.mode = game.mode === 'arrow' ? null : 'arrow'; renderUI(); return; }
+    if (k === '2') { game.mode = game.mode === 'cannon' ? null : 'cannon'; renderUI(); return; }
+    if (k === '3') { game.mode = game.mode === 'frost' ? null : 'frost'; renderUI(); return; }
+    if (k === '4') { game.mode = game.mode === 'expand' ? null : 'expand'; renderUI(); return; }
+  } else if (game.phase === 'night') {
+    if (k === 'q') { castWhirlwind(); return; }
+    if (k === 'e') { castDash(); return; }
+    if (k === 'r') { castRally(); return; }
+  }
+  if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) {
+    if (k === ' ') e.preventDefault();
+    keys.add(k);
+  }
+});
+window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+window.addEventListener('blur', () => keys.clear());
+
+/* ---------- Top/Side Button Bindings ---------- */
+$('speedBtn').addEventListener('click', () => { game.speed = game.speed === 2 ? 1 : 2; renderUI(); });
+$('pauseBtn').addEventListener('click', () => { paused = !paused; renderUI(); });
+$('soundBtn').addEventListener('click', () => { AudioKit.enabled = !AudioKit.enabled; if (AudioKit.enabled) AudioKit.unlock(); renderUI(); });
+$('helpBtn').addEventListener('click', showIntroModal);
+$('resetBtn').addEventListener('click', () => startNewRun());
+$('cardsBtn').addEventListener('click', showOwnedCardsModal);
+$('centerBtn').addEventListener('click', centerOnCastle);
+$('inspClose').addEventListener('click', () => { game.selectedTile = null; renderUI(); });
+window.addEventListener('resize', resizeCanvas);
+
+/* ---------- Bootstrap & Main Loop ---------- */
+function startNewRun(seed){
+  paused = false;
+  keys.clear();
+  clearTimeout(bannerTimer); clearTimeout(toastTimer);
+  $('banner').hidden = true; $('toast').hidden = true;
+  game = makeGame(seed);
+  rebuildWallRing();
+  autoAssignResidents();
+  resizeCanvas();
+  centerOnCastle();
+  renderUI();
+  syncBarOffsets();
+  if (!introSeen) showIntroModal();
+}
+
+let lastFrame = 0, lastUi = 0;
+function loop(now){
+  if (!lastFrame) lastFrame = now;
+  const rawDt = Math.min(0.12, Math.max(0, (now - lastFrame) / 1000));
+  lastFrame = now;
+  const scaled = rawDt * (game ? game.speed : 1);
+  let rem = scaled;
+  while (rem > 0) {
+    const step = Math.min(0.033, rem);
+    tick(step);
+    rem -= step;
+  }
+  draw();
+  if (now - lastUi > 160) { renderUI(); lastUi = now; }
+  requestAnimationFrame(loop);
+}
+
+startNewRun();
+requestAnimationFrame(loop);
+
+// Expose clean test/debug hook for automated QA
+window.BG40 = {
+  get game(){ return game; },
+  startNewRun, rebuildWallRing,
+  canBuildTower, canDevelopNode, canExpandTile, isGateInteriorTile,
+  developNode, upgradeWorkshop, buildTower, upgradeTower, sellTower,
+  expandTile, recruitResident, toggleResidentRole, repairWallDay, repairCastleNight,
+  startNight, castWhirlwind, castDash, castRally, pickCard, tick,
+  TOWERS, CARDS, NODE_META, ENEMY_TYPES, NIGHT_CONFIG,
+  tileAt, idxOf, currentRates, workshopYield
+};
+</script>
+</body>
+</html>
