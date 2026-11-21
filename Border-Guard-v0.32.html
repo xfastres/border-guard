@@ -618,85 +618,131 @@ dialog::backdrop{background:rgba(8,12,20,.66)}
    class 挂在 body 而非 documentElement，兼容 Node 测试 VM 的 DOM 桩。 */
 body.fx-weak *{animation:none!important;transition:none!important}
 
-/* ===== v0.32 UI 视觉统一：深青玻璃面板 / 金色边线 / 明亮卡牌 =====
+/* ===== v0.32 UI 视觉统一与页面精修：深青玻璃面板 / 金色边线 / 明亮卡牌 / 响应式防遮挡 =====
    本层仅覆盖展示样式，不修改游戏状态、数值、地图 Canvas、寻路、输入和结算逻辑。 */
 :root{
  --bg:#102326;--paper:#173337;--line:#54716a;--text:#f6f4e5;--muted:#c5d8ce;
  --accent:#f4c45c;--quiet:#18363a;--dark:#10282d;--ink:#26301d;
- --glass:rgba(10,31,39,.88);--glass-line:rgba(193,211,184,.44);
+ --glass:rgba(10,31,39,.90);--glass-line:rgba(205,218,185,.48);
  --gold:#ffd36b;--gold-line:rgba(255,211,107,.72);--hp:#8cdd78;
 }
 body{background:#102326;color:#f6f4e5}
-.top{background:linear-gradient(180deg,#1b3541 0%,#142b34 58%,#10252d 100%);border-bottom:2px solid #c99d47;box-shadow:0 4px 18px rgba(2,13,17,.35),inset 0 1px rgba(255,255,255,.06)}
-.identity h1{color:#fff2d2;text-shadow:0 2px 8px rgba(0,0,0,.35)}
-.crest{background:linear-gradient(145deg,#ffe49a,#d79c35 62%,#8e642b)}
-.time{background:linear-gradient(180deg,rgba(9,25,33,.9),rgba(18,43,49,.94));border:1px solid rgba(207,178,105,.42);box-shadow:inset 0 1px 4px rgba(0,0,0,.34),0 2px 8px rgba(0,0,0,.14)}
-#phaseName{color:#fff0ca;font-weight:800}#clockReadout{color:#f5d18a}
-.stock{background:linear-gradient(180deg,rgba(9,26,33,.92),rgba(17,42,47,.92));border:1px solid rgba(157,184,162,.2);border-radius:9px;box-shadow:inset 0 1px rgba(255,255,255,.045),0 2px 5px rgba(0,0,0,.16)}
-.stock span{color:#d7e5d9}.stock strong{color:#fff0c8;text-shadow:0 1px 3px rgba(0,0,0,.45)}
-.stock .income.pos{color:#9de77e}.stock .income.neg{color:#ff9e83}
-button{color:#f7f2df;background:linear-gradient(180deg,#23454a,#18363b);border-color:#668078;box-shadow:inset 0 1px rgba(255,255,255,.07),0 2px 4px rgba(0,0,0,.18);transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease}
-button:hover:not(:disabled){color:#fff8e6;background:linear-gradient(180deg,#315b58,#204448);border-color:#e2bf71;box-shadow:0 0 0 1px rgba(255,211,107,.18),0 4px 10px rgba(0,0,0,.22)}
-button.gold{color:#302512;background:linear-gradient(180deg,#ffe08d 0%,#f4c04f 54%,#d9962f 100%);border-color:#ffe5a1;box-shadow:inset 0 1px rgba(255,255,255,.5),0 2px 0 #926124,0 5px 12px rgba(0,0,0,.22)}
-button.gold:hover:not(:disabled){background:linear-gradient(180deg,#ffedb4 0%,#ffd36b 56%,#e7a83a 100%);box-shadow:inset 0 1px rgba(255,255,255,.65),0 0 0 2px rgba(255,219,132,.22),0 6px 14px rgba(0,0,0,.25)}
-button.active,button[aria-pressed="true"]{color:#ffdf91;border-color:#ffd36b;background:linear-gradient(180deg,#55472a,#343321);box-shadow:0 0 0 1px rgba(255,211,107,.25),0 0 16px rgba(255,196,75,.16)}
+.top{background:linear-gradient(180deg,#1c3844 0%,#142c36 58%,#0f232b 100%);border-bottom:2px solid #cfa046;box-shadow:0 4px 18px rgba(2,13,17,.42),inset 0 1px rgba(255,255,255,.08)}
+.identity h1{color:#fff2d2;text-shadow:0 2px 8px rgba(0,0,0,.38);letter-spacing:1.2px}
+.crest{background:linear-gradient(145deg,#ffe7a3,#d99e36 62%,#8e642b);box-shadow:inset 0 0 0 1.5px rgba(72,44,10,.7),0 2px 4px rgba(0,0,0,.3)}
+.time{background:linear-gradient(180deg,rgba(8,23,31,.92),rgba(17,42,48,.95));border:1px solid rgba(212,181,108,.46);box-shadow:inset 0 1px 4px rgba(0,0,0,.36),0 2px 8px rgba(0,0,0,.16)}
+#phaseName{color:#fff0ca;font-weight:800}#clockReadout{color:#f6d38b}
+.stock{background:linear-gradient(180deg,rgba(8,25,32,.94),rgba(16,41,46,.94));border:1px solid rgba(168,196,174,.28);border-radius:11px;padding:2px 10px 2px 4px;box-shadow:inset 0 1px rgba(255,255,255,.05),0 2px 6px rgba(0,0,0,.18)}
+.stock span{color:#d7e5d9;gap:6px}.stock strong{color:#fff1cc;text-shadow:0 1px 3px rgba(0,0,0,.45);font-size:18px}
+.stock .glyph{background:radial-gradient(circle at 48% 36%,#315a64,#132c34);border:1px solid rgba(205,222,198,.32)}
+@media(min-width:921px){
+  .stock .stock-name{position:static;width:auto;height:auto;overflow:visible;clip:auto;font-size:11.5px;color:#cde0d4;font-weight:700;letter-spacing:.3px}
+}
+.stock .income{background:rgba(255,255,255,.05);padding:1px 6px;border-radius:999px;color:#b2c6bc;font-size:10.5px}
+.stock .income.pos{color:#a8f28a;background:rgba(116,208,82,.15);border:1px solid rgba(157,231,126,.28)}
+.stock .income.neg{color:#ffaa91;background:rgba(232,96,68,.16);border:1px solid rgba(255,158,131,.3)}
+.stock .delta{top:-8px;bottom:auto;right:6px;padding:1px 6px;border-radius:999px;background:#102b30;box-shadow:0 2px 6px rgba(0,0,0,.45);font-size:11px}
+#actionCount{background:linear-gradient(180deg,rgba(11,30,38,.94),rgba(19,46,52,.94));border:1px solid rgba(208,180,108,.42);color:#fff2cf;box-shadow:inset 0 1px rgba(255,255,255,.06)}
+button{color:#f7f2df;background:linear-gradient(180deg,#24484d,#17353a);border-color:#68847b;box-shadow:inset 0 1px rgba(255,255,255,.08),0 2px 4px rgba(0,0,0,.2);transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease}
+button:hover:not(:disabled){color:#fff8e6;background:linear-gradient(180deg,#325e5b,#20464a);border-color:#e5c274;box-shadow:0 0 0 1px rgba(255,211,107,.2),0 4px 10px rgba(0,0,0,.24)}
+button.gold{color:#2d220f;background:linear-gradient(180deg,#ffe394 0%,#f5c252 54%,#d9962f 100%);border-color:#ffe7a6;box-shadow:inset 0 1px rgba(255,255,255,.55),0 2px 0 #8f5e22,0 5px 12px rgba(0,0,0,.24)}
+button.gold:hover:not(:disabled){background:linear-gradient(180deg,#ffefb8 0%,#ffd570 56%,#e8a93b 100%);box-shadow:inset 0 1px rgba(255,255,255,.68),0 0 0 2px rgba(255,219,132,.25),0 6px 14px rgba(0,0,0,.28)}
+button.active,button[aria-pressed="true"]{color:#ffe299;border-color:#ffd36b;background:linear-gradient(180deg,#5b4c2c,#373522);box-shadow:0 0 0 1px rgba(255,211,107,.28),0 0 16px rgba(255,196,75,.18)}
 button:focus-visible,summary:focus-visible,#map:focus-visible{outline:2px solid #ffe08a;outline-offset:2px}
-.briefing{background:linear-gradient(135deg,rgba(12,37,43,.93),rgba(18,47,48,.87));border-color:rgba(220,190,120,.56);box-shadow:0 6px 20px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.05)}
-.brief-copy h2{color:#ffe4a0;text-shadow:0 1px 3px rgba(0,0,0,.3)}#mapHint{color:#d4e2d2}
-.glass-panel,.side,.command-deck{background:linear-gradient(145deg,rgba(13,39,44,.91),rgba(10,29,37,.88));border:1px solid rgba(192,211,178,.4);box-shadow:0 10px 26px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.055),inset 0 0 0 1px rgba(12,25,27,.2);backdrop-filter:blur(12px) saturate(1.12)}
+.briefing{background:linear-gradient(135deg,rgba(11,36,43,.94),rgba(17,47,49,.89));border-color:rgba(224,193,122,.6);box-shadow:0 6px 20px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.06)}
+body.battle .briefing{background:linear-gradient(135deg,rgba(14,31,48,.95),rgba(26,33,52,.91));border-color:rgba(242,164,114,.66);box-shadow:0 8px 24px rgba(0,0,0,.38),inset 0 1px rgba(255,255,255,.07)}
+.brief-copy h2{color:#ffe5a3;text-shadow:0 1px 3px rgba(0,0,0,.35)}#mapHint{color:#d6e5d4}
+.battle-stat{display:inline-flex;align-items:center;background:rgba(7,21,29,.68);border:1px solid rgba(176,206,196,.28);border-radius:999px;padding:2px 10px;margin:3px 6px 0 0;color:#eef6ed;font-variant-numeric:tabular-nums;box-shadow:inset 0 1px rgba(255,255,255,.05)}
+.battle-stat.critical{background:linear-gradient(180deg,rgba(186,52,38,.92),rgba(128,30,22,.94));border-color:#ff9e80;color:#fff7f2;box-shadow:0 0 12px rgba(255,94,62,.35)}
+.glass-panel,.side,.command-deck{background:linear-gradient(145deg,rgba(12,38,44,.92),rgba(9,28,36,.89));border:1px solid rgba(196,214,182,.44);box-shadow:0 10px 26px rgba(0,0,0,.36),inset 0 1px rgba(255,255,255,.06),inset 0 0 0 1px rgba(12,25,27,.2);backdrop-filter:blur(12px) saturate(1.12)}
 .glass-panel{border-radius:15px}
+.legend-panel.collapsed,.minimap-panel.collapsed{padding:0;border-color:transparent;background:transparent;box-shadow:none;backdrop-filter:none}
+.legend-panel.collapsed .rail-head button,.minimap-panel.collapsed .rail-head button{border-radius:12px;background:linear-gradient(145deg,rgba(14,42,47,.93),rgba(10,30,38,.90));border:1px solid rgba(218,188,116,.56);box-shadow:0 6px 16px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.08);color:#ffe7a8;font-weight:700;padding:8px 13px}
+.legend-panel.collapsed .rail-head button:hover,.minimap-panel.collapsed .rail-head button:hover{border-color:#ffd36b;background:linear-gradient(145deg,rgba(22,56,60,.96),rgba(15,40,48,.94))}
 .rail-head h3,.legend-panel h3,.minimap-panel h3{color:#ffdc8c;text-shadow:0 1px 4px rgba(0,0,0,.4)}
-.legend-panel ul{color:#e2eadb}
-#miniMap{border:1px solid rgba(255,216,135,.62);box-shadow:inset 0 0 0 2px rgba(255,255,255,.06),0 3px 10px rgba(0,0,0,.24)}
-.side{border-radius:15px;overflow:auto}
-.sheet-bar{background:linear-gradient(180deg,#24464a,#17373c);border-bottom:1px solid rgba(213,183,112,.48);box-shadow:0 2px 8px rgba(0,0,0,.16)}
+.legend-panel ul{color:#e2eadb;gap:5px}
+.legend-swatch{border:1px solid rgba(255,255,255,.28);box-shadow:0 1px 2px rgba(0,0,0,.25)}
+#miniMap{border:1.5px solid rgba(255,216,135,.66);box-shadow:inset 0 0 0 2px rgba(255,255,255,.06),0 3px 10px rgba(0,0,0,.26)}
+.side{border-radius:16px;overflow:auto}
+.sheet-bar{background:linear-gradient(180deg,#25484c,#17373c);border-bottom:1px solid rgba(216,186,114,.52);box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .sheet-bar h2{color:#ffe4a3;text-shadow:0 1px 3px rgba(0,0,0,.35)}
-.panel h3{color:#ffdf98;text-shadow:0 1px 3px rgba(0,0,0,.22)}.panel p{color:#dce8da}
-.section-caption,summary{color:#f0d6a0}
-.resident-row,#questBar section,#questBar details,.diagnosis{border-top-color:rgba(197,211,176,.25)}
-.inspect-art.painted{border-color:rgba(255,218,139,.7);box-shadow:inset 0 0 0 2px rgba(255,255,255,.3),0 5px 14px rgba(0,0,0,.3)}
-.inspect-bars .bar{background:#10272d;border-color:#668078}.inspect-bars .bar>i{background:linear-gradient(90deg,#69bd66,#b8ed82)}
+.panel h3{color:#ffdf98;text-shadow:0 1px 3px rgba(0,0,0,.22)}.panel p{color:#dce8da;line-height:1.45}
+.section-caption,summary{color:#f2d8a2;font-weight:700}
+.resident-row{background:rgba(8,24,30,.52);border:1px solid rgba(182,206,184,.22);border-radius:11px;padding:8px 10px;margin-top:8px}
+.resident-row p{margin:0 0 4px;font-weight:600;color:#eff5ec}
+#questBar section,#questBar details,.diagnosis{border-top-color:rgba(197,211,176,.25)}
+#questChoices button{border-left:3px solid rgba(255,211,107,.65);padding:8px 10px;border-radius:9px}
+.inspect-art.painted{border-color:rgba(255,218,139,.72);box-shadow:inset 0 0 0 2px rgba(255,255,255,.3),0 5px 14px rgba(0,0,0,.3)}
+.inspect-bars{background:rgba(8,23,29,.46);border:1px solid rgba(175,202,184,.18);border-radius:10px;padding:7px 9px}
+.inspect-bars .bar{background:#0e2329;border-color:#648078}.inspect-bars .bar>i{background:linear-gradient(90deg,#69bd66,#b8ed82)}
 .inspect-bars .bar.wall>i{background:linear-gradient(90deg,#d6c9a4,#ffe18a)}
-.inspect-bars .bar-row{color:#f3e4bf}.inspect-bars .bar-val{color:#fff3d5}
-.command-deck{border-radius:18px;border-color:rgba(211,184,117,.58);padding:9px 11px}
+.inspect-bars .bar-row{color:#f3e4bf}.inspect-bars .bar-val{color:#fff3d5;font-weight:700}
+.command-deck{border-radius:18px;border-color:rgba(214,186,118,.6);padding:9px 11px}
 .group-tabs button{background:linear-gradient(180deg,#25464a,#16363b);border-color:#667d72}
-.group-tabs button.active,.group-tabs button[aria-pressed="true"]{background:linear-gradient(180deg,#66532c,#3d3724);border-color:#ffd36b;color:#ffe8ad}
-#duskBtn{letter-spacing:.2px}
-.cmd-btn{border-color:rgba(152,181,161,.36);background:linear-gradient(180deg,rgba(29,62,65,.96),rgba(17,42,49,.96));box-shadow:inset 0 1px rgba(255,255,255,.07),0 3px 8px rgba(0,0,0,.2)}
-.cmd-btn .cmd-icon{background:radial-gradient(circle at 48% 34%,#4c7890,#203f50 72%);border-color:rgba(181,209,194,.62);box-shadow:inset 0 1px rgba(255,255,255,.22),inset 0 -3px rgba(0,0,0,.2),0 2px 5px rgba(0,0,0,.2)}
-.cmd-btn .cmd-label{color:#fff0ca;text-shadow:0 1px 3px rgba(0,0,0,.45)}.cmd-btn small{color:#c9d9ca}
-.cmd-btn.active,.cmd-btn[aria-pressed="true"]{border-color:#ffd36b;background:linear-gradient(180deg,rgba(78,75,43,.96),rgba(43,49,34,.96));box-shadow:0 0 0 1px rgba(255,211,107,.4),0 0 18px rgba(255,194,65,.22),0 4px 10px rgba(0,0,0,.24)}
+.group-tabs button.active,.group-tabs button[aria-pressed="true"]{background:linear-gradient(180deg,#68552d,#3e3824);border-color:#ffd36b;color:#ffe8ad}
+#duskBtn{letter-spacing:.3px}
+.cmd-btn{border-color:rgba(156,186,166,.38);background:linear-gradient(180deg,rgba(30,64,67,.96),rgba(16,41,48,.96));box-shadow:inset 0 1px rgba(255,255,255,.08),0 3px 8px rgba(0,0,0,.22)}
+.cmd-btn:hover:not(:disabled){transform:translateY(-1px)}
+.cmd-btn .cmd-icon{background:radial-gradient(circle at 48% 34%,#4e7b94,#1f3e4f 72%);border-color:rgba(186,214,198,.65);box-shadow:inset 0 1px rgba(255,255,255,.24),inset 0 -3px rgba(0,0,0,.2),0 2px 5px rgba(0,0,0,.22)}
+.cmd-btn .cmd-label{color:#fff1cc;text-shadow:0 1px 3px rgba(0,0,0,.45)}.cmd-btn small{color:#cbe0d0}
+.cmd-btn.active,.cmd-btn[aria-pressed="true"]{border-color:#ffd36b;background:linear-gradient(180deg,rgba(82,78,44,.96),rgba(44,50,34,.96));box-shadow:0 0 0 1px rgba(255,211,107,.42),0 0 18px rgba(255,194,65,.24),0 4px 10px rgba(0,0,0,.26)}
 .cmd-btn.active .cmd-icon,.cmd-btn[aria-pressed="true"] .cmd-icon{background:radial-gradient(circle at 50% 35%,#fff1bd,#dca63c 72%);border-color:#fff0b6}
 .cmd-btn.gold{border-color:#f4c45c}.cmd-btn.gold .cmd-icon{background:radial-gradient(circle at 50% 35%,#fff4c8,#e7ad36 72%);border-color:#fff0b6}
-#toolState{color:#ffe7a8;background:rgba(244,196,92,.14);border-color:rgba(255,211,107,.65)}
+.cmd-btn.gold .cmd-label{color:#2c200d;text-shadow:0 1px 0 rgba(255,255,255,.45)}.cmd-btn.gold small{color:#4d3408;font-weight:600}
+#toolState{color:#ffe7a8;background:rgba(244,196,92,.16);border-color:rgba(255,211,107,.68)}
 #cancelTool{border-color:#df8e79;color:#ffd9cb}
-#cardOverlay{background:radial-gradient(ellipse at 50% 48%,rgba(20,50,48,.38),rgba(5,21,29,.84));backdrop-filter:blur(3px)}
-.card-title{color:#ffe6a2;text-shadow:0 2px 5px rgba(0,0,0,.55),0 0 18px rgba(255,206,102,.2)}
+#cardOverlay{background:radial-gradient(ellipse at 50% 48%,rgba(18,48,46,.42),rgba(5,20,28,.86));backdrop-filter:blur(4px)}
+.card-title{color:#ffe6a2;text-shadow:0 2px 5px rgba(0,0,0,.55),0 0 18px rgba(255,206,102,.22)}
 .card-sub{color:#e5eedf;text-shadow:0 1px 3px rgba(0,0,0,.55)}
-.growth-card{border-radius:17px;border-width:2px;box-shadow:0 12px 28px rgba(0,0,0,.42),inset 0 0 0 3px rgba(255,255,255,.58)}
+.growth-card{border-radius:17px;border-width:2px;box-shadow:0 12px 28px rgba(0,0,0,.44),inset 0 0 0 3px rgba(255,255,255,.6)}
 .growth-card.tone-war{background:linear-gradient(180deg,#fff9ff 0%,#eee2fb 58%,#d8c7f0 100%);border-color:#a68ad8}
+.growth-card.tone-war .card-art{background:radial-gradient(circle at 50% 42%,#fff 0 38%,#e3d2f8 74%);box-shadow:inset 0 0 0 2px #a68ad8,0 4px 10px rgba(82,52,136,.16)}
 .growth-card.tone-wall{background:linear-gradient(180deg,#fbfff9 0%,#e0f3dc 58%,#c6e6bf 100%);border-color:#8abf83}
+.growth-card.tone-wall .card-art{background:radial-gradient(circle at 50% 42%,#fff 0 38%,#cceac4 74%);box-shadow:inset 0 0 0 2px #7db876,0 4px 10px rgba(48,104,44,.16)}
 .growth-card.tone-life{background:linear-gradient(180deg,#fffdf2 0%,#f9edc9 58%,#ead79f 100%);border-color:#d2ae5e}
+.growth-card.tone-life .card-art{background:radial-gradient(circle at 50% 42%,#fff 0 38%,#f6e3af 74%);box-shadow:inset 0 0 0 2px #cfa855,0 4px 10px rgba(120,86,20,.16)}
 .growth-card:hover:not(:disabled){transform:translateY(-5px);box-shadow:0 17px 32px rgba(0,0,0,.48),0 0 0 3px rgba(255,211,107,.58),inset 0 0 0 3px rgba(255,255,255,.64)}
 .growth-card.gold-ring{border-color:#ffd36b;box-shadow:0 0 0 3px rgba(255,211,107,.6),0 14px 32px rgba(0,0,0,.48),inset 0 0 0 3px rgba(255,255,255,.62)}
 .growth-card .card-go{border:1px solid rgba(92,106,89,.24);box-shadow:0 2px 0 rgba(83,70,39,.38),inset 0 1px rgba(255,255,255,.4)}
-#eventBanner{background:linear-gradient(180deg,rgba(28,69,68,.97),rgba(12,39,46,.97));border-color:#ffd36b;box-shadow:0 12px 34px rgba(0,0,0,.5),0 0 20px rgba(255,201,89,.13)}
+#eventBanner{top:calc(var(--hud-top,64px) + 6px);background:linear-gradient(180deg,rgba(28,69,68,.97),rgba(12,39,46,.97));border-color:#ffd36b;box-shadow:0 12px 34px rgba(0,0,0,.5),0 0 20px rgba(255,201,89,.13)}
 #eventBanner b{color:#ffe9ae}#eventBanner span{color:#e1ebdb}
 #eventBanner.good{background:linear-gradient(180deg,rgba(43,104,61,.97),rgba(21,61,42,.97));border-color:#b7ea85}
 #eventBanner.night{background:linear-gradient(180deg,rgba(38,56,94,.97),rgba(20,33,61,.97));border-color:#a9c1ff}
 #eventBanner.danger{background:linear-gradient(180deg,rgba(112,47,35,.97),rgba(64,28,28,.97));border-color:#ff9c78}
-#alertBar{background:linear-gradient(180deg,rgba(24,57,61,.96),rgba(12,36,43,.96));border-color:rgba(239,203,125,.68);color:#ffedc2;box-shadow:0 5px 16px rgba(0,0,0,.24)}
+#alertBar{top:calc(var(--hud-top,64px) + 2px);background:linear-gradient(180deg,rgba(24,57,61,.96),rgba(12,36,43,.96));border-color:rgba(239,203,125,.68);color:#ffedc2;box-shadow:0 5px 16px rgba(0,0,0,.24)}
+#alertBar:has(+ #eventBanner:not([hidden])){visibility:hidden;opacity:0;pointer-events:none}
 #alertBar.raid{background:linear-gradient(180deg,rgba(104,47,35,.97),rgba(62,28,28,.97));border-color:#e58d72}
 #alertBar.growth{border-color:#ffd36b}
 #toast{background:linear-gradient(180deg,rgba(20,57,59,.97),rgba(10,35,42,.97));border-color:#e7bd68;color:#fff0c8;box-shadow:0 7px 20px rgba(0,0,0,.36)}
 #toast.bad{border-color:#f0927b;color:#ffe0d5}
-dialog{background:linear-gradient(145deg,#1c4143,#122e36);border-color:#d4b56e;box-shadow:0 18px 48px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.06)}
-dialog h2{color:#ffe3a0}dialog p{color:#dfebdc}
-.march span{border-color:rgba(183,205,177,.34);background:rgba(15,42,45,.5)}
-.march .current{background:rgba(244,196,92,.18);border-color:#ffd36b;color:#ffe6a4}
-.reports li{border-bottom-color:rgba(183,205,177,.2)}
-#pauseOverlay .card{background:linear-gradient(145deg,#1c4143,#122e36);border:1px solid #d4b56e;box-shadow:0 18px 48px rgba(0,0,0,.48)}
-@media(max-width:600px){.glass-panel,.side,.command-deck{box-shadow:0 7px 18px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.04)}.growth-card{border-radius:14px}}
+dialog{background:linear-gradient(145deg,#1b4245,#112d35);border:1.5px solid #dbb96e;border-radius:16px;padding:18px 20px;box-shadow:0 20px 52px rgba(0,0,0,.55),inset 0 1px rgba(255,255,255,.08)}
+dialog h2{color:#ffe4a3;letter-spacing:.5px;margin-bottom:4px}dialog p{color:#e0ecdd;line-height:1.55}
+dialog .choices{gap:8px;margin-top:14px}
+dialog .choices button{padding:10px 14px;border-radius:11px;font-weight:700;text-align:center}
+.march span{border-color:rgba(183,205,177,.34);background:rgba(15,42,45,.55);font-weight:600}
+.march .done{background:rgba(56,108,68,.55);border-color:rgba(154,220,142,.45);color:#dff5d4}
+.march .current{background:rgba(244,196,92,.22);border-color:#ffd36b;color:#ffe8a8;box-shadow:0 0 10px rgba(255,211,107,.16)}
+.reports li{border-bottom-color:rgba(183,205,177,.2);line-height:1.45}
+#pauseOverlay .card{background:linear-gradient(145deg,#1c4143,#122e36);border:1.5px solid #d4b56e;border-radius:16px;box-shadow:0 18px 48px rgba(0,0,0,.52)}
+@media(max-width:600px){
+  .glass-panel,.side,.command-deck{box-shadow:0 7px 18px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.04)}
+  .growth-card{border-radius:14px}
+  #eventBanner{top:calc(var(--hud-top,64px) + 4px);padding:7px 14px}
+  #alertBar{top:calc(var(--hud-top,64px) + 2px)}
+  .side .sheet-bar{padding:3px 10px}
+  .side .panel{padding:6px 10px 10px}
+  .side .panel h3{font-size:14px;line-height:1.2}
+  .side .panel>div>p{margin:2px 0;font-size:12px}
+  .side .inspect-art.painted{float:right;width:78px;height:40px;max-height:40px;aspect-ratio:auto;margin:0 0 4px 8px;border-radius:8px}
+  .side .inspect-bars{clear:both;padding:4px 7px;margin:4px 0;gap:3px}
+  .side .inspect-bars .bar{height:8px}
+  .side .tile-actions{clear:both;margin-top:5px;gap:5px}
+  .side .tile-actions button{min-height:32px;padding:3px 8px;font-size:11.5px}
+  .side .resident-row{padding:5px 8px;margin-top:5px}
+}
+@media(orientation:landscape) and (max-height:470px){
+  #eventBanner{top:calc(var(--hud-top,52px) + 4px)}
+}
 @media(prefers-reduced-motion:reduce){button,.growth-card{transition:none!important}.growth-card{animation:none!important}}
 
 </style>
@@ -715,6 +761,7 @@ dialog h2{color:#ffe3a0}dialog p{color:#dfebdc}
     <div id="timeBar" aria-hidden="true"><i id="timeFill"></i></div>
   </div>
   <div class="header-actions">
+    <button id="speedBtn" type="button" aria-pressed="false" title="切换游戏倍速（1× / 2×）">1×</button>
     <button id="pauseBtn" type="button">暂停</button>
     <button id="settingsBtn" type="button" aria-expanded="false" aria-controls="settingsMenu">菜单</button>
   </div>
@@ -885,7 +932,7 @@ const DEMO = {
   heroDownDelay: 12, heroDownHp: .4, heroDownInvuln: 1,
   stagingMin: 10, stagingMax: 16, stagingLead: 3, stagingMinDistance: 4,
   reserveTakeRate: .25,
-  campHealth: 80, campDefenses: 3, campCost: {material:8,gold:4},
+  campHealth: 80, campDefenses: 3, campCost: {material:6,gold:3},
   repairCost: {material:5}, reclaimGold: 4, rescueRange: 1.6,
   // 试玩：营地当天第一次具备袭击资格时，若剩余白天不足这几秒，或就在入夜那一帧，今夜不打它。
   raidReactSeconds: 10,
@@ -1201,17 +1248,23 @@ function collapseWall(ringId){
       book.collapseSide=resolveCollapseSide();
       book.towersAtCollapse=game.tiles.filter(t=>t.building?.type==='tower').length;
     }
+    // 破墙缓冲机制：碎石震荡使近墙普通敌军短暂受阻 1.2 秒，并激发背水一战（重置领主挥击冷却、补 1 次紧急号令）
+    for(const e of game.enemies||[]){
+      if(e&&e.hp>0&&!e.boss)e.cooldown=Math.max(e.cooldown||0,1.2);
+    }
+    if(game.hero&&game.hero.hp>0)game.hero.cooldown=0;
+    if((game.rallyCharges||0)<=0)game.rallyCharges=1;
   }
   if(ring.repair&&ring.repair.status==='building'){
     ring.repair.status='failed';
   }
   invalidateNavigation();
   if(game.fronts)for(const front of game.fronts)calculateRoutes(front);
-  report(ringId==='home'?'主城城墙倒塌！敌军涌入。':'营地围墙倒塌。',true);
+  report(ringId==='home'?'主城城墙倒塌！碎石短暂阻滞敌军，已激发紧急号令齐射，快回城接敌或急修！':'营地围墙倒塌。',true);
   // WP4：整圈倒塌低频音，幂等 return 之后、账本三字段之后，一夜只响一次
   if(ringId==='home')AudioKit.play('collapse');
   if(ringId==='home'&&typeof showBanner==='function'){
-    showBanner('城墙倒塌！','整圈城墙已失效，主城即将失守 · 立刻回城接敌或急修','danger');
+    showBanner('城墙倒塌！','整圈城墙已失效 · 已获紧急号令齐射，立刻回城接敌或城堡急修','danger');
     if(typeof triggerShake==='function')triggerShake(6);
     if(game.castle)worldFx('burst',game.castle.x+.5,game.castle.y+.5,'',"#e2dccb");
   }
@@ -1225,6 +1278,19 @@ function wallDayRepairCost(ringId){
   const ratio=missing/ring.maxHp||1;
   return Math.max(V029.dayRepairMinCost,Math.ceil(ratio*V029.dayRepairFullCost));
 }
+function wallDayRepairPlan(ringId){
+  const ring=game.wallRings?.get?.(ringId);
+  if(!ring)return {need:0,pay:0,heal:0,partial:false,full:true};
+  const cur=ring.status==='broken'?0:Math.max(0,ring.hp);
+  const missing=Math.max(0,ring.maxHp-cur);
+  if(missing<=0&&ring.status!=='broken')return {need:0,pay:0,heal:0,partial:false,full:true};
+  const need=wallDayRepairCost(ringId);
+  const avail=Math.max(0,Math.floor(game?.resources?.material||0));
+  if(avail>=need)return {need,pay:need,heal:missing,partial:false,full:false};
+  if(avail<=0)return {need,pay:0,heal:0,partial:true,full:false};
+  const heal=Math.min(missing,Math.max(avail*50,Math.round(missing*(avail/need))));
+  return {need,pay:avail,heal,partial:true,full:false};
+}
 function repairWallDay(ringId){
   const ring=game.wallRings?.get?.(ringId);
   if(!ring)return {ok:false,reason:'missing'};
@@ -1232,15 +1298,17 @@ function repairWallDay(ringId){
   const need=wallDayRepairCost(ringId);
   if(ring.status!=='broken'&&ring.hp>=ring.maxHp)return {ok:false,reason:'full'};
   if(need<=0)return {ok:false,reason:'full'};
-  if(!spend({material:need},false,'repair','整圈修墙'))return {ok:false,reason:'funds'};
-  ring.hp=ring.maxHp;
+  const plan=wallDayRepairPlan(ringId);
+  if(plan.pay<=0||!spend({material:plan.pay},false,'repair','整圈修墙'))return {ok:false,reason:'funds'};
+  const cur=ring.status==='broken'?0:Math.max(0,ring.hp);
+  ring.hp=plan.partial?Math.min(ring.maxHp,cur+plan.heal):ring.maxHp;
   ring.status='intact';
   ring.repair=emptyWallRepair();
   // 倒塌后日修重建几何
   if(ringId==='home')syncWallRingGeometry('home',t=>!!t?.owned,true);
   invalidateNavigation();
-  announce((ringId==='home'?'主城城墙':'营地围墙')+'已修满（'+need+' 材料）。');
-  return {ok:true,cost:need};
+  announce((ringId==='home'?'主城城墙':'营地围墙')+(plan.partial?'已部分修补 +'+plan.heal+' 耐久（'+plan.pay+' 材料）。':'已修满（'+plan.pay+' 材料）。'));
+  return {ok:true,cost:plan.pay,partial:plan.partial,healed:plan.heal};
 }
 function startNightRepair(ringId){
   const ring=game.wallRings?.get?.(ringId);
@@ -1858,12 +1926,20 @@ function createCamp(t){
   if(!spend(DEMO.campCost,true,'build','建立营地'))return null;
   const number=game.camps.length+1;
   const c={id:'camp-'+number,number,tile:at(t.x,t.y),hp:DEMO.campHealth,controlled:false,
-    lost:false,running:false,financial:false,auto:false,paid:new Set(),damaged:false,guardTimer:0};
+    lost:false,running:false,financial:false,auto:false,paid:new Set(),damaged:false,guardTimer:0,freeFirstPost:true};
   game.camps.push(c);
   t.campSolid=true;
+  for(const cell of game.tiles){
+    if(Math.max(Math.abs(cell.x-t.x),Math.abs(cell.y-t.y))<=2){
+      cell.visible=true;
+      if(cell.node&&SECRETS[cell.node.kind])markCodex(cell.node.kind);
+    }
+  }
   invalidateNavigation();
+  worldFx('build',t.x+.5,t.y+.5,campName(c)+'建成','#ffe08a');
+  AudioKit.play('build');
   game.mode=null;game.selected=c.tile;openInspector(t);
-  announce(campName(c)+'已建成。派一名培养过的居民前往驻守。');
+  announce(campName(c)+'已建成，周边视野已点亮（首名驻员到岗免首周期维护）。派一名培养过的居民前往驻守。');
   return c;
 }
 /* v0.22 建造前置校验：先验证，后扣费。
@@ -1962,6 +2038,14 @@ function postResident(r,c){
   if(gained)noteRaidWindow(c);
   if(game.phase!=='day'&&!c.paid.has(r.id)){
     r.state='waiting';
+    return;
+  }
+  if(c.freeFirstPost&&!c.paid.has(r.id)){
+    c.freeFirstPost=false;
+    c.paid.add(r.id);
+    r.state='posted';
+    c.running=true;c.financial=false;
+    report(campName(c)+'首名驻员到岗（首周期免维护），营地立即运转。',true);
     return;
   }
   const paid=c.financial&&!c.paid.has(r.id)?false:payStaff(c,[r]);
@@ -3032,6 +3116,7 @@ function makeGame(seed = Math.floor(Math.random()*999999)+1) {
     presentation:null, shake:{t:0,mag:0}, buildingFlash:{},
     settings:{sound:true,effects:'standard'},
     kills:0, waveKills:0, waveGold:0, result:null, ledgerDay:null,
+    battleSpeed:1, castleShield:0, homeGuardCooldown:0,
     // WP2：鼠标悬停格（索引，不是对象）与最近 5 秒圈墙净伤害样本
     hoverTile:null, wallDamageSamples:[]
   };
@@ -3090,7 +3175,8 @@ function worldFx(kind,x,y,text,color){
     }
   }
   if(text&&game.floats&&visualBudget()<FX_CAP){
-    game.floats.push({key:'fx'+(++game.combatEventSeq),kind:'fx',amount:0,x,y,color:color||'#fff3c0',time:1.1,max:1.1,text});
+    const near=game.floats.filter(f=>f.kind==='fx'&&f.time>0&&Math.hypot(f.x-x,f.y-y)<2.4).length;
+    game.floats.push({key:'fx'+(++game.combatEventSeq),kind:'fx',amount:0,x,y:y-near*.44,color:color||'#fff3c0',time:1.1,max:1.1,text});
   }
 }
 function costText(cost) {
@@ -3300,7 +3386,9 @@ function build(t,type) {
   AudioKit.play('build');
   // 连续建造：资源或行动用完才自动退出放置模式
   if(!game.actions||!canPay(spec.cost))game.mode=null;
-  announce(spec.label+'已建成。'+(game.mode?'继续点空地可再放一座，Esc 或再点一次按钮结束。':''));
+  const day2Hint=type==='tower'&&game.day===1&&game.castle&&towersOnSide(defenseSide())===1
+    ?'（提示：第 2 夜敌军将改从东侧来袭，建议保留材料次日东侧布防。）':'';
+  announce(spec.label+'已建成。'+day2Hint+(game.mode?'继续点空地可再放一座，Esc 或再点一次按钮结束。':''));
 }
 function repair(t) {
   if(!t||!t.owned&&!campAt(t)?.controlled)return;
@@ -3309,12 +3397,13 @@ function repair(t) {
     if(game.castleHp>=game.castleMax){toast('城堡耐久已满。');return;}
     if(!spend(game.phase==='night'?{gold:5}:{material:5},game.phase!=='night','repair','维修城堡'))return;
     const beforeHp=game.castleHp;
-    game.castleHp=Math.min(game.castleMax,game.castleHp+(game.phase==='night'?18:35));
+    game.castleHp=Math.min(game.castleMax,game.castleHp+(game.phase==='night'?24:35));
     const healed=game.castleHp-beforeHp;
     const repairBook=nightBook();
     if(repairBook&&healed){repairBook.castleRepair+=healed;repairBook.repairs++;}
     if(game.phase==='night'){
-      toast('城堡急修完成，恢复 '+Math.ceil(healed)+' 耐久。');
+      game.castleShield=Math.max(game.castleShield||0,3.5);
+      toast('城堡急修完成，恢复 '+Math.ceil(healed)+' 耐久（3.5 秒内主城减伤 50%）。');
       updateBattleHud();
     }
     else announce('城堡白天维修完成。');
@@ -3437,7 +3526,7 @@ function showIntro(){
     '开局后，先从底部选择 A 或 B 前往探路。首夜前建城，敌军就会以城堡为目标。',
     '高难度下，居民可能永久阵亡。'
   ],[
-    {label:'普通难度 · 开始守卫',detail:'推荐第一次试玩',click:()=>{}},
+    {label:'普通难度 · 开始守卫',detail:'推荐第一次试玩',gold:true,click:()=>{}},
     {label:'高难度 · 开始守卫',detail:'居民可能永久阵亡',click:()=>{game.hard=true;}}
   ]);
 }
@@ -4222,12 +4311,13 @@ function moveEnemy(e,dt){
           x:campTile(camp).x+.5,y:campTile(camp).y+.5});
         if(!camp.hp)loseCamp(camp,front);
       }else{
+        const castleImpact=(game.castleShield||0)>0?Math.max(1,Math.floor(impact*.5)):impact;
         const beforeHp=game.castleHp;
-        game.castleHp=Math.max(0,game.castleHp-impact);
+        game.castleHp=Math.max(0,game.castleHp-castleImpact);
         const hitBook=nightBook();
         if(hitBook&&beforeHp>game.castleHp)hitBook.castleDamage+=beforeHp-game.castleHp;
         markBuildingFlash(game.castle);
-        emitCombatEvent({kind:'castleHit',sourceId:'enemy:'+e.id,targetId:'castle',amount:impact,
+        emitCombatEvent({kind:'castleHit',sourceId:'enemy:'+e.id,targetId:'castle',amount:castleImpact,
           x:game.castle.x+.5,y:game.castle.y+.5});
         if(game.castleHp<=game.castleMax/2&&!game.halfWarned){
           game.halfWarned=true;note('第 '+game.day+' 夜城堡耐久跌破一半');
@@ -4346,6 +4436,19 @@ function fireTowers(dt){
         damage:guards*9,sourceId:'guard:'+camp.id,source:'guard'});
     }
   }
+  game.homeGuardCooldown=Math.max(0,(game.homeGuardCooldown||0)-dt);
+  if(game.castle&&game.homeGuardCooldown<=0){
+    const homeGuards=game.residents.filter(r=>r.state==='home'&&r.role==='guard'&&r.hp>0);
+    if(homeGuards.length){
+      const target=enemies.find(e=>e.hp>0&&(distance(e,castle)<2.2||homeGuards.some(g=>distance(e,g)<2.1)));
+      if(target){
+        game.homeGuardCooldown=.8;
+        const from=homeGuards[0]?{x:homeGuards[0].x,y:homeGuards[0].y}:castle;
+        launchProjectile({kind:'bolt',from,to:{x:target.x,y:target.y},target,
+          damage:homeGuards.length*8,sourceId:'guard:home',source:'guard'});
+      }
+    }
+  }
 }
 /* v0.15 资源信息层：结算、面板预期、来源说明共用同一份计算，避免两处口径漂移。
    注意：产出不是「点一下采集」，而是已开发资源点在每夜结束、天亮时统一结算。 */
@@ -4360,14 +4463,33 @@ function hasActiveProduction(t){
   // 营地控制的资源仍按营地运转口径，不依赖领地生产实体
   return campYield(t)>0||(!!campAt(t)?.controlled&&!campAt(t)?.lost);
 }
+function homeProductionWorkers(t){
+  if(!t?.owned||!isProductionBuilding(t.building))return [];
+  ensureProductionMaps();
+  const prod=game.productionBuildings?.get?.(t.building.productionId);
+  if(!prod||!prod.active)return [];
+  return (prod.assignedResidentIds||[])
+    .map(id=>game.residents.find(r=>r.id===id))
+    .filter(r=>r&&r.state!=='dead'&&r.state!=='hurt'&&r.work?.buildingId===prod.id&&['working','travel'].includes(r.work.state));
+}
+function homeNodeYield(t){
+  if(!t?.owned||!t?.node?.developed||!YIELD[t.node.kind]||!hasActiveProduction(t))return 0;
+  const base=YIELD[t.node.kind][1];
+  let bonus=0;
+  for(const r of homeProductionWorkers(t)){
+    bonus+=1;
+    if((t.node.kind==='wood'&&r.role==='wood')||(['stone','mine','rich','iron'].includes(t.node.kind)&&r.role==='miner'))bonus+=1;
+  }
+  return base+bonus;
+}
 function forecastIncome(){
   const income={gold:0,material:0,food:0};
   for(const t of game.tiles){
     if(!t.node?.developed||!YIELD[t.node.kind])continue;
     if(t.owned){
       if(!hasActiveProduction(t))continue;
-      const [type,amount]=YIELD[t.node.kind];
-      income[type]+=amount;
+      const [type]=YIELD[t.node.kind];
+      income[type]+=homeNodeYield(t);
     }else{
       const gain=campYield(t);
       if(gain)income[YIELD[t.node.kind][0]]+=gain;
@@ -4410,7 +4532,7 @@ function resourceOutlook(t){
   if(!remainingHarvests())return '本夜是终局，胜利后直接结束：现在开发不会再获得普通天亮产出。';
   const gain='开发后每夜结束天亮 +'+base+' '+label;
   if(!n.developed){
-    if(canDevelop(t))return '还差 1 步：点「开发资源点」，'+gain+'（花 2 材料 · 1 行动）。'+(c?'营地驻员还能再加成。':'');
+    if(canDevelop(t))return '还差 1 步：点「开发资源点」，'+gain+'（花 2 材料 · 1 行动）。'+(c?'营地驻员还能再加成。':'派驻居民还可额外提产。');
     if(c)return campName(c)+'当前「'+campStatus(c)+'」：要居民到岗、维护缴清、未受损才能开发，'+gain+'。';
     if(!game.castle)return '还差：先建立城堡，再把领地扩到这里；'+gain+'。';
     if(isAdjacent(t))return '还差 1 步：先点「占领这块地」（'+DEMO.claimGold+' 金币），再开发；'+gain+'。';
@@ -4418,8 +4540,8 @@ function resourceOutlook(t){
   }
   if(t.owned&&!hasActiveProduction(t))
     return '生产建筑已拆除：当前 0 '+label+'，可重新开发后恢复天亮产出。';
-  const total=t.owned?base:campYield(t);
-  if(total>0)return '下次天亮 +'+total+' '+label+(total>base?'（基础 '+base+' + 驻员加成 '+(total-base)+'）':'')+' · 每夜结束结算一次，不是立刻到账。';
+  const total=t.owned?homeNodeYield(t):campYield(t);
+  if(total>0)return '下次天亮 +'+total+' '+label+(total>base?'（基础 '+base+' + 驻员加成 '+(total-base)+'）':t.owned?'（派驻居民每人 +1，匹配木工/矿工 +2）':'')+' · 每夜结束结算一次，不是立刻到账。';
   return '当前 0 '+label+'：营地需「运转中」（居民到岗 + 维护缴清 + 未受损）才计入天亮结算。';
 }
 function showResourceSources(){
@@ -4430,7 +4552,7 @@ function showResourceSources(){
     '没有「点一下就采集」：粮田 / 林场 / 采石场 / 矿脉要先占领（或由运转中的营地控制）再开发，之后每熬过一夜、天亮时统一结算一次。点开资源点可直接看到「下次天亮 +N」。',
     '材料：林场、采石场各 +3/夜，灰脊铁矿 +8/夜；拆自己建的城墙回收 2、箭塔回收 4（另 +1 金币），但回收少于建造花费，只能救急。',
     '粮食：粮田 +3/夜。金币：低产金矿 +3/夜、北境富金矿 +8/夜；夜战击杀按本夜奖励票据结算（普通兵总预算 6/8/10/12/6 金，首领额外 8 金），不是每只固定 +1。稀缺资源：调查守望遗迹 / 深入幽谷各得 1 份，全局最多 2 份，不再生。',
-    '本局当前：已开发 '+developedCount()+' 处资源点，'+forecast+'。营地控制的资源点必须「运转中」才计入；木工 / 矿工只对匹配设施每人额外 +2。终局前还剩 '+remainingHarvests()+' 次普通天亮结算，提前召唤会放弃后续收获。',
+    '本局当前：已开发 '+developedCount()+' 处资源点，'+forecast+'。领地与运转中营地的生产建筑派驻居民均可提产（每人 +1，木工配林场 / 矿工配采石与矿脉额外再 +1）。终局前还剩 '+remainingHarvests()+' 次普通天亮结算，提前召唤会放弃后续收获。',
     '探索方向：东侧山地可能发现富金矿，南侧河道外可能发现铁矿。两处城址都保留完整基础资源；向外发展要把维护、路程和防守一起算进去。'
   ]);
 }
@@ -4442,7 +4564,7 @@ function dawn(){
   // 天亮产出和维护仍算在刚结束的这一夜里，不能记到下一天的起点上。
   game.ledgerDay=finished;
   game.phase='day';game.day++;game.phaseElapsed=0;game.actions=7;game.enemies=[];game.mode=null;
-  game.wallDamageSamples=[];game.hoverTile=null;
+  game.wallDamageSamples=[];game.hoverTile=null;game.castleShield=0;game.homeGuardCooldown=0;
   clearCombatVisuals();
   game.heroDown=null;game.heroDownUsed=0;game.earlyNightAt=null;game.bossSpawned=false;
   game.hero.hp=Math.max(Math.min(game.hero.max,game.hero.hp+13),35);
@@ -4451,7 +4573,7 @@ function dawn(){
   const income=forecastIncome();
   for(const t of game.tiles){
     if(!t.node?.developed||!YIELD[t.node.kind]||!t.owned||!hasActiveProduction(t))continue;
-    const [k,n]=YIELD[t.node.kind];
+    const [k]=YIELD[t.node.kind], n=homeNodeYield(t);
     worldFx('ring',t.x+.5,t.y+.3,'+'+n+' '+RESOURCE_LABELS[k],k==='gold'?'#ffd36a':k==='food'?'#c9f08a':'#f0d9b0');
   }
   addIncome(income,'production','生产');
@@ -4480,7 +4602,7 @@ function finish(victory){
   if(game.finished)return;
   game.finished=true;
   // 终局立即取消回场、提前入夜与胜利演出回调
-  game.heroDown=null;game.earlyNightAt=null;game.presentation=null;
+  game.heroDown=null;game.earlyNightAt=null;game.presentation=null;game.battleSpeed=1;game.castleShield=0;
   settleContract(game.day);
   commitRecord(victory);
   if(victory){
@@ -4509,6 +4631,7 @@ function advanceBattle(dt){
     return;
   }
   game.clock+=dt;
+  if(game.castleShield>0)game.castleShield=Math.max(0,game.castleShield-dt);
   const stop=nightStopAt(game.day,game.isBoss);
   if(!game.spawnStopped&&game.clock>=stop){
     game.spawnStopped=true;game.cleanup=0;
@@ -4895,7 +5018,7 @@ function drawFogLayer(){
   }
   fogSmall.width=WIDTH+2;fogSmall.height=HEIGHT+2;
   f.clearRect(0,0,WIDTH+2,HEIGHT+2);
-  f.fillStyle='rgba(22,40,50,.66)';f.fillRect(0,0,WIDTH+2,HEIGHT+2);
+  f.fillStyle='rgba(18,38,46,.52)';f.fillRect(0,0,WIDTH+2,HEIGHT+2);
   for(const t of game.tiles)if(t.visible)f.clearRect(t.x+1,t.y+1,1,1);
   ctx.save();
   ctx.imageSmoothingEnabled=true;
@@ -5535,18 +5658,31 @@ function drawLighting(isNight){
   }
 }
 /* ---------- 放置预览：选中工具时高亮合法地块 ---------- */
+function canPlaceCampFast(t){
+  if(!game.castle||!t?.visible||!walkable(t)||t.site!==undefined||t.node||t.building||t.campSolid)return null;
+  let hasExit=false,nearRes=false;
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+    const cell=tileAt(t.x+dx,t.y+dy);
+    if(!cell)continue;
+    if(cell.owned||campAt(cell))return null;
+    if((dx||dy)&&walkable(cell))hasExit=true;
+    if(cell.visible&&cell.node&&YIELD[cell.node.kind])nearRes=true;
+  }
+  if(!hasExit)return null;
+  return nearRes?'ok':'locked';
+}
 function toolTileState(t){
   const m=game.mode;
   if(!m||game.phase!=='day'||!t.visible)return null;
   if(m==='claim')return !t.owned&&t.ground!=='water'&&!campAt(t)&&isAdjacent(t)?'ok':null;
-  if(m==='camp')return null; // canPlaceCamp 需寻路，开销大；仅在悬停格评估
+  if(m==='camp')return canPlaceCampFast(t);
   if(String(m).startsWith('develop-')){
     const kind=String(m).slice(8);
     const want=kind==='lumber'?'wood':kind==='quarry'?'stone':kind==='mine'?'mine':kind;
-    if(!t.node||t.node.developed||t.building)return null;
+    if(!t.node||!YIELD[t.node.kind]||t.node.developed||t.building)return null;
     const match=kind==='mine'?['mine','rich','iron'].includes(t.node.kind):t.node.kind===want;
-    if(!match)return null;
-    return canDevelop(t)?'ok':'locked';
+    if(match)return canDevelop(t)?'ok':'locked';
+    return canDevelop(t)?'ok':null;
   }
   if(BUILDS[m])return canBuildAt(t)&&!t.building?'ok':null;
   return null;
@@ -5614,6 +5750,17 @@ function drawGates(){
       if(game.phase==='day')label('敌袭',30,52,10,'#fff','900','#8f2f22');
     });
   }
+  if(game.phase==='day'&&game.castle&&game.day<LAST_NIGHT&&!game.scheduled){
+    const cur=new Set(gates.map(g=>at(g.x,g.y)));
+    const nextGates=entrances(game.day+1).filter(g=>!cur.has(at(g.x,g.y)));
+    for(const g of nextGates){
+      inCell(g.x*CELL,g.y*CELL,()=>{
+        oval(30,30,13,13,'rgba(52,110,168,.85)',OUT,1.4);
+        path([[24,23],[36,30],[24,37]],'#ffe08a',OUT,1);
+        label('明夜',30,52,10,'#ffe08a','900','#1c3548');
+      });
+    }
+  }
 }
 function draw(){
   if(!game)return;
@@ -5632,20 +5779,6 @@ function draw(){
   cachedLayer('terrain',navigationRevision()+'|'+owned+'|'+game.seed,()=>{for(const t of game.tiles)terrainBase(t);for(const t of game.tiles)terrainDetail(t);});
   for(const t of game.tiles)if(t.ground==='water')waterShimmer(t);
   boundaries(!game.castle);
-  if(!game.castle){
-    game.sites.forEach((s,i)=>{
-      inCell(s.x*CELL,s.y*CELL,()=>{
-        const known=tileAt(s.x,s.y)?.visible;
-        const p=1+Math.sin(performance.now()/350+i)*.06;
-        oval(30,34,20,7,PAL.shadow);
-        line(30,32,30,-6,PAL.woodDark,3);
-        path([[30,-6],[56,0],[30,8]],known?PAL.gold:'#c9c3b3',OUT,1.6);
-        oval(30,32,15*p,15*p,known?PAL.gold:'#d8d2c2',OUT,2);
-        label(i?'B':'A',30,33,19,OUT,'900');
-        if(known)label(SITE_NAMES[i],30,66,15,'#fff7e0','900','rgba(40,30,15,.9)');
-      });
-    });
-  }
   drawGates();
   drawToolPreview();
   drawRecommendedDefense();
@@ -5709,6 +5842,21 @@ function draw(){
   if(isNight)for(const e of game.enemies)sprites.push({y:e.y,fn:()=>fighter(e)});
   sprites.sort((a,b)=>a.y-b.y);
   for(const sp of sprites)sp.fn();
+  if(!game.castle){
+    game.sites.forEach((s,i)=>{
+      inCell(s.x*CELL,s.y*CELL,()=>{
+        const known=tileAt(s.x,s.y)?.visible;
+        const p=1+Math.sin(performance.now()/350+i)*.06;
+        oval(30,34,20,7,PAL.shadow);
+        line(30,32,30,-6,PAL.woodDark,3);
+        path([[30,-6],[56,0],[30,8]],known?PAL.gold:'#e6c56d',OUT,1.6);
+        oval(30,32,15*p,15*p,known?PAL.gold:'#edd48e',OUT,2);
+        label(i?'B':'A',30,33,19,OUT,'900');
+        rrect(-4,53,68,20,6,'rgba(16,35,38,.86)',known?PAL.gold:'rgba(230,197,109,.7)',1.2);
+        label(SITE_NAMES[i],30,63,13.5,known?'#fff7e0':'#f3e8c8','900');
+      });
+    });
+  }
   // 墙在精灵之后、迷雾之前：圈墙始终可读
   if(game.castle&&game.wallRings instanceof Map&&game.wallRings.size)drawWallRings();
   cachedLayer('fog',visible+'|'+navigationRevision()+'|'+game.seed,drawFogLayer);
@@ -6293,25 +6441,36 @@ function renderCommands(){
     add('build','占领土地',()=>setMode('claim'),{detail:DEMO.claimGold+' 金币',active:game.mode==='claim',icon:'claim'});
     add('build','建立营地',()=>setMode('camp'),{detail:costDetail(DEMO.campCost),active:game.mode==='camp',disabled:!game.actions,icon:'camp'});
     for(const [mode,spec] of Object.entries(developModes)){
+      const matchKind=k=>spec.kind==='mine'?['mine','rich','iron'].includes(k):k===spec.kind;
+      const ready=game.tiles.filter(cell=>cell.visible&&cell.node&&matchKind(cell.node.kind)&&!cell.node.developed&&!cell.building&&canDevelop(cell)).length;
       add('build',spec.label,()=>setMode(mode),{
-        detail:'2 材料 · 点对应资源',active:game.mode===mode,
+        detail:'2 材料 · '+(ready?'可开发 '+ready+' 处':'选资源点'),active:game.mode===mode,
         disabled:!game.actions||!canPay({material:2}),icon:spec.icon
       });
     }
-    add('lord','居民管理',()=>{game.mode=null;openInspector(game.castle);sync();},{icon:'castle'});
+    add('lord','居民管理',()=>{game.mode=null;openInspector(game.castle);sync();},{icon:'resident'});
+    const homeRing=game.wallRings?.get?.('home');
+    if(homeRing){
+      const plan=wallDayRepairPlan('home');
+      const wallFull=homeRing.status!=='broken'&&homeRing.hp>=homeRing.maxHp;
+      add('lord',homeRing.status==='broken'?'重建城防':'加固城防',()=>repairWallDay('home'),{
+        detail:wallFull?'耐久已满':plan.full?(plan.need+' 材料 · 不耗行动'):plan.pay>0?('部分修复 · '+plan.pay+'/'+plan.need+' 材料 (+'+plan.heal+')'):('需 '+plan.need+' 材料 · 不耗行动'),
+        disabled:wallFull||plan.pay<=0,icon:'wall'
+      });
+    }
     const heroCost={material:8+game.heroLevel*2,gold:4};
     add('lord','强化领主',trainHero,{
       detail:game.heroLevel>=4?'已到上限':costDetail(heroCost),
       disabled:!game.actions||!canPay(heroCost)||game.heroLevel>=4,icon:'lord'
     });
-    add('lord','补充民兵',enlist,{detail:game.militia>=2?'已到上限':costDetail({food:3}),disabled:!game.actions||game.resources.food<3||game.militia>=2,icon:'lord'});
-    add('lord','战后休整',healHero,{detail:costDetail({food:2}),disabled:!game.actions||game.resources.food<2||game.hero.hp>=game.hero.max,icon:'support'});
-    add('lord','回到城堡',()=>{game.mode=null;setDestination(game.castle);sync();},{detail:'领主自动寻路回城',icon:'camp'});
+    add('lord','补充民兵',enlist,{detail:game.militia>=2?'已到上限':costDetail({food:3}),disabled:!game.actions||game.resources.food<3||game.militia>=2,icon:'militia'});
+    add('lord','战后休整',healHero,{detail:costDetail({food:2}),disabled:!game.actions||game.resources.food<2||game.hero.hp>=game.hero.max,icon:'potion'});
+    add('lord','回到城堡',()=>{game.mode=null;setDestination(game.castle);sync();},{detail:'领主自动寻路回城',icon:'home'});
     if(game.blueprints)for(const line of ['hero','tower']){
       const rank=game.ranks[line], name=line==='hero'?'高阶领主':'高阶塔';
       add('lord',name,()=>invest(line),{
         detail:rank>=2?'已到上限':rank===1?'专精加深':'预览第一档',disabled:rank>=2||!game.actions,
-        icon:line==='tower'?'tower':'lord'
+        icon:line==='tower'?'tower':'blade'
       });
     }
     return;
@@ -6321,13 +6480,13 @@ function renderCommands(){
       gold:true,detail:'空格 / 点敌人 / 点按钮',icon:'battle'
     });
     add('battle','自动攻击',()=>{game.autoAttack=!game.autoAttack;sync();},{
-      active:game.autoAttack,detail:game.autoAttack?'已开启 · 靠近即出手':'关闭 · 手动出手',icon:'battle'
+      active:game.autoAttack,detail:game.autoAttack?'已开启 · 靠近即出手':'关闭 · 手动出手',icon:'auto'
     });
     if(game.castle){
-      add('support','城堡急修',()=>repair(game.castle),{detail:'5 金币',icon:'support'}).id='quickRepair';
+      add('support','城堡急修',()=>repair(game.castle),{detail:'5 金币',icon:'repair'}).id='quickRepair';
     }
-    add('support','使用药剂',healHero,{detail:'4 金币',icon:'support'}).id='quickPotion';
-    if(game.castle)add('support','回到城堡',()=>{setDestination(game.castle);sync();},{detail:'自动寻路回城',icon:'camp'});
+    add('support','使用药剂',healHero,{detail:'4 金币',icon:'potion'}).id='quickPotion';
+    if(game.castle)add('support','回到城堡',()=>{setDestination(game.castle);sync();},{detail:'自动寻路回城',icon:'home'});
     if(game.camps.length)add('support','营救附近居民',()=>{
       const camp=game.camps.find(c=>!c.lost&&campStaff(c).length&&distance(game.hero,center(campTile(c)))<=DEMO.rescueRange);
       if(camp)rescueCamp(camp);else toast('先让领主靠近有驻员的营地。');
@@ -6335,7 +6494,7 @@ function renderCommands(){
     // v0.21：夜战里的一个主动决策点，不用也不影响通关
     add('battle','号令齐射',rally,{
       gold:true,detail:game.rallyCharges>0?'本夜可用 '+game.rallyCharges+' 次 · 领主周围 4 格':'本夜已用尽',
-      disabled:game.rallyCharges<=0,icon:'battle'
+      disabled:game.rallyCharges<=0,icon:'rally'
     });
     updateSupportButtons();
   }
@@ -6387,7 +6546,14 @@ function residentRow(parent,r,actions){
   const row=document.createElement('div');row.className='resident-row';
   const title=document.createElement('p');
   const names={home:'在城堡',outbound:'前往营地',posted:'驻守',waiting:'到岗待缴',leaving:'撤离中（仍在营地）',returning:'已离营返程',escorted:'跟随领主',hurt:'休养中',dead:'阵亡'};
-  title.textContent='居民 '+r.id+' · '+(ROLES[r.role]||'未培养')+' · '+names[r.state];
+  let status=names[r.state]||r.state;
+  if(r.state==='home'&&r.work?.state&&r.work.state!=='idle'){
+    const b=game.productionBuildings?.get?.(r.work.buildingId);
+    const bName=b?(PRODUCTION_LABELS[b.type]||b.type):'生产建筑';
+    const wState=r.work.state==='working'?'作业中':r.work.state==='travel'?'在途':'受阻';
+    status+=' · '+bName+wState;
+  }
+  title.textContent='居民 '+r.id+' · '+(ROLES[r.role]||'未培养')+' · '+status;
   row.append(title);
   if(actions.length){const group=document.createElement('div');group.className='tile-actions';group.append(...actions);row.append(group);}
   parent.append(row);
@@ -6581,11 +6747,11 @@ function inspect(){
     refreshCastleWallVitals();
     if(day){
       if(ring){
-        const cost=wallDayRepairCost('home');
+        const plan=wallDayRepairPlan('home');
         const wallFull=ring.status!=='broken'&&ring.hp>=ring.maxHp;
         actions.append(button(ring.status==='broken'?'重建城墙':'修满城墙',()=>repairWallDay('home'),{
-          detail:wallFull?'已满':cost+' 材料 · 不耗行动',
-          disabled:wallFull||!canPay({material:cost})
+          detail:wallFull?'已满':plan.full?(plan.need+' 材料 · 不耗行动'):plan.pay>0?('部分修复 '+plan.pay+'/'+plan.need+' 材料 · +'+plan.heal+' 耐久'):(plan.need+' 材料 · 不耗行动'),
+          disabled:wallFull||plan.pay<=0
         }));
       }
       actions.append(button('维修主城',()=>repair(t),{detail:costDetail({material:5}),disabled:disabled||game.castleHp===game.castleMax||game.resources.material<5}));
@@ -6695,6 +6861,17 @@ function renderAlert(){
       tone='growth';
       text='主城成长 · 强化可选';
       action=button('选择强化',showCards,{gold:true});
+    }else if(game.castle&&game.day>=2){
+      const sides=[...new Set(entrances(game.day).map(g=>g.x===0?'west':g.x===WIDTH-1?'east':'north'))];
+      const undefended=sides.filter(s=>s==='north'
+        ? !game.tiles.some(t=>t.owned&&t.building?.type==='tower'&&t.y<=game.castle.y)
+        : towersOnSide(s)===0);
+      if(undefended.length){
+        const sideNames=undefended.map(s=>s==='west'?'西侧':s==='east'?'东侧':'北侧').join('、');
+        tone='raid';
+        text='防线缺口 · 今夜敌军从'+sideNames+'来袭，该侧尚无箭塔。';
+        action=button('放置箭塔',()=>setMode('tower'),{gold:true});
+      }
     }
   }else if(game.phase==='night'&&game.fronts.length>1){
     tone='raid';
@@ -7136,7 +7313,14 @@ function renderUI(){
     ?('人口 '+pop+' · 行动 '+game.actions+'/7')
     :('人口 '+pop);
   $('actionCount').hidden=false;
-  const modes={camp:'点远离主城的已探明陆地。',claim:'点与现有领地相邻的陆地。',tower:'点领地空地放置箭塔。',wall:'点领地空地放置城墙。'};
+  const spBtn=$('speedBtn');
+  if(spBtn){
+    const fast=game.battleSpeed===2;
+    spBtn.textContent=fast?'2×':'1×';
+    spBtn.classList?.toggle('active',fast);
+    spBtn.setAttribute('aria-pressed',fast?'true':'false');
+  }
+  const modes={camp:'点远离主城的已探明陆地（金框处紧邻资源点）。',claim:'点与现有领地相邻的陆地。',tower:'点领地空地放置箭塔。',wall:'点领地空地放置城墙。'};
   $('mapHint').textContent=modes[game.mode]||(active?(MOBILE()?'短按走路 · 长按查看':'点地走路 · 点对象查看 · WASD 移动'):'在战役面板查看失败原因，或重新开局。');
   $('battleHud').hidden=!night;
   const lists=[$('commandBar'),$('campList')], offsets=lists.map(list=>list.scrollLeft);
@@ -7326,10 +7510,8 @@ function applyMapTool(t){
     }else claim(t);
   }else if(game.mode==='camp')createCamp(t);
   else if(String(game.mode).startsWith('develop-')){
-    const kind=String(game.mode).slice(8);
-    const want=kind==='lumber'?'wood':kind==='quarry'?'stone':kind==='mine'?'mine':kind==='farm'?'farm':kind;
-    if(!t.node||t.node.kind!==want){
-      toast('请点对应类型的未开发资源点（不会凭空产资源）。');
+    if(!t.node||!YIELD[t.node.kind]){
+      toast('请点地图上的未开发资源点（粮田 / 林地 / 石脉 / 矿脉）。');
     }else if(t.node.developed||t.building){
       toast('这里已有生产建筑。');
     }else if(!canDevelop(t)){
@@ -7489,6 +7671,13 @@ window.addEventListener('pointercancel',()=>{sheetSwipe=null;});
 $('dialog').addEventListener('close',()=>{
   keys.clear();lastFrame=0;
 });
+function toggleSpeed(next){
+  if(!game)return 1;
+  game.battleSpeed=next===1||next===2?next:(game.battleSpeed===2?1:2);
+  sync();
+  return game.battleSpeed;
+}
+$('speedBtn')?.addEventListener('click',()=>toggleSpeed());
 $('pauseBtn').addEventListener('click',()=>setPaused(!paused));
 $('resumeBtn').addEventListener('click',()=>setPaused(false));
 document.addEventListener('visibilitychange',()=>{
@@ -7560,12 +7749,15 @@ function frame(now){
   // 全局暂停：停时钟也停重绘；卡牌模态只停时钟，仍重绘底层地图
   if(paused&&!game?.cardModal){lastFrame=now;requestAnimationFrame(frame);return;}
   if(!lastFrame)lastFrame=now;
-  let remaining=Math.min(.5,Math.max(0,(now-lastFrame)/1000));
+  const speed=(game?.battleSpeed===2&&!game?.presentation&&!playClockFrozen()&&['day','night'].includes(game?.phase))?2:1;
+  let remaining=Math.min(.5,Math.max(0,(now-lastFrame)/1000))*speed;
   lastFrame=now;
+  const startPhase=game?.phase;
   while(remaining>0){
     const step=Math.min(.045,remaining);
     if(!game?.cardModal)tickCampaign(step);
     remaining-=step;
+    if(game?.phase!==startPhase||game?.presentation||game?.cardModal)break;
   }
   draw();
   if(now-lastHud>150){updateBattleHud();lastHud=now;}
@@ -7729,7 +7921,7 @@ window.FW={
   markBuildingFlash,clearCombatVisuals,updateEffects,
   launchProjectile,resolveHit,updateProjectiles,meleeClear,updateSwing,
   beginVictoryPresentation,updatePresentation,drawCombatLayer,
-  syncSettingsMenu,toggleSettings,
+  syncSettingsMenu,toggleSettings,toggleSpeed,
   NIGHT_PLAN,planFor,nightStopAt,nightLastWaveAt,plannedNormal,campNormal,campWaves,
   queueRecord,allocateTickets,createWavePlan,makeFront,frontHasRoom,isFrontComplete,
   takeReserve,reserveCount,stopFront,spawnDue,chooseStagingPoint,spawnEnemy,settleKill,
@@ -7746,7 +7938,7 @@ window.FW={
   assignWorker,stepWorker,workerAtDock,orderResidentMove,recallHomeResident,recallResident,clearResidentWork,
   productionTypeForNode,tileCover,clearTileCover,canStand,findPathFor,productionWorkPos,
   V029,buildBoundary,createHomeWallRing,refreshHomeWallRingKeepHp,damageWallRing,collapseWall,
-  repairWallDay,startNightRepair,stepNightRepair,wallDayRepairCost,ringAttackPads,ringProtectsCastle,
+  repairWallDay,startNightRepair,stepNightRepair,wallDayRepairCost,wallDayRepairPlan,ringAttackPads,ringProtectsCastle,
   findRingEdgeNear,intactWallRings,pickGateEdge,gateOutsideClear,homeRingAccessOk,claim,
   movementProfile,canTraverse,edgeEndpoints,isGateEdge,
   campStaff,releaseEvacuee,noteRaidWindow,paintNode,newRun,sync,draw,
@@ -7758,7 +7950,7 @@ window.FW={
   WALL_DAMAGE_WINDOW,estimateWallBreach,resolveCollapseSide,failureDiagnosis,
   guideStep,recommendedDefenseTiles,defenseSide,towersOnSide,
   productionWorkerCount,productionWorkerCountAt,destinationLabel,drawRecommendedDefense,
-  forecastIncome,developedCount,resourceOutlook,showResourceSources,
+  homeProductionWorkers,homeNodeYield,forecastIncome,developedCount,resourceOutlook,showResourceSources,
   campBudget,remainingHarvests,trainAndDispatch,
   shortfall,costDetail,renderAlert,renderUI,applyCommandGroups,updateBattleHud,
   SECRETS,CONTRACTS,offerContracts,freshContract,contractGoal,codexCount,markCodex,nightPreview,
