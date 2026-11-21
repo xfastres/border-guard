@@ -1,0 +1,2948 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>边境守卫 v0.51 · 魔兽斗塔 × 领主割草</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23121e24'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38'%3E%E2%9A%94%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<style>
+  :root{
+    --bg:#0d1519;
+    --panel:rgba(13,22,27,0.92);
+    --panel-strong:rgba(10,17,22,0.96);
+    --line:rgba(182,218,214,0.22);
+    --text:#eef6f4;
+    --muted:#95b3ae;
+    --gold:#ffd666;
+    --gold-deep:#d99a26;
+    --danger:#ff6b57;
+    --good:#7ce896;
+    --wind:#72f2b4;
+    --fire:#ff7b47;
+    --frost:#6ce2ff;
+    --thunder:#c68cff;
+    --holy:#ffe478;
+    --top-h:52px;
+    --sub-bottom:96px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{
+    margin:0;padding:0;width:100%;height:100%;overflow:hidden;
+    background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    user-select:none;
+  }
+  canvas{display:block;width:100vw;height:100vh;touch-action:none;cursor:crosshair}
+
+  /* Top Bar */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;z-index:20;
+    min-height:50px;padding:6px 12px;
+    background:linear-gradient(180deg,rgba(8,14,18,0.97),rgba(11,20,25,0.88));
+    border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+    backdrop-filter:blur(8px);
+  }
+  .top-left,.top-mid,.top-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:6px;font-weight:900;font-size:15px;letter-spacing:.3px;white-space:nowrap}
+  .brand .ver{font-size:11px;font-weight:800;color:#121b18;background:linear-gradient(135deg,#ffe27a,#f4a636);padding:2px 7px;border-radius:999px}
+  .pill{
+    display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;
+    font-size:12px;font-weight:800;border:1px solid var(--line);background:rgba(255,255,255,0.06);
+    white-space:nowrap;
+  }
+  .pill[hidden]{display:none}
+  .pill.wave-prep{border-color:rgba(124,232,150,0.45);color:#c4ffd2;background:rgba(38,108,65,0.28)}
+  .pill.wave-live{border-color:rgba(255,112,88,0.58);color:#ffd2c9;background:rgba(145,42,30,0.42)}
+  .pill.wave-endless{border-color:rgba(198,140,255,0.62);color:#ebd4ff;background:rgba(98,42,145,0.42)}
+  .pill.gold{
+    border-color:rgba(255,214,102,0.8);color:#ffe89c;
+    background:linear-gradient(180deg,rgba(158,112,26,0.55),rgba(112,78,16,0.45));
+    font-size:15px;padding:5px 14px;font-weight:900;letter-spacing:.3px;
+    box-shadow:0 0 12px rgba(255,214,102,0.22);
+  }
+  @keyframes goldBump{0%{transform:scale(1)}35%{transform:scale(1.22)}100%{transform:scale(1)}}
+  .gold-bump{animation:goldBump .32s ease}
+  .dock-gold{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+    min-width:66px;padding:6px 10px;border-radius:11px;flex-shrink:0;
+    border:1px solid rgba(255,214,102,0.6);background:rgba(122,86,18,0.38);color:#ffe89c;
+  }
+  .dock-gold .lbl{font-size:9.5px;color:#e3c47c;font-weight:800;white-space:nowrap}
+  .dock-gold b{font-size:18px;line-height:1.1;font-weight:900;color:#ffd666}
+  .pill.warn{border-color:rgba(255,107,87,0.72);color:#ffd2ca;background:rgba(150,40,30,0.45)}
+  .xp-wrap{display:flex;align-items:center;gap:6px}
+  .xp-bar{width:74px;height:7px;border-radius:999px;background:rgba(255,255,255,0.12);overflow:hidden;border:1px solid rgba(108,226,255,0.3)}
+  .xp-fill{height:100%;width:0%;background:linear-gradient(90deg,#4cc9ff,#a4f4ff);transition:width .15s}
+
+  .btn{
+    appearance:none;border:1px solid var(--line);background:rgba(24,40,48,0.92);color:var(--text);
+    padding:6px 10px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;gap:5px;
+    transition:transform .08s,background .12s,border-color .12s;
+  }
+  .btn:hover:not(:disabled){background:rgba(39,65,78,0.96);border-color:rgba(210,240,235,0.45)}
+  .btn:active:not(:disabled){transform:translateY(1px)}
+  .btn:disabled{opacity:.42;cursor:not-allowed}
+  .btn.active{background:rgba(235,180,60,0.26);border-color:var(--gold);color:#fff2bd}
+  .btn.gold{background:linear-gradient(180deg,#ffdb72,#d89626);border-color:#fff0b3;color:#1f1606;font-weight:900}
+  .btn.gold:hover:not(:disabled){background:linear-gradient(180deg,#ffe594,#e6a634)}
+  .btn.purple{background:linear-gradient(180deg,#b77dff,#7940c7);border-color:#e6ccff;color:#fff;font-weight:900}
+  .btn.danger{background:rgba(155,44,34,0.88);border-color:rgba(255,142,126,0.55);color:#ffe4df}
+
+  /* Subbar: Synergies + Hero Button */
+  .subbar{
+    position:fixed;top:calc(var(--top-h) + 6px);left:12px;right:12px;z-index:18;
+    display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+    pointer-events:none;
+  }
+  .syn-strip,.sub-actions{
+    pointer-events:auto;display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+    padding:5px 9px;border-radius:12px;background:var(--panel);border:1px solid var(--line);
+    box-shadow:0 8px 22px rgba(0,0,0,0.34);backdrop-filter:blur(6px);
+  }
+  .syn-pill{
+    display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;
+    font-size:11.5px;font-weight:800;border:1px solid rgba(255,255,255,0.12);
+    background:rgba(255,255,255,0.04);color:#8aa6a2;cursor:help;position:relative;
+  }
+  .syn-pill.t1{color:#fff;border-color:var(--syn-c);background:rgba(255,255,255,0.11);box-shadow:0 0 10px rgba(255,255,255,0.12)}
+  .syn-pill.t2{color:#12191d;border-color:#fff;background:var(--syn-c);box-shadow:0 0 14px var(--syn-c)}
+  .hint-txt{font-size:12px;color:#cde4de;font-weight:700;padding:0 4px}
+
+  /* Inspector (Right floating card for Tower or Hero) */
+  .inspector{
+    position:fixed;top:calc(var(--sub-bottom) + 8px);right:12px;z-index:22;
+    width:288px;max-width:calc(100vw - 24px);max-height:calc(100vh - var(--sub-bottom) - 134px);
+    overflow-y:auto;padding:12px;border-radius:14px;
+    background:var(--panel-strong);border:1px solid rgba(255,220,128,0.38);
+    box-shadow:0 16px 36px rgba(0,0,0,0.52);backdrop-filter:blur(10px);
+  }
+  .inspector[hidden]{display:none}
+  .insp-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+  .insp-title{font-size:15px;font-weight:900;color:#ffeaa0;display:flex;align-items:center;gap:6px}
+  .insp-sub{font-size:11.5px;color:var(--muted);line-height:1.45;margin-bottom:8px}
+  .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:9px}
+  .stat-box{padding:5px 8px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);font-size:11.5px;color:#cfe4df}
+  .stat-box b{color:#fff}
+  .slot-row{display:flex;gap:6px;margin:8px 0 10px}
+  .gear-slot{
+    flex:1;min-height:48px;padding:5px 6px;border-radius:10px;
+    border:1px dashed rgba(255,220,128,0.4);background:rgba(255,255,255,0.04);
+    color:#a8c2bd;font-size:11px;font-weight:700;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;
+  }
+  .gear-slot.filled{border-style:solid;border-color:var(--gold);background:rgba(255,214,102,0.14);color:#fff2bd}
+  .gear-slot:hover{background:rgba(255,214,102,0.22)}
+  .insp-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .insp-actions .btn{padding:8px 6px;flex-direction:column;gap:2px}
+  .insp-actions .btn.full{grid-column:1/-1}
+  .insp-actions .btn small{font-size:10px;opacity:.9;font-weight:600}
+  .skill-list{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+  .skill-row{
+    display:flex;align-items:center;justify-content:space-between;gap:6px;
+    padding:5px 8px;border-radius:8px;background:rgba(255,255,255,0.05);font-size:11.5px;
+  }
+  .skill-row .lv{color:var(--gold);font-weight:900}
+
+  /* Bottom Dock: Skills + Shop + Bag + Wave Start */
+  .dock-wrap{
+    position:fixed;left:0;right:0;bottom:8px;z-index:22;
+    display:flex;justify-content:center;padding:0 10px;pointer-events:none;
+  }
+  .dock{
+    pointer-events:auto;display:flex;align-items:stretch;gap:7px;
+    max-width:100%;overflow-x:auto;padding:7px 9px;border-radius:16px;
+    background:var(--panel-strong);border:1px solid var(--line);
+    box-shadow:0 14px 36px rgba(0,0,0,0.58);backdrop-filter:blur(10px);
+  }
+  .dock-sec{display:flex;align-items:stretch;gap:6px}
+  .dock-div{width:1px;background:rgba(182,218,214,0.2);margin:4px 1px;flex-shrink:0}
+
+  .act-btn{
+    position:relative;min-width:74px;padding:7px 8px;border-radius:11px;
+    border:1px solid rgba(182,218,214,0.22);background:rgba(24,41,49,0.92);color:var(--text);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    cursor:pointer;flex-shrink:0;transition:background .12s,border-color .12s,transform .08s;
+  }
+  .act-btn:hover:not(:disabled){background:rgba(40,66,79,0.98);border-color:rgba(255,224,132,0.55)}
+  .act-btn:disabled{opacity:.42;cursor:not-allowed}
+  .act-btn.active{border-color:var(--gold);background:rgba(240,185,60,0.26);box-shadow:0 0 0 2px rgba(255,214,102,0.26)}
+  .act-btn.primary{background:linear-gradient(180deg,#ffda70,#d99220);border-color:#fff2bd;color:#1e1505;min-width:96px}
+  .act-btn.primary:hover:not(:disabled){background:linear-gradient(180deg,#ffe490,#e5a230)}
+  .act-btn .k{position:absolute;top:4px;left:5px;font-size:9.5px;font-weight:900;color:#8bb0aa}
+  .act-btn.primary .k{color:#5e420e}
+  .act-btn .ic{font-size:20px;line-height:1}
+  .act-btn .nm{font-size:11.5px;font-weight:900;white-space:nowrap}
+  .act-btn .sb{font-size:10px;color:#b4d2cc;white-space:nowrap}
+  .act-btn.primary .sb{color:#3c2a08;font-weight:800}
+  .act-btn .cd-mask{
+    position:absolute;inset:0;border-radius:10px;background:rgba(8,14,18,0.78);
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;
+  }
+  .act-btn .cd-mask[hidden]{display:none}
+
+  .shop-card{
+    position:relative;min-width:96px;padding:7px 8px 6px;border-radius:11px;
+    border:1px solid rgba(182,218,214,0.24);background:linear-gradient(180deg,rgba(28,46,56,0.95),rgba(17,29,36,0.95));
+    color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    cursor:pointer;flex-shrink:0;transition:transform .08s,border-color .12s,box-shadow .12s;
+  }
+  .shop-card:hover:not(:disabled){transform:translateY(-2px);border-color:var(--elem-c,var(--gold))}
+  .shop-card:disabled{opacity:.38;cursor:not-allowed}
+  .shop-card.active{border-color:var(--gold);background:rgba(240,185,60,0.24);box-shadow:0 0 0 2px rgba(255,214,102,0.4)}
+  .shop-card.mergeable{border-color:#ffe478;box-shadow:0 0 12px rgba(255,218,92,0.4)}
+  .shop-card .elem-dot{position:absolute;top:5px;left:6px;width:8px;height:8px;border-radius:50%;background:var(--elem-c)}
+  .shop-card .merge-tag{
+    position:absolute;top:-7px;right:4px;padding:1px 6px;border-radius:999px;
+    font-size:9.5px;font-weight:900;background:linear-gradient(90deg,#ffda66,#ff9a44);color:#1f1202;
+    box-shadow:0 2px 8px rgba(0,0,0,0.45);
+  }
+  .shop-card .ic{font-size:21px;line-height:1}
+  .shop-card .nm{font-size:11.5px;font-weight:900;white-space:nowrap}
+  .shop-card .cost{font-size:10.5px;font-weight:800;color:#ffe38a}
+
+  /* Bag strip */
+  .bag-tray{display:flex;align-items:center;gap:5px;padding:2px 4px}
+  .bag-empty{font-size:10.5px;color:#7d9c97;padding:0 6px;text-align:center;line-height:1.3;max-width:74px}
+  .bag-item{
+    position:relative;width:48px;height:56px;border-radius:10px;padding:4px 3px;
+    border:1px solid rgba(198,140,255,0.45);background:rgba(66,38,96,0.45);color:#fff;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    cursor:pointer;flex-shrink:0;
+  }
+  .bag-item.legend{border-color:#ffbe4f;background:rgba(130,78,18,0.55);box-shadow:0 0 10px rgba(255,190,79,0.35)}
+  .bag-item.active{border-color:#fff;box-shadow:0 0 0 2px var(--gold);transform:translateY(-2px)}
+  .bag-item .ic{font-size:18px;line-height:1}
+  .bag-item .nm{font-size:9px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44px}
+  .bag-item .star-tag{
+    position:absolute;top:-7px;right:-4px;padding:0 5px;border-radius:999px;
+    font-size:9px;font-weight:900;background:linear-gradient(90deg,#ffda66,#ff9a44);color:#1f1202;
+    box-shadow:0 2px 6px rgba(0,0,0,0.4);
+  }
+
+  /* Toast & Banner */
+  .toast{
+    position:fixed;left:50%;bottom:98px;transform:translateX(-50%);z-index:28;
+    padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:800;
+    background:rgba(10,18,22,0.95);border:1px solid rgba(255,214,102,0.55);color:#fff3c4;
+    box-shadow:0 10px 26px rgba(0,0,0,0.48);pointer-events:none;white-space:nowrap;max-width:92vw;
+    overflow:hidden;text-overflow:ellipsis;
+  }
+  .toast.warn{border-color:rgba(255,112,92,0.75);color:#ffd4cc}
+  .toast[hidden]{display:none}
+
+  .banner{
+    position:fixed;top:calc(var(--sub-bottom) + 14px);left:50%;transform:translateX(-50%);z-index:26;
+    padding:10px 22px;border-radius:14px;text-align:center;pointer-events:none;
+    background:rgba(14,24,30,0.94);border:1px solid rgba(255,214,102,0.55);
+    box-shadow:0 14px 36px rgba(0,0,0,0.55);
+  }
+  .banner.boss{background:rgba(95,22,22,0.95);border-color:rgba(255,126,102,0.85)}
+  .banner.good{background:rgba(20,66,44,0.95);border-color:rgba(124,232,150,0.75)}
+  .banner[hidden]{display:none}
+  .banner .bt{font-size:17px;font-weight:900;color:#fff6d0}
+  .banner .bs{font-size:12px;color:#d6e9e4;margin-top:2px}
+
+  /* Modal (Intro, Level-Up Skills, Chest Gear Draft, Victory/Defeat) */
+  .modal-backdrop{
+    position:fixed;inset:0;z-index:40;background:rgba(5,10,13,0.74);backdrop-filter:blur(5px);
+    display:flex;align-items:center;justify-content:center;padding:14px;
+  }
+  .modal-backdrop[hidden]{display:none}
+  .modal{
+    width:min(700px,96vw);max-height:90vh;overflow-y:auto;
+    padding:20px 22px;border-radius:18px;background:linear-gradient(180deg,#15242c,#0d171d);
+    border:1px solid rgba(255,214,102,0.42);box-shadow:0 24px 60px rgba(0,0,0,0.7);
+  }
+  .modal h2{margin:0 0 6px;font-size:21px;font-weight:900;color:#ffe694}
+  .modal .lead{margin:0 0 14px;font-size:13px;color:#c3dbd6;line-height:1.55}
+  .choices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 4px}
+  .choice-card{
+    text-align:left;padding:13px 12px;border-radius:14px;cursor:pointer;
+    border:1px solid rgba(190,224,218,0.24);background:rgba(24,42,52,0.92);color:var(--text);
+    display:flex;flex-direction:column;gap:6px;transition:transform .1s,border-color .12s,background .12s;
+  }
+  .choice-card:hover{transform:translateY(-3px);border-color:var(--gold);background:rgba(40,68,82,0.98)}
+  .choice-card.legend{border-color:#ffbe4f;background:linear-gradient(180deg,rgba(112,68,18,0.55),rgba(34,26,18,0.92))}
+  .choice-card .tag{
+    align-self:flex-start;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:900;
+    background:rgba(255,214,102,0.18);color:#ffe58f;
+  }
+  .choice-card .ci{font-size:28px;line-height:1}
+  .choice-card .cn{font-size:14.5px;font-weight:900;color:#fff}
+  .choice-card .cd{font-size:12px;color:#c6ded9;line-height:1.45}
+  .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
+  .intro-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:10px 0}
+  .intro-box{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09)}
+  .intro-box h4{margin:0 0 4px;font-size:13px;color:#ffe38c}
+  .intro-box p{margin:0;font-size:12px;color:#c4ddd8;line-height:1.45}
+
+  @media (max-width:760px){
+    .choices,.intro-grid{grid-template-columns:1fr}
+    .topbar{padding:5px 8px;gap:5px}
+    .brand{font-size:13.5px}
+    .pill{padding:3px 7px;font-size:11px}
+    .dock{padding:5px 6px;gap:5px}
+    .shop-card{min-width:80px;padding:6px 6px}
+    .act-btn{min-width:64px;padding:6px 6px}
+    .inspector{left:10px;right:10px;width:auto}
+  }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+
+<header class="topbar" id="topbar">
+  <div class="top-left">
+    <div class="brand">⚔️ 边境守卫 <span class="ver">v0.51 斗塔割草</span></div>
+    <span class="pill wave-prep" id="wavePill">第 1 / 15 波 · 备战</span>
+    <span class="pill gold" id="goldPill">💰 45</span>
+    <span class="pill" id="castlePill">🏰 圣堡 200/200</span>
+    <span class="pill" id="heroPill">
+      <span id="heroLvTxt">⚔️ 领主 Lv.1</span>
+      <span class="xp-bar"><span class="xp-fill" id="xpFill"></span></span>
+    </span>
+    <span class="pill" id="enemyPill" hidden>👾 0</span>
+  </div>
+  <div class="top-right">
+    <button class="btn" id="speedBtn" type="button">1×</button>
+    <button class="btn" id="pauseBtn" type="button">暂停</button>
+    <button class="btn" id="soundBtn" type="button" title="音效开关">🔊</button>
+    <button class="btn" id="helpBtn" type="button">玩法</button>
+    <button class="btn" id="resetBtn" type="button">重开</button>
+  </div>
+</header>
+
+<section class="subbar" id="subbar">
+  <div class="syn-strip" id="synStrip"></div>
+  <div class="sub-actions">
+    <span class="hint-txt" id="subHint">选底栏塔牌点击发光塔基建造，点「开始第 1 波」冲进怪海割草！</span>
+    <button class="btn" id="heroPanelBtn" type="button">👑 领主装备 (0/3)</button>
+    <button class="btn" id="autoWaveBtn" type="button">自动下波：关</button>
+  </div>
+</section>
+
+<aside class="inspector" id="inspector" hidden>
+  <div class="insp-head">
+    <div class="insp-title" id="inspTitle">防御塔</div>
+    <button class="btn" id="inspClose" type="button" style="padding:3px 8px">关闭</button>
+  </div>
+  <div class="insp-sub" id="inspSub"></div>
+  <div class="stat-grid" id="inspStats"></div>
+  <div style="font-size:11px;font-weight:800;color:#ffe28a">构装槽（点击空槽装入，点击已装卸回背包）</div>
+  <div class="slot-row" id="inspSlots"></div>
+  <div class="insp-actions" id="inspActions"></div>
+  <div class="skill-list" id="inspSkills"></div>
+</aside>
+
+<div class="toast" id="toast" hidden></div>
+<div class="banner" id="banner" hidden>
+  <div class="bt" id="bannerTitle"></div>
+  <div class="bs" id="bannerSub"></div>
+</div>
+
+<div class="dock-wrap">
+  <div class="dock" id="dock">
+    <div class="dock-sec" id="heroSkillSec">
+      <button class="act-btn" id="dashBtn" type="button">
+        <span class="k">Space</span><span class="ic">🔥</span><span class="nm">烈焰冲刺</span><span class="sb">位移+火径</span>
+        <span class="cd-mask" id="dashCd" hidden></span>
+      </button>
+      <button class="act-btn" id="ultBtn" type="button">
+        <span class="k">R</span><span class="ic">⚡</span><span class="nm">全军超载</span><span class="sb">5s 狂暴</span>
+        <span class="cd-mask" id="ultCd" hidden></span>
+      </button>
+    </div>
+    <div class="dock-div"></div>
+    <div class="dock-gold" id="dockGold"><span class="lbl">💰 金币</span><b id="dockGoldNum">48</b></div>
+    <div class="dock-sec" id="shopSec"></div>
+    <button class="act-btn" id="rerollBtn" type="button">
+      <span class="k">Q</span><span class="ic">🎲</span><span class="nm">刷新商店</span><span class="sb" id="rerollCost">5 金币</span>
+    </button>
+    <div class="dock-div"></div>
+    <div class="bag-tray" id="bagTray"></div>
+    <div class="dock-div"></div>
+    <button class="act-btn primary" id="waveBtn" type="button">
+      <span class="k">Enter</span><span class="ic">⚔️</span><span class="nm" id="waveBtnNm">开始第 1 波</span><span class="sb" id="waveBtnSb">备战中</span>
+    </button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ==================== CONSTANTS & GAME DATA ==================== */
+const W = 24, H = 16, CELL = 44;
+const CX = 11, CY = 7; // Central Castle tile
+const MAIN_WAVES = 15;
+
+// 16 clean symmetrical pedestals in 4 quadrants around the 5x5 fortress cross roads
+const PEDESTALS = [];
+for (let y = 5; y <= 9; y++) {
+  for (let x = 9; x <= 13; x++) {
+    if (x === CX || y === CY) continue;
+    PEDESTALS.push({ x, y });
+  }
+}
+const PEDESTAL_KEY = new Set(PEDESTALS.map(p => `${p.x},${p.y}`));
+
+const ELEMENTS = {
+  wind:    { key:'wind',    name:'疾风', icon:'🌪️', color:'#72f2b4',
+    t1:'风塔与领主攻速 +25%', t2:'攻击 35% 触发额外分裂箭雨' },
+  fire:    { key:'fire',    name:'烈焰', icon:'🔥', color:'#ff7b47',
+    t1:'火焰/爆炸伤害 +35%', t2:'敌人死亡触发 18% 生命尸爆！' },
+  frost:   { key:'frost',   name:'寒冰', icon:'❄️', color:'#6ce2ff',
+    t1:'减速敌人受全伤 +25%', t2:'25% 几率冰冻 1.5s 并碎冰真伤' },
+  thunder: { key:'thunder', name:'雷霆', icon:'⚡', color:'#c68cff',
+    t1:'闪电链弹射目标 +2', t2:'每 3s 对怪群降下全场天罚落雷！' },
+  holy:    { key:'holy',    name:'圣光', icon:'✨', color:'#ffe478',
+    t1:'领主与圣堡每秒回血 + 全塔暴击 +15%', t2:'暴伤升至 220% 且触发圣光震爆！' }
+};
+
+const TOWERS = {
+  wind: {
+    key:'wind', elem:'wind', name:'疾风箭塔', icon:'🏹', cost:15,
+    desc:'1★速射 → 2★三连扇箭 → 3★五发穿刺风暴箭雨',
+    stars:[
+      { dmg:16, cd:0.48, range:5.6, shots:1, pierce:0, splash:0 },
+      { dmg:28, cd:0.42, range:6.1, shots:3, pierce:0, splash:0 },
+      { dmg:52, cd:0.34, range:6.8, shots:5, pierce:2, splash:0 }
+    ]
+  },
+  fire: {
+    key:'fire', elem:'fire', name:'炎魔炮塔', icon:'🔥', cost:18,
+    desc:'1★炮弹溅射 → 2★陨石焦土 → 3★双发毁灭地狱火',
+    stars:[
+      { dmg:30, cd:1.35, range:5.4, shots:1, splash:1.55, burn:8 },
+      { dmg:58, cd:1.22, range:5.9, shots:1, splash:2.05, burn:18 },
+      { dmg:108,cd:1.08, range:6.5, shots:2, splash:2.50, burn:36 }
+    ]
+  },
+  frost: {
+    key:'frost', elem:'frost', name:'霜冻尖塔', icon:'❄️', cost:16,
+    desc:'1★范围减速 → 2★双重冰爆易伤 → 3★绝对零度冰封',
+    stars:[
+      { dmg:14, cd:1.05, range:5.2, shots:1, splash:1.75, slow:0.42, slowDur:2.6 },
+      { dmg:28, cd:0.92, range:5.7, shots:2, splash:2.15, slow:0.55, slowDur:3.2 },
+      { dmg:58, cd:0.80, range:6.4, shots:3, splash:2.60, slow:0.65, slowDur:3.8 }
+    ]
+  },
+  thunder: {
+    key:'thunder', elem:'thunder', name:'雷霆法塔', icon:'⚡', cost:20,
+    desc:'1★3连闪电 → 2★6连风暴 → 3★10连满屏天雷必爆',
+    stars:[
+      { dmg:22, cd:0.95, range:5.7, chains:3 },
+      { dmg:44, cd:0.82, range:6.2, chains:6 },
+      { dmg:88, cd:0.68, range:6.9, chains:10 }
+    ]
+  },
+  holy: {
+    key:'holy', elem:'holy', name:'圣光棱镜', icon:'✨', cost:22,
+    desc:'穿透激光 + 邻近塔攻速光环；3★升级为全场太阳审判',
+    stars:[
+      { dmg:24, cd:0.88, range:5.8, beams:1, auraAspd:0.18, auraRange:1.6 },
+      { dmg:48, cd:0.78, range:6.3, beams:2, auraAspd:0.28, auraRange:2.4 },
+      { dmg:96, cd:0.66, range:7.0, beams:3, auraAspd:0.38, auraRange:99 }
+    ]
+  }
+};
+const TOWER_KEYS = Object.keys(TOWERS);
+
+const HERO_SKILLS = {
+  blades: {
+    key:'blades', name:'旋风飞刃', icon:'🌀', tag:'割草核心',
+    desc: lv => `召唤 ${lv + 1} 把发光飞刃环绕领主高速旋转，切碎贴身怪海（当前 Lv.${lv}）。`
+  },
+  firewave: {
+    key:'firewave', name:'烈焰剑波', icon:'🔥', tag:'直线穿透',
+    desc: lv => `自动向怪群发射 ${Math.min(4, Math.ceil(lv/2) + 1)} 道穿透烈焰剑气，清线极快（当前 Lv.${lv}）。`
+  },
+  thunder: {
+    key:'thunder', name:'天雷轰顶', icon:'⚡', tag:'连锁清屏',
+    desc: lv => `每 ${(Math.max(0.85, 2.1 - lv*0.26)).toFixed(2)}s 召唤 ${lv + 1} 道天雷劈向密集怪群（当前 Lv.${lv}）。`
+  },
+  nova: {
+    key:'nova', name:'冰霜新星', icon:'❄️', tag:'控场碎冰',
+    desc: lv => `周期释放半径 ${(2.3 + lv*0.35).toFixed(1)} 格冰环，冻结减速周围大片敌军（当前 Lv.${lv}）。`
+  },
+  stomp: {
+    key:'stomp', name:'重锤震地', icon:'💥', tag:'重击晕眩',
+    desc: lv => `定时在领主脚下引爆巨型震荡波，造成重伤与击退晕眩（当前 Lv.${lv}）。`
+  },
+  berserk: {
+    key:'berserk', name:'狂战血怒', icon:'🩸', tag:'吸血磁铁',
+    desc: lv => `领主攻速 +${lv*18}%、暴击 +${lv*8}%、击杀回血 +${lv*2}、经验磁铁范围大幅扩大。`
+  }
+};
+
+const GEARS = {
+  split_bow:  { key:'split_bow',  name:'分裂魔弓', icon:'🏹', rarity:'epic',   desc:'塔额外发射 +1 弹道 / 领主额外剑波 +1，伤害 +15%', mod:{ extraShot:1, dmgPct:0.15 } },
+  crit_axe:   { key:'crit_axe',   name:'狂暴战斧', icon:'🪓', rarity:'epic',   desc:'暴击率 +25%，暴击伤害 +55%', mod:{ crit:0.25, critDmg:0.55 } },
+  haste_glass:{ key:'haste_glass',name:'疾速沙漏', icon:'⏳', rarity:'epic',   desc:'攻击速度 +38%，领主技能冷却 -22%', mod:{ aspd:0.38 } },
+  burn_core:  { key:'burn_core',  name:'熔核魔石', icon:'🌋', rarity:'epic',   desc:'攻击附带范围火焰爆破（+30% 溅射伤）', mod:{ splashBonus:1.15, dmgPct:0.22 } },
+  frost_orb:  { key:'frost_orb',  name:'极寒宝珠', icon:'🔮', rarity:'epic',   desc:'攻击减速敌人 40% 且伤害 +20%', mod:{ slowOnHit:0.40, dmgPct:0.20 } },
+  volt_crest: { key:'volt_crest', name:'雷神徽章', icon:'⚡', rarity:'epic',   desc:'命中 38% 几率触发额外连锁闪电', mod:{ chainProc:0.38, dmgPct:0.15 } },
+  vamp_fang:  { key:'vamp_fang',  name:'嗜血魔刃', icon:'🩸', rarity:'epic',   desc:'攻击回复领主与圣堡生命，伤害 +30%', mod:{ lifesteal:3, dmgPct:0.30 } },
+  eagle_scope:{ key:'eagle_scope',name:'鹰眼望远镜',icon:'🎯', rarity:'epic',   desc:'射程/技能范围 +35%，伤害 +25%', mod:{ rangePct:0.35, dmgPct:0.25 } },
+  greed_cup:  { key:'greed_cup',  name:'贪婪圣杯', icon:'🏆', rarity:'epic',   desc:'持有者击杀敌人额外 +2 金币，伤害 +25%', mod:{ bonusGold:2, dmgPct:0.25 } },
+  titan_crown:{ key:'titan_crown',name:'泰坦王冠', icon:'👑', rarity:'legend', desc:'【传说神器】全伤害 +70%、攻速 +28%、暴击 +20%、射程 +20%！', mod:{ dmgPct:0.70, aspd:0.28, crit:0.20, rangePct:0.20 } }
+};
+const GEAR_KEYS = Object.keys(GEARS);
+
+/* Gear stacking: identical gear auto-fuses up to 3★. Encoded as 'key' (1★) / 'key#2' / 'key#3'. */
+const GEAR_MAX_STAR = 3;
+const GEAR_STAR_MULT = [1, 1.6, 2.3]; // index = star-1
+function gearBase(k){ return String(k).split('#')[0]; }
+function gearStar(k){ const s = parseInt(String(k).split('#')[1] || '1', 10); return Math.min(GEAR_MAX_STAR, Math.max(1, s || 1)); }
+function gearLabel(k){ const s = gearStar(k); return `${GEARS[gearBase(k)].name}${s > 1 ? ` ${s}★` : ''}`; }
+function findGearStackTarget(baseKey){
+  // Priority: hero > towers > bag; first copy below max star gets upgraded.
+  const lists = [game.hero.gear, ...game.towers.map(t => t.gear), game.bag];
+  for (const list of lists){
+    for (let i = 0; i < list.length; i++){
+      if (gearBase(list[i]) === baseKey && gearStar(list[i]) < GEAR_MAX_STAR) return { list, idx: i, star: gearStar(list[i]) };
+    }
+  }
+  return null;
+}
+function ownedGearStar(baseKey){
+  let best = 0;
+  const scan = list => { for (const k of list) if (gearBase(k) === baseKey) best = Math.max(best, gearStar(k)); };
+  scan(game.hero.gear); for (const t of game.towers) scan(t.gear); scan(game.bag);
+  return best;
+}
+
+const ENEMY_SPECS = {
+  slime:  { name:'荒野哥布林', hp:26,  spd:1.75, dmg:5,  xp:2, gold:1, r:0.22, col:'#67cf5e', rim:'#2b6b28' },
+  wolf:   { name:'疾风魔狼',   hp:20,  spd:2.75, dmg:6,  xp:2, gold:1, r:0.22, col:'#e89645', rim:'#784010' },
+  mage:   { name:'暗影弓巫',   hp:28,  spd:1.55, dmg:6,  xp:3, gold:2, r:0.22, col:'#d466b8', rim:'#661b52', ranged:true, range:2.3 },
+  brute:  { name:'铁甲兽人',   hp:78,  spd:1.12, dmg:12, xp:5, gold:3, r:0.29, col:'#7e94a8', rim:'#2d3c4a' },
+  elite:  { name:'紫炎统领(精英)', hp:260, spd:1.38, dmg:16, xp:14, gold:12, r:0.36, col:'#b966ff', rim:'#fff0a8', elite:true },
+  boss1:  { name:'熔岩巨魔(Boss)', hp:1750, spd:0.96, dmg:28, xp:45, gold:40, r:0.52, col:'#ff5638', rim:'#ffe074', boss:true },
+  boss2:  { name:'暗影死灵王(Boss)',hp:4200, spd:1.05, dmg:36, xp:65, gold:55, r:0.54, col:'#a855ff', rim:'#ffe074', boss:true },
+  boss3:  { name:'毁灭泰坦(终极Boss)',hp:9500, spd:0.95, dmg:48, xp:90, gold:80, r:0.60, col:'#ff334b', rim:'#fff3a0', boss:true }
+};
+
+/* ==================== AUDIO ENGINE ==================== */
+const AudioKit = {
+  ctx: null, enabled: true, last: {},
+  unlock(){
+    if (!this.enabled) return;
+    if (!this.ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) this.ctx = new AC();
+    }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().catch(()=>{});
+  },
+  play(kind, pitchMul = 1){
+    if (!this.enabled || !this.ctx) return;
+    const now = performance.now();
+    const minGap = { hit:45, xp:32, coin:50, arrow:55, fire:85, frost:80, thunder:75, holy:85, slash:65, crit:60, merge:120, chest:120, level:150, boss:350 }[kind] || 60;
+    if (now - (this.last[kind] || 0) < minGap) return;
+    this.last[kind] = now;
+    const t = this.ctx.currentTime;
+    const tone = (freq, dur, type='triangle', vol=0.06, endFreq=null, delay=0) => {
+      const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq * pitchMul, t + delay);
+      if (endFreq) o.frequency.exponentialRampToValueAtTime(Math.max(40, endFreq * pitchMul), t + delay + dur);
+      g.gain.setValueAtTime(0.0001, t + delay);
+      g.gain.linearRampToValueAtTime(vol, t + delay + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + delay + dur);
+      o.connect(g); g.connect(this.ctx.destination);
+      o.start(t + delay); o.stop(t + delay + dur + 0.02);
+    };
+    if (kind === 'xp') tone(680, 0.08, 'sine', 0.05, 980);
+    else if (kind === 'coin') { tone(880, 0.07, 'sine', 0.05); tone(1320, 0.09, 'sine', 0.045, null, 0.045); }
+    else if (kind === 'arrow') tone(560, 0.06, 'triangle', 0.04, 240);
+    else if (kind === 'fire') tone(170, 0.17, 'sawtooth', 0.06, 52);
+    else if (kind === 'frost') tone(920, 0.12, 'sine', 0.045, 520);
+    else if (kind === 'thunder') tone(420, 0.11, 'sawtooth', 0.05, 1100);
+    else if (kind === 'holy') tone(760, 0.13, 'sine', 0.045, 1180);
+    else if (kind === 'slash') tone(320, 0.08, 'sawtooth', 0.05, 130);
+    else if (kind === 'crit') tone(520, 0.09, 'square', 0.05, 860);
+    else if (kind === 'merge') { tone(523, 0.11, 'triangle', 0.08); tone(659, 0.11, 'triangle', 0.08, null, 0.07); tone(1046, 0.24, 'triangle', 0.09, null, 0.14); }
+    else if (kind === 'chest') { tone(660, 0.1, 'sine', 0.07); tone(990, 0.18, 'sine', 0.08, null, 0.08); }
+    else if (kind === 'level') { [523,659,784,1046].forEach((f,i)=>tone(f,0.13,'triangle',0.075,null,i*0.06)); }
+    else if (kind === 'boss') { tone(130, 0.4, 'sawtooth', 0.09, 85); tone(196, 0.42, 'sawtooth', 0.08, 120, 0.16); }
+    else if (kind === 'hit') tone(190, 0.07, 'square', 0.04, 95);
+  }
+};
+
+/* ==================== STATE & HELPERS ==================== */
+const $ = id => document.getElementById(id);
+const canvas = $('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const cam = { x: (CX + 0.5) * CELL, y: (CY + 0.5) * CELL, zoom: 1, w: 1280, h: 720, dpr: 1 };
+const keys = new Set();
+let pointerDown = false;
+let pointerWorld = null;
+let paused = false;
+let toastTimer = null, bannerTimer = null;
+let game = null;
+
+// UI dirty-tracking keys to guarantee ZERO DOM flicker
+let lastShopKey = '', lastSynKey = '', lastBagKey = '', lastInspKey = '';
+
+function mulberry32(seed){
+  let a = seed >>> 0;
+  return () => {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function dist(a, b){ return Math.hypot(a.x - b.x, a.y - b.y); }
+function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+function toast(msg, warn = false){
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = 'toast' + (warn ? ' warn' : '');
+  el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; }, 2400);
+}
+function showBanner(title, sub, tone = ''){
+  $('bannerTitle').textContent = title;
+  $('bannerSub').textContent = sub;
+  $('banner').className = 'banner' + (tone ? ' ' + tone : '');
+  $('banner').hidden = false;
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => { $('banner').hidden = true; }, 2400);
+}
+
+function makeGame(seed = Math.floor(Math.random() * 1e9)){
+  const rnd = mulberry32(seed);
+  const g = {
+    seed, rnd,
+    phase: 'prep', // 'prep' | 'wave' | 'won' | 'lost'
+    endless: false,
+    autoWave: false,
+    autoWaveTimer: 0,
+    wave: 1,
+    waveClock: 0,
+    speed: 1,
+    gold: 48,
+    rerollCost: 5,
+    castleHp: 200, castleMax: 200,
+    shake: 0,
+    thunderSynTimer: 3.0,
+    holyRegenTimer: 1.0,
+    xpCombo: 0, xpComboTimer: 0,
+
+    // Selection & modes
+    mode: null, // null | {type:'buy', shopIdx} | {type:'move', towerId} | {type:'equip', bagIdx}
+    inspTarget: null, // null | {type:'tower', id} | {type:'hero'}
+    hoverCell: null,
+
+    // Entities
+    towers: [],
+    nextTowerId: 1,
+    shop: [],
+    bag: [], // array of gear keys
+    nextBagUid: 1,
+
+    hero: {
+      x: CX + 0.5, y: CY + 1.4,
+      hp: 160, maxHp: 160, shield: 0, shieldTimer: 0,
+      lv: 1, xp: 0, xpNext: 14,
+      face: 1, goal: null, moving: false,
+      invuln: 0, downTimer: 0,
+      atkCd: 0, swing: null,
+      dashCd: 0, ultCd: 0, ultTimer: 0,
+      gear: [], // up to 3 gear keys
+      skills: { blades: 1 }, // Start with 1 orbiting blade immediately!
+      skillTimers: { firewave: 1.1, thunder: 1.8, nova: 2.6, stomp: 3.1 },
+      bladeAngle: 0,
+      bladeHitMap: new Map()
+    },
+
+    enemies: [],
+    nextEnemyId: 1,
+    waveQueue: [],
+    projectiles: [],
+    beams: [],
+    bolts: [],
+    zones: [],
+    gems: [],
+    chests: [],
+    rings: [],
+    floats: [],
+
+    pendingModals: [], // queue of {type:'levelup'} | {type:'chest'}
+    activeModal: null,
+
+    stats: { kills: 0, elites: 0, merges: 0, dmgTotal: 0 }
+  };
+  return g;
+}
+
+function startNewRun(seed = Math.floor(Math.random() * 1e9)){
+  game = makeGame(seed);
+  paused = false;
+  lastShopKey = lastSynKey = lastBagKey = lastInspKey = '';
+  $('banner').hidden = true;
+  $('toast').hidden = true;
+  closeModal();
+  rollShop(true);
+  fitCamera();
+  renderAllUI(true);
+}
+
+/* ==================== SYNERGY & STAT COMPUTATION ==================== */
+function getSynergyCounts(){
+  const c = { wind:0, fire:0, frost:0, thunder:0, holy:0 };
+  for (const t of game.towers) {
+    const w = t.star === 3 ? 4 : t.star === 2 ? 2 : 1;
+    c[t.elem] += w;
+  }
+  return c;
+}
+function getSynergyTier(elem){
+  const n = getSynergyCounts()[elem] || 0;
+  return n >= 4 ? 2 : n >= 2 ? 1 : 0;
+}
+
+function aggregateGear(gearList){
+  const m = { dmgPct:0, aspd:0, crit:0, critDmg:0, rangePct:0, extraShot:0, splashBonus:0, slowOnHit:0, chainProc:0, lifesteal:0, bonusGold:0 };
+  for (const k of gearList) {
+    const gm = GEARS[gearBase(k)]?.mod;
+    if (!gm) continue;
+    const star = gearStar(k);
+    const mult = GEAR_STAR_MULT[star - 1];
+    for (const [key, val] of Object.entries(gm)) {
+      const scaled = key === 'extraShot' ? val * star : val * mult;
+      if (key === 'slowOnHit') m.slowOnHit = Math.max(m.slowOnHit, Math.min(0.65, scaled));
+      else if (key === 'chainProc') m[key] = Math.min(0.8, m[key] + scaled);
+      else m[key] += scaled;
+    }
+  }
+  m.extraShot = Math.round(m.extraShot);
+  m.bonusGold = Math.round(m.bonusGold);
+  return m;
+}
+
+function getTowerStats(t){
+  const spec = TOWERS[t.kind];
+  const base = spec.stars[t.star - 1];
+  const gm = aggregateGear(t.gear);
+  const syn = getSynergyCounts();
+
+  // Holy aura from other holy towers
+  let auraAspd = 0;
+  for (const o of game.towers) {
+    if (o.id === t.id || o.kind !== 'holy') continue;
+    const os = TOWERS.holy.stars[o.star - 1];
+    if (Math.hypot(o.x - t.x, o.y - t.y) <= os.auraRange) {
+      auraAspd = Math.max(auraAspd, os.auraAspd);
+    }
+  }
+  const windAspd = (t.elem === 'wind' && syn.wind >= 2) ? 0.25 : 0;
+  const ultAspd = game.hero.ultTimer > 0 ? 0.80 : 0;
+  const totalAspd = 1 + gm.aspd + auraAspd + windAspd + ultAspd;
+
+  const fireMult = (t.elem === 'fire' && syn.fire >= 2) ? 1.35 : 1;
+  const dmg = Math.round(base.dmg * (1 + gm.dmgPct) * fireMult);
+  const cd = Math.max(0.11, base.cd / totalAspd);
+  const range = Number((base.range * (1 + gm.rangePct)).toFixed(2));
+  const crit = Math.min(0.95, 0.08 + gm.crit + (syn.holy >= 2 ? 0.15 : 0) + (game.hero.ultTimer > 0 ? 0.35 : 0) + (t.kind === 'thunder' && t.star === 3 ? 0.50 : 0));
+  const critDmg = (syn.holy >= 4 ? 2.2 : 1.65) + gm.critDmg;
+  const shots = (base.shots || 1) + gm.extraShot;
+  const chains = (base.chains || 0) + (syn.thunder >= 2 ? 2 : 0) + gm.extraShot;
+  const splash = (base.splash || 0) + gm.splashBonus;
+
+  return { dmg, cd, range, crit, critDmg, shots, chains, splash, pierce: base.pierce || 0, beams: (base.beams || 1) + gm.extraShot, slow: Math.max(base.slow || 0, gm.slowOnHit), slowDur: base.slowDur || (gm.slowOnHit ? 2.2 : 0), burn: base.burn || 0, gm };
+}
+
+function getHeroStats(){
+  const h = game.hero;
+  const gm = aggregateGear(h.gear);
+  const syn = getSynergyCounts();
+  const berkLv = h.skills.berserk || 0;
+  const aspd = 1 + gm.aspd + berkLv * 0.18 + (syn.wind >= 2 ? 0.25 : 0) + (h.ultTimer > 0 ? 0.80 : 0);
+  const dmgMult = (1 + gm.dmgPct + (h.lv - 1) * 0.10);
+  const crit = Math.min(0.95, 0.12 + gm.crit + berkLv * 0.08 + (syn.holy >= 2 ? 0.15 : 0) + (h.ultTimer > 0 ? 0.35 : 0));
+  const critDmg = (syn.holy >= 4 ? 2.2 : 1.75) + gm.critDmg;
+  const magnet = 2.6 + berkLv * 0.85 + gm.rangePct * 2.0;
+  const rangeMult = 1 + gm.rangePct;
+  const lifesteal = gm.lifesteal + berkLv * 2;
+  return { aspd, dmgMult, crit, critDmg, magnet, rangeMult, lifesteal, gm };
+}
+
+/* ==================== SHOP, BUILD, MERGE, MOVE, EQUIP ==================== */
+function rollShop(free = false){
+  if (!free) {
+    if (game.gold < game.rerollCost) { toast(`需要 ${game.rerollCost} 金币才能刷新商店！`, true); return false; }
+    game.gold -= game.rerollCost;
+    game.rerollCost += 2; // Escalating sink: resets to 5 on every wave clear
+    AudioKit.play('coin', 0.9);
+  }
+  game.shop = [];
+  for (let i = 0; i < 4; i++) {
+    const kind = TOWER_KEYS[Math.floor(game.rnd() * TOWER_KEYS.length)];
+    const spec = TOWERS[kind];
+    // 18% chance of discounted card on waves 2+
+    const disc = (game.wave >= 2 && game.rnd() < 0.18) ? 3 : 0;
+    game.shop.push({ uid: Math.floor(game.rnd() * 1e9), kind, cost: Math.max(10, spec.cost - disc), bought: false, disc });
+  }
+  if (game.mode?.type === 'buy') game.mode = null;
+  renderAllUI();
+  return true;
+}
+
+function towerAt(x, y){ return game.towers.find(t => t.x === x && t.y === y) || null; }
+
+function findMergePartner(tower){
+  if (tower.star >= 3) return null;
+  return game.towers.find(o => o.id !== tower.id && o.kind === tower.kind && o.star === tower.star) || null;
+}
+
+function performMerge(keepTower, consumedTower){
+  // Return extra gears to bag if exceeding 2 slots
+  const combinedGear = [...keepTower.gear, ...consumedTower.gear];
+  keepTower.gear = combinedGear.slice(0, 2);
+  for (let i = 2; i < combinedGear.length; i++) game.bag.push(combinedGear[i]);
+  keepTower.star++;
+  keepTower.dmgDealt += consumedTower.dmgDealt;
+  keepTower.kills += consumedTower.kills;
+  game.towers = game.towers.filter(o => o.id !== consumedTower.id);
+  game.stats.merges++;
+  game.shake = Math.max(game.shake, 7);
+  const col = ELEMENTS[keepTower.elem].color;
+  addRing(keepTower.x + 0.5, keepTower.y + 0.5, '#ffe878', 2.2);
+  addRing(keepTower.x + 0.5, keepTower.y + 0.5, col, 1.5);
+  addFloat(keepTower.x + 0.5, keepTower.y, `★ 升至 ${keepTower.star}★ ${TOWERS[keepTower.kind].name}！`, '#ffe878', true);
+  AudioKit.play('merge');
+  toast(`合成成功！【${TOWERS[keepTower.kind].name}】晋升 ${keepTower.star}★ 形态质变！`);
+  game.inspTarget = { type:'tower', id: keepTower.id };
+  renderAllUI();
+  return true;
+}
+
+function buyAndPlaceTower(shopIdx, x, y){
+  const item = game.shop[shopIdx];
+  if (!item || item.bought) return false;
+  if (!PEDESTAL_KEY.has(`${x},${y}`)) { toast('请点击圣堡内发光的符文塔基！', true); return false; }
+  if (game.gold < item.cost) { toast(`需要 ${item.cost} 金币！`, true); return false; }
+
+  const existing = towerAt(x, y);
+  if (existing) {
+    // Instant buy-and-merge if clicking identical 1★ tower!
+    if (existing.kind === item.kind && existing.star === 1) {
+      game.gold -= item.cost;
+      item.bought = true;
+      game.mode = null;
+      const phantom = { id: -1, gear: [], dmgDealt: 0, kills: 0 };
+      performMerge(existing, phantom);
+      return true;
+    }
+    toast('该塔基已有其他防御塔（点击同名 1★ 塔可直接秒合 2★）。', true);
+    return false;
+  }
+
+  game.gold -= item.cost;
+  item.bought = true;
+  const spec = TOWERS[item.kind];
+  const t = {
+    id: game.nextTowerId++,
+    kind: item.kind, elem: spec.elem,
+    x, y, star: 1, cd: 0,
+    gear: [], dmgDealt: 0, kills: 0
+  };
+  game.towers.push(t);
+  game.mode = null;
+  game.inspTarget = { type:'tower', id: t.id };
+  addRing(x + 0.5, y + 0.5, ELEMENTS[spec.elem].color, 1.1);
+  addFloat(x + 0.5, y + 0.1, `${spec.name} 1★`, ELEMENTS[spec.elem].color);
+  AudioKit.play('coin', 1.15);
+  renderAllUI();
+  return true;
+}
+
+function mergeTowerAction(towerId){
+  const t = game.towers.find(o => o.id === towerId);
+  if (!t) return false;
+  const partner = findMergePartner(t);
+  if (!partner) { toast('场上需要另一座同名同星级防御塔才能合星。', true); return false; }
+  return performMerge(t, partner);
+}
+
+function moveTowerTo(towerId, x, y){
+  const t = game.towers.find(o => o.id === towerId);
+  if (!t) { game.mode = null; renderAllUI(); return false; }
+  if (!PEDESTAL_KEY.has(`${x},${y}`)) { toast('请选择圣堡内发光的符文塔基。', true); return false; }
+  const other = towerAt(x, y);
+  if (other && other.id === t.id) { game.mode = null; renderAllUI(); return false; }
+  if (other) {
+    // Swap or merge!
+    if (other.kind === t.kind && other.star === t.star && t.star < 3) {
+      game.mode = null;
+      return performMerge(other, t);
+    }
+    const ox = other.x, oy = other.y;
+    other.x = t.x; other.y = t.y;
+    t.x = ox; t.y = oy;
+    toast('已互换两座防御塔位置！');
+  } else {
+    t.x = x; t.y = y;
+    toast('已免费移动防御塔位置！');
+  }
+  game.mode = null;
+  game.inspTarget = { type:'tower', id: t.id };
+  addRing(t.x + 0.5, t.y + 0.5, '#7be8ff', 1.0);
+  AudioKit.play('coin', 1.2);
+  renderAllUI();
+  return true;
+}
+
+function sellTower(towerId){
+  const t = game.towers.find(o => o.id === towerId);
+  if (!t) return false;
+  // Return gears safely to bag
+  for (const gk of t.gear) game.bag.push(gk);
+  const mult = t.star === 3 ? 4 : t.star === 2 ? 2 : 1;
+  const refund = Math.round(TOWERS[t.kind].cost * mult * 0.8);
+  game.gold += refund;
+  game.towers = game.towers.filter(o => o.id !== towerId);
+  game.inspTarget = null;
+  game.mode = null;
+  addFloat(t.x + 0.5, t.y, `+${refund} 金`, '#ffe27a');
+  AudioKit.play('coin');
+  toast(`已出售【${TOWERS[t.kind].name}】返还 ${refund} 金币，装备已退回背包。`);
+  renderAllUI();
+  return true;
+}
+
+function equipGearFromBag(bagIdx, target){
+  if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
+  const gearKey = game.bag[bagIdx];
+  if (target.type === 'hero') {
+    if (game.hero.gear.length >= 3) { toast('领主装备槽已满（3/3），请先点击已有装备卸下。', true); return false; }
+    game.bag.splice(bagIdx, 1);
+    game.hero.gear.push(gearKey);
+    game.mode = null;
+    addRing(game.hero.x, game.hero.y, '#ffe478', 1.4);
+    addFloat(game.hero.x, game.hero.y - 0.5, `装备 ${gearLabel(gearKey)}`, '#ffe88a', true);
+    AudioKit.play('chest');
+    toast(`领主已装备【${gearLabel(gearKey)}】！`);
+    renderAllUI();
+    return true;
+  } else if (target.type === 'tower') {
+    const t = game.towers.find(o => o.id === target.id);
+    if (!t) return false;
+    if (t.gear.length >= 2) { toast('该防御塔构装槽已满（2/2），请先卸下旧装备。', true); return false; }
+    game.bag.splice(bagIdx, 1);
+    t.gear.push(gearKey);
+    game.mode = null;
+    game.inspTarget = { type:'tower', id: t.id };
+    addRing(t.x + 0.5, t.y + 0.5, '#ffe478', 1.3);
+    addFloat(t.x + 0.5, t.y, `装入 ${gearLabel(gearKey)}`, '#ffe88a', true);
+    AudioKit.play('chest');
+    toast(`【${TOWERS[t.kind].name}】已装入【${gearLabel(gearKey)}】！`);
+    renderAllUI();
+    return true;
+  }
+  return false;
+}
+
+function unequipGear(target, slotIdx){
+  const list = target.type === 'hero' ? game.hero.gear : game.towers.find(o => o.id === target.id)?.gear;
+  if (!list || slotIdx < 0 || slotIdx >= list.length) return false;
+  const [gk] = list.splice(slotIdx, 1);
+  game.bag.push(gk);
+  AudioKit.play('coin', 0.85);
+  toast(`已卸下【${gearLabel(gk)}】放回背包。`);
+  renderAllUI();
+  return true;
+}
+
+/* ==================== WAVE GENERATION & COMBAT ==================== */
+function buildWaveQueue(w){
+  const q = [];
+  const scale = Math.pow(1.26, w - 1);
+  const sides = w <= 2 ? ['west','east'] : w <= 5 ? ['west','east','north'] : ['west','east','north','south'];
+  const totalMobs = Math.min(145, Math.round(24 + w * 7.5));
+  const duration = Math.min(26, 13 + w * 0.85);
+
+  // Regular monster horde in exciting bursts
+  for (let i = 0; i < totalMobs; i++) {
+    const t = (i / totalMobs) * duration + (game.rnd() * 0.35);
+    const side = sides[Math.floor(game.rnd() * sides.length)];
+    const r = game.rnd();
+    let kind = 'slime';
+    if (w >= 2 && r > 0.72) kind = 'wolf';
+    if (w >= 3 && r > 0.84) kind = 'mage';
+    if (w >= 4 && r > 0.90) kind = 'brute';
+    if (w >= 8 && r > 0.55 && r <= 0.72) kind = 'wolf';
+    q.push({ at: 0.4 + t, side, kind, scale, spawned: false });
+  }
+
+  // Guaranteed Elite(s) from Wave 2 onward -> Drops Gear Chest!
+  if (w >= 2) {
+    const eliteCount = w >= 11 ? 3 : w >= 6 ? 2 : 1;
+    for (let e = 0; e < eliteCount; e++) {
+      q.push({
+        at: 4.5 + e * 6.5,
+        side: sides[e % sides.length],
+        kind: 'elite', scale: Math.pow(1.24, w - 2), spawned: false
+      });
+    }
+  }
+
+  // Major Bosses on Wave 5, 10, 15, and every 5th Endless Wave
+  if (w % 5 === 0) {
+    const bossKind = w === 5 ? 'boss1' : w === 10 ? 'boss2' : 'boss3';
+    const bScale = w > 15 ? Math.pow(1.28, (w - 15) / 2) : 1;
+    q.push({ at: 2.2, side: 'west', kind: bossKind, scale: bScale, spawned: false });
+  }
+
+  q.sort((a, b) => a.at - b.at);
+  return q;
+}
+
+function startWave(){
+  if (game.phase !== 'prep') return false;
+  AudioKit.unlock();
+  game.phase = 'wave';
+  game.waveClock = 0;
+  game.eliteChestDropped = false;
+  game.waveQueue = buildWaveQueue(game.wave);
+  game.autoWaveTimer = 0;
+  const isBoss = game.wave % 5 === 0;
+  AudioKit.play(isBoss ? 'boss' : 'merge', isBoss ? 1 : 0.85);
+  showBanner(
+    isBoss ? `⚠️ 第 ${game.wave} 波 · 首领降临！` : (game.endless ? `无尽第 ${game.wave} 波 · 怪海来袭` : `第 ${game.wave} / ${MAIN_WAVES} 波 · 怪海来袭`),
+    isBoss ? '击杀首领必掉传说/史诗构装宝箱！' : '冲进怪海割草吃经验，击败紫名精英爆神装！',
+    isBoss ? 'boss' : ''
+  );
+  renderAllUI();
+  return true;
+}
+
+function spawnPos(side){
+  const pad = 0.55;
+  if (side === 'west')  return { x: pad, y: 1.5 + game.rnd() * (H - 3) };
+  if (side === 'east')  return { x: W - pad, y: 1.5 + game.rnd() * (H - 3) };
+  if (side === 'north') return { x: 2 + game.rnd() * (W - 4), y: pad };
+  return { x: 2 + game.rnd() * (W - 4), y: H - pad };
+}
+
+function spawnEnemy(kind, side, scale = 1, customPos = null){
+  const sp = ENEMY_SPECS[kind];
+  const pos = customPos || spawnPos(side);
+  const hp = Math.round(sp.hp * scale);
+  const e = {
+    id: game.nextEnemyId++,
+    kind, name: sp.name,
+    x: pos.x, y: pos.y,
+    hp, maxHp: hp,
+    spd: sp.spd, dmg: Math.round(sp.dmg * (1 + (game.wave - 1) * 0.08)),
+    xp: sp.xp, gold: sp.gold, r: sp.r,
+    col: sp.col, rim: sp.rim,
+    ranged: !!sp.ranged, range: sp.range || 0,
+    elite: !!sp.elite, boss: !!sp.boss,
+    cd: 0.4, slow: 0, slowT: 0, freezeT: 0, burnDps: 0, burnT: 0,
+    flash: 0, bossTimer: 5.5
+  };
+  game.enemies.push(e);
+  return e;
+}
+
+function dealDamage(e, rawDmg, opts = {}){
+  if (!e || e.hp <= 0) return 0;
+  const syn = getSynergyCounts();
+  let dmg = rawDmg;
+  if (syn.frost >= 2 && (e.slowT > 0 || e.freezeT > 0)) dmg *= 1.25;
+
+  const isCrit = opts.critChance ? game.rnd() < opts.critChance : false;
+  if (isCrit) dmg *= (opts.critDmg || 1.7);
+  dmg = Math.max(1, Math.round(dmg));
+
+  e.hp -= dmg;
+  e.flash = 0.10;
+  game.stats.dmgTotal += dmg;
+  if (opts.tower) opts.tower.dmgDealt += dmg;
+
+  // Floating combat numbers (limit spam on tiny non-crits while keeping punchy crits)
+  if (isCrit || dmg >= 28 || game.floats.length < 40) {
+    addFloat(e.x + (game.rnd()-0.5)*0.3, e.y - 0.3, isCrit ? `${dmg}!` : `${dmg}`, isCrit ? '#ffdf4d' : (opts.col || '#ffffff'), isCrit);
+  }
+  if (isCrit) {
+    AudioKit.play('crit');
+    if (syn.holy >= 4 && !opts.noHolyProc) {
+      addRing(e.x, e.y, '#ffe478', 1.35);
+      for (const o of game.enemies) {
+        if (o.id !== e.id && o.hp > 0 && dist(o, e) <= 1.4) dealDamage(o, Math.round(dmg * 0.35), { col:'#ffe478', noHolyProc:true });
+      }
+    }
+  }
+
+  // Slow & Frost Tier-4 Freeze Shatter
+  if (opts.slow > 0) {
+    e.slow = Math.max(e.slow, opts.slow);
+    e.slowT = Math.max(e.slowT, opts.slowDur || 2.4);
+    if (syn.frost >= 4 && !e.boss && e.freezeT <= 0 && game.rnd() < 0.25) {
+      e.freezeT = 1.5;
+      addRing(e.x, e.y, '#a4f4ff', 0.9);
+      e.hp -= 60;
+      addFloat(e.x, e.y - 0.55, '碎冰 -60', '#96f2ff', true);
+    }
+  }
+  if (opts.burn > 0) {
+    e.burnDps = Math.max(e.burnDps, opts.burn);
+    e.burnT = Math.max(e.burnT, 3.0);
+  }
+
+  // Lifesteal
+  if (opts.lifesteal > 0) {
+    game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + opts.lifesteal * 0.35);
+    game.castleHp = Math.min(game.castleMax, game.castleHp + opts.lifesteal * 0.15);
+  }
+
+  // On-hit Volt Crest chain proc
+  if (opts.chainProc > 0 && !opts.noChainProc && game.rnd() < opts.chainProc) {
+    fireChainLightning(e, Math.round(dmg * 0.55), 3, { tower: opts.tower, noChainProc: true });
+  }
+
+  if (e.hp <= 0) onEnemyKilled(e, opts);
+  return dmg;
+}
+
+function onEnemyKilled(e, opts){
+  game.stats.kills++;
+  if (opts.tower) opts.tower.kills++;
+  const bonusGold = (opts.bonusGold || 0);
+  const baseGold = (e.elite || e.boss || e.gold >= 2) ? e.gold : (game.rnd() < 0.52 ? e.gold : 0);
+  game.gold += baseGold + bonusGold;
+
+  // Fire Tier-4 Corpse Explosion!
+  if (getSynergyTier('fire') >= 2 && !opts.fromCorpse) {
+    const expDmg = Math.max(25, Math.round(e.maxHp * 0.18));
+    addRing(e.x, e.y, '#ff6d38', 1.65);
+    for (const o of game.enemies) {
+      if (o.id !== e.id && o.hp > 0 && dist(o, e) <= 1.75) {
+        dealDamage(o, expDmg, { col:'#ff884d', fromCorpse:true });
+      }
+    }
+  }
+
+  // Drop XP Gem
+  game.gems.push({
+    x: e.x + (game.rnd()-0.5)*0.25,
+    y: e.y + (game.rnd()-0.5)*0.25,
+    xp: e.xp, big: e.elite || e.boss,
+    vx: (game.rnd()-0.5)*1.8, vy: (game.rnd()-0.5)*1.8, t: 0
+  });
+
+  // Drop Equipment Chest: Boss always drops Legend Chest; Elites drop 1 guaranteed Chest per wave (extra elites drop bonus gold!)
+  if (e.boss || e.elite) {
+    game.stats.elites++;
+    if (e.boss || !game.eliteChestDropped) {
+      if (e.elite) game.eliteChestDropped = true;
+      game.chests.push({ x: e.x, y: e.y, legend: !!e.boss, bob: 0 });
+      addRing(e.x, e.y, '#ffe478', 2.2);
+      addFloat(e.x, e.y - 0.5, e.boss ? '👑 传说宝箱掉落！' : '📦 构装宝箱掉落！', '#ffe478', true);
+      AudioKit.play('chest');
+      game.shake = Math.max(game.shake, e.boss ? 10 : 5);
+    } else {
+      game.gold += 14;
+      addFloat(e.x, e.y - 0.5, '💰 精英赏金 +14', '#ffe478', true);
+      AudioKit.play('coin', 1.1);
+    }
+  }
+}
+
+function fireChainLightning(startEnemy, dmg, maxTargets, opts = {}){
+  const visited = new Set([startEnemy.id]);
+  let cur = startEnemy;
+  const pts = [{ x: opts.ox ?? startEnemy.x, y: opts.oy ?? startEnemy.y }, { x: startEnemy.x, y: startEnemy.y }];
+  dealDamage(cur, dmg, { ...opts, col:'#d8a6ff', noChainProc:true });
+
+  for (let i = 1; i < maxTargets; i++) {
+    let best = null, bestD = 4.2;
+    for (const e of game.enemies) {
+      if (e.hp <= 0 || visited.has(e.id)) continue;
+      const d = dist(cur, e);
+      if (d < bestD) { bestD = d; best = e; }
+    }
+    if (!best) break;
+    visited.add(best.id);
+    pts.push({ x: best.x, y: best.y });
+    dealDamage(best, Math.round(dmg * 0.88), { ...opts, col:'#d8a6ff', noChainProc:true });
+    cur = best;
+  }
+  game.bolts.push({ pts, t: 0.24, max: 0.24, col: opts.col || '#cf96ff' });
+  AudioKit.play('thunder');
+}
+
+/* ==================== HERO SKILLS (ACTIVE & PASSIVE MUSOU) ==================== */
+function castHeroDash(){
+  if (paused || game.activeModal) return false;
+  const h = game.hero;
+  if (h.downTimer > 0) return false;
+  if (h.dashCd > 0) { toast(`烈焰冲刺冷却中 (${h.dashCd.toFixed(1)}s)`, true); return false; }
+  const hs = getHeroStats();
+  let dx = Number(keys.has('d')||keys.has('arrowright')) - Number(keys.has('a')||keys.has('arrowleft'));
+  let dy = Number(keys.has('s')||keys.has('arrowdown')) - Number(keys.has('w')||keys.has('arrowup'));
+  if (!dx && !dy) {
+    if (pointerWorld) { dx = pointerWorld.x - h.x; dy = pointerWorld.y - h.y; }
+    else { dx = h.face; dy = 0; }
+  }
+  const len = Math.max(0.01, Math.hypot(dx, dy));
+  dx /= len; dy /= len;
+  const ox = h.x, oy = h.y;
+  const dashDist = 3.5;
+  h.x = clamp(h.x + dx * dashDist, 0.5, W - 0.5);
+  h.y = clamp(h.y + dy * dashDist, 0.5, H - 0.5);
+  h.invuln = 0.6;
+  h.shield = Math.max(h.shield, 35);
+  h.shieldTimer = 3.5;
+  h.dashCd = Math.max(2.2, 4.5 / (1 + hs.gm.aspd * 0.6));
+  // 3 fiery blast rings along the dash trail
+  for (let s = 0; s < 3; s++) {
+    const px = ox + (h.x - ox) * (s / 2);
+    const py = oy + (h.y - oy) * (s / 2);
+    addRing(px, py, '#ff7b47', 1.45);
+    for (const e of game.enemies) {
+      if (e.hp > 0 && dist(e, {x:px,y:py}) <= 1.55) {
+        dealDamage(e, Math.round(32 * hs.dmgMult), { critChance:hs.crit, critDmg:hs.critDmg, col:'#ff8e52', burn:12, lifesteal:hs.lifesteal });
+      }
+    }
+  }
+  AudioKit.play('fire', 1.2);
+  renderAllUI();
+  return true;
+}
+
+function castHeroOverdrive(){
+  if (paused || game.activeModal) return false;
+  const h = game.hero;
+  if (h.ultCd > 0) { toast(`全军超载冷却中 (${h.ultCd.toFixed(1)}s)`, true); return false; }
+  h.ultTimer = 5.0;
+  h.ultCd = 18.0;
+  game.shake = 6;
+  addRing(h.x, h.y, '#ffe478', 4.5);
+  addFloat(h.x, h.y - 0.6, '⚡ 全军超载 5s！攻速+80% 暴击+35%', '#ffe878', true);
+  AudioKit.play('merge', 1.15);
+  renderAllUI();
+  return true;
+}
+
+function updateHero(dt){
+  const h = game.hero;
+  const hs = getHeroStats();
+  h.atkCd = Math.max(0, h.atkCd - dt);
+  h.dashCd = Math.max(0, h.dashCd - dt);
+  h.ultCd = Math.max(0, h.ultCd - dt);
+  h.ultTimer = Math.max(0, h.ultTimer - dt);
+  h.invuln = Math.max(0, h.invuln - dt);
+  if (h.shieldTimer > 0) { h.shieldTimer = Math.max(0, h.shieldTimer - dt); if (h.shieldTimer === 0) h.shield = 0; }
+  if (h.swing) { h.swing.t += dt; if (h.swing.t >= 0.22) h.swing = null; }
+  if (h.downTimer > 0) {
+    h.downTimer = Math.max(0, h.downTimer - dt);
+    if (h.downTimer === 0) {
+      h.x = CX + 0.5; h.y = CY + 1.3;
+      h.hp = h.maxHp; h.invuln = 1.8;
+      addFloat(h.x, h.y - 0.5, '领主满血重返！', '#ffe688', true);
+    }
+    return;
+  }
+
+  // Movement (WASD / Arrows / Hold-pointer)
+  const spd = 5.6 + (h.skills.berserk || 0) * 0.35;
+  let dx = Number(keys.has('d')||keys.has('arrowright')) - Number(keys.has('a')||keys.has('arrowleft'));
+  let dy = Number(keys.has('s')||keys.has('arrowdown')) - Number(keys.has('w')||keys.has('arrowup'));
+  if (dx || dy) {
+    h.goal = null;
+    const len = Math.hypot(dx, dy);
+    dx /= len; dy /= len;
+    if (dx) h.face = dx < 0 ? -1 : 1;
+    h.x = clamp(h.x + dx * spd * dt, 0.45, W - 0.45);
+    h.y = clamp(h.y + dy * spd * dt, 0.45, H - 0.45);
+    h.moving = true;
+  } else if (pointerDown && pointerWorld && !game.mode) {
+    const d = dist(h, pointerWorld);
+    if (d > 0.2) {
+      const mx = (pointerWorld.x - h.x) / d, my = (pointerWorld.y - h.y) / d;
+      if (Math.abs(mx) > 0.05) h.face = mx < 0 ? -1 : 1;
+      h.x = clamp(h.x + mx * spd * dt, 0.45, W - 0.45);
+      h.y = clamp(h.y + my * spd * dt, 0.45, H - 0.45);
+      h.moving = true;
+    } else h.moving = false;
+  } else if (h.goal) {
+    const d = dist(h, h.goal);
+    if (d <= 0.18) { h.goal = null; h.moving = false; }
+    else {
+      const mx = (h.goal.x - h.x) / d, my = (h.goal.y - h.y) / d;
+      if (Math.abs(mx) > 0.05) h.face = mx < 0 ? -1 : 1;
+      h.x = clamp(h.x + mx * spd * dt, 0.45, W - 0.45);
+      h.y = clamp(h.y + my * spd * dt, 0.45, H - 0.45);
+      h.moving = true;
+    }
+  } else {
+    h.moving = false;
+  }
+
+  // Only fire combat skills when enemies exist
+  const alive = game.enemies.filter(e => e.hp > 0);
+  if (!alive.length) return;
+
+  // 1. Auto Wide Cleave Slash
+  if (h.atkCd <= 0) {
+    const reach = 2.05 * hs.rangeMult;
+    const hits = alive.filter(e => dist(h, e) <= reach + e.r).sort((a,b) => dist(h,a) - dist(h,b)).slice(0, 8);
+    if (hits.length) {
+      h.atkCd = Math.max(0.18, 0.52 / hs.aspd);
+      h.face = hits[0].x < h.x ? -1 : 1;
+      h.swing = { t: 0, face: h.face, r: reach };
+      AudioKit.play('slash');
+      for (const e of hits) {
+        dealDamage(e, Math.round(24 * hs.dmgMult), {
+          critChance: hs.crit, critDmg: hs.critDmg, lifesteal: hs.lifesteal,
+          slow: hs.gm.slowOnHit, chainProc: hs.gm.chainProc, bonusGold: hs.gm.bonusGold
+        });
+        // Subtle satisfying knockback
+        const kd = Math.max(0.05, dist(h, e));
+        if (!e.boss) {
+          e.x = clamp(e.x + (e.x - h.x) / kd * 0.28, 0.3, W - 0.3);
+          e.y = clamp(e.y + (e.y - h.y) / kd * 0.28, 0.3, H - 0.3);
+        }
+      }
+    }
+  }
+
+  // 2. Orbiting Blades (割草旋风飞刃)
+  const bLv = h.skills.blades || 0;
+  if (bLv > 0) {
+    h.bladeAngle += dt * (3.8 + bLv * 0.55) * (1 + (hs.aspd - 1) * 0.35);
+    const count = bLv + 1;
+    const orbitR = (1.55 + bLv * 0.12) * hs.rangeMult;
+    const now = game.waveClock;
+    for (let i = 0; i < count; i++) {
+      const ang = h.bladeAngle + (Math.PI * 2 * i) / count;
+      const bx = h.x + Math.cos(ang) * orbitR;
+      const by = h.y + Math.sin(ang) * orbitR;
+      for (const e of alive) {
+        if (e.hp <= 0) continue;
+        if (Math.hypot(e.x - bx, e.y - by) <= 0.55 + e.r) {
+          const lastHit = h.bladeHitMap.get(e.id) || -9;
+          if (now - lastHit >= 0.30) {
+            h.bladeHitMap.set(e.id, now);
+            dealDamage(e, Math.round((15 + bLv * 7) * hs.dmgMult), {
+              critChance: hs.crit, critDmg: hs.critDmg, col:'#8cf2ff', lifesteal: hs.lifesteal, bonusGold: hs.gm.bonusGold
+            });
+          }
+        }
+      }
+    }
+  }
+
+  // 3. Fire Wave (烈焰剑波)
+  const fwLv = h.skills.firewave || 0;
+  if (fwLv > 0) {
+    h.skillTimers.firewave -= dt * hs.aspd;
+    if (h.skillTimers.firewave <= 0) {
+      h.skillTimers.firewave = Math.max(0.85, 1.85 - fwLv * 0.15);
+      const nearest = alive.slice().sort((a,b) => dist(h,a) - dist(h,b))[0];
+      const baseAng = Math.atan2(nearest.y - h.y, nearest.x - h.x);
+      const count = Math.min(4, Math.ceil(fwLv / 2) + 1) + hs.gm.extraShot;
+      for (let i = 0; i < count; i++) {
+        const a = baseAng + (i - (count - 1) / 2) * 0.24;
+        game.projectiles.push({
+          kind: 'firewave', x: h.x, y: h.y,
+          vx: Math.cos(a) * 11, vy: Math.sin(a) * 11,
+          life: 0.72 * hs.rangeMult, r: 0.55, hitSet: new Set(),
+          dmg: Math.round((24 + fwLv * 12) * hs.dmgMult),
+          critChance: hs.crit, critDmg: hs.critDmg, lifesteal: hs.lifesteal, bonusGold: hs.gm.bonusGold
+        });
+      }
+      AudioKit.play('fire', 1.35);
+    }
+  }
+
+  // 4. Hero Chain Thunder (天雷轰顶)
+  const thLv = h.skills.thunder || 0;
+  if (thLv > 0) {
+    h.skillTimers.thunder -= dt * hs.aspd;
+    if (h.skillTimers.thunder <= 0) {
+      h.skillTimers.thunder = Math.max(0.85, 2.1 - thLv * 0.26);
+      const near = alive.filter(e => dist(h, e) <= 7.5 * hs.rangeMult);
+      if (near.length) {
+        const strikes = thLv + 1;
+        for (let s = 0; s < strikes; s++) {
+          const tgt = near[Math.floor(game.rnd() * near.length)];
+          if (tgt && tgt.hp > 0) {
+            fireChainLightning(tgt, Math.round((28 + thLv * 14) * hs.dmgMult), 3, {
+              ox: tgt.x, oy: tgt.y - 3.2, critChance: hs.crit, critDmg: hs.critDmg, bonusGold: hs.gm.bonusGold
+            });
+          }
+        }
+      }
+    }
+  }
+
+  // 5. Frost Nova (冰霜新星)
+  const nvLv = h.skills.nova || 0;
+  if (nvLv > 0) {
+    h.skillTimers.nova -= dt * hs.aspd;
+    if (h.skillTimers.nova <= 0) {
+      h.skillTimers.nova = Math.max(1.8, 3.4 - nvLv * 0.26);
+      const rad = (2.3 + nvLv * 0.35) * hs.rangeMult;
+      addRing(h.x, h.y, '#7ce8ff', rad);
+      AudioKit.play('frost');
+      for (const e of alive) {
+        if (dist(h, e) <= rad + e.r) {
+          dealDamage(e, Math.round((22 + nvLv * 12) * hs.dmgMult), {
+            critChance: hs.crit, critDmg: hs.critDmg, col:'#8cf0ff', slow: 0.55, slowDur: 3.0, bonusGold: hs.gm.bonusGold
+          });
+        }
+      }
+    }
+  }
+
+  // 6. Quake Stomp (重锤震地)
+  const stLv = h.skills.stomp || 0;
+  if (stLv > 0) {
+    h.skillTimers.stomp -= dt * hs.aspd;
+    if (h.skillTimers.stomp <= 0) {
+      h.skillTimers.stomp = Math.max(2.0, 3.8 - stLv * 0.3);
+      const rad = (2.4 + stLv * 0.32) * hs.rangeMult;
+      addRing(h.x, h.y, '#ffbe55', rad);
+      game.shake = Math.max(game.shake, 4);
+      AudioKit.play('fire', 0.75);
+      for (const e of alive) {
+        if (dist(h, e) <= rad + e.r) {
+          dealDamage(e, Math.round((36 + stLv * 18) * hs.dmgMult), {
+            critChance: hs.crit, critDmg: hs.critDmg, col:'#ffd478', bonusGold: hs.gm.bonusGold
+          });
+          if (!e.boss) e.freezeT = Math.max(e.freezeT, 0.75);
+        }
+      }
+    }
+  }
+}
+
+/* ==================== TOWERS & SYNERGY EFFECTS ==================== */
+function updateTowers(dt){
+  const alive = game.enemies.filter(e => e.hp > 0);
+  if (!alive.length) return;
+  const castleC = { x: CX + 0.5, y: CY + 0.5 };
+  const syn = getSynergyCounts();
+
+  // Thunder Tier-4 Global Wrath Strike every 3s!
+  if (syn.thunder >= 4) {
+    game.thunderSynTimer -= dt;
+    if (game.thunderSynTimer <= 0) {
+      game.thunderSynTimer = 3.0;
+      const targets = alive.slice().sort((a,b) => dist(a, castleC) - dist(b, castleC)).slice(0, 3);
+      for (const tgt of targets) {
+        fireChainLightning(tgt, Math.round(75 + game.wave * 18), 4, { ox: tgt.x, oy: tgt.y - 4.0, col:'#e2b8ff' });
+        addRing(tgt.x, tgt.y, '#c68cff', 1.6);
+      }
+    }
+  }
+
+  for (const t of game.towers) {
+    t.cd = Math.max(0, t.cd - dt);
+    if (t.cd > 0) continue;
+    const st = getTowerStats(t);
+    const origin = { x: t.x + 0.5, y: t.y + 0.5 };
+    const inRange = alive.filter(e => dist(origin, e) <= st.range);
+    if (!inRange.length) continue;
+
+    // Smart target prioritization
+    inRange.sort((a, b) => {
+      if (t.kind === 'frost' && (a.slowT <= 0) !== (b.slowT <= 0)) return a.slowT <= 0 ? -1 : 1;
+      const sa = dist(a, castleC) - (t.kind === 'wind' && a.ranged ? 1.8 : 0);
+      const sb = dist(b, castleC) - (t.kind === 'wind' && b.ranged ? 1.8 : 0);
+      return sa - sb;
+    });
+    const mainTarget = inRange[0];
+    t.cd = st.cd;
+
+    const dmgOpts = {
+      tower: t, critChance: st.crit, critDmg: st.critDmg,
+      slow: st.slow, slowDur: st.slowDur, burn: st.burn,
+      lifesteal: st.gm.lifesteal, chainProc: st.gm.chainProc, bonusGold: st.gm.bonusGold
+    };
+
+    if (t.kind === 'wind') {
+      const baseAng = Math.atan2(mainTarget.y - origin.y, mainTarget.x - origin.x);
+      let totalShots = st.shots;
+      if (syn.wind >= 4 && game.rnd() < 0.35) totalShots += 2;
+      for (let i = 0; i < totalShots; i++) {
+        const a = baseAng + (i - (totalShots - 1) / 2) * 0.14;
+        game.projectiles.push({
+          kind: 'arrow', x: origin.x, y: origin.y,
+          vx: Math.cos(a) * 16, vy: Math.sin(a) * 16,
+          life: (st.range + 1.5) / 16, r: 0.25,
+          pierce: st.pierce, hitSet: new Set(),
+          dmg: st.dmg, splash: st.splash, opts: dmgOpts
+        });
+      }
+      AudioKit.play('arrow');
+    } else if (t.kind === 'fire') {
+      for (let i = 0; i < st.shots; i++) {
+        const tgt = inRange[i % inRange.length];
+        const d = Math.max(0.14, dist(origin, tgt) / 9.5);
+        game.projectiles.push({
+          kind: 'fireball', sx: origin.x, sy: origin.y, x: origin.x, y: origin.y,
+          tx: tgt.x, ty: tgt.y, t: 0, dur: d,
+          dmg: st.dmg, splash: st.splash, burn: st.burn, star: t.star, opts: dmgOpts
+        });
+      }
+      AudioKit.play('fire');
+    } else if (t.kind === 'frost') {
+      for (let i = 0; i < st.shots; i++) {
+        const tgt = inRange[i % inRange.length];
+        const d = Math.max(0.12, dist(origin, tgt) / 11.5);
+        game.projectiles.push({
+          kind: 'frostball', sx: origin.x, sy: origin.y, x: origin.x, y: origin.y,
+          tx: tgt.x, ty: tgt.y, t: 0, dur: d,
+          dmg: st.dmg, splash: st.splash, opts: dmgOpts
+        });
+      }
+      AudioKit.play('frost');
+    } else if (t.kind === 'thunder') {
+      fireChainLightning(mainTarget, st.dmg, st.chains, { ...dmgOpts, ox: origin.x, oy: origin.y - 0.15 });
+    } else if (t.kind === 'holy') {
+      for (let i = 0; i < st.beams; i++) {
+        const tgt = inRange[i % inRange.length];
+        const ang = Math.atan2(tgt.y - origin.y, tgt.x - origin.x);
+        const ex = origin.x + Math.cos(ang) * st.range;
+        const ey = origin.y + Math.sin(ang) * st.range;
+        game.beams.push({ x1: origin.x, y1: origin.y, x2: ex, y2: ey, t: 0.22, max: 0.22, w: 4 + t.star * 2.5 });
+        // Hit all enemies along the beam!
+        for (const e of alive) {
+          if (pointToSegDist(e.x, e.y, origin.x, origin.y, ex, ey) <= 0.55 + e.r) {
+            dealDamage(e, st.dmg, { ...dmgOpts, col:'#fff094' });
+          }
+        }
+      }
+      AudioKit.play('holy');
+    }
+  }
+}
+
+function pointToSegDist(px, py, x1, y1, x2, y2){
+  const dx = x2 - x1, dy = y2 - y1;
+  const l2 = dx * dx + dy * dy;
+  if (l2 === 0) return Math.hypot(px - x1, py - y1);
+  const t = clamp(((px - x1) * dx + (py - y1) * dy) / l2, 0, 1);
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+
+function updateProjectilesAndZones(dt){
+  for (const p of game.projectiles) {
+    if (p.kind === 'enemyShot') {
+      p.t += dt;
+      const u = clamp(p.t / p.dur, 0, 1);
+      p.x = p.sx + (p.tx - p.sx) * u;
+      p.y = p.sy + (p.ty - p.sy) * u;
+      if (u >= 1) {
+        p.done = true;
+        if (p.tgt === 'hero') damageHero(p.dmg);
+        else damageCastle(p.dmg);
+      }
+      continue;
+    }
+    if (p.kind === 'arrow' || p.kind === 'firewave') {
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      p.life -= dt;
+      if (p.life <= 0) { p.done = true; continue; }
+      for (const e of game.enemies) {
+        if (e.hp <= 0 || p.hitSet.has(e.id)) continue;
+        if (Math.hypot(e.x - p.x, e.y - p.y) <= p.r + e.r) {
+          p.hitSet.add(e.id);
+          if (p.kind === 'firewave') {
+            dealDamage(e, p.dmg, { critChance:p.critChance, critDmg:p.critDmg, col:'#ff9a52', lifesteal:p.lifesteal, bonusGold:p.bonusGold });
+          } else {
+            if (p.splash > 0) {
+              addRing(p.x, p.y, '#ff9848', p.splash);
+              for (const o of game.enemies) {
+                if (o.hp > 0 && dist(o, p) <= p.splash + o.r) dealDamage(o, p.dmg, { ...p.opts, col:'#9affc8' });
+              }
+            } else {
+              dealDamage(e, p.dmg, { ...p.opts, col:'#a8ffd2' });
+            }
+            if (p.pierce > 0) p.pierce--;
+            else { p.done = true; break; }
+          }
+        }
+      }
+      continue;
+    }
+    // Arcing explosive / frost balls
+    p.t += dt;
+    const u = clamp(p.t / p.dur, 0, 1);
+    p.x = p.sx + (p.tx - p.sx) * u;
+    p.y = p.sy + (p.ty - p.sy) * u;
+    if (u >= 1) {
+      p.done = true;
+      const isFire = p.kind === 'fireball';
+      addRing(p.tx, p.ty, isFire ? '#ff7b47' : '#6ce2ff', p.splash);
+      for (const e of game.enemies) {
+        if (e.hp > 0 && dist(e, {x:p.tx, y:p.ty}) <= p.splash + e.r) {
+          dealDamage(e, p.dmg, { ...p.opts, col: isFire ? '#ff9f66' : '#8ceeff' });
+        }
+      }
+      if (isFire && p.star >= 2) {
+        game.zones.push({ kind:'lava', x:p.tx, y:p.ty, r:p.splash * 0.85, t:3.0, max:3.0, tick:0.45, dps:p.burn, tower:p.opts.tower });
+      }
+    }
+  }
+  game.projectiles = game.projectiles.filter(p => !p.done);
+
+  for (const z of game.zones) {
+    z.t -= dt;
+    if (z.kind === 'lava') {
+      z.tick -= dt;
+      if (z.tick <= 0) {
+        z.tick = 0.45;
+        for (const e of game.enemies) {
+          if (e.hp > 0 && dist(e, z) <= z.r + e.r) dealDamage(e, Math.round(z.dps * 0.45), { tower:z.tower, col:'#ff884d' });
+        }
+      }
+    } else if (z.kind === 'bossSlam' && z.t <= 0) {
+      z.done = true;
+      addRing(z.x, z.y, '#ff4d42', z.r);
+      game.shake = 8;
+      AudioKit.play('boss', 1.2);
+      if (game.hero.downTimer <= 0 && dist(game.hero, z) <= z.r) damageHero(34);
+      if (dist({x:CX+0.5, y:CY+0.5}, z) <= z.r + 1.4) damageCastle(18);
+    }
+  }
+  game.zones = game.zones.filter(z => z.t > 0 && !z.done);
+}
+
+function updateEnemies(dt){
+  const castleC = { x: CX + 0.5, y: CY + 0.5 };
+  const h = game.hero;
+
+  for (const e of game.enemies) {
+    if (e.hp <= 0) continue;
+    e.cd = Math.max(0, e.cd - dt);
+    e.flash = Math.max(0, e.flash - dt);
+    if (e.slowT > 0) { e.slowT = Math.max(0, e.slowT - dt); if (e.slowT === 0) e.slow = 0; }
+    if (e.burnT > 0) {
+      e.burnT = Math.max(0, e.burnT - dt);
+      e.hp -= e.burnDps * dt;
+      if (e.hp <= 0) { onEnemyKilled(e, {}); continue; }
+    }
+    if (e.freezeT > 0) { e.freezeT = Math.max(0, e.freezeT - dt); continue; }
+
+    // Boss special slam + summon
+    if (e.boss) {
+      e.bossTimer -= dt;
+      if (e.bossTimer <= 0) {
+        e.bossTimer = 6.5;
+        const tgt = (h.downTimer <= 0 && dist(e, h) < 4.5) ? { x: h.x, y: h.y } : castleC;
+        game.zones.push({ kind:'bossSlam', x: tgt.x, y: tgt.y, r: 2.1, t: 1.5, max: 1.5 });
+        addFloat(e.x, e.y - 0.7, '首领毁灭重击！', '#ff8c70', true);
+        for (let k = 0; k < 4; k++) {
+          spawnEnemy('slime', 'west', Math.pow(1.18, game.wave - 1), {
+            x: clamp(e.x + (game.rnd()-0.5)*1.5, 0.5, W-0.5),
+            y: clamp(e.y + (game.rnd()-0.5)*1.5, 0.5, H-0.5)
+          });
+        }
+      }
+    }
+
+    // Target hero if close, else castle
+    const dHero = h.downTimer <= 0 ? dist(e, h) : 999;
+    const dCastle = dist(e, castleC);
+    const chaseHero = dHero < 2.6;
+    const target = chaseHero ? h : castleC;
+    const dTgt = chaseHero ? dHero : dCastle;
+
+    if (e.ranged && dTgt <= (chaseHero ? e.range : e.range + 2.2)) {
+      if (e.cd <= 0) {
+        e.cd = 1.65;
+        game.projectiles.push({
+          kind:'enemyShot', sx:e.x, sy:e.y, x:e.x, y:e.y, tx:target.x, ty:target.y,
+          t:0, dur:0.32, dmg: e.dmg, tgt: chaseHero ? 'hero' : 'castle'
+        });
+      }
+      continue;
+    }
+
+    const hitDist = chaseHero ? (0.62 + e.r) : (1.15 + e.r);
+    if (dTgt <= hitDist) {
+      if (e.cd <= 0) {
+        e.cd = 0.95;
+        if (chaseHero) damageHero(e.dmg);
+        else damageCastle(e.dmg);
+      }
+      continue;
+    }
+
+    const curSpd = e.spd * (1 - e.slow);
+    const mx = (target.x - e.x) / Math.max(0.01, dTgt);
+    const my = (target.y - e.y) / Math.max(0.01, dTgt);
+    e.x = clamp(e.x + mx * curSpd * dt, 0.3, W - 0.3);
+    e.y = clamp(e.y + my * curSpd * dt, 0.3, H - 0.3);
+  }
+
+  // Light separation
+  for (let i = 0; i < game.enemies.length; i++) {
+    const a = game.enemies[i];
+    if (a.hp <= 0) continue;
+    for (let j = i + 1; j < Math.min(game.enemies.length, i + 14); j++) {
+      const b = game.enemies[j];
+      if (b.hp <= 0) continue;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.hypot(dx, dy), md = a.r + b.r;
+      if (d > 0.001 && d < md) {
+        const push = (md - d) * 0.28;
+        a.x -= dx / d * push; a.y -= dy / d * push;
+        b.x += dx / d * push; b.y += dy / d * push;
+      }
+    }
+  }
+  game.enemies = game.enemies.filter(e => e.hp > 0);
+}
+
+function updatePickups(dt){
+  const h = game.hero;
+  const hs = getHeroStats();
+  if (game.xpComboTimer > 0) { game.xpComboTimer -= dt; if (game.xpComboTimer <= 0) game.xpCombo = 0; }
+
+  for (const g of game.gems) {
+    g.t += dt;
+    if (g.t < 0.22) { g.x += g.vx * dt; g.y += g.vy * dt; continue; }
+    const d = dist(g, h);
+    if (d <= hs.magnet || g.magnetized) {
+      g.magnetized = true;
+      const spd = 13.5;
+      if (d <= 0.48) {
+        g.done = true;
+        gainHeroXp(g.xp);
+      } else {
+        g.x += (h.x - g.x) / d * spd * dt;
+        g.y += (h.y - g.y) / d * spd * dt;
+      }
+    }
+  }
+  game.gems = game.gems.filter(g => !g.done);
+
+  for (const c of game.chests) {
+    c.bob += dt * 4.5;
+    if (dist(c, h) <= 1.05) {
+      c.done = true;
+      queueModal({ type:'chest', legend: c.legend });
+      AudioKit.play('chest', 1.15);
+    }
+  }
+  game.chests = game.chests.filter(c => !c.done);
+}
+
+function gainHeroXp(amt){
+  const h = game.hero;
+  h.xp += amt;
+  game.xpCombo = Math.min(14, game.xpCombo + 1);
+  game.xpComboTimer = 0.65;
+  AudioKit.play('xp', 1 + game.xpCombo * 0.045);
+  while (h.xp >= h.xpNext) {
+    h.xp -= h.xpNext;
+    h.lv++;
+    h.xpNext = Math.round(14 + h.lv * 9 + h.lv * h.lv * 1.4);
+    h.maxHp += 15;
+    h.hp = Math.min(h.maxHp, h.hp + 35);
+    addRing(h.x, h.y, '#7ce8ff', 2.4);
+    addFloat(h.x, h.y - 0.6, `✨ 领主升级 Lv.${h.lv}！`, '#8cf4ff', true);
+    AudioKit.play('level');
+    queueModal({ type:'levelup' });
+  }
+}
+
+function damageHero(amt){
+  const h = game.hero;
+  if (h.downTimer > 0 || h.invuln > 0) return;
+  h.invuln = 0.28;
+  let rem = amt;
+  if (h.shield > 0) { const a = Math.min(h.shield, rem); h.shield -= a; rem -= a; }
+  if (rem > 0) {
+    h.hp = Math.max(0, h.hp - rem);
+    addFloat(h.x, h.y - 0.45, `-${rem}`, '#ff8070');
+    AudioKit.play('hit');
+  }
+  if (h.hp <= 0) {
+    h.downTimer = 5.0;
+    toast('领主重伤撤回圣堡，5 秒后满血重返！', true);
+  }
+}
+
+function damageCastle(amt){
+  game.castleHp = Math.max(0, game.castleHp - amt);
+  game.shake = Math.max(game.shake, 4.5);
+  addFloat(CX + 0.5, CY - 0.3, `圣堡 -${amt}`, '#ff6b57', true);
+  AudioKit.play('hit', 0.8);
+  if (game.castleHp <= 0) finishGame(false);
+}
+
+function onWaveCleared(){
+  // Magnetize all remaining gems & auto-collect any chests so player NEVER loses loot!
+  for (const g of game.gems) gainHeroXp(g.xp);
+  game.gems = [];
+  for (const c of game.chests) queueModal({ type:'chest', legend: c.legend });
+  game.chests = [];
+
+  const clearBonus = 18 + game.wave * 3;
+  game.gold += clearBonus;
+  game.castleHp = Math.min(game.castleMax, game.castleHp + 15);
+  game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + 45);
+  game.hero.downTimer = 0;
+
+  if (game.wave === MAIN_WAVES && !game.endless) {
+    game.phase = 'won';
+    AudioKit.play('level', 1.1);
+    showEndModal(true);
+    renderAllUI();
+    return;
+  }
+
+  game.wave++;
+  game.phase = 'prep';
+  game.rerollCost = 5;
+  rollShop(true); // Free fresh shop every wave!
+  showBanner(`✅ 第 ${game.wave - 1} 波通关！`, `通关赏金 +${clearBonus} 金 · 商店已免费刷新`, 'good');
+  AudioKit.play('merge');
+  if (game.autoWave) game.autoWaveTimer = 4.0;
+  renderAllUI();
+}
+
+function finishGame(victory){
+  game.phase = victory ? 'won' : 'lost';
+  game.speed = 1;
+  showEndModal(victory);
+  renderAllUI();
+}
+
+function enterEndlessMode(){
+  game.endless = true;
+  game.wave = MAIN_WAVES + 1;
+  game.phase = 'prep';
+  game.castleHp = game.castleMax;
+  game.rerollCost = 5;
+  rollShop(true);
+  closeModal();
+  showBanner('🔥 无尽割草模式已开启！', '从第 16 波起无限叠加怪海，冲刺你的极限 DPS！', 'boss');
+  renderAllUI();
+}
+
+/* ==================== SIMULATION TICK ==================== */
+function tick(dt){
+  if (!game || !['prep','wave'].includes(game.phase)) return;
+  if (paused || game.activeModal) return;
+
+  updateVfx(dt);
+  updateHero(dt);
+
+  // Holy Tier-2 passive regen
+  if (getSynergyTier('holy') >= 1) {
+    game.holyRegenTimer -= dt;
+    if (game.holyRegenTimer <= 0) {
+      game.holyRegenTimer = 1.0;
+      game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + 4);
+      game.castleHp = Math.min(game.castleMax, game.castleHp + 2);
+    }
+  }
+
+  if (game.phase === 'prep') {
+    if (game.autoWave) {
+      game.autoWaveTimer -= dt;
+      if (game.autoWaveTimer <= 0) startWave();
+    }
+    return;
+  }
+
+  // Wave Simulation
+  game.waveClock += dt;
+  for (const w of game.waveQueue) {
+    if (!w.spawned && game.waveClock >= w.at) {
+      w.spawned = true;
+      spawnEnemy(w.kind, w.side, w.scale);
+    }
+  }
+
+  updateTowers(dt);
+  updateProjectilesAndZones(dt);
+  updateEnemies(dt);
+  updatePickups(dt);
+
+  if (game.phase !== 'wave') return;
+  const allSpawned = game.waveQueue.every(w => w.spawned);
+  if (allSpawned && game.enemies.length === 0) {
+    onWaveCleared();
+  }
+}
+
+/* ==================== VFX HELPERS ==================== */
+function addRing(x, y, col, r){ game.rings.push({ x, y, col, r, t: 0.34, max: 0.34 }); }
+function addFloat(x, y, txt, col='#fff', big=false){
+  game.floats.push({ x, y, txt, col, big, t: big ? 1.05 : 0.72, max: big ? 1.05 : 0.72 });
+  if (game.floats.length > 75) game.floats.shift();
+}
+function updateVfx(dt){
+  game.shake = Math.max(0, game.shake - dt * 18);
+  for (const r of game.rings) r.t -= dt;
+  game.rings = game.rings.filter(r => r.t > 0);
+  for (const b of game.beams) b.t -= dt;
+  game.beams = game.beams.filter(b => b.t > 0);
+  for (const l of game.bolts) l.t -= dt;
+  game.bolts = game.bolts.filter(l => l.t > 0);
+  for (const f of game.floats) { f.t -= dt; f.y -= dt * (f.big ? 0.95 : 0.68); }
+  game.floats = game.floats.filter(f => f.t > 0);
+}
+
+/* ==================== MODALS (LEVEL-UP, CHEST DRAFT, INTRO, END) ==================== */
+function queueModal(m){
+  game.pendingModals.push(m);
+  if (!game.activeModal) openNextModal();
+}
+
+function openNextModal(){
+  if (!game.pendingModals.length) { closeModal(); return; }
+  const m = game.pendingModals.shift();
+  game.activeModal = m;
+  if (m.type === 'levelup') renderLevelUpModal();
+  else if (m.type === 'chest') renderChestModal(m.legend);
+}
+
+function closeModal(){
+  if (game) game.activeModal = null;
+  $('modalBackdrop').hidden = true;
+  if (game && game.pendingModals.length) openNextModal();
+}
+
+function renderLevelUpModal(){
+  const pool = Object.values(HERO_SKILLS).filter(s => (game.hero.skills[s.key] || 0) < 5);
+  if (!pool.length) { game.gold += 15; toast('领主全技能满级！额外奖励 +15 金币！'); closeModal(); return; }
+  const choices = [];
+  const copy = pool.slice();
+  while (choices.length < 3 && copy.length) {
+    choices.push(copy.splice(Math.floor(game.rnd() * copy.length), 1)[0]);
+  }
+  const box = $('modalBox');
+  box.innerHTML = `
+    <h2>✨ 领主升级 Lv.${game.hero.lv} · 选择割草神技</h2>
+    <p class="lead">每项技能均可叠至 Lv.5，弹幕密度与范围大幅跃升，助你横扫四面怪海！</p>
+    <div class="choices" id="modalChoices"></div>
+  `;
+  const grid = box.querySelector('#modalChoices');
+  for (const s of choices) {
+    const nextLv = (game.hero.skills[s.key] || 0) + 1;
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'choice-card';
+    card.dataset.choice = s.key;
+    card.innerHTML = `
+      <span class="tag">${s.tag} · Lv.${nextLv}</span>
+      <span class="ci">${s.icon}</span>
+      <span class="cn">${s.name}</span>
+      <span class="cd">${s.desc(nextLv)}</span>
+    `;
+    card.addEventListener('click', () => pickHeroSkill(s.key));
+    grid.append(card);
+  }
+  $('modalBackdrop').hidden = false;
+}
+
+function pickHeroSkill(key){
+  game.hero.skills[key] = (game.hero.skills[key] || 0) + 1;
+  AudioKit.play('merge', 1.1);
+  toast(`领主学会【${HERO_SKILLS[key].name} Lv.${game.hero.skills[key]}】！`);
+  closeModal();
+  renderAllUI();
+}
+
+function renderChestModal(legendBias = false){
+  const choices = [];
+  const copy = GEAR_KEYS.slice();
+  if (legendBias) {
+    choices.push(GEARS.titan_crown);
+    copy.splice(copy.indexOf('titan_crown'), 1);
+  }
+  while (choices.length < 3 && copy.length) {
+    const k = copy.splice(Math.floor(game.rnd() * copy.length), 1)[0];
+    choices.push(GEARS[k]);
+  }
+  const box = $('modalBox');
+  box.innerHTML = `
+    <h2>${legendBias ? '👑 首领传说宝箱' : '📦 精英构装宝箱'} · 三选一</h2>
+    <p class="lead">选中的装备将收入底部构装背包，可随时点击装到任意<strong>核心防御塔</strong>或<strong>领主</strong>身上（自由拆装不损耗）！<strong>同名构装自动叠星</strong>：2★ 效果 ×1.6、3★ ×2.3，优先升级已穿戴的那件！</p>
+    <div class="choices" id="modalChoices"></div>
+  `;
+  const grid = box.querySelector('#modalChoices');
+  for (const g of choices) {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'choice-card' + (g.rarity === 'legend' ? ' legend' : '');
+    card.dataset.choice = g.key;
+    const tgt = findGearStackTarget(g.key);
+    const owned = ownedGearStar(g.key);
+    const stackTag = tgt
+      ? `<span class="tag" style="background:rgba(124,232,150,0.25);color:#c9ffd8">已拥有 · 选它叠 ${tgt.star + 1}★</span>`
+      : (owned ? `<span class="tag" style="opacity:.75">已有 3★ · 将入背包</span>` : '');
+    card.innerHTML = `
+      <span class="tag">${g.rarity === 'legend' ? '传说神器' : '史诗构装'}</span>
+      ${stackTag}
+      <span class="ci">${g.icon}</span>
+      <span class="cn">${g.name}</span>
+      <span class="cd">${g.desc}</span>
+    `;
+    card.addEventListener('click', () => pickGearReward(g.key));
+    grid.append(card);
+  }
+  $('modalBackdrop').hidden = false;
+}
+
+function grantGear(key){
+  const spec = GEARS[key];
+  const tgt = findGearStackTarget(key);
+  if (tgt){
+    const ns = tgt.star + 1;
+    tgt.list[tgt.idx] = `${key}#${ns}`;
+    AudioKit.play('merge', 1.1);
+    game.shake = Math.max(game.shake, 5);
+    addRing(game.hero.x, game.hero.y, '#ffe478', 1.8);
+    addFloat(game.hero.x, game.hero.y - 0.6, `✨ ${spec.name} 叠至 ${ns}★！`, '#ffe878', true);
+    toast(`同名构装自动叠星！【${spec.name}】晋升 ${ns}★，效果 ×${GEAR_STAR_MULT[ns - 1]}！`);
+  } else {
+    game.bag.push(key);
+    AudioKit.play('chest', 1.2);
+    toast(`获得构装【${spec.name}】！同名再选会自动叠星（最高 3★）。`);
+  }
+  renderAllUI();
+}
+
+function pickGearReward(key){
+  grantGear(key);
+  closeModal();
+}
+
+function showIntroModal(){
+  game.activeModal = { type:'intro' };
+  const box = $('modalBox');
+  box.innerHTML = `
+    <h2>⚔️ 边境守卫 v0.51 · 魔兽斗塔 × 领主割草</h2>
+    <p class="lead">没有慢吞吞种田，开局直接造塔凑羁绊，操控领主冲进四面怪海割草爆装、合 3★ 神塔！</p>
+    <div class="intro-grid">
+      <div class="intro-box">
+        <h4>🏰 斗塔抽卡 · 升星质变</h4>
+        <p>底栏 4 张随机塔牌（<strong>Q 键刷新</strong>，费用每次 +2、每波重置）。点击空塔基建造；点击场上<strong>同名同星塔可直接合星</strong>（1★→2★→3★ 弹幕翻倍质变）！</p>
+      </div>
+      <div class="intro-box">
+        <h4>⚡ 五大元素羁绊</h4>
+        <p>按星级计权重（1★=1, 2★=2, 3★=4）。凑齐 <strong>2 / 4</strong> 触发疾风箭雨、烈焰尸爆、冰封碎冰、天罚落雷、圣光暴伤！</p>
+      </div>
+      <div class="intro-box">
+        <h4>🌀 领主冲阵割草</h4>
+        <p><strong>WASD 或鼠标按住走位</strong>，领主自动砍杀并释放飞刃/剑波/天雷。吸取满地经验球极速升级，<strong>Space 冲刺 / R 全军超载</strong>！</p>
+      </div>
+      <div class="intro-box">
+        <h4>📦 爆装构装 · 15 波 + 无尽</h4>
+        <p>第 2 波起必刷紫名精英与 5/10/15 波大 Boss，击杀爆宝箱三选一神装，自由装在核心塔或领主身上！<strong>同名构装自动叠星</strong>（2★ ×1.6 / 3★ ×2.3），重复拿绝不浪费！</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn gold" id="introGo" type="button" style="padding:9px 22px;font-size:14px">开始爽刷！</button>
+    </div>
+  `;
+  box.querySelector('#introGo').addEventListener('click', () => { AudioKit.unlock(); closeModal(); });
+  $('modalBackdrop').hidden = false;
+}
+
+function showEndModal(victory){
+  game.activeModal = { type:'end' };
+  const box = $('modalBox');
+  box.innerHTML = `
+    <h2>${victory ? '🏆 胜利！你守住了第 15 波毁灭泰坦！' : `💀 圣堡陷落 · 止步第 ${game.wave} 波`}</h2>
+    <p class="lead">${victory ? '你的斗塔羁绊与割草神装已经彻底成型！要不要直接开启【无尽割草模式】继续冲刺极限伤害？' : '调整元素羁绊与合星节奏，把暴击/分裂神装喂给核心 3★ 塔再来一局！'}</p>
+    <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin:12px 0">
+      <div class="stat-box">击杀敌军<br><b>${game.stats.kills}</b></div>
+      <div class="stat-box">合星次数<br><b>${game.stats.merges}</b></div>
+      <div class="stat-box">斩杀精英/Boss<br><b>${game.stats.elites}</b></div>
+      <div class="stat-box">总输出伤害<br><b>${game.stats.dmgTotal.toLocaleString()}</b></div>
+    </div>
+    <div class="modal-footer">
+      ${victory ? '<button class="btn purple" id="endlessGo" type="button" style="padding:9px 18px;font-size:14px">🔥 进入无尽割草模式（第 16 波+）</button>' : ''}
+      <button class="btn gold" id="restartGo" type="button" style="padding:9px 18px;font-size:14px">🔄 再来一局</button>
+    </div>
+  `;
+  box.querySelector('#endlessGo')?.addEventListener('click', enterEndlessMode);
+  box.querySelector('#restartGo').addEventListener('click', () => startNewRun());
+  $('modalBackdrop').hidden = false;
+}
+
+/* ==================== RENDERING (CANVAS) ==================== */
+function fitCamera(){
+  cam.w = window.innerWidth;
+  cam.h = window.innerHeight;
+  cam.dpr = Math.min(2, window.devicePixelRatio || 1);
+  canvas.width = Math.round(cam.w * cam.dpr);
+  canvas.height = Math.round(cam.h * cam.dpr);
+  const availH = Math.max(300, cam.h - 190);
+  const availW = Math.max(300, cam.w - 24);
+  cam.zoom = clamp(Math.min(availW / (W * CELL), availH / (H * CELL)), 0.56, 1.35);
+  cam.x = (W / 2) * CELL;
+  cam.y = (H / 2) * CELL + 8;
+}
+
+function screenToWorld(sx, sy){
+  return {
+    x: ((sx - cam.w / 2) / cam.zoom + cam.x) / CELL,
+    y: ((sy - cam.h / 2) / cam.zoom + cam.y) / CELL
+  };
+}
+function worldToScreen(wx, wy){
+  return {
+    x: (wx * CELL - cam.x) * cam.zoom + cam.w / 2,
+    y: (wy * CELL - cam.y) * cam.zoom + cam.h / 2
+  };
+}
+
+function render(){
+  if (!game) return;
+  ctx.setTransform(cam.dpr, 0, 0, cam.dpr, 0, 0);
+  ctx.fillStyle = '#0c1418';
+  ctx.fillRect(0, 0, cam.w, cam.h);
+
+  const sx = game.shake > 0 ? (Math.random() - 0.5) * game.shake : 0;
+  const sy = game.shake > 0 ? (Math.random() - 0.5) * game.shake : 0;
+
+  ctx.save();
+  ctx.translate(cam.w / 2 + sx, cam.h / 2 + sy);
+  ctx.scale(cam.zoom, cam.zoom);
+  ctx.translate(-cam.x, -cam.y);
+
+  drawArena();
+  drawZones();
+  drawPedestalsAndHighlights();
+  drawCastle();
+  drawTowers();
+  drawPickups();
+  drawEnemies();
+  drawHero();
+  drawProjectilesBeamsBolts();
+  drawRingsAndFloats();
+
+  ctx.restore();
+}
+
+function drawArena(){
+  // Subtle dark frontier checkerboard so bright VFX pop dramatically
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const inFort = x >= 9 && x <= 13 && y >= 5 && y <= 9;
+      const isRoad = x === CX || y === CY;
+      if (inFort) {
+        ctx.fillStyle = isRoad ? '#2a383f' : ((x + y) % 2 ? '#1e2c33' : '#223139');
+      } else {
+        ctx.fillStyle = isRoad ? '#1d2a2f' : ((x + y) % 2 ? '#132024' : '#162429');
+      }
+      ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+    }
+  }
+  // Outer battlefield border
+  ctx.strokeStyle = 'rgba(130,190,185,0.22)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(0, 0, W * CELL, H * CELL);
+
+  // Fortress outer glowing perimeter frame (5x5 at x=9..13, y=5..9)
+  ctx.strokeStyle = 'rgba(255,214,112,0.55)';
+  ctx.lineWidth = 3.5;
+  ctx.strokeRect(9 * CELL, 5 * CELL, 5 * CELL, 5 * CELL);
+  // Subtle corner bastion pillars
+  ctx.fillStyle = '#c8b68c';
+  for (const [cx, cy] of [[9,5],[14,5],[9,10],[14,10]]) {
+    ctx.fillRect(cx * CELL - 5, cy * CELL - 5, 10, 10);
+  }
+}
+
+function drawPedestalsAndHighlights(){
+  const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 220);
+  const buying = game.mode?.type === 'buy' ? game.shop[game.mode.shopIdx] : null;
+  const moving = game.mode?.type === 'move' ? game.towers.find(o => o.id === game.mode.towerId) : null;
+  const equipping = game.mode?.type === 'equip';
+
+  for (const p of PEDESTALS) {
+    const cx = (p.x + 0.5) * CELL, cy = (p.y + 0.5) * CELL;
+    const occ = towerAt(p.x, p.y);
+    // Base rune pedestal
+    ctx.beginPath();
+    ctx.arc(cx, cy, CELL * 0.36, 0, Math.PI * 2);
+    ctx.fillStyle = occ ? 'rgba(255,255,255,0.06)' : 'rgba(130,210,200,0.09)';
+    ctx.fill();
+    ctx.strokeStyle = occ ? 'rgba(255,255,255,0.14)' : 'rgba(150,225,215,0.28)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Mode highlights
+    if (buying) {
+      const canMerge = occ && occ.kind === buying.kind && occ.star === 1;
+      if (!occ || canMerge) {
+        ctx.fillStyle = canMerge ? `rgba(255,218,88,${0.26 + 0.16*pulse})` : `rgba(114,242,180,${0.16 + 0.12*pulse})`;
+        ctx.fillRect(p.x * CELL + 2, p.y * CELL + 2, CELL - 4, CELL - 4);
+        ctx.strokeStyle = canMerge ? '#ffe878' : '#72f2b4';
+        ctx.lineWidth = canMerge ? 3 : 2;
+        ctx.strokeRect(p.x * CELL + 3, p.y * CELL + 3, CELL - 6, CELL - 6);
+        if (canMerge) {
+          ctx.fillStyle = '#ffe878'; ctx.font = '900 11px sans-serif'; ctx.textAlign = 'center';
+          ctx.fillText('合2★', cx, p.y * CELL + 13);
+        }
+      }
+    } else if (moving) {
+      const canMerge = occ && occ.id !== moving.id && occ.kind === moving.kind && occ.star === moving.star && moving.star < 3;
+      ctx.strokeStyle = canMerge ? '#ffe878' : '#7be8ff';
+      ctx.lineWidth = canMerge ? 3 : 1.8;
+      ctx.strokeRect(p.x * CELL + 3, p.y * CELL + 3, CELL - 6, CELL - 6);
+    } else if (equipping && occ && occ.gear.length < 2) {
+      ctx.fillStyle = `rgba(255,218,90,${0.20 + 0.14*pulse})`;
+      ctx.fillRect(p.x * CELL + 2, p.y * CELL + 2, CELL - 4, CELL - 4);
+      ctx.strokeStyle = '#ffe478';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(p.x * CELL + 3, p.y * CELL + 3, CELL - 6, CELL - 6);
+    }
+  }
+
+  // Selected tower range circle
+  if (game.inspTarget?.type === 'tower') {
+    const t = game.towers.find(o => o.id === game.inspTarget.id);
+    if (t) {
+      const st = getTowerStats(t);
+      const col = ELEMENTS[t.elem].color;
+      ctx.beginPath();
+      ctx.arc((t.x + 0.5) * CELL, (t.y + 0.5) * CELL, st.range * CELL, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,235,140,0.07)';
+      ctx.fill();
+      ctx.setLineDash([6, 5]);
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+}
+
+function drawCastle(){
+  const cx = (CX + 0.5) * CELL, cy = (CY + 0.5) * CELL;
+  const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 350);
+  // Crystal aura
+  ctx.beginPath();
+  ctx.arc(cx, cy, CELL * (0.48 + 0.06 * pulse), 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(92,216,255,0.18)';
+  ctx.fill();
+  // Octagon crystal bastion
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 17); ctx.lineTo(cx + 14, cy - 6); ctx.lineTo(cx + 10, cy + 14);
+  ctx.lineTo(cx - 10, cy + 14); ctx.lineTo(cx - 14, cy - 6); ctx.closePath();
+  ctx.fillStyle = '#5bd2ff'; ctx.fill();
+  ctx.strokeStyle = '#e8fbff'; ctx.lineWidth = 2.2; ctx.stroke();
+  // Inner highlight
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 11); ctx.lineTo(cx + 6, cy); ctx.lineTo(cx, cy + 8); ctx.lineTo(cx - 6, cy); ctx.closePath();
+  ctx.fillStyle = '#dffaff'; ctx.fill();
+
+  // HP Bar
+  const r = clamp(game.castleHp / game.castleMax, 0, 1);
+  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  ctx.fillRect(cx - 20, cy + 18, 40, 6);
+  ctx.fillStyle = r < 0.35 ? '#ff6250' : '#6ef29e';
+  ctx.fillRect(cx - 19, cy + 19, 38 * r, 4);
+}
+
+function drawTowers(){
+  for (const t of game.towers) {
+    const cx = (t.x + 0.5) * CELL, cy = (t.y + 0.5) * CELL;
+    const col = ELEMENTS[t.elem].color;
+    const isSel = game.inspTarget?.type === 'tower' && game.inspTarget.id === t.id;
+
+    // 3★ Mythic golden halo
+    if (t.star === 3) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, CELL * 0.44, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,216,92,0.22)';
+      ctx.fill();
+      ctx.strokeStyle = '#ffe478';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // Tower plinth
+    ctx.beginPath();
+    ctx.arc(cx, cy, CELL * (0.29 + t.star * 0.035), 0, Math.PI * 2);
+    ctx.fillStyle = '#182830'; ctx.fill();
+    ctx.strokeStyle = isSel ? '#fff' : col;
+    ctx.lineWidth = isSel ? 3 : (1.8 + t.star * 0.6);
+    ctx.stroke();
+
+    // Icon
+    ctx.font = `${16 + t.star * 2}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(TOWERS[t.kind].icon, cx, cy + 1);
+
+    // Stars above
+    ctx.fillStyle = t.star === 3 ? '#ffdf4d' : t.star === 2 ? '#a8f0ff' : '#d6eae5';
+    ctx.font = '900 10px sans-serif';
+    ctx.fillText('★'.repeat(t.star), cx, cy - 17);
+
+    // Gear pips below
+    if (t.gear.length) {
+      for (let i = 0; i < t.gear.length; i++) {
+        ctx.beginPath();
+        ctx.arc(cx - 5 + i * 10, cy + 16, 2.5 + gearStar(t.gear[i]) * 1.1, 0, Math.PI * 2);
+        ctx.fillStyle = GEARS[gearBase(t.gear[i])].rarity === 'legend' ? '#ffbe4f' : '#d294ff';
+        ctx.fill();
+      }
+    }
+  }
+}
+
+function drawHero(){
+  const h = game.hero;
+  if (h.downTimer > 0) return;
+  const hx = h.x * CELL, hy = h.y * CELL;
+  const hs = getHeroStats();
+
+  // Overdrive golden aura
+  if (h.ultTimer > 0) {
+    ctx.beginPath();
+    ctx.arc(hx, hy, 28 + Math.sin(performance.now()/80)*4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,220,90,0.22)'; ctx.fill();
+    ctx.strokeStyle = '#ffe878'; ctx.lineWidth = 2; ctx.stroke();
+  }
+
+  // Cleave swing arc
+  if (h.swing) {
+    const u = h.swing.t / 0.22;
+    const rad = h.swing.r * CELL;
+    const a0 = h.swing.face > 0 ? -1.35 : Math.PI - 1.35;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(hx, hy, rad, a0, a0 + 2.7);
+    ctx.strokeStyle = `rgba(255,232,126,${1 - u})`;
+    ctx.lineWidth = 10 * (1 - u * 0.5);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Orbiting Blades (旋风飞刃)
+  const bLv = h.skills.blades || 0;
+  if (bLv > 0) {
+    const count = bLv + 1;
+    const orbitR = (1.55 + bLv * 0.12) * hs.rangeMult * CELL;
+    for (let i = 0; i < count; i++) {
+      const ang = h.bladeAngle + (Math.PI * 2 * i) / count;
+      const bx = hx + Math.cos(ang) * orbitR;
+      const by = hy + Math.sin(ang) * orbitR;
+      ctx.save();
+      ctx.translate(bx, by);
+      ctx.rotate(ang + Math.PI / 2);
+      ctx.beginPath();
+      ctx.moveTo(0, -11); ctx.lineTo(5, 6); ctx.lineTo(0, 3); ctx.lineTo(-5, 6); ctx.closePath();
+      ctx.fillStyle = '#8ef4ff'; ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4; ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // Hero Body
+  ctx.beginPath();
+  ctx.arc(hx, hy, 14, 0, Math.PI * 2);
+  ctx.fillStyle = h.invuln > 0 ? '#ffffff' : '#2a8fff';
+  ctx.fill();
+  ctx.strokeStyle = h.shield > 0 ? '#8ef5ff' : '#ffe688';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  // Crown / helmet visor
+  ctx.fillStyle = '#ffe478';
+  ctx.beginPath();
+  ctx.moveTo(hx - 7, hy - 9); ctx.lineTo(hx - 4, hy - 16); ctx.lineTo(hx, hy - 11);
+  ctx.lineTo(hx + 4, hy - 16); ctx.lineTo(hx + 7, hy - 9); ctx.closePath();
+  ctx.fill();
+
+  // HP Bar
+  const r = clamp(h.hp / h.maxHp, 0, 1);
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.fillRect(hx - 16, hy - 23, 32, 5);
+  ctx.fillStyle = '#6cf29c';
+  ctx.fillRect(hx - 15, hy - 22, 30 * r, 3);
+}
+
+function drawEnemies(){
+  for (const e of game.enemies) {
+    const ex = e.x * CELL, ey = e.y * CELL;
+    const rad = e.r * CELL;
+
+    if (e.elite || e.boss) {
+      ctx.beginPath();
+      ctx.arc(ex, ey, rad + 6, 0, Math.PI * 2);
+      ctx.fillStyle = e.boss ? 'rgba(255,65,50,0.22)' : 'rgba(190,102,255,0.22)';
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.arc(ex, ey, rad, 0, Math.PI * 2);
+    ctx.fillStyle = e.flash > 0 ? '#ffffff' : e.freezeT > 0 ? '#8ceeff' : e.col;
+    ctx.fill();
+    ctx.strokeStyle = e.slowT > 0 ? '#7ce8ff' : e.rim;
+    ctx.lineWidth = (e.boss || e.elite) ? 3 : 1.8;
+    ctx.stroke();
+
+    // HP Bar for damaged / elites / bosses
+    if (e.hp < e.maxHp || e.elite || e.boss) {
+      const bw = e.boss ? 48 : e.elite ? 32 : 20;
+      const r = clamp(e.hp / e.maxHp, 0, 1);
+      ctx.fillStyle = 'rgba(0,0,0,0.72)';
+      ctx.fillRect(ex - bw/2, ey - rad - 9, bw, 4.5);
+      ctx.fillStyle = e.boss ? '#ff4f42' : e.elite ? '#d284ff' : '#ff7b61';
+      ctx.fillRect(ex - bw/2 + 0.5, ey - rad - 8.5, (bw - 1) * r, 3.5);
+    }
+  }
+}
+
+function drawPickups(){
+  for (const g of game.gems) {
+    const gx = g.x * CELL, gy = g.y * CELL;
+    const s = g.big ? 6 : 4;
+    ctx.fillStyle = g.big ? '#ffe478' : '#6ef4ff';
+    ctx.beginPath();
+    ctx.moveTo(gx, gy - s); ctx.lineTo(gx + s * 0.8, gy); ctx.lineTo(gx, gy + s); ctx.lineTo(gx - s * 0.8, gy); ctx.closePath();
+    ctx.fill();
+  }
+  for (const c of game.chests) {
+    const cx = c.x * CELL, cy = c.y * CELL + Math.sin(c.bob) * 3;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 16, 0, Math.PI * 2);
+    ctx.fillStyle = c.legend ? 'rgba(255,196,64,0.3)' : 'rgba(196,120,255,0.28)';
+    ctx.fill();
+    ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(c.legend ? '👑' : '📦', cx, cy);
+  }
+}
+
+function drawZones(){
+  for (const z of game.zones) {
+    const zx = z.x * CELL, zy = z.y * CELL, zr = z.r * CELL;
+    if (z.kind === 'lava') {
+      ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,95,35,${0.25 * (z.t / z.max)})`; ctx.fill();
+    } else if (z.kind === 'bossSlam') {
+      const prog = 1 - z.t / z.max;
+      ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,55,40,0.16)'; ctx.fill();
+      ctx.strokeStyle = '#ff5642'; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.beginPath(); ctx.arc(zx, zy, zr * prog, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,70,50,0.28)'; ctx.fill();
+    }
+  }
+}
+
+function drawProjectilesBeamsBolts(){
+  for (const p of game.projectiles) {
+    const px = p.x * CELL, py = p.y * CELL;
+    if (p.kind === 'firewave') {
+      const a = Math.atan2(p.vy, p.vx);
+      ctx.save(); ctx.translate(px, py); ctx.rotate(a);
+      ctx.beginPath(); ctx.arc(0, 0, 14, -1.1, 1.1);
+      ctx.strokeStyle = '#ff8c42'; ctx.lineWidth = 5; ctx.stroke();
+      ctx.strokeStyle = '#fff0a0'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.restore();
+    } else if (p.kind === 'arrow') {
+      const a = Math.atan2(p.vy, p.vx);
+      ctx.save(); ctx.translate(px, py); ctx.rotate(a);
+      ctx.strokeStyle = '#8ef8c6'; ctx.lineWidth = 2.8;
+      ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(7, 0); ctx.stroke();
+      ctx.restore();
+    } else if (p.kind === 'fireball') {
+      ctx.beginPath(); ctx.arc(px, py, 6.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ff7b38'; ctx.fill();
+      ctx.strokeStyle = '#fff09c'; ctx.lineWidth = 1.6; ctx.stroke();
+    } else if (p.kind === 'frostball') {
+      ctx.beginPath(); ctx.arc(px, py, 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#7beeff'; ctx.fill();
+    } else if (p.kind === 'enemyShot') {
+      ctx.beginPath(); ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ff66c4'; ctx.fill();
+    }
+  }
+  for (const b of game.beams) {
+    const alpha = b.t / b.max;
+    ctx.save();
+    ctx.strokeStyle = `rgba(255,232,120,${alpha})`;
+    ctx.lineWidth = b.w * alpha;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(b.x1 * CELL, b.y1 * CELL); ctx.lineTo(b.x2 * CELL, b.y2 * CELL); ctx.stroke();
+    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+    ctx.lineWidth = Math.max(1.5, b.w * 0.35 * alpha);
+    ctx.stroke();
+    ctx.restore();
+  }
+  for (const l of game.bolts) {
+    const alpha = l.t / l.max;
+    ctx.save();
+    ctx.strokeStyle = l.col;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    l.pts.forEach((pt, i) => {
+      const lx = pt.x * CELL + (i > 0 ? (Math.random()-0.5)*7 : 0);
+      const ly = pt.y * CELL + (i > 0 ? (Math.random()-0.5)*7 : 0);
+      if (i === 0) ctx.moveTo(lx, ly); else ctx.lineTo(lx, ly);
+    });
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawRingsAndFloats(){
+  for (const r of game.rings) {
+    const u = 1 - r.t / r.max;
+    ctx.beginPath();
+    ctx.arc(r.x * CELL, r.y * CELL, Math.max(4, r.r * CELL * (0.28 + 0.72 * u)), 0, Math.PI * 2);
+    ctx.strokeStyle = r.col;
+    ctx.globalAlpha = 1 - u;
+    ctx.lineWidth = 3 * (1 - u * 0.5);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  ctx.textAlign = 'center';
+  for (const f of game.floats) {
+    const alpha = clamp(f.t / f.max * 1.4, 0, 1);
+    ctx.globalAlpha = alpha;
+    ctx.font = f.big ? '900 15px sans-serif' : '800 12px sans-serif';
+    ctx.fillStyle = '#000';
+    ctx.fillText(f.txt, f.x * CELL + 1, f.y * CELL + 1);
+    ctx.fillStyle = f.col;
+    ctx.fillText(f.txt, f.x * CELL, f.y * CELL);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* ==================== UI RENDERING (ZERO-FLICKER RECONCILIATION) ==================== */
+function syncOffsets(){
+  const topH = $('topbar').getBoundingClientRect().height || 52;
+  document.documentElement.style.setProperty('--top-h', `${Math.ceil(topH)}px`);
+  const subB = $('subbar').getBoundingClientRect().bottom || (topH + 44);
+  document.documentElement.style.setProperty('--sub-bottom', `${Math.ceil(subB)}px`);
+}
+
+function renderAllUI(force = false){
+  if (!game) return;
+  const h = game.hero;
+  const isWave = game.phase === 'wave';
+
+  // Top bar plain-text updates (zero DOM destruction!)
+  const wp = $('wavePill');
+  wp.textContent = game.endless
+    ? `无尽第 ${game.wave} 波 · ${isWave ? '激战中' : '备战'}`
+    : `第 ${game.wave} / ${MAIN_WAVES} 波 · ${isWave ? '激战中' : '备战'}`;
+  wp.className = 'pill ' + (game.endless ? 'wave-endless' : isWave ? 'wave-live' : 'wave-prep');
+  const goldTxt = `💰 ${game.gold}`;
+  if ($('goldPill').textContent !== goldTxt) {
+    $('goldPill').textContent = goldTxt;
+    $('dockGoldNum').textContent = game.gold;
+    for (const el of [$('goldPill'), $('dockGold')]) {
+      el.classList.remove('gold-bump'); void el.offsetWidth; el.classList.add('gold-bump');
+    }
+  }
+  const cp = $('castlePill');
+  cp.textContent = `🏰 圣堡 ${Math.ceil(game.castleHp)}/${game.castleMax}`;
+  cp.className = 'pill' + (game.castleHp < game.castleMax * 0.4 ? ' warn' : '');
+  $('heroLvTxt').textContent = `⚔️ 领主 Lv.${h.lv}`;
+  $('xpFill').style.width = `${clamp((h.xp / h.xpNext) * 100, 0, 100)}%`;
+
+  const rem = game.enemies.length + game.waveQueue.filter(w => !w.spawned).length;
+  $('enemyPill').hidden = !isWave;
+  if (isWave) $('enemyPill').textContent = `👾 剩余 ${rem}`;
+
+  $('speedBtn').textContent = `${game.speed}×`;
+  $('speedBtn').classList.toggle('active', game.speed === 2);
+  $('pauseBtn').textContent = paused ? '继续' : '暂停';
+  $('soundBtn').textContent = AudioKit.enabled ? '🔊' : '🔇';
+  $('heroPanelBtn').textContent = `👑 领主装备 (${h.gear.length}/3)`;
+  $('heroPanelBtn').classList.toggle('active', game.inspTarget?.type === 'hero' || game.mode?.type === 'equip');
+  $('autoWaveBtn').textContent = `自动下波：${game.autoWave ? '开' : '关'}`;
+  $('autoWaveBtn').classList.toggle('active', game.autoWave);
+
+  // Cooldown masks
+  const dc = $('dashCd');
+  if (h.dashCd > 0) { dc.hidden = false; dc.textContent = `${h.dashCd.toFixed(1)}s`; } else dc.hidden = true;
+  const uc = $('ultCd');
+  if (h.ultTimer > 0) { uc.hidden = false; uc.textContent = `🔥${h.ultTimer.toFixed(1)}s`; }
+  else if (h.ultCd > 0) { uc.hidden = false; uc.textContent = `${h.ultCd.toFixed(1)}s`; }
+  else uc.hidden = true;
+
+  // Wave start button
+  const wb = $('waveBtn');
+  wb.disabled = isWave || ['won','lost'].includes(game.phase);
+  $('waveBtnNm').textContent = isWave ? `第 ${game.wave} 波激战` : `开始第 ${game.wave} 波`;
+  $('waveBtnSb').textContent = isWave ? `剩余 ${rem} 敌` : (game.wave % 5 === 0 ? '⚠️ 首领波' : '免费移塔/合星');
+
+  // Reroll button
+  $('rerollBtn').disabled = game.gold < game.rerollCost;
+  $('rerollCost').textContent = `${game.rerollCost} 金币`;
+
+  // Sub hint
+  if (game.mode?.type === 'buy') {
+    const sp = TOWERS[game.shop[game.mode.shopIdx].kind];
+    $('subHint').textContent = `点发光塔基放置【${sp.name}】，或点同名 1★ 塔直接秒合 2★！（右键/Esc取消）`;
+  } else if (game.mode?.type === 'move') {
+    $('subHint').textContent = '点任意塔基免费搬迁/互换，点同名同星塔直接合星！（右键/Esc取消）';
+  } else if (game.mode?.type === 'equip') {
+    const bk = game.bag[game.mode.bagIdx];
+    const g = bk ? GEARS[gearBase(bk)] : null;
+    $('subHint').textContent = `点城内高亮防御塔，或点右上「👑 领主装备」穿戴【${g?.name || ''}】！（右键/Esc取消）`;
+  } else if (isWave) {
+    $('subHint').textContent = 'WASD 或按住屏幕走位割草 · 战斗中也能随时买塔合星装装备！';
+  } else {
+    $('subHint').textContent = '底栏抽塔摆阵凑 2/4 元素羁绊 · 准备好点右下「开始下一波」冲进怪海！';
+  }
+
+  renderSynergies(force);
+  renderShop(force);
+  renderBag(force);
+  renderInspector(force);
+  syncOffsets();
+}
+
+function renderSynergies(force){
+  const counts = getSynergyCounts();
+  const key = Object.entries(counts).map(([k,v])=>`${k}:${v}`).join('|');
+  if (!force && key === lastSynKey) return;
+  lastSynKey = key;
+  const wrap = $('synStrip');
+  wrap.replaceChildren();
+  for (const el of Object.values(ELEMENTS)) {
+    const n = counts[el.key];
+    const tier = n >= 4 ? 2 : n >= 2 ? 1 : 0;
+    const pill = document.createElement('span');
+    pill.className = 'syn-pill' + (tier === 2 ? ' t2' : tier === 1 ? ' t1' : '');
+    pill.style.setProperty('--syn-c', el.color);
+    pill.title = `${el.name}羁绊（按星级计权 1★=1, 2★=2, 3★=4）\n[2层] ${el.t1}\n[4层] ${el.t2}`;
+    pill.textContent = `${el.icon} ${el.name} ${n}/${n >= 2 ? 4 : 2}`;
+    wrap.append(pill);
+  }
+}
+
+let shopCardNodes = null;
+function renderShop(force){
+  const mergeFlags = game.shop.map(s => !s.bought && game.towers.some(t => t.kind === s.kind && t.star === 1) ? 1 : 0);
+  const key = game.shop.map((s,i)=>`${s.uid}:${s.bought?1:0}:${s.cost}:${mergeFlags[i]}:${game.gold>=s.cost?1:0}:${game.mode?.type==='buy'&&game.mode.shopIdx===i?1:0}`).join('|');
+  if (!force && key === lastShopKey) return;
+  lastShopKey = key;
+
+  const sec = $('shopSec');
+  if (!shopCardNodes) {
+    sec.replaceChildren();
+    shopCardNodes = [];
+    for (let idx = 0; idx < 4; idx++) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'shop-card';
+      btn.dataset.shopIdx = String(idx);
+      btn.innerHTML = `<span class="elem-dot"></span><span class="merge-tag" hidden>★ 可合2★</span><span class="ic"></span><span class="nm"></span><span class="cost"></span>`;
+      btn.addEventListener('click', () => {
+        AudioKit.unlock();
+        if (game.shop[idx]?.bought) return;
+        game.mode = (game.mode?.type === 'buy' && game.mode.shopIdx === idx) ? null : { type:'buy', shopIdx: idx };
+        renderAllUI();
+      });
+      sec.append(btn);
+      shopCardNodes.push({
+        btn,
+        tag: btn.querySelector('.merge-tag'),
+        ic: btn.querySelector('.ic'),
+        nm: btn.querySelector('.nm'),
+        cost: btn.querySelector('.cost')
+      });
+    }
+  }
+  game.shop.forEach((item, idx) => {
+    const node = shopCardNodes[idx];
+    if (!node) return;
+    const spec = TOWERS[item.kind];
+    const el = ELEMENTS[spec.elem];
+    const active = game.mode?.type === 'buy' && game.mode.shopIdx === idx;
+    const canMerge = mergeFlags[idx] === 1;
+    node.btn.className = 'shop-card' + (active ? ' active' : '') + (canMerge ? ' mergeable' : '');
+    node.btn.style.setProperty('--elem-c', el.color);
+    node.btn.disabled = item.bought || game.gold < item.cost;
+    node.btn.title = `${spec.name}（${el.name}）\n${spec.desc}`;
+    node.tag.hidden = !canMerge;
+    node.ic.textContent = spec.icon;
+    node.nm.textContent = item.bought ? '已购买' : spec.name;
+    node.cost.textContent = item.bought ? '—' : `${item.cost} 金${item.disc ? ' 折' : ''}`;
+  });
+}
+
+function renderBag(force){
+  const key = game.bag.map((k,i) => `${k}:${game.mode?.type==='equip'&&game.mode.bagIdx===i?1:0}`).join('|');
+  if (!force && key === lastBagKey) return;
+  lastBagKey = key;
+
+  const tray = $('bagTray');
+  tray.replaceChildren();
+  if (!game.bag.length) {
+    const sp = document.createElement('div');
+    sp.className = 'bag-empty';
+    sp.textContent = '构装背包空\n打精英爆装';
+    tray.append(sp);
+    return;
+  }
+  game.bag.forEach((gk, idx) => {
+    const g = GEARS[gearBase(gk)];
+    const star = gearStar(gk);
+    const active = game.mode?.type === 'equip' && game.mode.bagIdx === idx;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'bag-item' + (g.rarity === 'legend' ? ' legend' : '') + (active ? ' active' : '');
+    btn.dataset.bagIdx = String(idx);
+    btn.title = `${gearLabel(gk)}：${g.desc}${star > 1 ? `\n叠星效果 ×${GEAR_STAR_MULT[star - 1]}` : ''}\n同名再选自动叠星（最高 3★）`;
+    btn.innerHTML = `<span class="ic">${g.icon}</span><span class="nm">${g.name}</span>${star > 1 ? `<span class="star-tag">${star}★</span>` : ''}`;
+    btn.addEventListener('click', () => {
+      game.mode = (game.mode?.type === 'equip' && game.mode.bagIdx === idx) ? null : { type:'equip', bagIdx: idx };
+      renderAllUI();
+    });
+    tray.append(btn);
+  });
+}
+
+function renderInspector(force){
+  const panel = $('inspector');
+  if (!game.inspTarget) {
+    if (!panel.hidden) { panel.hidden = true; lastInspKey = ''; }
+    return;
+  }
+  if (game.inspTarget.type === 'tower') {
+    const t = game.towers.find(o => o.id === game.inspTarget.id);
+    if (!t) { game.inspTarget = null; panel.hidden = true; lastInspKey = ''; return; }
+    const partner = findMergePartner(t);
+    const key = ['T', t.id, t.star, t.gear.join(','), partner ? 1 : 0, game.bag.length, game.mode?.type || '', Math.floor(t.dmgDealt / 50)].join('|');
+    if (!force && key === lastInspKey && !panel.hidden) return;
+    lastInspKey = key;
+    panel.hidden = false;
+
+    const spec = TOWERS[t.kind], el = ELEMENTS[t.elem], st = getTowerStats(t);
+    $('inspTitle').textContent = `${spec.icon} ${spec.name} ${'★'.repeat(t.star)}`;
+    $('inspSub').textContent = `[${el.name}系] ${spec.desc}`;
+    $('inspStats').innerHTML = `
+      <div class="stat-box">攻击伤害 <b>${st.dmg}</b></div>
+      <div class="stat-box">攻击间隔 <b>${st.cd.toFixed(2)}s</b></div>
+      <div class="stat-box">覆盖射程 <b>${st.range} 格</b></div>
+      <div class="stat-box">累计输出 <b>${t.dmgDealt.toLocaleString()}</b></div>
+    `;
+    const slots = $('inspSlots');
+    slots.replaceChildren();
+    for (let s = 0; s < 2; s++) {
+      const gk = t.gear[s];
+      const sb = document.createElement('button');
+      sb.type = 'button';
+      sb.className = 'gear-slot' + (gk ? ' filled' : '');
+      sb.innerHTML = gk ? `<span style="font-size:16px">${GEARS[gearBase(gk)].icon}</span><span>${gearLabel(gk)}</span>` : '<span>+ 空构装槽</span><span style="font-size:9.5px">点此装入背包首件</span>';
+      sb.addEventListener('click', () => {
+        if (gk) unequipGear({ type:'tower', id: t.id }, s);
+        else if (game.bag.length) equipGearFromBag(game.mode?.type === 'equip' ? game.mode.bagIdx : 0, { type:'tower', id: t.id });
+        else toast('构装背包为空，击败精英怪即可爆出装备宝箱！', true);
+      });
+      slots.append(sb);
+    }
+    const acts = $('inspActions');
+    acts.replaceChildren();
+    if (partner) {
+      const mb = document.createElement('button');
+      mb.type = 'button'; mb.className = 'btn gold full'; mb.dataset.act = 'merge';
+      mb.innerHTML = `<span>★ 一键合成 ${t.star + 1}★ 质变！</span><small>融合场上另一座同星 ${spec.name}</small>`;
+      mb.addEventListener('click', () => mergeTowerAction(t.id));
+      acts.append(mb);
+    }
+    const mv = document.createElement('button');
+    mv.type = 'button'; mv.className = 'btn' + (game.mode?.type === 'move' ? ' active' : ''); mv.dataset.act = 'move';
+    mv.innerHTML = `<span>移动塔位</span><small>免费搬迁/互换</small>`;
+    mv.addEventListener('click', () => {
+      game.mode = game.mode?.type === 'move' ? null : { type:'move', towerId: t.id };
+      renderAllUI();
+    });
+    acts.append(mv);
+
+    const sell = document.createElement('button');
+    sell.type = 'button'; sell.className = 'btn danger'; sell.dataset.act = 'sell';
+    const mult = t.star === 3 ? 4 : t.star === 2 ? 2 : 1;
+    sell.innerHTML = `<span>出售返还</span><small>+${Math.round(spec.cost * mult * 0.8)} 金</small>`;
+    sell.addEventListener('click', () => sellTower(t.id));
+    acts.append(sell);
+    $('inspSkills').replaceChildren();
+    return;
+  }
+
+  // Hero Inspector
+  const h = game.hero, hs = getHeroStats();
+  const skSig = Object.entries(h.skills).map(([k,v])=>`${k}${v}`).join(',');
+  const key = ['H', h.lv, h.gear.join(','), skSig, game.bag.length, game.mode?.type || ''].join('|');
+  if (!force && key === lastInspKey && !panel.hidden) return;
+  lastInspKey = key;
+  panel.hidden = false;
+
+  $('inspTitle').textContent = `👑 边境领主 · Lv.${h.lv}`;
+  $('inspSub').textContent = '冲进怪海自动割草、吸经验球升级神技，也可穿戴 3 件构装成为满屏主 C！';
+  $('inspStats').innerHTML = `
+    <div class="stat-box">伤害倍率 <b>${Math.round(hs.dmgMult * 100)}%</b></div>
+    <div class="stat-box">攻速倍率 <b>${Math.round(hs.aspd * 100)}%</b></div>
+    <div class="stat-box">暴击 / 暴伤 <b>${Math.round(hs.crit*100)}% / ${Math.round(hs.critDmg*100)}%</b></div>
+    <div class="stat-box">磁铁范围 <b>${hs.magnet.toFixed(1)} 格</b></div>
+  `;
+  const slots = $('inspSlots');
+  slots.replaceChildren();
+  for (let s = 0; s < 3; s++) {
+    const gk = h.gear[s];
+    const sb = document.createElement('button');
+    sb.type = 'button';
+    sb.className = 'gear-slot' + (gk ? ' filled' : '');
+    sb.innerHTML = gk ? `<span style="font-size:16px">${GEARS[gearBase(gk)].icon}</span><span>${gearLabel(gk)}</span>` : '<span>+ 空槽</span><span style="font-size:9.5px">点此穿戴</span>';
+    sb.addEventListener('click', () => {
+      if (gk) unequipGear({ type:'hero' }, s);
+      else if (game.bag.length) equipGearFromBag(game.mode?.type === 'equip' ? game.mode.bagIdx : 0, { type:'hero' });
+      else toast('构装背包为空，击败第 2 波起的紫名精英即可爆装！', true);
+    });
+    slots.append(sb);
+  }
+  $('inspActions').replaceChildren();
+  const sl = $('inspSkills');
+  sl.replaceChildren();
+  for (const [k, lv] of Object.entries(h.skills)) {
+    const row = document.createElement('div');
+    row.className = 'skill-row';
+    row.innerHTML = `<span>${HERO_SKILLS[k].icon} ${HERO_SKILLS[k].name}</span><span class="lv">Lv.${lv} / 5</span>`;
+    sl.append(row);
+  }
+}
+
+/* ==================== INPUT HANDLING ==================== */
+function handleCanvasClick(wx, wy){
+  const gx = Math.floor(wx), gy = Math.floor(wy);
+  if (game.mode?.type === 'buy') { buyAndPlaceTower(game.mode.shopIdx, gx, gy); return; }
+  if (game.mode?.type === 'move') { moveTowerTo(game.mode.towerId, gx, gy); return; }
+  if (game.mode?.type === 'equip') {
+    const t = towerAt(gx, gy);
+    if (t) { equipGearFromBag(game.mode.bagIdx, { type:'tower', id: t.id }); return; }
+    if (dist({x:wx,y:wy}, game.hero) <= 1.2) { equipGearFromBag(game.mode.bagIdx, { type:'hero' }); return; }
+    toast('请点击城内高亮防御塔或领主进行穿戴，右键取消。', true);
+    return;
+  }
+  // Clicking a tower selects it
+  const t = towerAt(gx, gy);
+  if (t) {
+    game.inspTarget = (game.inspTarget?.type === 'tower' && game.inspTarget.id === t.id) ? null : { type:'tower', id: t.id };
+    renderAllUI();
+    return;
+  }
+  // Otherwise move Hero smoothly to clicked location!
+  game.hero.goal = { x: clamp(wx, 0.45, W - 0.45), y: clamp(wy, 0.45, H - 0.45) };
+}
+
+canvas.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  AudioKit.unlock();
+  const w = screenToWorld(e.clientX, e.clientY);
+  pointerWorld = w;
+  pointerDown = true;
+  handleCanvasClick(w.x, w.y);
+});
+window.addEventListener('pointermove', e => {
+  pointerWorld = screenToWorld(e.clientX, e.clientY);
+});
+window.addEventListener('pointerup', () => { pointerDown = false; });
+canvas.addEventListener('contextmenu', e => {
+  if (game?.mode) { e.preventDefault(); game.mode = null; renderAllUI(); }
+});
+
+window.addEventListener('keydown', e => {
+  if (!game) return;
+  const k = e.key.toLowerCase();
+  keys.add(k);
+  if (k === 'escape') {
+    if (game.mode) { game.mode = null; renderAllUI(); }
+    else if (game.inspTarget) { game.inspTarget = null; renderAllUI(); }
+    else if (paused) { paused = false; renderAllUI(); }
+    return;
+  }
+  if (game.activeModal) return;
+  if (k === ' ' || k === 'e') { e.preventDefault(); castHeroDash(); return; }
+  if (k === 'r') { castHeroOverdrive(); return; }
+  if (k === 'q') { rollShop(false); return; }
+  if (k === 'enter' && game.phase === 'prep') { startWave(); return; }
+  if (k === 'f') { game.speed = game.speed === 2 ? 1 : 2; renderAllUI(); return; }
+});
+window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+
+// Static button listeners
+$('speedBtn').addEventListener('click', () => { game.speed = game.speed === 2 ? 1 : 2; renderAllUI(); });
+$('pauseBtn').addEventListener('click', () => { paused = !paused; renderAllUI(); });
+$('soundBtn').addEventListener('click', () => { AudioKit.enabled = !AudioKit.enabled; renderAllUI(); });
+$('helpBtn').addEventListener('click', showIntroModal);
+$('resetBtn').addEventListener('click', () => startNewRun());
+$('dashBtn').addEventListener('click', castHeroDash);
+$('ultBtn').addEventListener('click', castHeroOverdrive);
+$('rerollBtn').addEventListener('click', () => rollShop(false));
+$('waveBtn').addEventListener('click', startWave);
+$('inspClose').addEventListener('click', () => { game.inspTarget = null; if (game.mode?.type === 'move') game.mode = null; renderAllUI(); });
+$('heroPanelBtn').addEventListener('click', () => {
+  if (game.mode?.type === 'equip') {
+    equipGearFromBag(game.mode.bagIdx, { type:'hero' });
+    return;
+  }
+  game.inspTarget = game.inspTarget?.type === 'hero' ? null : { type:'hero' };
+  renderAllUI();
+});
+$('autoWaveBtn').addEventListener('click', () => {
+  game.autoWave = !game.autoWave;
+  if (game.autoWave && game.phase === 'prep') game.autoWaveTimer = 2.0;
+  renderAllUI();
+});
+window.addEventListener('resize', () => { fitCamera(); syncOffsets(); });
+
+/* ==================== MAIN LOOP ==================== */
+let lastTs = performance.now(), uiAccum = 0;
+function loop(ts){
+  const rawDt = Math.min(0.05, (ts - lastTs) / 1000);
+  lastTs = ts;
+  if (game) {
+    const steps = game.speed === 2 ? 2 : 1;
+    for (let i = 0; i < steps; i++) tick(rawDt);
+    render();
+    uiAccum += rawDt;
+    if (uiAccum >= 0.14) {
+      uiAccum = 0;
+      renderAllUI(false);
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ==================== BOOT & QA EXPORT ==================== */
+startNewRun(2026);
+showIntroModal();
+requestAnimationFrame(loop);
+
+window.BG51 = {
+  get game(){ return game; },
+  startNewRun, startWave, rollShop, buyAndPlaceTower, mergeTowerAction, moveTowerTo, sellTower,
+  equipGearFromBag, unequipGear, castHeroDash, castHeroOverdrive, pickHeroSkill, pickGearReward,
+  grantGear, gearBase, gearStar, gearLabel, findGearStackTarget, GEAR_STAR_MULT,
+  enterEndlessMode, tick, getSynergyCounts, getTowerStats, getHeroStats, worldToScreen,
+  TOWERS, ELEMENTS, GEARS, HERO_SKILLS, PEDESTALS, MAIN_WAVES
+};
+window.BG50 = window.BG51; // backward-compat alias for existing test harnesses
+})();
+</script>
+</body>
+</html>

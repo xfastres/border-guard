@@ -15,5 +15,9 @@ build/
 !.env.example
 *.log
 
-# 浏览器临时输出
-tests/artifacts/tmp/
+# 浏览器临时输出与测试截图产物
+tests/artifacts/
+
+# 工具/Agent 本地产物
+.playwright-mcp/
+.workbuddy/
