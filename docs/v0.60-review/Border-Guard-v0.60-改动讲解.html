@@ -27,6 +27,25 @@ h1,h2,h3,.serif{font-family:"Noto Serif SC","Songti SC","SimSun",serif;letter-sp
 @media(max-width:900px){.five-grid{grid-template-columns:repeat(3,1fr)}.chapter-list{grid-template-columns:1fr}.three,.four,.status-grid{grid-template-columns:repeat(2,1fr)}.mock-side{width:92px;font-size:9px}}
 @media(max-width:700px){.nav{padding:0 16px}.nav .brand{font-size:11px;letter-spacing:1px}.nav-links{gap:11px}.nav-links a{font-size:11px}.container{width:calc(100% - 28px)}.hero{padding:58px 0 34px;min-height:unset}.section{padding:55px 0}.five-grid{grid-template-columns:repeat(2,1fr)}.five-tile{min-height:130px}.columns,.compare,.two-before-after,.economy-compare{grid-template-columns:1fr}.three,.four,.status-grid{grid-template-columns:1fr}.timeline{grid-template-columns:repeat(2,1fr)}.flow-steps{grid-template-columns:repeat(2,1fr)}.mock-game{height:270px}.mock-side{width:100px;font-size:10px}.kpi-strip{gap:8px}.kpi .n{font-size:24px}.card{padding:18px}.choice-grid{grid-template-columns:1fr}.role-table{min-width:520px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* v0.60 修为圆满可发现性解释：演示页面，不改变游戏 Demo */
+.asc-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:16px;margin:25px 0}
+.asc-old,.asc-new{background:#152438;border:1px solid #445370;border-radius:16px;padding:20px;min-width:0}
+.asc-new{border-color:#bd9452;background:linear-gradient(155deg,#2a2a35,#182c3e)}
+.asc-chip{display:inline-block;font-size:11px;font-weight:800;padding:4px 9px;border:1px solid #deab5b;border-radius:99px;background:linear-gradient(90deg,#705125,#bb8739);color:#fff1d0}
+.asc-switches{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0 18px}
+.asc-switches button{border:1px solid #667a94;border-radius:10px;padding:8px 12px;background:#26354c;color:#dde8f6;font-size:12px;font-weight:800}
+.asc-switches button.sel{border-color:#e8b96d;background:#493728;color:#ffe6b7}
+.asc-label{font-weight:900;color:#ffe1a1;font-size:14px}
+.asc-bar{height:10px;border-radius:99px;background:#31425a;overflow:hidden;margin:10px 0 15px}
+.asc-bar span{display:block;width:78%;height:100%;background:linear-gradient(90deg,#74cfb9,#ffe19d);transition:width .18s}
+.asc-ready{margin-top:14px;padding:13px 16px;min-height:48px;border:2px solid #ffe4a7;border-radius:12px;background:linear-gradient(115deg,#ffe49f,#f3af50);font-size:16px;font-weight:900;color:#241807;width:100%}
+.asc-defer{margin-top:10px;padding:9px 12px;min-height:44px;border:1px solid #7488a4;background:#273851;color:#eff4fd;border-radius:10px;width:100%;font-weight:700}
+.asc-message{margin-top:15px;padding:12px 13px;border:1px solid #426985;border-radius:10px;background:#193145;font-size:13px;color:#c8e7fa;min-height:55px}
+#ascBtns[hidden],#ascDefer[hidden]{display:none!important}
+@media(max-width:760px){.asc-grid{grid-template-columns:1fr}.asc-old,.asc-new{padding:16px}}
+@media(prefers-reduced-motion:reduce){.asc-bar span{transition:none}}
+
 </style>
 </head>
 <body>
@@ -34,7 +53,7 @@ h1,h2,h3,.serif{font-family:"Noto Serif SC","Songti SC","SimSun",serif;letter-sp
 <header class="nav">
   <a class="brand" href="#top" aria-label="边境守卫设计讲解首页">BORDER GUARD <b>◆ v0.60</b></a>
   <nav class="nav-links" aria-label="章节导航">
-    <a href="#compare">前后对比</a><a href="#plain">五问讲清</a><a href="#forge">法宝经济</a><a href="#combat">战斗怪物</a><a href="#meta">局外传承</a><a href="#flow">20 波</a><a href="#audit">验收与状态</a>
+    <a href="#compare">前后对比</a><a href="#plain">五问讲清</a><a href="#forge">法宝经济</a><a href="#combat">战斗怪物</a><a href="#meta">局外传承</a><a href="#flow">20 波</a><a href="#ascend">突破提示</a><a href="#audit">验收与状态</a>
   </nav>
 </header>
 <main id="top">
@@ -238,6 +257,50 @@ h1,h2,h3,.serif{font-family:"Noto Serif SC","Songti SC","SimSun",serif;letter-sp
  </div>
 </section>
 
+
+<section class="section" id="ascend">
+ <div class="container">
+  <div class="eyebrow">BREAKTHROUGH VISIBILITY / 用户新增真实反馈</div>
+  <h2>突然发现自己能突破了？<span class="gold">下一版不会让你找半天。</span></h2>
+  <p class="lead">你说的很具体：修为达到突破门槛时，那一块太小、不醒目，经常打着打着才偶然发现。我们把这个问题提高优先级，做成“不打断战斗，但一直看得见”的成长提醒。</p>
+  <div class="asc-grid">
+   <div class="asc-old">
+    <div class="label-old">现在：信息藏在顶栏小按钮</div>
+    <p style="margin-top:12px"><span class="asc-chip">⚡ 渡劫【筑基】[T] · 溢出0%</span></p>
+    <p class="muted" style="font-size:13px">现有代码确实有金色发光、一次横幅和 T 快捷键。但注意力正在清怪、看血条、躲 Boss 时，很容易错过顶部这个小区域。</p>
+    <p class="fine">自动开波仅多延迟约 8 秒，仍可能在未处理渡劫时进入下一波。</p>
+   </div>
+   <div class="asc-new">
+    <div class="label-new">改后：三级状态提醒（点选体验）</div>
+    <div class="asc-switches" aria-label="查看不同突破状态">
+      <button type="button" data-asc="near" class="sel">① 即将圆满</button>
+      <button type="button" data-asc="combat">② 战斗中可突破</button>
+      <button type="button" data-asc="prep">③ 波间待突破</button>
+    </div>
+    <div class="asc-label" id="ascLabel">炼气 Lv.4 · 距筑基还差 22% 修为</div>
+    <div class="asc-bar"><span id="ascFill"></span></div>
+    <p class="muted" id="ascExplain" style="font-size:13px">还未圆满，但玩家已经知道下一阶段目标。</p>
+    <div id="ascBtns" hidden>
+     <button type="button" class="asc-ready" id="ascOpen">⚡ 现在渡劫【筑基】</button>
+     <button type="button" class="asc-defer" id="ascDefer" hidden>先攒溢出修为，继续下一波</button>
+    </div>
+    <div class="asc-message" id="ascResult" role="status" aria-live="polite">这是交互演示，不是当前游戏内的新功能。</div>
+    <p class="fine" style="margin-top:12px">不会自动渡劫或押注；战斗中不强制弹窗。手机版将使用可直接触摸的大按钮，而非依赖键盘快捷键。</p>
+   </div>
+  </div>
+  <div class="two-before-after">
+   <div class="state-box"><div class="label-old">现在的问题</div><p>金色闪烁并不等于玩家能发现。一次性横幅消失后，玩家要自己扫视整条 HUD 才可能看到突破入口。</p></div>
+   <div class="state-box new"><div class="label-new">以后会变成什么样</div><p>快圆满先提示目标；战斗中有持续入口；到备战期则出现明显的“炼气 → 筑基”卡片，并由玩家选择现在渡劫或先积累修为。</p></div>
+  </div>
+  <div class="three" style="margin-top:16px">
+   <div class="card"><h3>为什么改？</h3><p class="muted">突破是本局最重要的成长事件之一，不应因为界面太小而无声错过。</p></div>
+   <div class="card"><h3>玩家怎么做？</h3><p class="muted">战斗中可按 T/点醒目入口；波间主按钮渡劫，次按钮本次暂缓并继续攒溢出修为。</p></div>
+   <div class="card"><h3>怎么验收？</h3><p class="muted">检查 W4/9/14/19 的提醒发现率、自动开波真正等待决策、手机点击区域与 Boss 预警不互相遮挡。</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><strong>注意力底线：</strong>角色位置和危险预警永远比突破提示更优先。不能靠反复弹窗、频繁震屏或持续闪烁来提醒，也不能悄悄替玩家选“强行渡劫”。</div>
+ </div>
+</section>
+
 <section class="section" id="ui">
  <div class="container">
   <div class="eyebrow">EXTREME SPECTACLE / 你选的 C 不是保守风格</div>
@@ -257,7 +320,7 @@ h1,h2,h3,.serif{font-family:"Noto Serif SC","Songti SC","SimSun",serif;letter-sp
   <h2>哪些已经定了？<span class="gold">哪些还只是设想？</span></h2>
   <div class="status-grid">
    <div class="status-card"><span class="pill ok">已确认 · 方向</span><h3>我们不必再反复投票</h3><ul><li>D-01～D-07：构筑质变、目标惊喜、清晰走位、经济分路、简化伤害、三档构筑、极致华丽</li><li>D-08：1 主传承 + 4 点辅助、最多 3 个、双通道解锁、奖励权重倾斜</li><li>D-09：20–30 分钟、自由准备 + 可选自动开波</li></ul></div>
-   <div class="status-card"><span class="pill plan">候选 · 待评审</span><h3>我们给出的完整建议</h3><ul><li>3★ 时分路、4★ 强化、5★ 终极形态</li><li>独立法宝进阶台；局外单一主要货币</li><li>三档战斗构筑与伤害来源事件模型</li><li>波间自动开波待决策暂停机制</li></ul></div>
+   <div class="status-card"><span class="pill plan">候选 · 待评审</span><h3>我们给出的完整建议</h3><ul><li>3★ 时分路、4★ 强化、5★ 终极形态</li><li>独立法宝进阶台；局外单一主要货币</li><li>三档战斗构筑与伤害来源事件模型</li><li>波间自动开波待决策暂停机制</li><li>修为圆满：战斗中持续显著入口 + 波间突破大卡片（玩家新增 P0 反馈）</li></ul></div>
    <div class="status-card"><span class="pill pending">待测试 · 不可伪称结果</span><h3>必须拿实战数据来定</h3><ul><li>所有 HP、伤害、金币、升星费、掉率、传承费用</li><li>平均实际一局时长、Boss 交战时长、W7–15 的有意义消费</li><li>多种随机种子与三档构筑表现</li><li>花哨特效下的攻击预警可读性与移动端性能</li></ul></div>
   </div>
   <h3 style="margin-top:35px">设计实现后，要能回答这些具体问题</h3>
@@ -267,6 +330,7 @@ h1,h2,h3,.serif{font-family:"Noto Serif SC","Songti SC","SimSun",serif;letter-sp
    <tr><td>后期血量膨胀</td><td>三档可复现构筑的 TTK/承伤/清场时间/躲避收益，对比 W5/10/15/20</td></tr>
    <tr><td>攻击看不清</td><td>大量技能和粒子开启时，也能辨识危险方向与攻击范围</td></tr>
    <tr><td>局外成长崩盘</td><td>全解锁账号与新账号都在相同关卡和固定辅助预算下有可玩构筑</td></tr>
+   <tr><td>到了可以突破却看不见</td><td>检查 W4/9/14/19 的突破发现延迟；自动开波等待确认，手机端触控可用且不遮挡危险预警</td></tr>
    <tr><td>完整一局时长</td><td>真实试玩区分战斗/准备/结算，检验 20–30 分钟目标，不能只计算出怪时钟</td></tr>
   </tbody></table></div>
   <div class="callout warn" style="margin-top:22px"><strong>与旧路线图的冲突，不能忽略：</strong>仓库 v0.53+ 曾计划“双货币灵石/道韵”和部分永久便利属性。现在讨论的是固定容量的横向传承与主要单货币方案。正式开发前，需要明确哪份规则覆盖哪份，不能直接把旧方案和新方案叠在一起。</div>
@@ -280,6 +344,7 @@ h1,h2,h3,.serif{font-family:"Noto Serif SC","Songti SC","SimSun",serif;letter-sp
 const $=(id)=>document.getElementById(id);
 const setText=(id,t)=>{const x=$(id);if(x)x.textContent=t};
 const chapters=[
+ {icon:'⚡',id:'D-01/07/09 UX',name:'可渡劫时，玩家如何发现？',now:'已有顶栏小修为按钮、一次横幅、金色呼吸动画和 T 快捷键，但玩家在清怪时经常忽略。自动开波仅多等约 8 秒。',why:'突破是重大成长事件，却可能因为入口太小、提醒短暂被错过，影响成长节奏。',after:'接近圆满先预告；战斗中持续可点的高对比入口；波间独立突破卡片；待决策时自动开波真正暂停。',play:'圆满后看见“⚡ 可渡劫【筑基】[T]”，波间一眼看到“现在渡劫”或“继续攒修为”，无需寻找小字。',test:'W4/9/14/19、自动开波、手机与静音模式验收；不在战斗中强制弹窗。'},
  {icon:'🎯',id:'D-01/02',name:'成长与下一波期待',now:'已有技能、灵印、羁绊，但玩家不一定知道下一步该追求什么。',why:'单纯涨数字很难形成“这是我的打法”的记忆，也容易提前失去目标。',after:'让 3★ 分路、组合技和共鸣触发真实的攻击变化；显示距关键成长还差什么；随机奖励仍可创造新选择。',play:'第 7 波发现“火印差一个关键升阶”，选择优先攒金币，下一波试出新爆炸形态。',test:'玩家可以说出自己构筑的方向，且在连续两波中仍能找到真实成长目标。'},
  {icon:'💰',id:'D-04',name:'第 7 波经济与法宝合成',now:'金币来源增加，4 格随机商店仍以灵印/丹药为主；同系卡叠点较容易升星。',why:'钱有了但可购买的价值不足；合成由“再买几次”替代有趣的决策。',after:'随机商店负责取得；法宝进阶台负责关键费用、互斥路线和有限重铸。3★/4★/5★形成阶段性目标（候选）。',play:'选择火印“燃爆”而非“余烬”，消耗金币，进化的攻击形态真的不同。',test:'W7–15 记录收入、支出和有意义消费项；升阶不能跳过路线抉择。'},
  {icon:'🐺',id:'D-03/05',name:'怪物伤害与可躲避攻击',now:'已有狼扑击、兽人冲锋、祭司火圈和 Boss 技能，但多处受伤源仍通过简单数值入口处理。',why:'伤害来源与类型不清楚时，玩家难以理解是技能没躲好，还是怪物数值突然太高。',after:'区分属性、命中方式和少量状态，给重要攻击可读预警并记录伤害来源。',play:'看见魔狼扑击的前摇与落点，提前走位，避开破甲重击。',test:'实战中能辨认不同怪物的危险，正确躲避能明显改善生存。'},
@@ -339,6 +404,25 @@ const stages=[
 const timeline=$('waveTimeline');
 function chooseStage(i){timeline.querySelectorAll('button').forEach((b,j)=>b.classList.toggle('active',j===i));const s=stages[i];$('stageDetail').replaceChildren();const h=document.createElement('h3');h.textContent=`${s.a} · ${s.title}`;const p=document.createElement('p');p.textContent=s.desc;const invest=document.createElement('p');invest.className='mint';invest.textContent='💰 主要金币投入：'+s.invest;const foot=document.createElement('p');foot.className='fine';foot.textContent='设计备注：'+s.note;$('stageDetail').append(h,p,invest,foot);}
 stages.forEach((s,i)=>{const b=document.createElement('button');b.className='tl';b.type='button';b.innerHTML=`<div class="point">${s.a}</div><div class="name">${s.title}</div><div class="short">第 ${i+1} 幕</div><div class="tim">${s.time}</div>`;b.addEventListener('click',()=>chooseStage(i));timeline.append(b);});chooseStage(1);
+
+/* 突破提示设计的三种情境模拟，非游戏逻辑 */
+const ascModes={
+ near:{label:'炼气 Lv.4 · 距筑基还差 22% 修为',progress:78,info:'预告下一阶段，但还没有满足突破条件。',result:'继续积累修为；不要误以为已经可以突破。'},
+ combat:{label:'⚡ 修为圆满 · 可渡劫【筑基】 [T]',progress:100,info:'战斗中：入口明显且持续存在，不会强制弹窗挡住战斗。',result:'打怪时随时可按 T 或点大按钮；也可以继续积累溢出修为。'},
+ prep:{label:'⚡ 波间待突破 · 炼气 → 筑基',progress:100,info:'备战期重点行动：自动开波已暂停，必须由玩家明确选择。',result:'等待决定：现在渡劫，或者本次主动继续攒溢出修为。'}
+};
+function setAscMode(kind){
+ const x=ascModes[kind];if(!x)return;
+ setText('ascLabel',x.label);setText('ascExplain',x.info);setText('ascResult',x.result);
+ $('ascFill').style.width=x.progress+'%';$('ascBtns').hidden=kind==='near';$('ascDefer').hidden=kind!=='prep';
+ $('ascOpen').textContent=kind==='combat'?'⚡ 可渡劫【筑基】· 点击或按 T':'⚡ 现在渡劫【筑基】';
+ document.querySelectorAll('[data-asc]').forEach(b=>{const on=b.dataset.asc===kind;b.classList.toggle('sel',on);b.setAttribute('aria-pressed',String(on))});
+}
+document.querySelectorAll('[data-asc]').forEach(b=>b.addEventListener('click',()=>setAscMode(b.dataset.asc)));
+$('ascOpen').addEventListener('click',()=>setText('ascResult','这里会打开稳妥 / 强行渡劫模式选择窗口：由玩家确认风险，不自动押注、不直接扣装备。（仅示意）'));
+$('ascDefer').addEventListener('click',()=>setText('ascResult','已模拟“本次暂缓”：仅允许下一波继续积累，下一次波间还会提醒，不会永久静默跳过。'));
+setAscMode('near');
+
 // 阅读进度
 function onScroll(){const h=document.documentElement;const max=Math.max(1,h.scrollHeight-h.clientHeight);$('readprogress').style.width=Math.min(100,Math.round(h.scrollTop/max*100))+'%'}
 addEventListener('scroll',onScroll,{passive:true});onScroll();
