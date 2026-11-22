@@ -160,12 +160,13 @@ h1,h2,h3,.serif{font-family:"Noto Serif SC","Songti SC","SimSun",serif;letter-sp
      <button type="button" class="choice" data-forge="ember"><strong>🔥 余烬路线</strong><span class="small">更擅长持续灼烧，瞬间清群效果减弱</span></button>
     </div>
     <div class="outcome" id="forgeOutcome" aria-live="polite">选择燃爆：你会看到更明显的群怪爆炸，面对落单 Boss 不一定最有效。</div>
-    <p class="example-note">这只是示意法宝的成长方向，并非已经定好的技能伤害、费用或可玩的锻造功能。</p>
+    <p class="example-note">这只是示意法宝的成长方向，并非已经定好的技能伤害、费用或可玩的锻造功能。P1 首轮只验证火系 3★“燃爆/余烬”分路 + 最小进阶台；其余四系、重铸及 4★/5★延伸待验证后再做。</p>
    </div>
    <div class="card">
     <span class="pill">W7 · 模拟一次消费决策</span>
     <h3 style="margin-top:15px">把金币从数字变成选择</h3>
     <p class="muted">下面假设你有 <strong>220 金币</strong>。这是用于理解的**演示数字**，不是 W7 真正余额，也不是测试后的合成价格。</p>
+    <div class="callout" style="margin-top:12px"><strong>基线口径校正（不是实际余额）：</strong>W7 全杀、零消费的累计理论供给为 <b>1,119 金</b> = 开局 55 + 击杀掉落期望 854 + W1–W7 过波奖励 210。旧稿 909 漏算了 210 过波奖；实际持有余额会因随机掉落、消费和额外收入而变化。</div>
     <div style="display:flex;align-items:end;justify-content:space-between;margin:15px 0"><div><div class="fine">演示余额</div><div class="serif gold" style="font-size:35px;font-weight:900" id="exampleGold">220</div></div><button class="btn small" type="button" id="resetGold">↺ 重置示例</button></div>
     <div class="choice-grid">
      <button class="choice" type="button" data-buy="90"><b>升阶 · 90 金</b><span class="small">推进关键星级（示例）</span></button>
@@ -228,7 +229,7 @@ h1,h2,h3,.serif{font-family:"Noto Serif SC","Songti SC","SimSun",serif;letter-sp
     <div class="budget-bar budget" aria-hidden="true" id="metaBudgetBar"><span></span><span></span><span></span><span></span></div>
     <div class="choice-grid" id="auxGrid"></div>
     <div class="outcome" id="metaOutcome" aria-live="polite">可以任意试配，但超过 4 点或 3 个辅助时不能再装备。</div>
-    <p class="example-note">辅助名称和 1–3 点费用均是演示提案，尚未确定；正式版容量 4 点 / 最多 3 个是已确认规则。</p>
+    <p class="example-note">辅助名称和 1–3 点费用均是演示提案，尚未确定；正式版容量 4 点 / 最多 3 个是已确认规则。为让“三个辅助”真实可达，初始池至少应有两种不同的 1 点辅助，以及一种可与它们同时装备的 2 点辅助（1+1+2=4）；具体占比等内容池规模确定后再标定。</p>
    </div>
   </div>
   <div class="two-before-after" style="margin-top:18px">
@@ -243,6 +244,7 @@ h1,h2,h3,.serif{font-family:"Noto Serif SC","Songti SC","SimSun",serif;letter-sp
   <div class="eyebrow">WAVE 01–20 / 从开局到完全体</div>
   <h2>不是 20 次重复刷怪，<span class="gold">而是四幕成长故事。</span></h2>
   <p class="lead">先用正常速度完整 20 波约 24 分钟作为测试中心，合理区间 20–30 分钟。现在程序规定的 20 波出怪计划合计只有约 6 分 34 秒，<strong>并不等于实际一局时间</strong>；将来不能靠怪物血条变厚来硬凑时长。</p>
+  <div class="callout warn"><strong>P0 先做时长早测：</strong>不要等 P0–P4 都完成。先在隔离实验分支手工调一版约 20 分钟的完整 20 波试玩，分别记录计划出怪、实际战斗、Boss、波间构筑与空等时间。优先试分批出怪、波内阶段、精英职责、Boss 多阶段和有意义决策；不靠堆 HP 凑时长。只有这版循环好玩，才继续向约 24 分钟测试中心靠拢。</div>
   <div class="card" style="margin-top:22px">
    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h3>一局的时间预算候选</h3><span class="pill pending">未实测</span></div>
    <div class="meter"><span class="fight"></span><span class="build"></span><span class="change"></span></div>
@@ -320,9 +322,10 @@ h1,h2,h3,.serif{font-family:"Noto Serif SC","Songti SC","SimSun",serif;letter-sp
   <h2>哪些已经定了？<span class="gold">哪些还只是设想？</span></h2>
   <div class="status-grid">
    <div class="status-card"><span class="pill ok">已确认 · 方向</span><h3>我们不必再反复投票</h3><ul><li>D-01～D-07：构筑质变、目标惊喜、清晰走位、经济分路、简化伤害、三档构筑、极致华丽</li><li>D-08：1 主传承 + 4 点辅助、最多 3 个、双通道解锁、奖励权重倾斜</li><li>D-09：20–30 分钟、自由准备 + 可选自动开波</li></ul></div>
-   <div class="status-card"><span class="pill plan">候选 · 待评审</span><h3>我们给出的完整建议</h3><ul><li>3★ 时分路、4★ 强化、5★ 终极形态</li><li>独立法宝进阶台；局外单一主要货币</li><li>三档战斗构筑与伤害来源事件模型</li><li>波间自动开波待决策暂停机制</li><li>修为圆满：战斗中持续显著入口 + 波间突破大卡片（玩家新增 P0 反馈）</li></ul></div>
+   <div class="status-card"><span class="pill plan">候选 · 待评审</span><h3>我们给出的完整建议</h3><ul><li>3★ 时分路、4★ 强化、5★ 终极形态</li><li>独立法宝进阶台；局外单一主要货币</li><li>三档战斗构筑与伤害来源事件模型</li><li>波间自动开波待决策暂停机制</li><li>修为圆满：战斗中持续显著入口 + 波间突破大卡片（玩家新增 P0 反馈）</li><li>P0 提前手工调一版约 20 分钟完整局试玩；不等其他系统全部完成才验证时长假设</li><li>P1 仅火系 3★燃爆/余烬 + 最小进阶台 + 金币来源/支出遥测，验证 W7–15 后再扩展</li></ul></div>
    <div class="status-card"><span class="pill pending">待测试 · 不可伪称结果</span><h3>必须拿实战数据来定</h3><ul><li>所有 HP、伤害、金币、升星费、掉率、传承费用</li><li>平均实际一局时长、Boss 交战时长、W7–15 的有意义消费</li><li>多种随机种子与三档构筑表现</li><li>花哨特效下的攻击预警可读性与移动端性能</li></ul></div>
   </div>
+  <div class="callout" style="margin-top:22px"><strong>本轮独立评审已吸收的修订：</strong>W7 全杀零消费累计理论供给校正为 1,119 金；P0 提前做约 20 分钟完整局时长实验；P1 收窄为火系 3★单路线分路 + 进阶台 + 金币遥测；辅助池保证 1+1+2=4 的三槽配置真实可达。3★/4★/5★整体成长结构、商店/进阶台分工及 24 分钟测试中心仍属于候选建议，未替用户自动批准。</div>
   <h3 style="margin-top:35px">设计实现后，要能回答这些具体问题</h3>
   <div class="table-scroll"><table class="role-table"><thead><tr><th>要解决的体验</th><th>不靠主观猜测的验收方式</th></tr></thead><tbody>
    <tr><td>W7 有钱没处花</td><td>记录每波金币来源、各类消费、可购升级，检查是否连续两波没有值得投资的东西</td></tr>
@@ -331,7 +334,7 @@ h1,h2,h3,.serif{font-family:"Noto Serif SC","Songti SC","SimSun",serif;letter-sp
    <tr><td>攻击看不清</td><td>大量技能和粒子开启时，也能辨识危险方向与攻击范围</td></tr>
    <tr><td>局外成长崩盘</td><td>全解锁账号与新账号都在相同关卡和固定辅助预算下有可玩构筑</td></tr>
    <tr><td>到了可以突破却看不见</td><td>检查 W4/9/14/19 的突破发现延迟；自动开波等待确认，手机端触控可用且不遮挡危险预警</td></tr>
-   <tr><td>完整一局时长</td><td>真实试玩区分战斗/准备/结算，检验 20–30 分钟目标，不能只计算出怪时钟</td></tr>
+   <tr><td>完整一局时长</td><td>P0 就先手工调一版约 20 分钟完整 20 波试玩；分别记录出怪计划、实际战斗、Boss、构筑和空等时间，再决定是否向 24 分钟中心靠拢</td></tr>
   </tbody></table></div>
   <div class="callout warn" style="margin-top:22px"><strong>与旧路线图的冲突，不能忽略：</strong>仓库 v0.53+ 曾计划“双货币灵石/道韵”和部分永久便利属性。现在讨论的是固定容量的横向传承与主要单货币方案。正式开发前，需要明确哪份规则覆盖哪份，不能直接把旧方案和新方案叠在一起。</div>
   <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:22px"><a class="btn primary" href="Border-Guard-v0.60-体验与系统重构设计候选.md" download>📄 读完整 13 章设计稿</a><a class="btn" href="https://github.com/xfastres/border-guard/tree/refactor/v052-balance-lab" target="_blank" rel="noopener noreferrer">🔗 查看目前实际游戏分支</a></div>
@@ -346,14 +349,14 @@ const setText=(id,t)=>{const x=$(id);if(x)x.textContent=t};
 const chapters=[
  {icon:'⚡',id:'D-01/07/09 UX',name:'可渡劫时，玩家如何发现？',now:'已有顶栏小修为按钮、一次横幅、金色呼吸动画和 T 快捷键，但玩家在清怪时经常忽略。自动开波仅多等约 8 秒。',why:'突破是重大成长事件，却可能因为入口太小、提醒短暂被错过，影响成长节奏。',after:'接近圆满先预告；战斗中持续可点的高对比入口；波间独立突破卡片；待决策时自动开波真正暂停。',play:'圆满后看见“⚡ 可渡劫【筑基】[T]”，波间一眼看到“现在渡劫”或“继续攒修为”，无需寻找小字。',test:'W4/9/14/19、自动开波、手机与静音模式验收；不在战斗中强制弹窗。'},
  {icon:'🎯',id:'D-01/02',name:'成长与下一波期待',now:'已有技能、灵印、羁绊，但玩家不一定知道下一步该追求什么。',why:'单纯涨数字很难形成“这是我的打法”的记忆，也容易提前失去目标。',after:'让 3★ 分路、组合技和共鸣触发真实的攻击变化；显示距关键成长还差什么；随机奖励仍可创造新选择。',play:'第 7 波发现“火印差一个关键升阶”，选择优先攒金币，下一波试出新爆炸形态。',test:'玩家可以说出自己构筑的方向，且在连续两波中仍能找到真实成长目标。'},
- {icon:'💰',id:'D-04',name:'第 7 波经济与法宝合成',now:'金币来源增加，4 格随机商店仍以灵印/丹药为主；同系卡叠点较容易升星。',why:'钱有了但可购买的价值不足；合成由“再买几次”替代有趣的决策。',after:'随机商店负责取得；法宝进阶台负责关键费用、互斥路线和有限重铸。3★/4★/5★形成阶段性目标（候选）。',play:'选择火印“燃爆”而非“余烬”，消耗金币，进化的攻击形态真的不同。',test:'W7–15 记录收入、支出和有意义消费项；升阶不能跳过路线抉择。'},
+ {icon:'💰',id:'D-04',name:'第 7 波经济与法宝合成',now:'金币来源增加，4 格随机商店仍以灵印/丹药为主；同系卡叠点较容易升星。',why:'钱有了但可购买的价值不足；合成由“再买几次”替代有趣的决策。',after:'P1 首轮只做火系 3★燃爆/余烬二选一 + 最小进阶台 + 金币来源/支出遥测；W7–15 验证通过后再扩展其他四系、重铸与 4★/5★。',play:'选择火印“燃爆”而非“余烬”，消耗金币，进化的攻击形态真的不同。',test:'W7–15 记录收入、支出和有意义消费项；升阶不能跳过路线抉择。'},
  {icon:'🐺',id:'D-03/05',name:'怪物伤害与可躲避攻击',now:'已有狼扑击、兽人冲锋、祭司火圈和 Boss 技能，但多处受伤源仍通过简单数值入口处理。',why:'伤害来源与类型不清楚时，玩家难以理解是技能没躲好，还是怪物数值突然太高。',after:'区分属性、命中方式和少量状态，给重要攻击可读预警并记录伤害来源。',play:'看见魔狼扑击的前摇与落点，提前走位，避开破甲重击。',test:'实战中能辨认不同怪物的危险，正确躲避能明显改善生存。'},
  {icon:'📈',id:'D-06',name:'20 波血量伤害曲线',now:'常规怪 HP 存在多重指数增长；W20 常规出生血量倍率约是 W1 的 144 倍。',why:'怪物堆肉会迫使玩家追乘法增伤，弱构筑打不动，强构筑却可能秒全场。',after:'针对基础/标准/强势构筑设定清怪时间和生存预算，再倒推怪物 HP、伤害和出怪量。',play:'普通怪依旧可以割草，但精英和 Boss 需要操作才能安全通过。',test:'同种子三档构筑能产生不同胜负方式，基础构筑仍有机会通关 20 波。'},
  {icon:'✨',id:'D-07',name:'极致华丽特效与 UI',now:'已经有 C-Hybrid 左右面板与部分组合技效果，战斗信息还有进一步分层空间。',why:'只有光效会乱，只有简单界面又难体现构筑爆发的爽感。',after:'普通击杀、羁绊觉醒、境界突破各有独特视觉级别；危险预警永远最清楚，左右 HUD 位置保持稳定。',play:'雷火劫爆发时很华丽，但 Boss 冲锋危险线仍清清楚楚。',test:'开高特效也能识别危险，移动端可降低粒子和震屏强度。'},
- {icon:'🌱',id:'D-08',name:'局外成长与传承配置',now:'新的局外主辅传承系统尚未进入当前游戏；旧路线图曾拟双货币和有限永久强化。',why:'纯永久攻击血量叠加会把关卡推向无限增幅，解锁越多随机池还可能越来越杂。',after:'1 主传承 + 4 点辅助预算/最多 3 个；里程碑加碎片解锁；主传承倾斜相关奖励但保留其他路线。',play:'开局选火系主传承，配疾风与护体；下一局改雷系，玩法变化但容量永远一样。',test:'新账号和全解锁账号都受固定容量约束；不能靠拥有更多内容自动压制 Boss。'},
- {icon:'⏱',id:'D-09',name:'20 波时间与自动开波',now:'当前计划出怪时长合计约 6 分 34 秒，不包含战斗残局、商店、宝箱等真实时间。',why:'增加怪物 HP 凑时长会变枯燥；复杂成长又可能被自动开波打断。',after:'以完整局 20–30 分钟为目标；可手动休整或选择自动开波，遇到必须处理的决定就暂停自动。',play:'W10 击败 Boss 后选择渡劫和法宝路线，确认完毕再开始 W11 的爽快割草。',test:'按实战分解 20 波的战斗、构筑、过渡时间；关键选择不会被倒计时覆盖。'},
+ {icon:'🌱',id:'D-08',name:'局外成长与传承配置',now:'新的局外主辅传承系统尚未进入当前游戏；旧路线图曾拟双货币和有限永久强化。',why:'纯永久攻击血量叠加会把关卡推向无限增幅，解锁越多随机池还可能越来越杂。',after:'1 主传承 + 4 点辅助预算/最多 3 个；初始辅助池需保证 1+1+2=4 的三槽组合真实可达；里程碑加碎片解锁，主传承倾斜相关奖励但保留其他路线。',play:'开局选火系主传承，配疾风与护体；下一局改雷系，玩法变化但容量永远一样。',test:'新账号和全解锁账号都受固定容量约束；不能靠拥有更多内容自动压制 Boss。'},
+ {icon:'⏱',id:'D-09',name:'20 波时间与自动开波',now:'当前计划出怪时长合计约 6 分 34 秒，不包含战斗残局、商店、宝箱等真实时间。',why:'增加怪物 HP 凑时长会变枯燥；复杂成长又可能被自动开波打断。',after:'P0 先手工调一版约 20 分钟完整 20 波试玩并记录真实战斗/构筑时间；确认循环好玩后，再以约 24 分钟作为候选中心，绝不靠堆 HP 凑时长。',play:'W10 击败 Boss 后选择渡劫和法宝路线，确认完毕再开始 W11 的爽快割草。',test:'按实战分解 20 波的战斗、构筑、过渡时间；关键选择不会被倒计时覆盖。'},
  {icon:'🧭',id:'复盘',name:'失败也能知道下一局怎么改',now:'已有波次耗时、承伤次数、DPS、移动与冲刺等基础遥测。',why:'只显示“第 9 波失败”不足以帮助玩家理解错误和尝试不同的流派。',after:'新增致命技能来源与主要伤害归因，在结算显示可改进的走位或构筑方向，并能快速重新开局。',play:'“你连续受到冲锋与祭司火圈伤害”，下一局先处理祭司并留出冲锋躲避空间。',test:'失败报告仅基于真实记录，不捏造谁造成了伤害；玩家能解释下一局会改变什么。'},
- {icon:'🛒',id:'关联规则',name:'随机惊喜不会毁掉目标构筑',now:'商店会按固定池随机出现灵印，局外新内容若全部混入奖励池会稀释目标。',why:'玩得越多，反而越难拿到自己想玩的装备，会违背长期成长目标。',after:'主传承仅提升相关品类的出现权重，并归一化，**不**额外赠金币、不把其他元素排除。',play:'选烈焰主传承更容易看到火系路线，但偶尔得到雷系奖励，仍能转成雷火组合。',test:'多种种子下目标构筑有合理成型机会，跨系转型仍真实存在。'}
+ {icon:'🛒',id:'关联规则',name:'随机惊喜不会毁掉目标构筑',now:'商店会按固定池随机出现灵印，局外新内容若全部混入奖励池会稀释目标。',why:'玩得越多，反而越难拿到自己想玩的装备，会违背长期成长目标。',after:'主传承仅提升相关品类的出现权重，并归一化，不额外赠金币、不把其他元素排除。',play:'选烈焰主传承更容易看到火系路线，但偶尔得到雷系奖励，仍能转成雷火组合。',test:'多种种子下目标构筑有合理成型机会，跨系转型仍真实存在。'}
 ];
 const list=$('chapterList');
 chapters.forEach((c,i)=>{
@@ -397,7 +400,7 @@ updateAux();
 // 四阶段时间线
 const stages=[
  {a:'W1–5',title:'建立雏形',time:'4–5 分钟',desc:'尽快拿到第一主灵印；学习基础技能与躲避。W5 首领是第一次检查：你能不能理解怪物攻击？',invest:'基础灵印、第一轮升级',note:'目标不是先刷满高级法宝。'},
- {a:'W6–10',title:'第一轮质变',time:'5–6 分钟',desc:'W6 爽快释放；W7–9 开始面对进阶消费与路线选择；W10 Boss 测试成熟中的流派。',invest:'关键 3★ 分路、辅印、有限重铸',note:'这是现有 W7 经济问题的重点修复区。'},
+ {a:'W6–10',title:'第一轮质变',time:'5–6 分钟',desc:'W6 爽快释放；W7–9 开始面对进阶消费与路线选择；W10 Boss 测试成熟中的流派。',invest:'火系 3★ 燃爆/余烬分路 + 最小进阶台（P1 首轮仅此一系）',note:'用 W7–15 金币遥测验证真实消费；通过后才扩展其他元素、重铸与 4★/5★。'},
  {a:'W11–15',title:'组合成熟',time:'6–7 分钟',desc:'灵印路线、套装、共鸣与神通产生明显联动；普通怪依然能快速清除，Boss 不靠拖血条制造压力。',invest:'4★ 强化、组合技、构筑补短板',note:'跨系组合仍可出现；不强制每局拿齐全部毕业装备。'},
  {a:'W16–20',title:'最终完全体',time:'6–7 分钟',desc:'展示 5★ 终极效果和大规模华丽打击，玩家有能力快速清小怪；最终 Boss 仍有清晰且危险的攻击。',invest:'终极专精、战前准备与最后调整',note:'一局结束后形成可解释的战绩和长期传承进度。'}
 ];
