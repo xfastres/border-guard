@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Border Guard v0.52 · 你的游戏要变身了</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+:root{
+  --bg:#0d1117; --bg2:#131a26; --card:#161e2e; --card2:#1c2740;
+  --line:#2a3550; --ink:#eef2fb; --sub:#a7b2cc; --dim:#7c89a8;
+  --gold:#ffd666; --gold2:#f0a93b; --jade:#5fe3b3; --purple:#c68cff;
+  --fire:#ff7b47; --frost:#6ce2ff; --thunder:#c68cff; --holy:#ffe478; --wind:#72f2b4;
+  --red:#ff6b6b; --good:#5fe3b3;
+  --serif:"Noto Serif SC","Songti SC","SimSun",serif;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:var(--serif);line-height:1.25}
+section{padding:64px 0;border-bottom:1px solid var(--line)}
+.eyebrow{display:inline-block;font-size:13px;letter-spacing:3px;color:var(--gold);font-weight:700;text-transform:uppercase;margin-bottom:14px}
+.lead{color:var(--sub);font-size:18px;max-width:760px}
+.big{font-size:clamp(28px,5vw,46px);font-weight:900}
+.hl{color:var(--gold)}
+.hl-j{color:var(--jade)}
+.hl-p{color:var(--purple)}
+
+/* ===== 顶部进度条 ===== */
+#prog{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--gold),var(--jade));z-index:99}
+
+/* ===== HERO ===== */
+.hero{min-height:92vh;display:flex;flex-direction:column;justify-content:center;text-align:center;position:relative;background:
+  radial-gradient(900px 500px at 50% -10%,rgba(198,140,255,.16),transparent 60%),
+  radial-gradient(700px 400px at 80% 110%,rgba(95,227,179,.10),transparent 60%),var(--bg)}
+.hero .vers{display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap;margin:30px 0 8px}
+.vtag{padding:10px 22px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-weight:700;font-size:18px}
+.vtag.old{color:var(--sub)}
+.vtag.new{color:var(--gold);border-color:var(--gold2);box-shadow:0 0 24px rgba(240,169,59,.25)}
+.arrow{font-size:30px;color:var(--gold)}
+.hero p.sub{color:var(--sub);font-size:clamp(16px,2.6vw,21px);max-width:680px;margin:18px auto 0}
+.metaphor{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;margin-top:44px}
+.meta-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px 30px;width:250px}
+.meta-card .emo{font-size:54px}
+.meta-card .t{font-family:var(--serif);font-size:21px;font-weight:700;margin:10px 0 6px}
+.meta-card .d{color:var(--sub);font-size:14px}
+.meta-card.new{border-color:var(--gold2);background:linear-gradient(180deg,var(--card2),var(--card))}
+.scroll-hint{margin-top:50px;color:var(--dim);font-size:14px;animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+
+/* ===== 战场对比 ===== */
+.arenas{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:36px}
+@media(max-width:760px){.arenas{grid-template-columns:1fr}}
+.arena{border-radius:18px;border:1px solid var(--line);overflow:hidden;background:var(--bg2)}
+.arena .head{padding:14px 18px;display:flex;align-items:center;gap:10px;font-weight:700;border-bottom:1px solid var(--line)}
+.arena .head .badge{font-size:12px;padding:3px 10px;border-radius:999px;font-weight:700}
+.arena.old .head .badge{background:#2a3550;color:var(--sub)}
+.arena.new .head .badge{background:var(--gold2);color:#1a1206}
+.arena .head .cap{margin-left:auto;font-size:13px;color:var(--dim);font-weight:400}
+.field{position:relative;height:300px;overflow:hidden;background:
+  linear-gradient(rgba(42,53,80,.35) 1px,transparent 1px) 0 0/40px 40px,
+  linear-gradient(90deg,rgba(42,53,80,.35) 1px,transparent 1px) 0 0/40px 40px,
+  radial-gradient(circle at 50% 50%,#1a2336,#0f1622)}
+.field.new{background:
+  linear-gradient(rgba(42,53,80,.22) 1px,transparent 1px) 0 0/56px 56px,
+  linear-gradient(90deg,rgba(42,53,80,.22) 1px,transparent 1px) 0 0/56px 56px,
+  radial-gradient(circle at 50% 50%,#1d2740,#0f1622)}
+.ent{position:absolute;font-size:26px;transform:translate(-50%,-50%);filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+.castle{left:50%;top:50%;font-size:40px}
+.ped{width:30px;height:30px;border:1px dashed rgba(255,214,102,.4);border-radius:6px;position:absolute;transform:translate(-50%,-50%)}
+.heroEnt{left:50%;top:50%;font-size:34px;z-index:5}
+.orbit{position:absolute;left:50%;top:50%;width:120px;height:120px;transform:translate(-50%,-50%);animation:spin 9s linear infinite;z-index:4}
+.orbit .sat{position:absolute;font-size:22px;left:50%;top:50%}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.camframe{position:absolute;inset:14px;border:2px solid rgba(255,214,102,.5);border-radius:10px;pointer-events:none}
+.camframe::before,.camframe::after{content:"";position:absolute;width:16px;height:16px;border:3px solid var(--gold)}
+.camframe::before{left:-2px;top:-2px;border-right:0;border-bottom:0}
+.camframe::after{right:-2px;bottom:-2px;border-left:0;border-top:0}
+.camlabel{position:absolute;left:20px;top:20px;font-size:11px;color:var(--gold);background:rgba(13,17,23,.7);padding:2px 8px;border-radius:6px;z-index:6}
+.foe{position:absolute;font-size:20px;transform:translate(-50%,-50%)}
+.arena .note{padding:14px 18px;font-size:14px;color:var(--sub);border-top:1px solid var(--line)}
+.arena .note b{color:var(--ink)}
+
+/* ===== 改动卡片 ===== */
+.change{display:grid;grid-template-columns:64px 1fr;gap:20px;padding:30px 0;border-bottom:1px dashed var(--line)}
+.change:last-child{border-bottom:0}
+.change .num{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:28px}
+.change h3{font-size:24px;margin-bottom:8px}
+.change .eli{font-size:17px;color:var(--ink);margin-bottom:14px}
+.ba{display:flex;gap:14px;flex-wrap:wrap}
+.ba .box{flex:1;min-width:220px;border-radius:12px;padding:14px 16px;font-size:14px;border:1px solid var(--line)}
+.ba .before{background:rgba(124,137,168,.08)}
+.ba .after{background:rgba(255,214,102,.07);border-color:rgba(240,169,59,.4)}
+.ba .lab{font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:6px;display:block}
+.ba .before .lab{color:var(--dim)}
+.ba .after .lab{color:var(--gold)}
+.ba .box p{color:var(--sub)}
+.ba .after p{color:var(--ink)}
+
+/* ===== 渡劫模拟器 ===== */
+.sim{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--gold2);border-radius:20px;padding:30px;margin-top:30px}
+.sim h3{font-size:24px;text-align:center}
+.sim .tip{text-align:center;color:var(--sub);font-size:15px;margin:8px 0 24px}
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:760px){.opts{grid-template-columns:1fr}}
+.opt{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;transition:.18s;text-align:center}
+.opt:hover{transform:translateY(-3px);border-color:var(--gold2)}
+.opt.sel{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,214,102,.3)}
+.opt .oe{font-size:34px}
+.opt .on{font-family:var(--serif);font-weight:700;font-size:18px;margin:6px 0}
+.opt .rate{font-size:30px;font-weight:900;font-family:var(--serif)}
+.opt .rate.safe{color:var(--good)}
+.opt .rate.risk{color:var(--gold)}
+.opt .od{font-size:13px;color:var(--sub);margin-top:6px;min-height:42px}
+.opt .reward{font-size:12px;color:var(--dim);margin-top:8px}
+.rollbtn{display:block;margin:24px auto 0;padding:14px 46px;font-size:18px;font-weight:700;font-family:var(--serif);color:#1a1206;background:linear-gradient(180deg,var(--gold),var(--gold2));border:0;border-radius:999px;cursor:pointer;transition:.15s}
+.rollbtn:hover{transform:scale(1.04)}
+.rollbtn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.result{margin-top:22px;text-align:center;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.result .flash{font-size:40px;animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+.result .rt{font-family:var(--serif);font-size:24px;font-weight:900;margin:6px 0}
+.result .rd{color:var(--sub);font-size:15px;max-width:520px}
+.tier-ren{color:var(--sub)} .tier-di{color:var(--frost)} .tier-tian{color:var(--gold)}
+.fail{color:var(--red)}
+
+/* ===== 组合技 / 改命 ===== */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:28px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.combo{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.combo .pair{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;flex-wrap:wrap}
+.combo .pair .plus{color:var(--gold)}
+.combo .pair .eq{color:var(--jade);font-size:20px}
+.combo .cn{font-family:var(--serif);color:var(--gold);font-size:19px}
+.combo .cd{color:var(--sub);font-size:14px;margin-top:8px}
+.combo .realm{font-size:11px;color:var(--dim);margin-top:8px;display:inline-block;border:1px solid var(--line);padding:2px 8px;border-radius:6px}
+.perks{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:28px}
+@media(max-width:760px){.perks{grid-template-columns:1fr}}
+.perk{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start}
+.perk .pe{font-size:30px}
+.perk .pn{font-family:var(--serif);font-weight:700;font-size:17px}
+.perk .pq{font-size:11px;padding:1px 8px;border-radius:6px;margin-left:8px;vertical-align:middle}
+.pq.epic{background:rgba(198,140,255,.2);color:var(--purple)}
+.pq.rare{background:rgba(108,226,255,.18);color:var(--frost)}
+.perk .pd{color:var(--sub);font-size:14px;margin-top:4px}
+
+/* ===== 不变 / 流程 ===== */
+.keeps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px}
+@media(max-width:760px){.keeps{grid-template-columns:1fr 1fr}}
+.keep{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
+.keep .ke{font-size:34px}
+.keep .kn{font-weight:700;margin:8px 0 4px}
+.keep .kd{color:var(--sub);font-size:13px}
+.flow{display:flex;align-items:stretch;gap:0;margin-top:34px;flex-wrap:wrap;justify-content:center}
+.step{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 16px;width:160px;text-align:center}
+.step .se{font-size:30px}
+.step .sn{font-weight:700;font-size:15px;margin:6px 0 4px}
+.step .sd{color:var(--sub);font-size:12px}
+.flow .fa{display:flex;align-items:center;color:var(--gold);font-size:24px;padding:0 6px}
+@media(max-width:760px){.flow .fa{transform:rotate(90deg);padding:6px 0}}
+
+/* ===== 结尾 ===== */
+.final{text-align:center;background:
+  radial-gradient(700px 400px at 50% 0%,rgba(255,214,102,.12),transparent 60%),var(--bg)}
+.final .one{font-family:var(--serif);font-size:clamp(22px,4vw,34px);font-weight:900;max-width:820px;margin:0 auto;line-height:1.5}
+.final .sub{color:var(--sub);margin-top:20px;font-size:16px}
+footer{padding:30px 0;text-align:center;color:var(--dim);font-size:13px}
+.reveal{opacity:0;transform:translateY(24px);transition:.6s}
+.reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Border Guard · v0.52 改动讲解</span>
+    <h1 class="big">你的游戏，要<span class="hl">变身</span>了</h1>
+    <div class="vers">
+      <span class="vtag old">v0.51 · 守城将军</span>
+      <span class="arrow">➜</span>
+      <span class="vtag new">v0.52 · 御剑仙人</span>
+    </div>
+    <p class="sub">一句话：以前你<b>站在城堡后面摆塔防守</b>，以后你<b>亲自御剑飞进怪海里割草</b>，还要像修仙小说一样<b>渡劫赌一把</b>。下面用大白话 + 会动的图，一处一处讲给你看。</p>
+    <div class="metaphor">
+      <div class="meta-card">
+        <div class="emo">🏰</div>
+        <div class="t">以前的你</div>
+        <div class="d">保护一座城堡，把塔摆在固定格子上，怪冲过来打城堡。城堡破了就输。</div>
+      </div>
+      <div class="meta-card new">
+        <div class="emo">🧙</div>
+        <div class="t">以后的你</div>
+        <div class="d">城堡没了，你自己就是命。法宝像卫星绕着你飞自动打怪，你在一大片秘境里跑位割草。</div>
+      </div>
+    </div>
+    <div class="scroll-hint">↓ 往下滑，看它到底怎么变 ↓</div>
+  </div>
+</header>
+
+<!-- ===== 战场对比 ===== -->
+<section>
+  <div class="wrap">
+    <span class="eyebrow">先看两张会动的图</span>
+    <h2 class="big">同一个屏幕，<span class="hl">完全两种玩法</span></h2>
+    <p class="lead">左边是现在的样子，右边是改完的样子。注意看：中间那个东西从"城堡"变成了"你"，塔从"摆在地上"变成了"绕着你飞"。</p>
+    <div class="arenas">
+      <div class="arena old reveal">
+        <div class="head"><span class="badge">现在 v0.51</span> 守城防守 <span class="cap">小地图 · 固定镜头</span></div>
+        <div class="field" id="fieldOld">
+          <div class="ped" style="left:30%;top:30%"></div>
+          <div class="ped" style="left:70%;top:30%"></div>
+          <div class="ped" style="left:30%;top:70%"></div>
+          <div class="ped" style="left:70%;top:70%"></div>
+          <div class="ent" style="left:30%;top:30%">🏹</div>
+          <div class="ent" style="left:70%;top:30%">🔥</div>
+          <div class="ent" style="left:30%;top:70%">❄️</div>
+          <div class="ent" style="left:70%;top:70%">⚡</div>
+          <div class="ent castle">🏰</div>
+        </div>
+        <div class="note"><b>怪从四边冲向城堡</b>，塔摆在虚线格子上不动。你要守的是中间那座 🏰。</div>
+      </div>
+      <div class="arena new reveal">
+        <div class="head"><span class="badge">改完 v0.52</span> 御剑割草 <span class="cap">大地图 · 镜头跟着你</span></div>
+        <div class="field new" id="fieldNew">
+          <div class="camframe"></div>
+          <div class="camlabel">📷 镜头跟着领主</div>
+          <div class="orbit" id="orbit">
+            <span class="sat" style="transform:translate(-50%,-50%) rotate(0deg) translateX(60px)">🗡️</span>
+            <span class="sat" style="transform:translate(-50%,-50%) rotate(72deg) translateX(60px)">🔥</span>
+            <span class="sat" style="transform:translate(-50%,-50%) rotate(144deg) translateX(60px)">❄️</span>
+            <span class="sat" style="transform:translate(-50%,-50%) rotate(216deg) translateX(60px)">⚡</span>
+            <span class="sat" style="transform:translate(-50%,-50%) rotate(288deg) translateX(60px)">✨</span>
+          </div>
+          <div class="ent heroEnt">🧙</div>
+        </div>
+        <div class="note"><b>怪从四面八方围着你</b>，法宝绕着你转自动开火。你只管跑位躲技能，<b>你倒下就输</b>。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 七处改动 ===== -->
+<section>
+  <div class="wrap">
+    <span class="eyebrow">到底改哪些 · 七处</span>
+    <h2 class="big">一处一处，<span class="hl">讲人话</span></h2>
+
+    <div class="change reveal">
+      <div class="num">🗺️</div>
+      <div>
+        <h3>① 地图变大 8 倍，镜头跟着你跑</h3>
+        <p class="eli">以前在一个"小房间"里打，一眼看全。现在是一整片大秘境，你走到哪，镜头像无人机一样跟到哪。</p>
+        <div class="ba">
+          <div class="box before"><span class="lab">以前</span><p>24×16 的小格子，固定镜头，怪从地图边角刷出来。</p></div>
+          <div class="box after"><span class="lab">现在</span><p>64×48 的大世界（8 倍大），镜头平滑跟随，怪在你视野外圈四面涌来。屏幕边上有箭头指给你看 Boss / 精英 / 宝箱在哪。</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="change reveal">
+      <div class="num">❤️</div>
+      <div>
+        <h3>② 城堡没了，你的血条就是命</h3>
+        <p class="eli">以前你要保护城堡，城堡破了才输，你自己倒地还能复活。现在城堡彻底删掉——<b>你就是城堡</b>，你血量归零就直接输（除非选了"免死"超能力）。</p>
+        <div class="ba">
+          <div class="box before"><span class="lab">以前</span><p>城堡 200 血是生命线，吸血和过波回血都喂城堡，领主倒地 5 秒自动复活。</p></div>
+          <div class="box after"><span class="lab">现在</span><p>领主 220 血是唯一生命线，吸血/回血全喂你自己，倒地复活删掉。被打有 0.28 秒无敌帧，远程子弹能走位躲开。</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="change reveal">
+      <div class="num">🛸</div>
+      <div>
+        <h3>③ 防御塔 → 绕着你飞的法宝</h3>
+        <p class="eli">这是最大的变化。塔不再摆在格子上，而是变成飞剑、火葫芦、冰莲、雷印、乾坤镜，<b>像卫星一样绕着你转，自动锁敌开火</b>。你不用摆位，只管跑。</p>
+        <div class="ba">
+          <div class="box before"><span class="lab">以前</span><p>5 种塔摆在 16 个固定塔基上，要考虑摆哪、怎么合星。</p></div>
+          <div class="box after"><span class="lab">现在</span><p>5 系法宝随身悬浮（炼气 3 槽 → 筑基 4 → 金丹 5）。点商店牌一键装上，同名同星自动秒合升星。合星和五行羁绊<b>都保留</b>。</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="change reveal">
+      <div class="num">⚡</div>
+      <div>
+        <h3>④ 升级 → 修仙突破，敢不敢赌一把</h3>
+        <p class="eli">升级不再只是数字 +1。每到一个大境界（炼气→筑基→金丹→元婴→化神），你要"渡劫"。<b>可以稳过拿普通奖励，也可以赌一把拿超稀有奖励——但可能失败掉东西。</b>就像开宝箱，押的是你的装备。下面这个模拟器你点一下就懂。</p>
+        <div class="ba">
+          <div class="box before"><span class="lab">以前</span><p>经验满了自动升级，选个技能就完事，没有风险。</p></div>
+          <div class="box after"><span class="lab">现在</span><p>圆满后进入"可渡劫"，三档可选。赌赢开"天道"大奖拿史诗超能力，赌失败掉装备但攒"道心"让下次更容易出大奖。稳过 100% 不卡关。</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 渡劫模拟器 -->
+    <div class="sim reveal" id="sim">
+      <h3>🎲 渡劫赌局 · 点一下就懂</h3>
+      <p class="tip">选一档，点"渡劫"，看会发生什么。这就是以后每次突破时你要做的决定。</p>
+      <div class="opts">
+        <div class="opt sel" data-opt="safe">
+          <div class="oe">🛡️</div>
+          <div class="on">稳妥渡劫</div>
+          <div class="rate safe">100%</div>
+          <div class="od">必成功，不押东西。稳稳推进境界。</div>
+          <div class="reward">奖励： mostly 普通 · 极小概率天道</div>
+        </div>
+        <div class="opt" data-opt="bare">
+          <div class="oe">✋</div>
+          <div class="on">空手强行</div>
+          <div class="rate risk">75%</div>
+          <div class="od">不押装备，但失败会扣修为、攒道心。</div>
+          <div class="reward">奖励：更好 · 天道概率更高</div>
+        </div>
+        <div class="opt" data-opt="bet">
+          <div class="oe">💍</div>
+          <div class="on">押注强行</div>
+          <div class="rate risk">75%+</div>
+          <div class="od">押一件装备。赢了原样拿回，输了装备碎掉。</div>
+          <div class="reward">奖励：最肥 · 押得越好天道越高</div>
+        </div>
+      </div>
+      <button class="rollbtn" id="rollBtn">⚡ 渡劫！</button>
+      <div class="result" id="result"><div class="rd" style="color:var(--dim)">选好一档，点上方按钮试试手气 👆</div></div>
+    </div>
+
+    <div class="change reveal" style="margin-top:30px">
+      <div class="num">🧪</div>
+      <div>
+        <h3>⑤ 技能凑对 → 觉醒组合技</h3>
+        <p class="eli">两个技能凑成一对，会"化学反应"觉醒一个新大招。比如飞刃 + 剑波 = 万剑诀。升级卡牌上会标绿色"可凑【XX】"提示你。</p>
+        <div class="grid2">
+          <div class="combo"><div class="pair">🌀 飞刃 <span class="plus">+</span> 🔥 剑波 <span class="eq">=</span> <span class="cn">万剑诀</span></div><div class="cd">所有飞刃定期一起齐射穿透剑气。</div><span class="realm">筑基解锁</span></div>
+          <div class="combo"><div class="pair">❄️ 冰环 <span class="plus">+</span> 🌀 飞刃 <span class="eq">=</span> <span class="cn">冰刃风暴</span></div><div class="cd">飞刃带减速，打冻住的怪额外碎冰真伤。</div><span class="realm">筑基解锁</span></div>
+          <div class="combo"><div class="pair">⚡ 天雷 <span class="plus">+</span> 🔥 剑波 <span class="eq">=</span> <span class="cn">雷火劫</span></div><div class="cd">剑波打中怪有几率引落连锁闪电。</div><span class="realm">金丹解锁</span></div>
+          <div class="combo"><div class="pair">💥 震地 <span class="plus">+</span> 🩸 狂战 <span class="eq">=</span> <span class="cn">崩山血怒</span></div><div class="cd">血越少震地越痛，打中还回血。</div><span class="realm">金丹解锁</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="change reveal">
+      <div class="num">🌟</div>
+      <div>
+        <h3>⑥ 突破成功 → 挑一个永久超能力</h3>
+        <p class="eli">每次渡劫成功，能挑一个"逆天改命"超能力，整局都生效。赌出"天道"能挑到最稀有的史诗级。一共 18 种，举几个例子：</p>
+        <div class="perks">
+          <div class="perk"><div class="pe">💀</div><div><div class="pn">不灭金身<span class="pq epic">史诗</span></div><div class="pd">每波一次免死：致命伤变无敌 + 回半血 + 清屏。</div></div></div>
+          <div class="perk"><div class="pe">🎯</div><div><div class="pn">一法破万法<span class="pq rare">稀有</span></div><div class="pd">只练 1–2 个技能时，伤害范围 ×1.8（专精流）。</div></div></div>
+          <div class="perk"><div class="pe">👁️</div><div><div class="pn">破妄神瞳<span class="pq epic" style="background:rgba(124,137,168,.2);color:var(--sub)">普通</span></div><div class="pd">暴击 +15%，溢出的暴击率转成暴击伤害。</div></div></div>
+          <div class="perk"><div class="pe">🩸</div><div><div class="pn">血煞魔躯<span class="pq rare">稀有</span></div><div class="pd">血越少伤害越高、吸血越猛（残血反杀流）。</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="change reveal">
+      <div class="num">👹</div>
+      <div>
+        <h3>⑦ 15 波 → 20 波，多了最终 Boss</h3>
+        <p class="eli">主线从 15 波拉长到 20 波，4 个大 Boss 分别在第 5 / 10 / 15 / 20 波。第 20 波新增"天劫魔尊"，会在你脚下放红圈预警、1.2 秒后降天雷——<b>要走位或冲刺躲开</b>，不能站桩。</p>
+        <div class="ba">
+          <div class="box before"><span class="lab">以前</span><p>15 波，3 个 Boss，通关进无尽。</p></div>
+          <div class="box after"><span class="lab">现在</span><p>20 波，4 个 Boss（熔岩巨魔 / 暗影死灵王 / 毁灭泰坦 / 天劫魔尊），通关进无尽 W21+。</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 不变的东西 ===== -->
+<section>
+  <div class="wrap">
+    <span class="eyebrow">别担心 · 这些没变</span>
+    <h2 class="big">你喜欢的核心，<span class="hl-j">都还在</span></h2>
+    <p class="lead">变身不是推倒重来。下面这些 v0.51 的乐趣原样保留，只是换了个更爽的载体。</p>
+    <div class="keeps">
+      <div class="keep reveal"><div class="ke">⭐</div><div class="kn">合星</div><div class="kd">同名 1★→2★→3★ 自动合，倍率 1 / 1.6 / 2.3 不变。</div></div>
+      <div class="keep reveal"><div class="ke">🔮</div><div class="kn">五行羁绊</div><div class="kd">风火冰雷光凑 2 / 4 层触发羁绊，照旧。</div></div>
+      <div class="keep reveal"><div class="ke">🪙</div><div class="kn">金币商店</div><div class="kd">买牌 / Q 刷新递增加价 / 金币 HUD 都在，还多了丹药。</div></div>
+      <div class="keep reveal"><div class="ke">🏃</div><div class="kn">走位割草</div><div class="kd">WASD / 鼠标走位、Space 冲刺、R 超载，手感保留。</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 一局怎么玩 ===== -->
+<section>
+  <div class="wrap">
+    <span class="eyebrow">改完之后 · 一局怎么玩</span>
+    <h2 class="big">新的<span class="hl">一局循环</span></h2>
+    <div class="flow">
+      <div class="step reveal"><div class="se">🏃</div><div class="sn">走位割草</div><div class="sd">大地图跑位，法宝自动打怪</div></div>
+      <div class="fa">➜</div>
+      <div class="step reveal"><div class="se">📈</div><div class="sn">攒修为</div><div class="sd">吸经验球升级练技能</div></div>
+      <div class="fa">➜</div>
+      <div class="step reveal"><div class="se">⚡</div><div class="sn">渡劫赌局</div><div class="sd">稳过 or 赌天道大奖</div></div>
+      <div class="fa">➜</div>
+      <div class="step reveal"><div class="se">🌟</div><div class="sn">选超能力</div><div class="sd">挑改命 + 凑组合技</div></div>
+      <div class="fa">➜</div>
+      <div class="step reveal"><div class="se">👹</div><div class="sn">推 Boss</div><div class="sd">打到 20 波斩天劫魔尊</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 结尾 ===== -->
+<section class="final">
+  <div class="wrap">
+    <span class="eyebrow">一句话总结</span>
+    <p class="one">从"<span style="color:var(--sub)">守着一座城摆塔</span>"，变成"<span class="hl">御剑飞进怪海，一边割草一边渡劫赌命，凑组合、选超能力，一路突破成仙</span>"。</p>
+    <p class="sub">地图更大、操作更爽、成长有名字、突破有心跳——这就是 v0.52 要给你的游戏。</p>
+  </div>
+</section>
+
+<footer>Border Guard v0.52 · 改动讲解页 · 基于《实施总纲评审修订定稿 v2》 · 仅供理解设计，非最终游戏画面</footer>
+
+<script>
+/* ===== 滚动进度条 ===== */
+const prog=document.getElementById('prog');
+addEventListener('scroll',()=>{const h=document.documentElement;const p=h.scrollTop/(h.scrollHeight-h.clientHeight);prog.style.width=(p*100)+'%';},{passive:true});
+
+/* ===== 进场动画 ===== */
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.15});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ===== 旧战场：怪冲向城堡 ===== */
+(function(){
+  const f=document.getElementById('fieldOld');
+  const foes=[];
+  for(let i=0;i<7;i++){
+    const el=document.createElement('div');el.className='foe';el.textContent='🔴';f.appendChild(el);
+    foes.push({el,ang:Math.random()*Math.PI*2,d:130+Math.random()*40,sp:14+Math.random()*12});
+  }
+  let last=performance.now();
+  function tick(now){
+    const dt=Math.min(.05,(now-last)/1000);last=now;
+    const cx=f.clientWidth/2,cy=f.clientHeight/2;
+    foes.forEach(o=>{
+      o.d-=o.sp*dt;
+      if(o.d<26){o.d=150;o.ang=Math.random()*Math.PI*2;}
+      o.el.style.left=(cx+Math.cos(o.ang)*o.d)+'px';
+      o.el.style.top=(cy+Math.sin(o.ang)*o.d*0.72)+'px';
+    });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+
+/* ===== 新战场：怪围着领主 + 领主轻微游走 ===== */
+(function(){
+  const f=document.getElementById('fieldNew');
+  const hero=f.querySelector('.heroEnt');
+  const orbit=document.getElementById('orbit');
+  const foes=[];
+  for(let i=0;i<9;i++){
+    const el=document.createElement('div');el.className='foe';el.textContent='🔴';f.appendChild(el);
+    foes.push({el,ang:Math.random()*Math.PI*2,d:120+Math.random()*50,sp:18+Math.random()*14});
+  }
+  let last=performance.now(),t=0;
+  function tick(now){
+    const dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;
+    const cx=f.clientWidth/2,cy=f.clientHeight/2;
+    // 领主小幅游走，镜头框固定（演示"镜头跟着你"）
+    const hx=cx+Math.sin(t*0.7)*26, hy=cy+Math.cos(t*0.5)*18;
+    hero.style.left=hx+'px';hero.style.top=hy+'px';
+    orbit.style.left=hx+'px';orbit.style.top=hy+'px';
+    foes.forEach(o=>{
+      o.d-=o.sp*dt;
+      if(o.d<30){o.d=150;o.ang=Math.random()*Math.PI*2;}
+      o.el.style.left=(hx+Math.cos(o.ang)*o.d)+'px';
+      o.el.style.top=(hy+Math.sin(o.ang)*o.d*0.78)+'px';
+    });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+
+/* ===== 渡劫模拟器 ===== */
+(function(){
+  const opts=document.querySelectorAll('.opt');
+  const btn=document.getElementById('rollBtn');
+  const res=document.getElementById('result');
+  let cur='safe';
+  opts.forEach(o=>o.addEventListener('click',()=>{
+    opts.forEach(x=>x.classList.remove('sel'));o.classList.add('sel');cur=o.dataset.opt;
+  }));
+  const tiers={
+    ren:{n:'人道',cls:'tier-ren',emo:'📜',d:'普通改命三选一。稳稳变强，不亏。'},
+    di:{n:'地道',cls:'tier-di',emo:'💠',d:'强化改命四选一，含稀有词条。赚！'},
+    tian:{n:'天道',cls:'tier-tian',emo:'🌟',d:' jackpot！六选一带史诗超能力（免死/斩杀/天剑…）。血赚！'}
+  };
+  function rollTier(w){ // w=[人,地,天]
+    const r=Math.random()*100;
+    if(r<w[2])return 'tian';
+    if(r<w[2]+w[1])return 'di';
+    return 'ren';
+  }
+  btn.addEventListener('click',()=>{
+    btn.disabled=true;
+    res.innerHTML='<div class="flash">⚡</div><div class="rd">雷劫落下……</div>';
+    setTimeout(()=>{
+      let html='';
+      if(cur==='safe'){
+        const t=rollTier([85,14,1]);const T=tiers[t];
+        html='<div class="flash">'+T.emo+'</div><div class="rt '+T.cls+'">稳妥成功 · '+T.n+'渡劫</div><div class="rd">'+T.d+'（稳妥 100% 成功，境界稳稳推进。）</div>';
+      }else{
+        const success=Math.random()<0.75;
+        if(success){
+          const base=cur==='bet'?[60,28,12]:[70,25,5];
+          const t=rollTier(base);const T=tiers[t];
+          html='<div class="flash">'+T.emo+'</div><div class="rt '+T.cls+'">渡劫成功 · '+T.n+'！</div><div class="rd">'+T.d+(cur==='bet'?' 押注的装备原样拿回。':'')+'</div>';
+        }else{
+          html='<div class="flash">💥</div><div class="rt fail">渡劫失败……</div><div class="rd">'+(cur==='bet'?'押注的装备碎掉了 💔，':'')+'修为扣 20%，但<b style="color:var(--gold)">道心 +1</b>——下次更容易出天道。失败是在给下次大奖垫刀。（商店还会刷补天丹帮你重塑装备）</div>';
+        }
+      }
+      res.innerHTML=html;
+      btn.disabled=false;
+    },650);
+  });
+})();
+</script>
+</body>
+</html>
