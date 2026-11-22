@@ -5010,9 +5010,11 @@ function renderBattleHud(force){
     ? '👑 首领正在场上 · ' + bosses + ' 只'
     : elites > 0
       ? '🟣 精英正在场上 · ' + elites + ' 只'
-      : game.phase === 'wave'
-        ? '普通敌潮 · ' + alive.length + ' 只在场'
-        : (game.wave % 5 === 0 ? '⚠️ 下一场是首领波' : '暂未发现高危单位');
+      : game.phase === 'wave' && game.wave % 5 === 0
+        ? '⚠️ 首领波进行中 · 首领尚未入场'
+        : game.phase === 'wave'
+          ? '普通敌潮 · ' + alive.length + ' 只在场'
+          : (game.wave % 5 === 0 ? '⚠️ 下一场是首领波' : '暂未发现高危单位');
   const threatClass = bosses > 0 ? 'danger' : (elites > 0 ? 'elite' : '');
   const key = [
     game.wave, game.phase, remaining, alive.length, queued, bosses, elites,
@@ -5024,7 +5026,7 @@ function renderBattleHud(force){
 
   body.innerHTML =
     '<div class="lh-sec">' +
-      '<div class="bh-wave-row"><div><span class="bh-wave-kicker">CURRENT ENCOUNTER</span><div class="bh-wave-name">第 ' + game.wave + ' 波</div></div>' +
+      '<div class="bh-wave-row"><div><span class="bh-wave-kicker">当前战局</span><div class="bh-wave-name">第 ' + game.wave + ' 波</div></div>' +
       '<span class="bh-phase ' + phaseClass + '">' + phaseLabel + '</span></div>' +
       '<div class="bh-meta-line">' + meta.tag + (game.endless ? ' · 无尽模式' : '') + '</div>' +
       '<div class="bh-remain"><strong>' + remaining + '</strong><span>剩余敌人</span><small>场上 ' + alive.length + ' · 待刷新 ' + queued + '</small></div>' +
@@ -5150,8 +5152,9 @@ function renderLeftHud(force){
     '<div class="bh-combo">✨ ' + c.icon + ' ' + c.name + ' <b>已觉醒</b></div>'
   ).join('') || '<div class="bh-section-note">组合技 ' + Object.keys(h.combos).length + '/4 · 满足境界与等级条件后觉醒</div>';
 
+  const sealSlotsUsed = (game.seal ? 1 : 0) + game.subSeals.length;
   body.innerHTML =
-    '<div class="lh-sec"><div class="lh-sec-t"><span>✨ 灵印阵盘</span><span>' + (1 + game.subSeals.length) + ' 个槽位</span></div>' +
+    '<div class="lh-sec"><div class="lh-sec-t"><span>✨ 灵印阵盘</span><span>' + sealSlotsUsed + ' 个已占用</span></div>' +
       sealHtml +
     '</div>' +
     '<div class="lh-sec"><div class="lh-sec-t"><span>🌈 五行羁绊</span><span class="bh-section-note">2 / 4 层</span></div>' +
