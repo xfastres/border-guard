@@ -121,3 +121,123 @@ window.BG60.loadTestPreset({ wave: 20, tier: 'strong', build: 'fire', materials:
 window.BG60.loadTestPreset({ wave: 29, tier: 'standard', build: 'frost', materials: 60, gold: 550, seed: 2026 });
 window.BG60.loadTestPreset({ wave: 30, tier: 'strong', build: 'fire', materials: 80, gold: 700, seed: 2026 });
 ```
+
+---
+
+## 阶段 2 · 装备词条、联动和普通经济（已完成）
+
+### 1. 分支、基线与变更文件
+- **工作分支**：`feat/v060-30wave`
+- **接手基线提交**：`a4b79d0`（阶段 1 交付提交）
+- **未改动基线核对**：`Border-Guard-v0.52.html` 与 `balance/v052-baseline.json` 保持原样未动，`node --test tests/v052-balance-lab.test.cjs` 100% 通过。
+- **阶段 2 变更文件清单**：
+  - `balance/v060-baseline.json`：新增 `equipment` 完整配置块（`slotWeights` 50%/35%/15%、`sourceStages` 1–3 阶段倍率、`recycle` 按品质+来源阶段回收与 `paidGoldSellCapRatio` 防套利、`shopPricing` 阶段+同系递增/封顶/`sameElemResetByStage`、`materialEnhance` 5 档材料优化、`synergyCombat` 火冰双/三联动战斗参数）与 `economy.sealMasteryRouteCost`。
+  - `Border-Guard-v0.60.html`：落地独立装备实例系统、12 条词条与互斥组、火系引爆与冰系护体双/三词条实战联动、常规商店装备上架与定价体系、出售/拆解防套利回收、普通材料优化（强化基础属性与已有词条数值档位）、3★ 同系灵印专精二选一、构筑面板/详情面板/宝箱/商店/背包可读性 UI、`BG60.loadTestPreset` 升级与 `exportBuildPreset`/`importBuildPreset` 序列化接口。
+  - `tests/v060-stage2.test.cjs`：阶段 2 自动化验收测试套件（5 大场景全覆盖）。
+  - `docs/v0.60-review/30-wave-development-progress.md`：本阶段交接文档。
+- **试玩入口**：直接离线打开仓库根目录 `Border-Guard-v0.60.html`（或通过浏览器控制台 `window.BG60` 调试）。
+
+---
+
+### 2. 已实现规则（含评审推荐方案落地）
+
+1. **独立装备实例系统（彻底替代旧版静态 ID 同名自动合星）**：
+   - 每件装备为独立对象 `{ uid, baseKey, name, icon, elem, set, rarity, sourceStage, slotsCount, affixes, enhanceLv, paidGold, extractedCount, origin }`。
+   - **品质与槽位数完全独立随机**：`rollGearSlotsCount` 按 1 槽 50% / 2 槽 35% / 3 槽 15% 独立抽样；出厂自动填满全部槽位。
+   - **唯一性与互斥组校验**：`validateGearAffixes` 与 `rollGearAffixes` 严格阻止同件装备重复词条及冲突互斥组共存（如 `proc_style`: 紫电弧光/疾风迅影；`crit_stance`: 破军锐锋/磐石守御）。
+   - **彻底移除旧版自动合星**：`findGearStackTarget` 固定返回 `null`，重复获取同名构装始终作为独立实例存入背包，绝不覆盖已有随机槽位与词条。
+   - **来源阶段永久锁定**：`sourceStage` 在生成时按波次锁定（阶段 1=W1–W10、阶段 2=W11–W20、阶段 3=W21–W30）。
+
+2. **两套完整跨阶段联动链路（与阶段 1 W10 状态钩子共用战斗状态）**：
+   - **火系引爆链路**（共用 `e.fireMarkT` / `e.fireMarkStacks` / `applyFireMark` / `triggerFireDetonation`）：
+     - 原始词条独立保留：`fire_brand`（炽炎烙印）、`fire_burst`（爆燃核心）、`fire_chain`（余烬连环）。
+     - **双词条联动**（`fire_detonate_duo` 等同冲突组按优先级最高激活一个）：火系攻击/技能挂【火标】，命中已带【火标】敌人触发单次范围引爆。
+     - **完整三词条联动**（`fire_detonate_trio`，严格**替代**原双联动，同一击绝不双算）：首次引爆后带防递归锁 `_inFireChainTransfer` 有限向邻近 3.2 格内带标敌人最多传递 2 次（伤害 0.78 衰减）；若周围无其他带标敌人（孤立精英/Boss），按评审推荐方案将剩余传递机会转为**有上限衰减聚焦引爆**（衰减系数 `0.55 / 0.35`，上限 `0.90×` 首次引爆伤害）。
+   - **冰系护体链路**（共用 `e.slowT` / `applyFrostSlow` / `gainFrostShield` / `triggerFrostPulse`）：
+     - 原始词条独立保留：`frost_chill`（寒霜侵骨）、`frost_ward`（凝冰护心）、`frost_nova_counter`（凛冬反震）。
+     - **双词条联动**（`frost_aegis_duo` 等同冲突组按优先级最高激活一个）：命中已减速/冰冻敌人凝结短时【寒冰护盾】。
+     - **完整三词条联动**（`frost_aegis_trio`，严格**替代**原双联动）：命中减速敌凝结更高额护盾；**护盾受击时触发冰环反制**（`shield_hit`）；按评审推荐方案，在走位避伤时可通过**有寒冰护盾状态下主动冲刺（Space/`castHeroDash`）**或**满盾刷新**主动触发一次带内置冷却（1.5s）的冰环反制（`dash_shield` / `full_shield_refresh`）。
+   - **叠加边界**：单件同冲突组仅激活最高优先级双联动；完整三联动严格替代同链路双联动；跨 4 个装备栏同名联动全局仅生效一次，火系与冰系不同联动可并存；换装、卸下、替换、强化或重开立即重算。
+   - **UI 可读性**：左侧构筑总览、属性详情 `[C]`、宝箱三选一、商店装备卡与背包悬浮均清晰展示品质、来源阶段、`+enhanceLv`、1/2/3 槽词条、**当前已激活的双/三联动**以及**“再配哪条词条可激活/升级为完整三联动”**提示。
+
+3. **常规商店、价格递增、出售/拆解防套利、普通材料优化与 3★ 灵印专精路线**：
+   - **商店装备上架与定价**：商店每轮固定至少 1 格（第 3 格保底 + 第 4 格概率）上架独立装备商品，低概率出现高稀有词条；定价按当前购买阶段递增 + 同系重复购买次数递增（每次 +18%）+ 按品质价格封顶（`common 64 / rare 104 / epic 156 / legend 220`），并提供可配置参数 `BALANCE.equipment.shopPricing.sameElemResetByStage`（默认 `false` 局内累计）。
+   - **出售/拆解与防套利**：背包每件装备可自主选择**出售（得金币）**或**拆解（得普通材料 `game.materials`）**；收益严格按 `inst.rarity` 与 `inst.sourceStage` 计算，与 1/2/3 槽位和当前波次 `game.wave` 完全独立；商店购入装备（`paidGold > 0`）出售价强制 `<= Math.min(paidGold - 1, Math.floor(paidGold * 0.72))`，彻底杜绝买入→卖出套利及跨波囤货升值套利。
+   - **普通材料优化（计划 L96 评审推荐方案）**：`enhanceGear` 消耗 `game.materials`（+1 至 +5 消耗 `2/3/5/7/10` 锻材），同步提升装备基础属性倍率（每级 +18%）与已有词条数值档位（`affix.tier = 1 + enhanceLv`），**严格保留原品质、来源阶段、槽位数及词条种类**（不加槽、不洗词条，词条转移留待阶段 4 天命转印）。
+   - **同系灵印 3★ 分阶段进阶**：保留原有主/辅灵印共鸣与买空补货；主灵印达到 3★ 后在灵印阵盘开放**免费稳健进阶（0 金）vs 付费机制专精（35 金）**二选一（`chooseSealRoute`）。
+
+---
+
+### 3. 实测命令与对照数据（全部 100% 实测通过）
+
+执行命令：
+```bash
+node scripts/sync-balance.cjs --check
+node --test tests/v052-balance-lab.test.cjs
+node --test tests/v060-stage1.test.cjs
+node --test tests/v060-stage2.test.cjs
+```
+
+测试结果汇总：
+- `sync-balance.cjs --check`：v0.52 与 v0.60 内嵌配置均 `PASS`。
+- `tests/v052-balance-lab.test.cjs`：`7/7 pass`。
+- `tests/v060-stage1.test.cjs`：`5/5 pass`。
+- `tests/v060-stage2.test.cjs`：`5/5 pass`。
+
+#### 3.1 独立槽位抽样实测（4000 样本，种子 `202602`）
+- 1 槽：**49.20%**（目标 50%） · 2 槽：**35.50%**（目标 35%） · 3 槽：**15.30%**（目标 15%）；凡品与传说各 2000 样本独立收敛于同一分布。
+
+#### 3.2 两套联动固定种子对照实测（W11，种子 `2026`，剔除 W10 分支与灵印干扰）
+- **火系引爆链路（同基础装 `flame_fan`）**：
+  | 场景与配置 | 总伤害 | 总引爆 | 双联动计数 | 三联动计数 | 群体传递 | 孤立聚焦 |
+  | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+  | 群怪(4带标兽人) · 单词条 `fire_brand` | 49 | 0 | 0 | 0 | 0 | 0 |
+  | 群怪(4带标兽人) · 双联动 `fire_brand+fire_burst` | 799 | 1 | 1 | 0 | 0 | 0 |
+  | 群怪(4带标兽人) · 完整三联动 `fire_brand+fire_burst+fire_chain` | 2317 | 3 | **0** | 1 | **2** | 0 |
+  | 孤立Boss(`boss2`) · 双联动 | 249 | 1 | 1 | 0 | 0 | 0 |
+  | 孤立Boss(`boss2`) · 完整三联动 | 680 | 1 | **0** | 1 | 0 | **1** |
+
+- **冰系护体链路（同基础装 `frost_mirror`）**：
+  | 配置 | 命中后护盾 | 累计获盾 | 双联动 | 三联动 | 受击冰环 | 有盾冲刺冰环 | 满盾刷新冰环 |
+  | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+  | 单词条 `frost_chill` | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+  | 双联动 `frost_chill+frost_ward` | 14 | 34 | 1 | 0 | 0 | 0 | 0 |
+  | 完整三联动 `frost_chill+frost_ward+frost_nova_counter` | 18 | 38 | **0** | 1 | **1** | **1** | **1** |
+
+#### 3.3 经济与防套利实测摘要
+- 灵品火装商店基价：Stage 1 = `42 金` → Stage 2 = `55 金` → Stage 3 = `69 金`；同系重复购买递增 +18%/次，封顶 `104 金`。
+- 同品质同阶段 1/2/3 槽装备出售金币与拆解锻材完全一致；W2 购入装备推进至 W28 后回收收益零升值；商店购入装备立即出售严格亏损（`< paidGold`）。
+- 普通材料强化 `enhanceGear` 后：`enhanceLv` 与 `affix.tier` 提升，`getHeroStats().dmgMult` 与词条数值同步上升，`rarity / sourceStage / slotsCount / affix.id[]` 100% 保持不变。
+
+---
+
+### 4. 下一阶段（阶段 3 · W16–W28 贯通）起手入口与可复制 `BG60` 调用
+
+#### 4.1 阶段 3 可直接复用的装备、联动与经济接口
+- 装备联动实时查询：`window.BG60.getActiveGearAffixSynergies()`（含 `hasFireDuo` / `hasFireTrio` / `hasFrostDuo` / `hasFrostTrio` / `active` / `hints`）。
+- 构筑预设序列化导入/导出：`const snap = BG60.exportBuildPreset(); BG60.importBuildPreset(snap);`（供 W16→W28 跨波对照、W20 前后同一份装备对照及阶段 4/5 复用）。
+- 普通材料与重抽消费：直接扣减 `BG60.game.materials`（已有精英/首领/妖碑/淬灵丹/装备拆解五条来源，以及 `enhanceGear` 常规消费出口）。
+- 共享战斗状态钩子：W20 锁定方向基础效果与强化卡可直接扩展 `triggerFireDetonation`、`applyFireMark`、`gainFrostShield`、`triggerFrostPulse`，与 W10 分支和阶段 2 装备词条联动共用同一套状态与统计计数。
+
+#### 4.2 阶段 3 可直接复制的 `BG60` 调试命令
+```js
+// 1. W11 战前 · 火系标准双联动 vs 强力三联动对照（含 W10 火系突破分支 + 阶段 2 独立联动装备）
+window.BG60.loadTestPreset({ wave: 11, tier: 'standard', build: 'fire', materials: 20, gold: 240, seed: 2026 });
+window.BG60.loadTestPreset({ wave: 11, tier: 'strong',   build: 'fire', materials: 25, gold: 300, seed: 2026 });
+
+// 2. W11 战前 · 冰系标准双联动 vs 强力三联动对照（含 W10 冰系突破分支 + 阶段 2 独立联动装备）
+window.BG60.loadTestPreset({ wave: 11, tier: 'standard', build: 'frost', materials: 20, gold: 240, seed: 2026 });
+window.BG60.loadTestPreset({ wave: 11, tier: 'strong',   build: 'frost', materials: 25, gold: 300, seed: 2026 });
+
+// 3. W16 预选起点 & W20 战前（未完成 W20 突破，用于阶段 3 验收 W16-W19 预选、W19 情报、W20 Boss 与战后材料重抽）
+window.BG60.loadTestPreset({ wave: 16, tier: 'standard', build: 'fire',  materials: 16, gold: 320, seed: 2026 });
+window.BG60.loadTestPreset({ wave: 20, tier: 'standard', build: 'fire',  materials: 0,  gold: 380, seed: 2026 }); // 零材料用例
+window.BG60.loadTestPreset({ wave: 20, tier: 'standard', build: 'frost', materials: 12, gold: 380, seed: 2026 }); // 够重抽一次
+window.BG60.loadTestPreset({ wave: 20, tier: 'strong',   build: 'fire',  materials: 40, gold: 460, seed: 2026 }); // 连续多次重抽
+
+// 4. 装备强化、出售/拆解与构筑快照导入导出示例
+window.BG60.enhanceGear({ location: 'equipped', idx: 0 });
+const presetSnap = window.BG60.exportBuildPreset();
+window.BG60.importBuildPreset(presetSnap);
+```
+

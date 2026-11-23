@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "baseline": "v0.60/stage1-30wave",
+  "baseline": "v0.60/stage2-gear-affixes-economy",
   "mainWaves": 30,
-  "notes": "v0.60 阶段 1（30波骨架与W10）数值基线：移除旧双重指数失控缩放，改为30波阶段受控曲线；成长节点改由波次与W10/W20突破驱动。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
+  "notes": "v0.60 阶段 2（装备词条、联动和普通经济）数值基线：独立装备实例、1/2/3槽独立概率、来源阶段与品质回收、商店按阶段+同系递增与封顶、普通材料强化及3★灵印专精路线。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
   "progression": {
     "initialGold": 55,
     "initialMaterials": 0,
@@ -147,9 +147,121 @@
     "discountChance": 0.16,
     "discountAmount": 3,
     "pillSlotChance": 0.25,
+    "gearSecondSlotChance": 0.45,
     "singleGoldDropChance": 0.52,
     "eliteMaterialDrop": 1,
-    "bossMaterialDrop": 3
+    "bossMaterialDrop": 3,
+    "sealMasteryRouteCost": 35
+  },
+  "equipment": {
+    "slotWeights": {
+      "1": 0.5,
+      "2": 0.35,
+      "3": 0.15
+    },
+    "sourceStages": [
+      {
+        "stage": 1,
+        "minWave": 1,
+        "maxWave": 10,
+        "label": "阶段1(W1-10)",
+        "baseStatMult": 1,
+        "sellMult": 1,
+        "dismantleMult": 1
+      },
+      {
+        "stage": 2,
+        "minWave": 11,
+        "maxWave": 20,
+        "label": "阶段2(W11-20)",
+        "baseStatMult": 1.18,
+        "sellMult": 1.4,
+        "dismantleMult": 1.5
+      },
+      {
+        "stage": 3,
+        "minWave": 21,
+        "maxWave": 30,
+        "label": "阶段3(W21-30)",
+        "baseStatMult": 1.38,
+        "sellMult": 1.85,
+        "dismantleMult": 2
+      }
+    ],
+    "recycle": {
+      "sellGoldBase": {
+        "common": 10,
+        "rare": 16,
+        "epic": 26,
+        "legend": 42
+      },
+      "dismantleMatBase": {
+        "common": 1,
+        "rare": 2,
+        "epic": 3,
+        "legend": 5
+      },
+      "paidGoldSellCapRatio": 0.72
+    },
+    "shopPricing": {
+      "basePriceByRarity": {
+        "common": 26,
+        "rare": 42,
+        "epic": 64,
+        "legend": 96
+      },
+      "stagePriceMult": {
+        "1": 1,
+        "2": 1.3,
+        "3": 1.65
+      },
+      "sameElemStep": 0.18,
+      "sameElemResetByStage": false,
+      "priceCapByRarity": {
+        "common": 64,
+        "rare": 104,
+        "epic": 156,
+        "legend": 220
+      },
+      "highRarityAffixChance": 0.16
+    },
+    "materialEnhance": {
+      "maxEnhanceLv": 5,
+      "matCostByNextLv": [
+        2,
+        3,
+        5,
+        7,
+        10
+      ],
+      "baseStatStepPerLv": 0.18,
+      "affixTierStepPerLv": 0.16
+    },
+    "synergyCombat": {
+      "fireDuoDetonateMult": 1.15,
+      "fireDuoRadius": 1.85,
+      "fireTrioDetonateMult": 1.25,
+      "fireTrioRadius": 2.05,
+      "fireTrioMaxChains": 2,
+      "fireTrioChainRange": 3.2,
+      "fireTrioChainDecay": 0.78,
+      "fireTrioFocusMults": [
+        0.55,
+        0.35
+      ],
+      "fireTrioFocusMaxTotalRatio": 0.9,
+      "frostDuoShieldGain": 14,
+      "frostDuoShieldCap": 95,
+      "frostDuoShieldCd": 0.45,
+      "frostTrioShieldGain": 18,
+      "frostTrioShieldCap": 115,
+      "frostTrioShieldCd": 0.4,
+      "frostTrioHitPulseRadius": 3.1,
+      "frostTrioHitPulseDmg": 44,
+      "frostTrioActivePulseRadius": 3.25,
+      "frostTrioActivePulseDmg": 46,
+      "frostTrioActivePulseCd": 1.5
+    }
   },
   "wave": {
     "mainWaves": 30,

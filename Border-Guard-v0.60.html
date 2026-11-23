@@ -399,6 +399,28 @@
   .shop-card .ic{font-size:21px;line-height:1}
   .shop-card .nm{font-size:11.5px;font-weight:900;white-space:nowrap}
   .shop-card .cost{font-size:10.5px;font-weight:800;color:#ffe38a}
+  .shop-card.gear-card.common{border-color:#6fd492;background:linear-gradient(180deg,rgba(28,62,46,0.95),rgba(14,28,22,0.95))}
+  .shop-card.gear-card.rare{border-color:#5cc8ff;background:linear-gradient(180deg,rgba(24,56,78,0.95),rgba(14,26,38,0.95))}
+  .shop-card.gear-card.epic{border-color:rgba(198,140,255,0.8);background:linear-gradient(180deg,rgba(58,34,86,0.95),rgba(24,16,36,0.95))}
+  .shop-card.gear-card.legend{border-color:#ffbe4f;background:linear-gradient(180deg,rgba(104,64,18,0.95),rgba(34,22,10,0.95))}
+
+  .affix-chip{
+    display:inline-block;padding:1px 5px;border-radius:6px;font-size:10px;font-weight:800;
+    margin:1px 3px 1px 0;background:rgba(255,255,255,0.08);border:1px solid rgba(190,224,218,0.22);color:#d8f0ea;
+  }
+  .affix-chip.fire{border-color:rgba(255,123,71,0.55);color:#ffb38a;background:rgba(255,100,45,0.14)}
+  .affix-chip.frost{border-color:rgba(108,226,255,0.55);color:#a4f2ff;background:rgba(82,205,255,0.14)}
+  .affix-chip.rare{box-shadow:0 0 0 1px rgba(92,200,255,0.35)}
+  .affix-chip.epic{box-shadow:0 0 0 1px rgba(198,140,255,0.45)}
+  .syn-badge{
+    display:block;padding:4px 7px;border-radius:8px;margin-top:4px;font-size:11px;line-height:1.4;
+    background:rgba(255,214,102,0.10);border:1px solid rgba(255,214,102,0.32);color:#ffe89c;
+  }
+  .syn-badge.trio{background:rgba(255,106,56,0.18);border-color:rgba(255,146,82,0.65);color:#ffd8a8}
+  .syn-badge.frost-trio{background:rgba(88,210,255,0.18);border-color:rgba(128,236,255,0.65);color:#ccf6ff}
+  .syn-badge.hint{background:rgba(140,190,185,0.08);border-color:rgba(140,190,185,0.24);color:#b9d8d2}
+  .gear-act-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+  .gear-act-row .btn{padding:3px 7px;font-size:10.5px}
 
   /* Bag strip */
   .bag-tray{display:flex;align-items:center;gap:5px;padding:2px 4px}
@@ -420,6 +442,11 @@
     position:absolute;top:-7px;right:-4px;padding:0 5px;border-radius:999px;
     font-size:9px;font-weight:900;background:linear-gradient(90deg,#ffda66,#ff9a44);color:#1f1202;
     box-shadow:0 2px 6px rgba(0,0,0,0.4);
+  }
+  .bag-item .slot-tag{
+    position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);padding:0 4px;border-radius:999px;
+    font-size:8.5px;font-weight:900;background:#12242c;border:1px solid rgba(182,218,214,0.45);color:#c8f4ea;
+    white-space:nowrap;
   }
 
   /* Toast & Banner */
@@ -504,7 +531,7 @@
 
 <header class="topbar" id="topbar">
   <div class="top-left">
-    <div class="brand">⚔️ 边境守卫 <span class="ver">v0.60 · 30波骨架与W10</span></div>
+    <div class="brand">⚔️ 边境守卫 <span class="ver">v0.60 · 装备词条与联动</span></div>
     <span class="pill wave-prep" id="wavePill">第 1 / 30 波 · 备战</span>
     <span class="pill gold" id="goldPill">💰 55</span>
     <span class="pill" id="matPill" title="普通材料（用于常规装备优化与W20突破强化重抽）">⚙️ 0 锻材</span>
@@ -613,9 +640,9 @@
 /* BALANCE_CONFIG_START — generated from balance/v060-baseline.json */
 const BALANCE = {
   "schemaVersion": 1,
-  "baseline": "v0.60/stage1-30wave",
+  "baseline": "v0.60/stage2-gear-affixes-economy",
   "mainWaves": 30,
-  "notes": "v0.60 阶段 1（30波骨架与W10）数值基线：移除旧双重指数失控缩放，改为30波阶段受控曲线；成长节点改由波次与W10/W20突破驱动。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
+  "notes": "v0.60 阶段 2（装备词条、联动和普通经济）数值基线：独立装备实例、1/2/3槽独立概率、来源阶段与品质回收、商店按阶段+同系递增与封顶、普通材料强化及3★灵印专精路线。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
   "progression": {
     "initialGold": 55,
     "initialMaterials": 0,
@@ -760,9 +787,121 @@ const BALANCE = {
     "discountChance": 0.16,
     "discountAmount": 3,
     "pillSlotChance": 0.25,
+    "gearSecondSlotChance": 0.45,
     "singleGoldDropChance": 0.52,
     "eliteMaterialDrop": 1,
-    "bossMaterialDrop": 3
+    "bossMaterialDrop": 3,
+    "sealMasteryRouteCost": 35
+  },
+  "equipment": {
+    "slotWeights": {
+      "1": 0.5,
+      "2": 0.35,
+      "3": 0.15
+    },
+    "sourceStages": [
+      {
+        "stage": 1,
+        "minWave": 1,
+        "maxWave": 10,
+        "label": "阶段1(W1-10)",
+        "baseStatMult": 1,
+        "sellMult": 1,
+        "dismantleMult": 1
+      },
+      {
+        "stage": 2,
+        "minWave": 11,
+        "maxWave": 20,
+        "label": "阶段2(W11-20)",
+        "baseStatMult": 1.18,
+        "sellMult": 1.4,
+        "dismantleMult": 1.5
+      },
+      {
+        "stage": 3,
+        "minWave": 21,
+        "maxWave": 30,
+        "label": "阶段3(W21-30)",
+        "baseStatMult": 1.38,
+        "sellMult": 1.85,
+        "dismantleMult": 2
+      }
+    ],
+    "recycle": {
+      "sellGoldBase": {
+        "common": 10,
+        "rare": 16,
+        "epic": 26,
+        "legend": 42
+      },
+      "dismantleMatBase": {
+        "common": 1,
+        "rare": 2,
+        "epic": 3,
+        "legend": 5
+      },
+      "paidGoldSellCapRatio": 0.72
+    },
+    "shopPricing": {
+      "basePriceByRarity": {
+        "common": 26,
+        "rare": 42,
+        "epic": 64,
+        "legend": 96
+      },
+      "stagePriceMult": {
+        "1": 1,
+        "2": 1.3,
+        "3": 1.65
+      },
+      "sameElemStep": 0.18,
+      "sameElemResetByStage": false,
+      "priceCapByRarity": {
+        "common": 64,
+        "rare": 104,
+        "epic": 156,
+        "legend": 220
+      },
+      "highRarityAffixChance": 0.16
+    },
+    "materialEnhance": {
+      "maxEnhanceLv": 5,
+      "matCostByNextLv": [
+        2,
+        3,
+        5,
+        7,
+        10
+      ],
+      "baseStatStepPerLv": 0.18,
+      "affixTierStepPerLv": 0.16
+    },
+    "synergyCombat": {
+      "fireDuoDetonateMult": 1.15,
+      "fireDuoRadius": 1.85,
+      "fireTrioDetonateMult": 1.25,
+      "fireTrioRadius": 2.05,
+      "fireTrioMaxChains": 2,
+      "fireTrioChainRange": 3.2,
+      "fireTrioChainDecay": 0.78,
+      "fireTrioFocusMults": [
+        0.55,
+        0.35
+      ],
+      "fireTrioFocusMaxTotalRatio": 0.9,
+      "frostDuoShieldGain": 14,
+      "frostDuoShieldCap": 95,
+      "frostDuoShieldCd": 0.45,
+      "frostTrioShieldGain": 18,
+      "frostTrioShieldCap": 115,
+      "frostTrioShieldCd": 0.4,
+      "frostTrioHitPulseRadius": 3.1,
+      "frostTrioHitPulseDmg": 44,
+      "frostTrioActivePulseRadius": 3.25,
+      "frostTrioActivePulseDmg": 46,
+      "frostTrioActivePulseCd": 1.5
+    }
   },
   "wave": {
     "mainWaves": 30,
@@ -1482,6 +1621,30 @@ const SUB_SEAL_RESONANCE = {
     desc: s => `全暴击 +${Math.round([0.08,0.14,0.22][s-1]*100)}%，主印触发回血 ${[1.5,2.5,4.0][s-1]} 并绽放圣光` }
 };
 
+/* Stage 2: Same-Element Main Seal 3★ Specialization Routes (comparable free vs gold-cost tradeoff) */
+const SEAL_SPECIALIZATIONS = {
+  fire: {
+    standard: { key:'standard', name:'稳健火脉', cost:0, tag:'免费进阶', desc:'主灵印基础伤害 +18%，触发冷却 -8%，稳定提升赤焰输出' },
+    mastery:  { key:'mastery',  name:'炽标连焰', cost:BALANCE.economy.sealMasteryRouteCost || 35, tag:'付费专精', desc:'赤焰主印爆发为命中敌人施加 1 层【火标】，焦土半径 +25% 并延长灼烧' }
+  },
+  frost: {
+    standard: { key:'standard', name:'凝霜正统', cost:0, tag:'免费进阶', desc:'主灵印基础伤害 +18%，触发冷却 -8%，减速覆盖更稳健' },
+    mastery:  { key:'mastery',  name:'寒镜凝甲', cost:BALANCE.economy.sealMasteryRouteCost || 35, tag:'付费专精', desc:'寒玉主印冰环命中已减速敌人时，额外为领主凝结 +10【寒冰护盾】' }
+  },
+  thunder: {
+    standard: { key:'standard', name:'紫雷贯通', cost:0, tag:'免费进阶', desc:'主灵印基础伤害 +18%，触发冷却 -8%，稳步增强链雷频率' },
+    mastery:  { key:'mastery',  name:'天罚追链', cost:BALANCE.economy.sealMasteryRouteCost || 35, tag:'付费专精', desc:'紫霄主印弹射目标 +2，且被链雷击中的敌人陷入 3s 易伤 (+20%)' }
+  },
+  wind: {
+    standard: { key:'standard', name:'疾风破阵', cost:0, tag:'免费进阶', desc:'主灵印基础伤害 +18%，触发冷却 -8%，风刃压制更平滑' },
+    mastery:  { key:'mastery',  name:'飓刃裂风', cost:BALANCE.economy.sealMasteryRouteCost || 35, tag:'付费专精', desc:'疾风主印风刃穿透 +2、额外 +1 弹道，并额外缩短主印冷却 10%' }
+  },
+  holy: {
+    standard: { key:'standard', name:'圣光沐浴', cost:0, tag:'免费进阶', desc:'主灵印基础伤害 +18%，触发冷却 -8%，提供稳定圣光覆盖' },
+    mastery:  { key:'mastery',  name:'圣辉炽界', cost:BALANCE.economy.sealMasteryRouteCost || 35, tag:'付费专精', desc:'圣光主印光束 +1 道，全暴伤 +20% 且主印触发回复 4 点生命' }
+  }
+};
+
 /* 4 Recipe Combos (unlocked by wave/breakthrough comboTier: 1=W6节点, 2=W10突破节点; requires both skills >= Lv.1 AND combined level >= 3!) */
 const COMBOS = {
   wanjian: {
@@ -1752,35 +1915,503 @@ const GEARS = {
 };
 const GEAR_KEYS = Object.keys(GEARS);
 const GEAR_RARITY_LABELS = { common:'凡品', rare:'灵品', epic:'史诗', legend:'传说' };
-const GEAR_SALVAGE_GOLD = { common:15, rare:24, epic:38, legend:65 };
-
-/* Gear stacking: identical gear auto-fuses up to 3★. Priority: hero 4 slots > bag. */
+const GEAR_RARITY_COLORS = { common:'#72f2b4', rare:'#5cc8ff', epic:'#c68cff', legend:'#ffbe4f' };
+const GEAR_SALVAGE_GOLD = BALANCE.equipment?.recycle?.sellGoldBase || { common:10, rare:16, epic:26, legend:42 };
+const SOURCE_STAGES = BALANCE.equipment?.sourceStages || [
+  { stage: 1, minWave: 1,  maxWave: 10, label: '阶段1(W1-10)',  baseStatMult: 1.00, sellMult: 1.00, dismantleMult: 1.0 },
+  { stage: 2, minWave: 11, maxWave: 20, label: '阶段2(W11-20)', baseStatMult: 1.18, sellMult: 1.40, dismantleMult: 1.5 },
+  { stage: 3, minWave: 21, maxWave: 30, label: '阶段3(W21-30)', baseStatMult: 1.38, sellMult: 1.85, dismantleMult: 2.0 }
+];
 const GEAR_MAX_STAR = 3;
-const GEAR_STAR_MULT = [1, 1.6, 2.3]; // index = star-1
-function gearBase(k){ return String(k).split('#')[0]; }
-function gearStar(k){ const s = parseInt(String(k).split('#')[1] || '1', 10); return Math.min(GEAR_MAX_STAR, Math.max(1, s || 1)); }
-function gearLabel(k){ const s = gearStar(k); return `${GEARS[gearBase(k)].name}${s > 1 ? ` ${s}★` : ''}`; }
-function findGearStackTarget(baseKey){
-  const lists = [game.hero.gear, game.bag];
-  for (const list of lists){
-    for (let i = 0; i < list.length; i++){
-      if (gearBase(list[i]) === baseKey && gearStar(list[i]) < GEAR_MAX_STAR) return { list, idx: i, star: gearStar(list[i]) };
+const GEAR_STAR_MULT = [1, 1.6, 2.3]; // Kept exported for backward compatibility; Stage 2 uses enhanceLv + sourceStage!
+
+function getSourceStageForWave(wave = game?.wave || 1){
+  const w = Math.max(1, Math.round(Number(wave) || 1));
+  const found = SOURCE_STAGES.find(s => w >= s.minWave && w <= s.maxWave);
+  return found ? found.stage : SOURCE_STAGES[SOURCE_STAGES.length - 1].stage;
+}
+function getSourceStageSpec(stage = 1){
+  return SOURCE_STAGES.find(s => s.stage === Number(stage)) || SOURCE_STAGES[0];
+}
+
+/* ==================== STAGE 2: AFFIX POOL, CONFLICT GROUPS & DUO/TRIO SYNERGIES ==================== */
+const GEAR_AFFIXES = {
+  // Fire Detonation Chain (火系引爆链路)
+  fire_brand: {
+    id:'fire_brand', name:'炽炎烙印', icon:'🔥', elem:'fire', chain:'fire_detonate', rarity:'common', conflictGroup:null,
+    desc: (t = 1) => `攻击命中 ${Math.min(95, 50 + (t - 1) * 8)}% 施加【火标】，火/爆伤 +${8 + (t - 1) * 3}%`,
+    mod: (t = 1) => ({ fireMarkChance: Math.min(0.95, 0.50 + (t - 1) * 0.08), fireDmgPct: 0.08 + (t - 1) * 0.03 })
+  },
+  fire_burst: {
+    id:'fire_burst', name:'爆燃核心', icon:'💥', elem:'fire', chain:'fire_detonate', rarity:'rare', conflictGroup:null,
+    desc: (t = 1) => `爆炸/溅射范围 +${(0.35 + (t - 1) * 0.08).toFixed(2)}格，引爆倍率 +${15 + (t - 1) * 5}%`,
+    mod: (t = 1) => ({ splashBonus: 0.35 + (t - 1) * 0.08, fireDetonateBonus: 0.15 + (t - 1) * 0.05 })
+  },
+  fire_chain: {
+    id:'fire_chain', name:'余烬连环', icon:'🌋', elem:'fire', chain:'fire_detonate', rarity:'epic', conflictGroup:null,
+    desc: (t = 1) => `对【火标】或灼烧敌伤 +${12 + (t - 1) * 4}%，击杀灼烧敌回血 +${2 + (t - 1)}`,
+    mod: (t = 1) => ({ markedDmgPct: 0.12 + (t - 1) * 0.04, burnKillHeal: 2 + (t - 1) })
+  },
+
+  // Frost Aegis Chain (冰系护体链路)
+  frost_chill: {
+    id:'frost_chill', name:'寒霜侵骨', icon:'❄️', elem:'frost', chain:'frost_aegis', rarity:'common', conflictGroup:null,
+    desc: (t = 1) => `攻击附带 ${Math.min(60, 22 + (t - 1) * 4)}% 减速，对减速敌伤 +${8 + (t - 1) * 3}%`,
+    mod: (t = 1) => ({ slowOnHit: Math.min(0.60, 0.22 + (t - 1) * 0.04), chilledDmgPct: 0.08 + (t - 1) * 0.03 })
+  },
+  frost_ward: {
+    id:'frost_ward', name:'凝冰护心', icon:'🛡️', elem:'frost', chain:'frost_aegis', rarity:'rare', conflictGroup:null,
+    desc: (t = 1) => `最大生命 +${28 + (t - 1) * 10}，寒冰护盾上限 +${25 + (t - 1) * 8}`,
+    mod: (t = 1) => ({ flatHp: 28 + (t - 1) * 10, frostShieldCapBonus: 25 + (t - 1) * 8 })
+  },
+  frost_nova_counter: {
+    id:'frost_nova_counter', name:'凛冬反震', icon:'💠', elem:'frost', chain:'frost_aegis', rarity:'epic', conflictGroup:null,
+    desc: (t = 1) => `有盾时全伤 +${10 + (t - 1) * 4}%、移速 +${6 + (t - 1) * 2}%`,
+    mod: (t = 1) => ({ shieldedDmgPct: 0.10 + (t - 1) * 0.04, shieldedMovePct: 0.06 + (t - 1) * 0.02 })
+  },
+
+  // General Thunder / Wind / Crit / Defense / Sustain (with explicit conflict groups!)
+  thunder_spark: {
+    id:'thunder_spark', name:'紫电弧光', icon:'⚡', elem:'thunder', chain:'general', rarity:'rare', conflictGroup:'proc_style',
+    desc: (t = 1) => `命中 ${Math.min(45, 14 + (t - 1) * 3)}% 触发 2 目标连锁雷【与疾风迅影互斥】`,
+    mod: (t = 1) => ({ chainProc: Math.min(0.45, 0.14 + (t - 1) * 0.03) })
+  },
+  wind_tempest: {
+    id:'wind_tempest', name:'疾风迅影', icon:'🌪️', elem:'wind', chain:'general', rarity:'common', conflictGroup:'proc_style',
+    desc: (t = 1) => `攻速 +${10 + (t - 1) * 3}%，移速 +${6 + (t - 1) * 2}%【与紫电弧光互斥】`,
+    mod: (t = 1) => ({ aspd: 0.10 + (t - 1) * 0.03, movePct: 0.06 + (t - 1) * 0.02 })
+  },
+  fury_crit: {
+    id:'fury_crit', name:'破军锐锋', icon:'🎯', elem:'holy', chain:'general', rarity:'rare', conflictGroup:'crit_stance',
+    desc: (t = 1) => `暴击率 +${7 + (t - 1) * 2}%，暴击伤害 +${14 + (t - 1) * 5}%【与磐石守御互斥】`,
+    mod: (t = 1) => ({ crit: 0.07 + (t - 1) * 0.02, critDmg: 0.14 + (t - 1) * 0.05 })
+  },
+  iron_bastion: {
+    id:'iron_bastion', name:'磐石守御', icon:'🪨', elem:'holy', chain:'general', rarity:'common', conflictGroup:'crit_stance',
+    desc: (t = 1) => `最大生命 +${36 + (t - 1) * 12}，受击减伤 +${5 + (t - 1) * 2}%【与破军锐锋互斥】`,
+    mod: (t = 1) => ({ flatHp: 36 + (t - 1) * 12, dmgReduce: Math.min(0.22, 0.05 + (t - 1) * 0.02) })
+  },
+  vamp_siphon: {
+    id:'vamp_siphon', name:'血脉汲取', icon:'🩸', elem:'fire', chain:'general', rarity:'common', conflictGroup:null,
+    desc: (t = 1) => `攻击回血 +${(1.2 + (t - 1) * 0.4).toFixed(1)}，全伤害 +${6 + (t - 1) * 2}%`,
+    mod: (t = 1) => ({ lifesteal: 1.2 + (t - 1) * 0.4, dmgPct: 0.06 + (t - 1) * 0.02 })
+  },
+  fortune_mint: {
+    id:'fortune_mint', name:'聚财铭文', icon:'💰', elem:'holy', chain:'general', rarity:'rare', conflictGroup:null,
+    desc: (t = 1) => `全伤害 +${7 + (t - 1) * 2.5}%，击杀额外 +${1 + Math.floor((t - 1) / 3)} 金币几率`,
+    mod: (t = 1) => ({ dmgPct: 0.07 + (t - 1) * 0.025, bonusGoldChance: Math.min(0.6, 0.22 + (t - 1) * 0.06) })
+  }
+};
+const GEAR_AFFIX_KEYS = Object.keys(GEAR_AFFIXES);
+
+const GEAR_SYNERGIES = [
+  // Fire Detonation Chain: Trio strictly replaces all Fire Duos!
+  {
+    id:'fire_detonate_trio', chain:'fire_detonate', tier:3, priority:100, conflictGroup:'fire_chain_duo',
+    req:['fire_brand', 'fire_burst', 'fire_chain'],
+    name:'炽炎连环引爆', icon:'🔥💥', badgeClass:'trio',
+    short:'完整三联动 · 替代双联动',
+    desc:'命中【火标】目标触发首次爆燃后，最多向周围 2 名带标敌人有限传递引爆；若周围无其他带标目标（孤立精英/Boss），剩余传递转为有上限衰减聚焦引爆！'
+  },
+  {
+    id:'fire_detonate_duo', chain:'fire_detonate', tier:2, priority:20, conflictGroup:'fire_chain_duo',
+    req:['fire_brand', 'fire_burst'],
+    name:'焚标引爆', icon:'🔥', badgeClass:'duo',
+    short:'双词条联动',
+    desc:'火系攻击/技能给敌人挂【火标】，命中已带【火标】目标时触发一次范围引爆！'
+  },
+  {
+    id:'fire_ember_duo', chain:'fire_detonate', tier:2, priority:15, conflictGroup:'fire_chain_duo',
+    req:['fire_brand', 'fire_chain'],
+    name:'余烬焚标', icon:'🔥', badgeClass:'duo',
+    short:'双词条联动',
+    desc:'火系攻击/技能给敌人挂【火标】，命中已带【火标】目标时触发一次范围引爆！'
+  },
+  {
+    id:'fire_blast_duo', chain:'fire_detonate', tier:2, priority:10, conflictGroup:'fire_chain_duo',
+    req:['fire_burst', 'fire_chain'],
+    name:'爆燃余烬', icon:'🔥', badgeClass:'duo',
+    short:'双词条联动',
+    desc:'攻击自动补挂【火标】，命中已带【火标】目标时触发一次范围引爆！'
+  },
+
+  // Frost Aegis Chain: Trio strictly replaces all Frost Duos!
+  {
+    id:'frost_aegis_trio', chain:'frost_aegis', tier:3, priority:100, conflictGroup:'frost_chain_duo',
+    req:['frost_chill', 'frost_ward', 'frost_nova_counter'],
+    name:'凛冬寒盾反制', icon:'❄️🛡️', badgeClass:'frost-trio',
+    short:'完整三联动 · 替代双联动',
+    desc:'命中减速敌凝结高额【寒冰护盾】；护盾受击触发冰环反制，走位避伤时可在有盾状态主动冲刺(Space)或满盾刷新主动释放冰环反制（带内置冷却）！'
+  },
+  {
+    id:'frost_aegis_duo', chain:'frost_aegis', tier:2, priority:20, conflictGroup:'frost_chain_duo',
+    req:['frost_chill', 'frost_ward'],
+    name:'寒冰护体', icon:'❄️', badgeClass:'duo',
+    short:'双词条联动',
+    desc:'命中已减速/冰冻的敌人时，为领主凝结短时【寒冰护盾】吸收伤害！'
+  },
+  {
+    id:'frost_counter_duo', chain:'frost_aegis', tier:2, priority:15, conflictGroup:'frost_chain_duo',
+    req:['frost_chill', 'frost_nova_counter'],
+    name:'霜华凝护', icon:'❄️', badgeClass:'duo',
+    short:'双词条联动',
+    desc:'命中已减速/冰冻的敌人时，为领主凝结短时【寒冰护盾】吸收伤害！'
+  },
+  {
+    id:'frost_bulwark_duo', chain:'frost_aegis', tier:2, priority:10, conflictGroup:'frost_chain_duo',
+    req:['frost_ward', 'frost_nova_counter'],
+    name:'玄冰甲盾', icon:'❄️', badgeClass:'duo',
+    short:'双词条联动',
+    desc:'命中已减速/冰冻的敌人时，为领主凝结短时【寒冰护盾】吸收伤害！'
+  }
+];
+
+let _gearUidSeq = 1;
+function nextGearUid(){
+  const n = _gearUidSeq++;
+  const r = game?.rnd ? Math.floor(game.rnd() * 9000 + 1000) : Math.floor(Math.random() * 9000 + 1000);
+  return `g${n}_${r}`;
+}
+
+function isGearInstance(obj){
+  return !!(obj && typeof obj === 'object' && typeof obj.baseKey === 'string' && typeof obj.uid === 'string');
+}
+
+function gearBase(k){
+  if (!k) return '';
+  if (typeof k === 'object') return k.baseKey || k.key || '';
+  return String(k).split('#')[0];
+}
+
+function gearStar(k){
+  if (k && typeof k === 'object') return 1 + (k.enhanceLv || 0);
+  const s = parseInt(String(k || '1').split('#')[1] || '1', 10);
+  return Math.min(GEAR_MAX_STAR, Math.max(1, s || 1));
+}
+
+function gearLabel(k){
+  const spec = GEARS[gearBase(k)];
+  if (!spec) return '未知构装';
+  if (k && typeof k === 'object') {
+    const enh = k.enhanceLv > 0 ? ` +${k.enhanceLv}` : '';
+    return `${spec.name}${enh}`;
+  }
+  const s = gearStar(k);
+  return `${spec.name}${s > 1 ? ` ${s}★` : ''}`;
+}
+
+// Stage 2: Legacy auto-fusion is COMPLETELY REMOVED so duplicate gear NEVER overwrites random slots/affixes!
+function findGearStackTarget(){
+  return null;
+}
+
+function ownedGearStar(baseKey){
+  let cnt = 0;
+  for (const g of (game?.hero?.gear || [])) if (gearBase(g) === baseKey) cnt++;
+  for (const g of (game?.bag || [])) if (gearBase(g) === baseKey) cnt++;
+  return cnt;
+}
+
+function rollGearSlotsCount(rndFn = game?.rnd || Math.random){
+  const w = BALANCE.equipment?.slotWeights || { '1': 0.50, '2': 0.35, '3': 0.15 };
+  const p1 = Number(w['1'] ?? 0.50);
+  const p2 = Number(w['2'] ?? 0.35);
+  const r = rndFn();
+  if (r < p1) return 1;
+  if (r < p1 + p2) return 2;
+  return 3;
+}
+
+function validateGearAffixes(affixList, slotsCount = 3){
+  const list = Array.isArray(affixList) ? affixList : [];
+  if (list.length > slotsCount) return { ok: false, reason: 'exceeds_slots' };
+  const seenIds = new Set();
+  const seenGroups = new Set();
+  for (const entry of list) {
+    if (!entry) continue; // null allowed for future Stage 4 extracted empty slot
+    const id = typeof entry === 'string' ? entry : entry.id;
+    const spec = GEAR_AFFIXES[id];
+    if (!spec) return { ok: false, reason: `unknown_affix:${id}` };
+    if (seenIds.has(id)) return { ok: false, reason: `duplicate_affix:${id}` };
+    seenIds.add(id);
+    if (spec.conflictGroup) {
+      if (seenGroups.has(spec.conflictGroup)) return { ok: false, reason: `conflict_group:${spec.conflictGroup}` };
+      seenGroups.add(spec.conflictGroup);
     }
+  }
+  return { ok: true, reason: null };
+}
+
+function rollGearAffixes(slotsCount, { elem = null, highRarityChance = 0.14, rndFn = game?.rnd || Math.random } = {}){
+  const count = clamp(Math.round(Number(slotsCount) || 1), 1, 3);
+  const chosen = [];
+  const usedIds = new Set();
+  const usedGroups = new Set();
+  const wantHighRarity = rndFn() < highRarityChance;
+
+  for (let i = 0; i < count; i++) {
+    const candidates = GEAR_AFFIX_KEYS.filter(id => {
+      if (usedIds.has(id)) return false;
+      const sp = GEAR_AFFIXES[id];
+      if (sp.conflictGroup && usedGroups.has(sp.conflictGroup)) return false;
+      return true;
+    });
+    if (!candidates.length) break;
+
+    let totalWeight = 0;
+    const weighted = candidates.map(id => {
+      const sp = GEAR_AFFIXES[id];
+      let wt = sp.rarity === 'epic' ? (wantHighRarity ? 2.6 : 1.0)
+        : sp.rarity === 'rare' ? (wantHighRarity ? 2.2 : 1.5)
+        : 2.0;
+      if (elem && sp.elem === elem) wt *= 2.4;
+      totalWeight += wt;
+      return { id, wt };
+    });
+
+    let pick = weighted[weighted.length - 1].id;
+    let roll = rndFn() * totalWeight;
+    for (const w of weighted) {
+      roll -= w.wt;
+      if (roll <= 0) { pick = w.id; break; }
+    }
+    const spec = GEAR_AFFIXES[pick];
+    usedIds.add(pick);
+    if (spec.conflictGroup) usedGroups.add(spec.conflictGroup);
+    chosen.push({ id: pick, tier: 1, rarity: spec.rarity });
+  }
+  return chosen;
+}
+
+function createGearInstance(baseKey, opts = {}){
+  const key = GEARS[baseKey] ? baseKey : GEAR_KEYS[0];
+  const spec = GEARS[key];
+  const rndFn = opts.rndFn || game?.rnd || Math.random;
+  const rarity = (opts.rarity && GEAR_RARITY_LABELS[opts.rarity]) ? opts.rarity : spec.rarity;
+  const sourceStage = opts.sourceStage != null
+    ? clamp(Math.round(Number(opts.sourceStage)), 1, 3)
+    : getSourceStageForWave(opts.wave ?? game?.wave ?? 1);
+  const slotsCount = opts.slotsCount != null
+    ? clamp(Math.round(Number(opts.slotsCount)), 1, 3)
+    : rollGearSlotsCount(rndFn);
+  const enhanceLv = clamp(Math.round(Number(opts.enhanceLv || 0)), 0, BALANCE.equipment?.materialEnhance?.maxEnhanceLv || 5);
+
+  let affixes;
+  if (Array.isArray(opts.affixes)) {
+    const normalized = opts.affixes.slice(0, slotsCount).map(a => {
+      if (!a) return null;
+      const id = typeof a === 'string' ? a : a.id;
+      const aSpec = GEAR_AFFIXES[id];
+      if (!aSpec) return null;
+      return { id, tier: Math.max(1, (typeof a === 'object' && a.tier ? a.tier : 1 + enhanceLv)), rarity: aSpec.rarity };
+    });
+    const check = validateGearAffixes(normalized, slotsCount);
+    if (!check.ok) {
+      throw new Error(`Invalid gear affixes (${check.reason})`);
+    }
+    affixes = normalized;
+  } else {
+    affixes = rollGearAffixes(slotsCount, {
+      elem: spec.elem,
+      highRarityChance: opts.highRarityChance ?? (BALANCE.equipment?.shopPricing?.highRarityAffixChance || 0.16),
+      rndFn
+    }).map(a => ({ ...a, tier: 1 + enhanceLv }));
+  }
+
+  return {
+    uid: opts.uid || nextGearUid(),
+    baseKey: key,
+    name: spec.name,
+    icon: spec.icon,
+    elem: spec.elem,
+    set: spec.set,
+    rarity,
+    sourceStage,
+    slotsCount,
+    affixes,
+    enhanceLv,
+    paidGold: Math.max(0, Math.round(Number(opts.paidGold || 0))),
+    extractedCount: Math.max(0, Math.round(Number(opts.extractedCount || 0))),
+    origin: opts.origin || 'drop'
+  };
+}
+
+function normalizeGearInstance(input, opts = {}){
+  if (isGearInstance(input)) {
+    const spec = GEARS[input.baseKey] || GEARS[GEAR_KEYS[0]];
+    const enhanceLv = clamp(Math.round(Number(input.enhanceLv || 0)), 0, BALANCE.equipment?.materialEnhance?.maxEnhanceLv || 5);
+    const slotsCount = clamp(Math.round(Number(input.slotsCount || (input.affixes?.length || 1))), 1, 3);
+    const affixes = (Array.isArray(input.affixes) ? input.affixes : []).slice(0, slotsCount).map(a => {
+      if (!a) return null;
+      const id = typeof a === 'string' ? a : a.id;
+      const sp = GEAR_AFFIXES[id];
+      return sp ? { id, tier: Math.max(1, Number(a.tier || (1 + enhanceLv))), rarity: sp.rarity } : null;
+    });
+    return {
+      uid: input.uid || nextGearUid(),
+      baseKey: spec.key,
+      name: input.name || spec.name,
+      icon: input.icon || spec.icon,
+      elem: input.elem || spec.elem,
+      set: input.set || spec.set,
+      rarity: (input.rarity && GEAR_RARITY_LABELS[input.rarity]) ? input.rarity : spec.rarity,
+      sourceStage: clamp(Math.round(Number(input.sourceStage || getSourceStageForWave(opts.wave ?? game?.wave ?? 1))), 1, 3),
+      slotsCount,
+      affixes,
+      enhanceLv,
+      paidGold: Math.max(0, Math.round(Number(input.paidGold || 0))),
+      extractedCount: Math.max(0, Math.round(Number(input.extractedCount || 0))),
+      origin: input.origin || opts.origin || 'drop'
+    };
+  }
+  const baseKey = gearBase(input);
+  const legacyStar = gearStar(input);
+  return createGearInstance(baseKey, {
+    ...opts,
+    enhanceLv: opts.enhanceLv != null ? opts.enhanceLv : Math.max(0, legacyStar - 1)
+  });
+}
+
+function getGearBaseMult(inst){
+  const stageSpec = getSourceStageSpec(inst?.sourceStage || 1);
+  const step = BALANCE.equipment?.materialEnhance?.baseStatStepPerLv || 0.18;
+  const enh = inst && typeof inst === 'object' ? (inst.enhanceLv || 0) : Math.max(0, gearStar(inst) - 1);
+  return (stageSpec.baseStatMult || 1) * (1 + enh * step);
+}
+
+function evaluateSynergySetFromAffixIds(affixIdSet){
+  const matched = GEAR_SYNERGIES.filter(s => s.req.every(r => affixIdSet.has(r)));
+  const activeTrios = matched.filter(s => s.tier === 3);
+  const replacedChains = new Set(activeTrios.map(s => s.chain));
+  const bestByConflictGroup = new Map();
+  const active = [...activeTrios];
+
+  for (const s of matched) {
+    if (s.tier !== 2) continue;
+    // Complete Trio STRICTLY replaces any Duo of the same chain (never both!)
+    if (replacedChains.has(s.chain)) continue;
+    const grp = s.conflictGroup || s.id;
+    const cur = bestByConflictGroup.get(grp);
+    if (!cur || s.priority > cur.priority) {
+      bestByConflictGroup.set(grp, s);
+    }
+  }
+  for (const s of bestByConflictGroup.values()) active.push(s);
+  active.sort((a, b) => (b.tier - a.tier) || (b.priority - a.priority));
+  return active;
+}
+
+function evaluateItemSynergies(inst){
+  if (!inst || !Array.isArray(inst.affixes)) return [];
+  const ids = new Set(inst.affixes.filter(Boolean).map(a => a.id));
+  return evaluateSynergySetFromAffixIds(ids);
+}
+
+function buildChainHint(chainKey, chainLabel, reqIds, affixIdSet, activeList){
+  const present = reqIds.filter(id => affixIdSet.has(id));
+  const missing = reqIds.filter(id => !affixIdSet.has(id));
+  const trio = activeList.find(s => s.chain === chainKey && s.tier === 3);
+  const duo = activeList.find(s => s.chain === chainKey && s.tier === 2);
+  if (trio) {
+    return {
+      chain: chainKey, state: 'trio', activeId: trio.id, present, missing: [],
+      text: `${trio.icon} ${chainLabel}【${trio.name}】完整三联动已激活（已替代原双联动）`
+    };
+  }
+  if (duo) {
+    const missNames = missing.map(id => `【${GEAR_AFFIXES[id]?.name || id}】`).join(' / ');
+    return {
+      chain: chainKey, state: 'duo', activeId: duo.id, present, missing,
+      text: `${duo.icon} ${chainLabel}已激活双联动【${duo.name}】· 再配 ${missNames} 升级为完整三联动！`
+    };
+  }
+  if (present.length === 1) {
+    const missNames = missing.map(id => `【${GEAR_AFFIXES[id]?.name || id}】`).join(' 或 ');
+    return {
+      chain: chainKey, state: 'partial', activeId: null, present, missing,
+      text: `${chainLabel} 1/3（已有【${GEAR_AFFIXES[present[0]]?.name}】）· 再配 ${missNames} 激活双联动`
+    };
   }
   return null;
 }
-function ownedGearStar(baseKey){
-  let best = 0;
-  for (const k of game.hero.gear) if (gearBase(k) === baseKey) best = Math.max(best, gearStar(k));
-  for (const k of game.bag) if (gearBase(k) === baseKey) best = Math.max(best, gearStar(k));
-  return best;
+
+function evaluateEquipmentSynergies(gearList = game?.hero?.gear || []){
+  const list = Array.isArray(gearList) ? gearList : [];
+  const globalAffixIds = new Set();
+  const affixCounts = {};
+  const perItem = [];
+
+  for (const g of list) {
+    if (!g || typeof g !== 'object' || !Array.isArray(g.affixes)) continue;
+    const itemSyns = evaluateItemSynergies(g);
+    perItem.push({ uid: g.uid, synergies: itemSyns });
+    for (const a of g.affixes) {
+      if (!a || !GEAR_AFFIXES[a.id]) continue;
+      globalAffixIds.add(a.id);
+      affixCounts[a.id] = (affixCounts[a.id] || 0) + 1;
+    }
+  }
+
+  // Global evaluation: each synergy activates AT MOST ONCE across all 4 gear slots; Trio strictly replaces Duo
+  const active = evaluateSynergySetFromAffixIds(globalAffixIds);
+  const byId = {};
+  for (const s of active) byId[s.id] = s;
+
+  const fireSynergy = active.find(s => s.chain === 'fire_detonate') || null;
+  const frostSynergy = active.find(s => s.chain === 'frost_aegis') || null;
+
+  const hints = [];
+  const fireHint = buildChainHint('fire_detonate', '火系引爆', ['fire_brand', 'fire_burst', 'fire_chain'], globalAffixIds, active);
+  const frostHint = buildChainHint('frost_aegis', '冰系护体', ['frost_chill', 'frost_ward', 'frost_nova_counter'], globalAffixIds, active);
+  if (fireHint) hints.push(fireHint);
+  if (frostHint) hints.push(frostHint);
+
+  return {
+    active,
+    byId,
+    perItem,
+    affixCounts,
+    affixIds: Array.from(globalAffixIds),
+    fireSynergy,
+    frostSynergy,
+    hasFireTrio: fireSynergy?.tier === 3,
+    hasFireDuo: fireSynergy?.tier === 2,
+    hasFrostTrio: frostSynergy?.tier === 3,
+    hasFrostDuo: frostSynergy?.tier === 2,
+    hints
+  };
+}
+
+function recomputeEquipmentSynergies(){
+  if (!game?.hero) return evaluateEquipmentSynergies([]);
+  const res = evaluateEquipmentSynergies(game.hero.gear);
+  game.hero.activeGearSynergies = res;
+  return res;
+}
+
+function getActiveGearAffixSynergies(){
+  if (!game?.hero) return evaluateEquipmentSynergies([]);
+  if (!game.hero.activeGearSynergies) return recomputeEquipmentSynergies();
+  return game.hero.activeGearSynergies;
+}
+
+function getGearSynergyHints(candidateInst = null){
+  const cur = evaluateEquipmentSynergies(game?.hero?.gear || []);
+  if (!candidateInst) return cur.hints;
+  const withCand = evaluateEquipmentSynergies([...(game?.hero?.gear || []), candidateInst]);
+  const changes = [];
+  if (withCand.hasFireTrio && !cur.hasFireTrio) changes.push('穿戴后升级🔥【炽炎连环引爆】完整三联动！');
+  else if (withCand.hasFireDuo && !cur.hasFireDuo && !cur.hasFireTrio) changes.push('穿戴后激活🔥火系双词条联动！');
+  if (withCand.hasFrostTrio && !cur.hasFrostTrio) changes.push('穿戴后升级❄️【凛冬寒盾反制】完整三联动！');
+  else if (withCand.hasFrostDuo && !cur.hasFrostDuo && !cur.hasFrostTrio) changes.push('穿戴后激活❄️冰系双词条联动！');
+  return changes;
 }
 
 function describeGearEffect(gk){
   const spec = GEARS[gearBase(gk)];
   if (!spec) return '';
-  const star = gearStar(gk);
-  const mult = GEAR_STAR_MULT[star - 1];
+  const isInst = gk && typeof gk === 'object';
+  const mult = isInst ? getGearBaseMult(gk) : GEAR_STAR_MULT[gearStar(gk) - 1];
   const parts = [];
   for (const [k, v] of Object.entries(spec.mod)) {
     const val = v * mult;
@@ -1793,7 +2424,7 @@ function describeGearEffect(gk){
     else if (k === 'movePct') parts.push(`移速 ${sign}${Math.round(val * 100)}%`);
     else if (k === 'flatHp') parts.push(`最大生命 ${sign}${Math.round(val)}`);
     else if (k === 'hpPct') parts.push(`最大生命 ${sign}${Math.round(v * 100)}%`);
-    else if (k === 'extraShot') parts.push(`额外弹道 +${Math.round(v * star)}`);
+    else if (k === 'extraShot') parts.push(`额外弹道 +${Math.round(v)}`);
     else if (k === 'splashBonus') parts.push(`溅射范围 +${val.toFixed(2)}格`);
     else if (k === 'slowOnHit') parts.push(`攻击减速 ${Math.round(Math.min(0.65, val) * 100)}%`);
     else if (k === 'chainProc') parts.push(`命中 ${Math.round(Math.min(0.8, val) * 100)}% 连锁雷`);
@@ -1801,6 +2432,20 @@ function describeGearEffect(gk){
     else if (k === 'bonusGold') parts.push(`击杀 +${Math.round(val)} 金`);
   }
   return parts.join(' · ');
+}
+
+function describeGearInstance(inst){
+  if (!inst || typeof inst !== 'object') return describeGearEffect(inst);
+  const stSpec = getSourceStageSpec(inst.sourceStage);
+  const baseTxt = describeGearEffect(inst);
+  const afTxt = (inst.affixes || []).map((a, idx) => {
+    if (!a) return `[空槽${idx + 1}]`;
+    const sp = GEAR_AFFIXES[a.id];
+    return sp ? `${sp.icon}${sp.name}(T${a.tier || 1})` : a.id;
+  }).join(' + ');
+  const itemSyns = evaluateItemSynergies(inst);
+  const synTxt = itemSyns.length ? ` | 联动:${itemSyns.map(s => s.name).join('/')}` : '';
+  return `[${GEAR_RARITY_LABELS[inst.rarity]}·${stSpec.label}·${inst.slotsCount}槽${inst.enhanceLv ? `·+${inst.enhanceLv}` : ''}] ${baseTxt} | 词条:${afTxt}${synTxt}`;
 }
 
 function getW10BranchSpec(skillKey, branchKey = game?.hero?.w10Branch?.[skillKey]){
@@ -2125,7 +2770,9 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
     subSeals: [],
     shrine: null,
     shop: [],
-    bag: [], // array of gear keys
+    shopElemBuyCounts: { wind: 0, fire: 0, frost: 0, thunder: 0, holy: 0 },
+    shopElemBuyStage: 1,
+    bag: [], // array of independent gear instances
     pills: { xp: 0, heal: 0, temper: 0 },
 
     hero: {
@@ -2134,14 +2781,15 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
       lv: 1, xp: 0, xpNext: xpForLevel(1),
       realm: 0,
       face: 1, goal: null, moving: false,
-      invuln: 0, armorBreakT: 0, frostShieldActive: false, frostPulseCd: 0,
+      invuln: 0, armorBreakT: 0, frostShieldActive: false, frostPulseCd: 0, frostActivePulseCd: 0, gearFrostShieldCd: 0,
       dashCd: 0, ultCd: 0, ultTimer: 0, dashBuffT: 0,
       thornsCd: 0, undyingUsedWave: -1,
       swordRainHits: 0, ultKillCounter: 0,
       wanjianTimer: 2.4, frostDomainTick: 0.4, swordSetTimer: 1.2, bloodKills: 0,
       w10AuraTimer: 0.55, w10SecondaryTimer: 0.85,
       leechUsed: 0, leechTimer: 0,
-      gear: [], // up to 4 global gear keys
+      gear: [], // up to 4 independent gear instances
+      activeGearSynergies: null,
       skills: {}, // Chosen via 3-choice starter active skill modal!
       w10Branch: {}, // { [skillKey]: branchKey }
       breakthroughs: {
@@ -2191,6 +2839,8 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
       kills: 0, elites: 0, merges: 0, dmgTotal: 0,
       bossKills: 0, breakthroughsCompleted: 0,
       fireMarksApplied: 0, fireDetonations: 0, frostSlowsApplied: 0, frostShieldGained: 0,
+      gearFireDuoProcs: 0, gearFireTrioProcs: 0, fireChainTransfers: 0, fireFocusedDetonations: 0,
+      gearFrostDuoProcs: 0, gearFrostTrioProcs: 0, frostHitPulses: 0, frostDashPulses: 0, frostFullShieldPulses: 0,
       skillDmg: { blades:0, firewave:0, thunder:0, nova:0, stomp:0, berserk:0, dash:0, spirit:0, combo:0, perk:0 }
     }
   };
@@ -2199,6 +2849,7 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
 
 function startNewRun(seed = Math.floor(Math.random() * 1e9), showStarter = true){
   game = makeGame(seed);
+  recomputeEquipmentSynergies();
   paused = false;
   lastShopKey = lastSynKey = lastBagKey = lastInspKey = lastArtKey = lastSkillKey = lastLeftHudKey = lastBattleHudKey = '';
   $('banner').hidden = true;
@@ -2213,6 +2864,8 @@ function startNewRun(seed = Math.floor(Math.random() * 1e9), showStarter = true)
 }
 
 /* ==================== CROSS-STAGE COMBAT STATE HOOKS (W10 / GEAR / W20 SHARED) ==================== */
+let _inFireChainTransfer = false;
+
 function applyFireMark(e, arg2 = 1, arg3 = 'w10', arg4 = 4.5){
   if (!e || e.hp <= 0) return false;
   const isObj = arg2 && typeof arg2 === 'object';
@@ -2234,12 +2887,17 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
   if ((e.fireDetonateCd || 0) > 0) return 0;
   const isObj = arg3 && typeof arg3 === 'object';
   const hs = getHeroStats();
-  const baseDmg = (Number(arg2) > 5)
+  const affixDetBonus = 1 + (hs.gm?.fireDetonateBonus || 0);
+  const rawBaseDmg = (Number(arg2) > 5)
     ? Number(arg2)
     : Math.round((32 + (game.hero?.skills?.firewave || 1) * 14) * hs.skillDmgMult * Number(arg2 || 1.2));
-  const radius = isObj ? (arg3.radius ?? 1.85) : Number(arg3 || 1.85);
+  const baseDmg = Math.round(rawBaseDmg * affixDetBonus);
+  const radius = (isObj ? (arg3.radius ?? 1.85) : Number(arg3 || 1.85)) + Math.min(0.6, (hs.gm?.splashBonus || 0) * 0.35);
   const consumeMark = isObj ? !!arg3.consumeMark : false;
   const skillKey = isObj ? (arg3.skillKey || 'firewave') : (arg4 || 'firewave');
+  const skipTrioChain = isObj ? !!arg3.skipTrioChain : false;
+  const allowTrioChain = !skipTrioChain && !_inFireChainTransfer && getActiveGearAffixSynergies().hasFireTrio;
+
   e.fireDetonateCd = 0.22;
   const stacks = Math.max(1, e.fireMarkStacks || 1);
   const stackMult = 1 + Math.max(0, stacks - 1) * 0.25;
@@ -2256,9 +2914,10 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
     game.hero.combatStateStats.fireDetonations++;
     game.hero.combatStateStats.w10BranchProcs++;
   }
-  addRing(e.x, e.y, '#ff5e2b', radius);
-  addFloat(e.x, e.y - 0.55, '🔥火标引爆!', '#ff9852', true);
+  addRing(e.x, e.y, allowTrioChain ? '#ff4724' : '#ff5e2b', radius);
+  addFloat(e.x, e.y - 0.55, allowTrioChain ? '🔥连环引爆!' : '🔥火标引爆!', '#ff9852', true);
   AudioKit.play('fire', 1.15);
+
   let totalDealt = 0;
   for (const o of game.enemies) {
     if (o.hp > 0 && dist(o, e) <= radius + o.r) {
@@ -2267,6 +2926,83 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
         noFireDetonate: true, critChance: hs.crit, critDmg: hs.critDmg,
         col: '#ff8a47', burn: 16
       });
+    }
+  }
+
+  // Stage 2 Fire Complete Trio Synergy: limited chain transfer to nearby marked enemies,
+  // OR capped decaying focused detonation on isolated elite/Boss when no other marked target exists!
+  if (allowTrioChain) {
+    _inFireChainTransfer = true;
+    try {
+      const sc = BALANCE.equipment?.synergyCombat || {};
+      const maxChains = Math.max(1, sc.fireTrioMaxChains || 2);
+      const chainRange = sc.fireTrioChainRange || 3.2;
+      const chainDecay = sc.fireTrioChainDecay || 0.78;
+      const focusMults = Array.isArray(sc.fireTrioFocusMults) ? sc.fireTrioFocusMults : [0.55, 0.35];
+      const maxFocusRatio = sc.fireTrioFocusMaxTotalRatio || 0.90;
+
+      const visited = new Set([e.id]);
+      let curSource = e;
+      let transferred = 0;
+
+      for (let step = 0; step < maxChains; step++) {
+        let nextTgt = null;
+        let bestD = chainRange;
+        for (const cand of game.enemies) {
+          if (cand.hp <= 0 || visited.has(cand.id) || (cand.fireMarkT || 0) <= 0) continue;
+          const d = dist(curSource, cand);
+          if (d <= bestD) { bestD = d; nextTgt = cand; }
+        }
+        if (!nextTgt) break;
+        visited.add(nextTgt.id);
+        transferred++;
+        const hopDmg = Math.max(8, Math.round(detDmg * Math.pow(chainDecay, step + 1)));
+        const hopRad = Math.max(1.35, radius * 0.85);
+        nextTgt.fireDetonateCd = Math.max(nextTgt.fireDetonateCd || 0, 0.25);
+        game.bolts.push({
+          pts: [{ x: curSource.x, y: curSource.y }, { x: nextTgt.x, y: nextTgt.y }],
+          t: 0.26, max: 0.26, col: '#ff6d38', comboThunderFire: false
+        });
+        addRing(nextTgt.x, nextTgt.y, '#ff6a32', hopRad);
+        addFloat(nextTgt.x, nextTgt.y - 0.5, `🔥传递引爆#${transferred}`, '#ffb35c', true);
+        if (game.stats) {
+          game.stats.fireDetonations = (game.stats.fireDetonations || 0) + 1;
+          game.stats.fireChainTransfers = (game.stats.fireChainTransfers || 0) + 1;
+        }
+        for (const o of game.enemies) {
+          if (o.hp > 0 && dist(o, nextTgt) <= hopRad + o.r) {
+            totalDealt += dealDamage(o, hopDmg, {
+              fromHero: false, skillKey, isFireExp: true,
+              noFireDetonate: true, critChance: hs.crit, critDmg: hs.critDmg,
+              col: '#ff964d', burn: 14
+            });
+          }
+        }
+        curSource = nextTgt;
+      }
+
+      // Isolated Elite/Boss fallback: convert remaining chain chances into capped decaying focused detonation
+      const remChains = maxChains - transferred;
+      if (remChains > 0 && e.hp > 0) {
+        let ratioSum = 0;
+        for (let k = 0; k < remChains; k++) {
+          ratioSum += focusMults[k] ?? 0.25;
+        }
+        const cappedRatio = Math.min(maxFocusRatio, ratioSum);
+        const focusDmg = Math.max(8, Math.round(detDmg * cappedRatio));
+        addRing(e.x, e.y, '#ffe066', Math.max(1.1, radius * 0.65));
+        addFloat(e.x, e.y - 0.85, `💥聚焦引爆×${remChains}!`, '#ffe066', true);
+        if (game.stats) {
+          game.stats.fireFocusedDetonations = (game.stats.fireFocusedDetonations || 0) + 1;
+        }
+        totalDealt += dealDamage(e, focusDmg, {
+          fromHero: false, skillKey, isFireExp: true,
+          noFireDetonate: true, critChance: hs.crit, critDmg: hs.critDmg,
+          col: '#ffd85c', burn: 18
+        });
+      }
+    } finally {
+      _inFireChainTransfer = false;
     }
   }
   return totalDealt;
@@ -2289,18 +3025,40 @@ function applyFrostSlow(e, arg2 = 0.50, arg3 = 3.0, arg4 = 'w10'){
   return true;
 }
 
-function triggerFrostPulse(radius = 2.8, rawDmg = 36, freezeDur = 0.9){
+function getHeroMaxFrostShield(baseCap = 90){
+  const gm = aggregateGear(game?.hero?.gear || []);
+  const syn = getActiveGearAffixSynergies();
+  const sc = BALANCE.equipment?.synergyCombat || {};
+  const synBase = syn.hasFrostTrio ? (sc.frostTrioShieldCap || 115) : syn.hasFrostDuo ? (sc.frostDuoShieldCap || 95) : baseCap;
+  return Math.max(baseCap, synBase) + (gm.frostShieldCapBonus || 0);
+}
+
+function triggerFrostPulse(radius = 2.8, rawDmg = 36, freezeDur = 0.9, source = 'w10'){
   if (!game?.hero) return 0;
   const h = game.hero;
-  if ((h.frostPulseCd || 0) > 0) return 0;
-  h.frostPulseCd = 0.55;
+  const isActiveTrigger = source === 'dash_shield' || source === 'full_shield_refresh';
+  if (isActiveTrigger) {
+    if ((h.frostActivePulseCd || 0) > 0) return 0;
+    h.frostActivePulseCd = BALANCE.equipment?.synergyCombat?.frostTrioActivePulseCd || 1.5;
+  } else {
+    if ((h.frostPulseCd || 0) > 0) return 0;
+    h.frostPulseCd = 0.55;
+  }
   if (h.combatStateStats) {
     h.combatStateStats.frostPulsesTriggered++;
     h.combatStateStats.w10BranchProcs++;
   }
-  addRing(h.x, h.y, '#8ef4ff', radius);
-  addFloat(h.x, h.y - 0.65, '❄️冰环反制!', '#a4f8ff', true);
-  AudioKit.play('frost', 1.15);
+  if (game.stats) {
+    if (source === 'shield_hit') game.stats.frostHitPulses = (game.stats.frostHitPulses || 0) + 1;
+    else if (source === 'dash_shield') game.stats.frostDashPulses = (game.stats.frostDashPulses || 0) + 1;
+    else if (source === 'full_shield_refresh') game.stats.frostFullShieldPulses = (game.stats.frostFullShieldPulses || 0) + 1;
+  }
+  const floatText = source === 'dash_shield' ? '❄️冲刺冰环!'
+    : source === 'full_shield_refresh' ? '❄️满盾冰环!'
+    : '❄️冰环反制!';
+  addRing(h.x, h.y, isActiveTrigger ? '#aef8ff' : '#8ef4ff', radius);
+  addFloat(h.x, h.y - 0.65, floatText, '#a4f8ff', true);
+  AudioKit.play('frost', isActiveTrigger ? 1.25 : 1.15);
   const hs = getHeroStats();
   let hitCnt = 0;
   for (const o of game.enemies) {
@@ -2321,9 +3079,12 @@ function gainFrostShield(amount, arg2 = 5.0, arg3 = 90){
   const h = game.hero;
   const isObj = arg2 && typeof arg2 === 'object';
   const duration = isObj ? (arg2.duration ?? 5.0) : Number(arg2 || 5.0);
-  const maxShield = isObj ? (arg2.maxShield ?? 90) : Number(arg3 || 90);
+  const reqMax = isObj ? (arg2.maxShield ?? 90) : Number(arg3 || 90);
+  const noFullShieldPulse = isObj ? !!arg2.noFullShieldPulse : false;
+  const maxShield = Math.max(getHeroMaxFrostShield(90), reqMax);
   const gain = Math.round(amount);
   const prev = h.shield || 0;
+  const wasFullOrOverflow = prev >= maxShield * 0.92 || (prev + gain >= maxShield);
   h.shield = Math.min(maxShield, prev + gain);
   h.shieldTimer = Math.max(h.shieldTimer || 0, duration);
   h.frostShieldActive = true;
@@ -2331,6 +3092,11 @@ function gainFrostShield(amount, arg2 = 5.0, arg3 = 90){
   if (h.combatStateStats) {
     h.combatStateStats.frostShieldGained += gain;
     h.combatStateStats.w10BranchProcs++;
+  }
+  // Stage 2 Frost Trio active trigger: full-shield refresh triggers a cooldown-capped Frost Pulse even when dodging hits!
+  if (!noFullShieldPulse && wasFullOrOverflow && getActiveGearAffixSynergies().hasFrostTrio && (h.frostActivePulseCd || 0) <= 0) {
+    const sc = BALANCE.equipment?.synergyCombat || {};
+    triggerFrostPulse(sc.frostTrioActivePulseRadius || 3.25, sc.frostTrioActivePulseDmg || 46, 0.95, 'full_shield_refresh');
   }
   return h.shield - prev;
 }
@@ -2416,24 +3182,54 @@ function refreshCombos(announce = true){
 }
 
 function aggregateGear(gearList){
-  const m = { dmgPct:0, aspd:0, crit:0, critDmg:0, rangePct:0, movePct:0, flatHp:0, hpPct:0, extraShot:0, splashBonus:0, slowOnHit:0, chainProc:0, lifesteal:0, bonusGold:0 };
+  const m = {
+    dmgPct:0, aspd:0, crit:0, critDmg:0, rangePct:0, movePct:0, flatHp:0, hpPct:0,
+    extraShot:0, splashBonus:0, slowOnHit:0, chainProc:0, lifesteal:0, bonusGold:0,
+    // Stage 2 Affix independent modifiers
+    fireMarkChance:0, fireDmgPct:0, fireDetonateBonus:0, markedDmgPct:0, burnKillHeal:0,
+    chilledDmgPct:0, frostShieldCapBonus:0, shieldedDmgPct:0, shieldedMovePct:0,
+    dmgReduce:0, bonusGoldChance:0
+  };
   const dfBoost = perkLv('dao_fortune') >= 2 ? 1.25 : 1;
   const greedSetBoost = (getGearSetCounts(gearList).greed || 0) >= 3 ? 1.15 : 1;
-  for (const k of gearList) {
+  const affixStep = BALANCE.equipment?.materialEnhance?.affixTierStepPerLv || 0.16;
+
+  for (const k of (gearList || [])) {
+    const isInst = k && typeof k === 'object';
     const gm = GEARS[gearBase(k)]?.mod;
-    if (!gm) continue;
-    const star = gearStar(k);
-    const mult = GEAR_STAR_MULT[star - 1] * dfBoost * greedSetBoost;
-    for (const [key, val] of Object.entries(gm)) {
-      const scaled = key === 'extraShot' ? val * star : (val < 0 ? val : val * mult);
-      if (key === 'slowOnHit') m.slowOnHit = Math.max(m.slowOnHit, Math.min(0.65, scaled));
-      else if (key === 'chainProc') m[key] = Math.min(0.8, m[key] + scaled);
-      else m[key] += scaled;
+    if (gm) {
+      const mult = (isInst ? getGearBaseMult(k) : GEAR_STAR_MULT[gearStar(k) - 1]) * dfBoost * greedSetBoost;
+      for (const [key, val] of Object.entries(gm)) {
+        const scaled = key === 'extraShot' ? val : (val < 0 ? val : val * mult);
+        if (key === 'slowOnHit') m.slowOnHit = Math.max(m.slowOnHit, Math.min(0.65, scaled));
+        else if (key === 'chainProc') m[key] = Math.min(0.8, m[key] + scaled);
+        else m[key] += scaled;
+      }
+    }
+    // Aggregate every independent affix on this instance (preserved regardless of duo/trio synergy!)
+    if (isInst && Array.isArray(k.affixes)) {
+      const enhBonusMult = 1 + (k.enhanceLv || 0) * affixStep * 0.5;
+      for (const a of k.affixes) {
+        if (!a || !GEAR_AFFIXES[a.id]) continue;
+        const aSpec = GEAR_AFFIXES[a.id];
+        const tier = Math.max(1, Number(a.tier || (1 + (k.enhanceLv || 0))));
+        const aMod = aSpec.mod ? aSpec.mod(tier) : {};
+        for (const [ak, av] of Object.entries(aMod)) {
+          if (ak === 'slowOnHit') m.slowOnHit = Math.max(m.slowOnHit, Math.min(0.65, av));
+          else if (ak === 'fireMarkChance') m.fireMarkChance = Math.min(0.98, Math.max(m.fireMarkChance, av));
+          else if (ak === 'chainProc') m.chainProc = Math.min(0.8, m.chainProc + av);
+          else if (ak === 'dmgReduce') m.dmgReduce = Math.min(0.35, m.dmgReduce + av);
+          else if (ak === 'bonusGoldChance') m.bonusGoldChance = Math.min(0.85, m.bonusGoldChance + av);
+          else if (ak in m) m[ak] += (ak === 'flatHp' || ak === 'frostShieldCapBonus' || ak === 'burnKillHeal') ? av : av * enhBonusMult;
+        }
+      }
     }
   }
   m.extraShot = Math.round(m.extraShot);
   m.bonusGold = Math.round(m.bonusGold);
   m.flatHp = Math.round(m.flatHp);
+  m.frostShieldCapBonus = Math.round(m.frostShieldCapBonus);
+  m.burnKillHeal = Math.round(m.burnKillHeal);
   return m;
 }
 
@@ -2457,6 +3253,7 @@ function getHeroStats(){
   const holyAura = (game.seal && game.seal.kind === 'holy') ? (ARTIFACTS.holy.stars[game.seal.star - 1].auraAspd || 0) : 0;
   const holySub = getSubSeal('holy');
   const holySubCrit = holySub ? SUB_SEAL_RESONANCE.holy.crit[holySub.star - 1] : 0;
+  const hasShieldNow = (h.shield || 0) > 0;
 
   // Perk bonuses
   const bloodLv = perkLv('blood_oath');
@@ -2482,9 +3279,12 @@ function getHeroStats(){
   const greedMove = greedSet >= 2 ? Math.min(greedCap, Math.floor(game.gold / 40) * 0.03) : 0;
   const wfDualMove = hasDualRes('wind_frost') ? 0.15 : 0;
   const bloodKillDmg = (h.bloodKills || 0) * 0.03;
+  const shieldAffixDmg = hasShieldNow ? (gm.shieldedDmgPct || 0) : 0;
+  const shieldAffixMove = hasShieldNow ? (gm.shieldedMovePct || 0) : 0;
+  const holyMasteryCritDmg = (game.seal?.kind === 'holy' && game.seal?.route === 'mastery') ? 0.20 : 0;
 
   const aspd = Math.max(0.5, 1 + gm.aspd + berkLv * 0.18 + holyAura + (syn.wind >= 2 ? 0.25 : 0) + (h.ultTimer > 0 ? 0.80 : 0) + bloodAspd + dashAspd + greedAspd);
-  const dmgMult = 1 + gm.dmgPct + (h.lv - 1) * BALANCE.progression.heroDmgPerLevel + r.dmgBonus + bloodDmg + goldDmg + sealDmgBonus + bloodKillDmg;
+  const dmgMult = 1 + gm.dmgPct + shieldAffixDmg + (h.lv - 1) * BALANCE.progression.heroDmgPerLevel + r.dmgBonus + bloodDmg + goldDmg + sealDmgBonus + bloodKillDmg;
 
   const ownedSkills = Object.values(h.skills).filter(v => v > 0).length;
   const mmLv = perkLv('mono_mastery');
@@ -2501,12 +3301,12 @@ function getHeroStats(){
     + (windGaleLv >= 1 && h.dashBuffT > 0 ? 1.0 : 0);
   const overflowCrit = Math.max(0, rawCrit - 1.0);
   const crit = Math.min(1.0, rawCrit);
-  const critDmg = (syn.holy >= 4 ? 2.2 : BALANCE.progression.heroBaseCritMultiplier) + gm.critDmg + (hasDualRes('holy_omni') ? 0.25 : 0)
+  const critDmg = (syn.holy >= 4 ? 2.2 : BALANCE.progression.heroBaseCritMultiplier) + gm.critDmg + holyMasteryCritDmg + (hasDualRes('holy_omni') ? 0.25 : 0)
     + (csLv === 2 ? overflowCrit * 3 : csLv === 1 ? overflowCrit * 2 : 0)
     + (perkLv('sword_rain') >= 2 ? 0.60 : 0);
 
   const moveSpd = (BALANCE.progression.heroBaseMove + berkLv * BALANCE.progression.heroMovePerBerserkLv)
-    * (1 + gm.movePct + greedMove + wfDualMove + (windGaleLv === 2 ? 0.30 : windGaleLv === 1 ? 0.20 : 0) + (perkLv('ult_engine') >= 1 && h.ultTimer > 0 ? 0.30 : 0));
+    * (1 + gm.movePct + shieldAffixMove + greedMove + wfDualMove + (windGaleLv === 2 ? 0.30 : windGaleLv === 1 ? 0.20 : 0) + (perkLv('ult_engine') >= 1 && h.ultTimer > 0 ? 0.30 : 0));
   const magnet = 2.9 + berkLv * 0.85 + gm.rangePct * 2.0;
   const lifesteal = gm.lifesteal + berkLv * 2 + bloodLeech;
 
@@ -2524,31 +3324,115 @@ function getSealStats(a = game.seal){
   const windSub = getSubSeal('wind');
   const fireSub = getSubSeal('fire');
   const frostSub = getSubSeal('frost');
+  const route = a.star >= 3 ? (a.route || null) : null;
 
   const fireSubMult = fireSub ? (1 + SUB_SEAL_RESONANCE.fire.dmgBonus[fireSub.star - 1]) : 1;
   const windSubCd = windSub ? (1 - SUB_SEAL_RESONANCE.wind.cdRed[windSub.star - 1]) : 1;
   const frostSubSlow = frostSub ? SUB_SEAL_RESONANCE.frost.slow[frostSub.star - 1] : 0;
   const fireSubBurn = fireSub ? SUB_SEAL_RESONANCE.fire.burn[fireSub.star - 1] : 0;
 
+  const routeDmgMult = route === 'standard' ? 1.18 : 1;
+  const routeCdMult = route === 'standard' ? 0.92 : (route === 'mastery' && a.kind === 'wind' ? 0.90 : 1);
   const fireMult = (a.elem === 'fire' && syn.fire >= 2) ? 1.35 : 1;
-  const dmg = Math.max(5, Math.round(base.dmg * hs.dmgMult * fireMult * fireSubMult));
-  const cd = Math.max(0.16, base.cd * windSubCd * (ocLv >= 1 ? 0.75 : 1) / hs.aspd);
+  const dmg = Math.max(5, Math.round(base.dmg * hs.dmgMult * fireMult * fireSubMult * routeDmgMult));
+  const cd = Math.max(0.16, base.cd * windSubCd * routeCdMult * (ocLv >= 1 ? 0.75 : 1) / hs.aspd);
   const range = Number((base.range * hs.rangeMult * (ocLv >= 2 ? 1.3 : 1)).toFixed(2));
-  const shots = (base.shots || 1) + gm.extraShot + (ocLv >= 2 ? 1 : 0);
-  const chains = (base.chains || 0) + (syn.thunder >= 2 ? 2 : 0) + gm.extraShot + (ocLv >= 2 ? 1 : 0);
+  const shots = (base.shots || 1) + gm.extraShot + (ocLv >= 2 ? 1 : 0) + (route === 'mastery' && a.kind === 'wind' ? 1 : 0);
+  const chains = (base.chains || 0) + (syn.thunder >= 2 ? 2 : 0) + gm.extraShot + (ocLv >= 2 ? 1 : 0) + (route === 'mastery' && a.kind === 'thunder' ? 2 : 0);
   const wfRadiusMult = hasDualRes('wind_fire') ? 1.28 : 1;
-  const splash = ((base.splash || 0) + gm.splashBonus) * (ocLv >= 2 ? 1.3 : 1) * wfRadiusMult;
-  const beams = (base.beams || 2) + gm.extraShot + (ocLv >= 2 ? 1 : 0);
+  const fireMasteryRad = (route === 'mastery' && a.kind === 'fire') ? 1.25 : 1;
+  const splash = ((base.splash || 0) + gm.splashBonus) * (ocLv >= 2 ? 1.3 : 1) * wfRadiusMult * fireMasteryRad;
+  const pierce = (base.pierce || 0) + (route === 'mastery' && a.kind === 'wind' ? 2 : 0);
+  const beams = (base.beams || 2) + gm.extraShot + (ocLv >= 2 ? 1 : 0) + (route === 'mastery' && a.kind === 'holy' ? 1 : 0);
 
   return {
-    dmg, cd, range, crit: hs.crit, critDmg: hs.critDmg, shots, chains, splash, pierce: base.pierce || 0, beams,
+    dmg, cd, range, crit: hs.crit, critDmg: hs.critDmg, shots, chains, splash, pierce, beams, route,
     slow: Math.max(base.slow || 0, gm.slowOnHit, frostSubSlow),
     slowDur: base.slowDur || ((gm.slowOnHit || frostSubSlow) ? 2.2 : 0),
     burn: Math.max(base.burn || 0, fireSubBurn), gm
   };
 }
 
-/* ==================== SHOP (T1/T2/T3 + V0.60 PILLS + MAIN & SUB SEALS) ==================== */
+/* ==================== STAGE 2: SHOP PRICING, RECYCLE ANTI-ARBITRAGE & MATERIAL ENHANCE ==================== */
+function getShopElemBuyCount(elem){
+  if (!game) return 0;
+  const sp = BALANCE.equipment?.shopPricing || {};
+  const curStage = getSourceStageForWave(game.wave);
+  if (sp.sameElemResetByStage && game.shopElemBuyStage !== curStage) {
+    game.shopElemBuyCounts = { wind: 0, fire: 0, frost: 0, thunder: 0, holy: 0 };
+    game.shopElemBuyStage = curStage;
+  }
+  return game.shopElemBuyCounts?.[elem] || 0;
+}
+
+function calcShopGearPrice(rarity, elem, wave = game?.wave || 1){
+  const sp = BALANCE.equipment?.shopPricing || {};
+  const baseMap = sp.basePriceByRarity || { common: 26, rare: 42, epic: 64, legend: 96 };
+  const stageMap = sp.stagePriceMult || { '1': 1.0, '2': 1.3, '3': 1.65 };
+  const capMap = sp.priceCapByRarity || { common: 64, rare: 104, epic: 156, legend: 220 };
+  const step = Number(sp.sameElemStep ?? 0.18);
+  const stage = getSourceStageForWave(wave);
+  const base = baseMap[rarity] || baseMap.common || 26;
+  const stageMult = Number(stageMap[String(stage)] ?? 1.0);
+  const sameElemCount = getShopElemBuyCount(elem);
+  const raw = Math.round(base * stageMult * (1 + sameElemCount * step));
+  const cap = capMap[rarity] || Math.round(base * 2.4);
+  return Math.min(cap, Math.max(base, raw));
+}
+
+function pickShopGearBaseKey(wave = game?.wave || 1, rndFn = game?.rnd || Math.random){
+  const r = rndFn();
+  let rarity = 'common';
+  if (wave <= 5) rarity = r < 0.28 ? 'rare' : 'common';
+  else if (wave <= 10) rarity = r < 0.12 ? 'epic' : r < 0.58 ? 'rare' : 'common';
+  else if (wave <= 20) rarity = r < 0.08 ? 'legend' : r < 0.42 ? 'epic' : r < 0.85 ? 'rare' : 'common';
+  else rarity = r < 0.22 ? 'legend' : r < 0.65 ? 'epic' : 'rare';
+
+  const pool = GEAR_KEYS.filter(k => GEARS[k].rarity === rarity);
+  const list = pool.length ? pool : GEAR_KEYS;
+  return list[Math.floor(rndFn() * list.length)];
+}
+
+// Recycle value depends STRICTLY on inst.rarity and inst.sourceStage (NEVER slotsCount or current wave!)
+// Anti-arbitrage guard: if bought from shop (paidGold > 0), sell gold is strictly < paidGold!
+function getGearSellGold(inst){
+  if (!inst) return 0;
+  const rec = BALANCE.equipment?.recycle || {};
+  const baseMap = rec.sellGoldBase || { common: 10, rare: 16, epic: 26, legend: 42 };
+  const rarity = typeof inst === 'object' ? (inst.rarity || GEARS[gearBase(inst)]?.rarity || 'common') : (GEARS[gearBase(inst)]?.rarity || 'common');
+  const sourceStage = typeof inst === 'object' ? (inst.sourceStage || 1) : 1;
+  const stageSpec = getSourceStageSpec(sourceStage);
+  let gold = Math.max(1, Math.round((baseMap[rarity] || 10) * (stageSpec.sellMult || 1)));
+  const paid = typeof inst === 'object' ? Math.max(0, Number(inst.paidGold || 0)) : 0;
+  if (paid > 0) {
+    const capRatio = Number(rec.paidGoldSellCapRatio ?? 0.72);
+    const maxAllowed = Math.max(1, Math.min(paid - 1, Math.floor(paid * capRatio)));
+    gold = Math.min(gold, maxAllowed);
+  }
+  return gold;
+}
+
+function getGearDismantleMaterials(inst){
+  if (!inst) return 0;
+  const rec = BALANCE.equipment?.recycle || {};
+  const baseMap = rec.dismantleMatBase || { common: 1, rare: 2, epic: 3, legend: 5 };
+  const rarity = typeof inst === 'object' ? (inst.rarity || GEARS[gearBase(inst)]?.rarity || 'common') : (GEARS[gearBase(inst)]?.rarity || 'common');
+  const sourceStage = typeof inst === 'object' ? (inst.sourceStage || 1) : 1;
+  const stageSpec = getSourceStageSpec(sourceStage);
+  return Math.max(1, Math.round((baseMap[rarity] || 1) * (stageSpec.dismantleMult || 1)));
+}
+
+function getGearEnhanceCost(inst){
+  if (!inst || typeof inst !== 'object') return null;
+  const cfg = BALANCE.equipment?.materialEnhance || {};
+  const maxLv = cfg.maxEnhanceLv || 5;
+  const curLv = inst.enhanceLv || 0;
+  if (curLv >= maxLv) return null;
+  const table = Array.isArray(cfg.matCostByNextLv) ? cfg.matCostByNextLv : [2, 3, 5, 7, 10];
+  return table[curLv] ?? (2 + curLv * 2);
+}
+
+/* ==================== SHOP (SEALS + STAGE 2 GEAR + V0.60 CLEAN PILLS) ==================== */
 function rollShop(free = false){
   if (!free) {
     const freeProc = perkLv('gold_power') >= 2 && game.rnd() < 0.25;
@@ -2565,14 +3449,7 @@ function rollShop(free = false){
   const isHuashen = getActiveUnlockNode().idx >= 4;
   game.shop = [];
 
-  for (let i = 0; i < 4; i++) {
-    // Slot 4: In-run Pill slot (v0.60: only xp / heal / temper; NEVER old guard or mend pills!)
-    if (i === 3 && game.rnd() < BALANCE.economy.pillSlotChance) {
-      const pk = PILL_KEYS[Math.floor(game.rnd() * PILL_KEYS.length)];
-      game.shop.push({ uid: Math.floor(game.rnd() * 1e9), itemType: 'pill', pillKey: pk, cost: PILLS[pk].cost, bought: false });
-      continue;
-    }
-
+  const pushSealOffer = () => {
     const kind = ARTIFACT_KEYS[Math.floor(game.rnd() * ARTIFACT_KEYS.length)];
     const spec = ARTIFACTS[kind];
     let star = 1;
@@ -2587,6 +3464,47 @@ function rollShop(free = false){
     const disc = (star === 1 && game.wave >= 2 && game.rnd() < BALANCE.economy.discountChance) ? BALANCE.economy.discountAmount : 0;
     const cost = Math.max(BALANCE.economy.priceFloor, Math.round(spec.cost * mult) - disc);
     game.shop.push({ uid: Math.floor(game.rnd() * 1e9), itemType: 'seal', kind, star, cost, bought: false, disc });
+  };
+
+  const pushGearOffer = () => {
+    const baseKey = pickShopGearBaseKey(game.wave, game.rnd);
+    const gear = createGearInstance(baseKey, {
+      wave: game.wave,
+      origin: 'shop',
+      highRarityChance: BALANCE.equipment?.shopPricing?.highRarityAffixChance || 0.16,
+      rndFn: game.rnd
+    });
+    const cost = calcShopGearPrice(gear.rarity, gear.elem, game.wave);
+    game.shop.push({
+      uid: Math.floor(game.rnd() * 1e9),
+      itemType: 'gear',
+      gear,
+      elem: gear.elem,
+      rarity: gear.rarity,
+      cost,
+      bought: false
+    });
+  };
+
+  for (let i = 0; i < 4; i++) {
+    // Slot 2: Guaranteed regular shop gear instance with independent rarity/slots/affixes!
+    if (i === 2) {
+      pushGearOffer();
+      continue;
+    }
+    // Slot 3: In-run clean Pill slot (only xp/heal/temper) or 2nd gear / seal offer
+    if (i === 3) {
+      if (game.rnd() < BALANCE.economy.pillSlotChance) {
+        const pk = PILL_KEYS[Math.floor(game.rnd() * PILL_KEYS.length)];
+        game.shop.push({ uid: Math.floor(game.rnd() * 1e9), itemType: 'pill', pillKey: pk, cost: PILLS[pk].cost, bought: false });
+      } else if (game.rnd() < (BALANCE.economy.gearSecondSlotChance || 0.45)) {
+        pushGearOffer();
+      } else {
+        pushSealOffer();
+      }
+      continue;
+    }
+    pushSealOffer();
   }
   renderAllUI();
   return true;
@@ -2604,6 +3522,27 @@ function sealTotalPoints(seal){
   let pts = 1 + (seal.prog || 0);
   for (let s = 1; s < seal.star; s++) pts += SEAL_FUSE_NEED[s];
   return pts;
+}
+
+function chooseSealRoute(routeKey){
+  if (!game?.seal) return { ok: false, reason: 'no_seal' };
+  const s = game.seal;
+  if (s.star < 3) { toast('主灵印达到 3★ 后才可选择专精路线！', true); return { ok: false, reason: 'star_too_low' }; }
+  if (s.route) { toast(`主灵印已锁定专精路线【${SEAL_SPECIALIZATIONS[s.elem]?.[s.route]?.name || s.route}】！`, true); return { ok: false, reason: 'already_chosen' }; }
+  const spec = SEAL_SPECIALIZATIONS[s.elem]?.[routeKey];
+  if (!spec) return { ok: false, reason: 'invalid_route' };
+  if (spec.cost > 0 && game.gold < spec.cost) {
+    toast(`选择【${spec.name}】需要 ${spec.cost} 金币！`, true);
+    return { ok: false, reason: 'insufficient_gold', need: spec.cost };
+  }
+  if (spec.cost > 0) game.gold -= spec.cost;
+  s.route = routeKey;
+  AudioKit.play('merge', 1.2);
+  addRing(game.hero.x, game.hero.y, ELEMENTS[s.elem].color, 2.4);
+  addFloat(game.hero.x, game.hero.y - 0.65, `✨ 灵印专精·${spec.name}`, '#ffe878', true);
+  toast(`已选定主灵印 3★ 专精【${spec.name}】${spec.cost > 0 ? `（消耗 ${spec.cost} 金）` : '（免费）'}：${spec.desc}`);
+  renderAllUI(true);
+  return { ok: true, route: routeKey, cost: spec.cost, spec };
 }
 
 function buyShopItem(shopIdx){
@@ -2637,7 +3576,34 @@ function buyShopItem(shopIdx){
     return true;
   }
 
-  // 2. Main Seal & Sub-Seal Resonance purchase
+  // 2. Stage 2 Independent Gear purchase (with stage + same-element escalating price & paidGold lock)
+  if (item.itemType === 'gear' && item.gear) {
+    game.gold -= item.cost;
+    item.bought = true;
+    const boughtInst = normalizeGearInstance({ ...item.gear, paidGold: item.cost, origin: 'shop' });
+    // Increment same-element purchase count (respecting sameElemResetByStage)
+    const curStage = getSourceStageForWave(game.wave);
+    if (BALANCE.equipment?.shopPricing?.sameElemResetByStage && game.shopElemBuyStage !== curStage) {
+      game.shopElemBuyCounts = { wind: 0, fire: 0, frost: 0, thunder: 0, holy: 0 };
+      game.shopElemBuyStage = curStage;
+    }
+    game.shopElemBuyCounts[boughtInst.elem] = (game.shopElemBuyCounts[boughtInst.elem] || 0) + 1;
+    // Dynamically refresh remaining unbought same-element gear prices in current shop row
+    for (const other of game.shop) {
+      if (!other.bought && other.itemType === 'gear' && other.gear && other.gear.elem === boughtInst.elem) {
+        other.cost = calcShopGearPrice(other.gear.rarity, other.gear.elem, game.wave);
+      }
+    }
+    game.bag.push(boughtInst);
+    AudioKit.play('chest', 1.15);
+    addFloat(game.hero.x, game.hero.y - 0.55, `购入 ${boughtInst.icon}${boughtInst.name} [${boughtInst.slotsCount}槽]`, GEAR_RARITY_COLORS[boughtInst.rarity] || '#ffe27a', true);
+    toast(`购入【${boughtInst.name}】(${GEAR_RARITY_LABELS[boughtInst.rarity]}·${boughtInst.slotsCount}槽) 花费 ${item.cost} 金，已放入背包！`);
+    checkShopAutoRestock();
+    renderAllUI(true);
+    return true;
+  }
+
+  // 3. Main Seal & Sub-Seal Resonance purchase
   const spec = ARTIFACTS[item.kind];
   const cap = getSealStarCap();
   const subCap = getSubSealSlotCap();
@@ -2648,11 +3614,11 @@ function buyShopItem(shopIdx){
     game.gold -= item.cost;
     item.bought = true;
     const initStar = Math.min(cap, item.star);
-    game.seal = { kind: item.kind, elem: spec.elem, star: initStar, prog: 0, cd: 0, dmgDealt: 0, kills: 0 };
+    game.seal = { kind: item.kind, elem: spec.elem, star: initStar, prog: 0, route: null, cd: 0, dmgDealt: 0, kills: 0 };
     addRing(game.hero.x, game.hero.y, ELEMENTS[spec.elem].color, 1.8);
     addFloat(game.hero.x, game.hero.y - 0.5, `附魔 ${spec.name} ${initStar}★`, ELEMENTS[spec.elem].color, true);
     AudioKit.play('merge', 1.05);
-    toast(`已铭刻主灵印【${spec.name} ${initStar}★ ${SEAL_TIER_NAMES[initStar]}】！`);
+    toast(`已铭刻主灵印【${spec.name} ${initStar}★ ${SEAL_TIER_NAMES[initStar]}】${initStar >= 3 ? ' · 点击主印可选 3★ 专精路线！' : '！'}`);
   } else if (game.seal.kind === item.kind) {
     if (game.seal.star >= cap) {
       const curNode = getActiveUnlockNode();
@@ -2676,8 +3642,9 @@ function buyShopItem(shopIdx){
       addRing(game.hero.x, game.hero.y, '#ffe878', 2.6);
       addFloat(game.hero.x, game.hero.y - 0.6, `★ ${spec.name} 晋升 ${game.seal.star}★ ${SEAL_TIER_NAMES[game.seal.star]}！`, '#ffe878', true);
       AudioKit.play('merge');
-      const synMsg = game.seal.star === 3 ? ' · 已激活 2 层元素羁绊！' : game.seal.star === 5 ? ' · 已激活 4 层终极羁绊！' : '';
-      toast(`主印升阶！【${spec.name}】晋升 ${game.seal.star}★ ${SEAL_TIER_NAMES[game.seal.star]}${synMsg}`);
+      const routeHint = (game.seal.star >= 3 && !game.seal.route) ? ' · 已解锁 3★ 专精二选一（点击灵印阵盘选择）！' : '';
+      const synMsg = game.seal.star === 3 ? ' · 已激活 2 层元素羁绊' : game.seal.star === 5 ? ' · 已激活 4 层终极羁绊' : '';
+      toast(`主印升阶！【${spec.name}】晋升 ${game.seal.star}★ ${SEAL_TIER_NAMES[game.seal.star]}${synMsg}${routeHint}`);
     } else {
       AudioKit.play('coin', 1.2);
       toast(`吸收灵印精华！${spec.name} ${game.seal.star}★ 升星进度 ${game.seal.prog}/${SEAL_FUSE_NEED[game.seal.star]}`);
@@ -2725,7 +3692,7 @@ function buyShopItem(shopIdx){
     game.gold = game.gold - item.cost + refund;
     item.bought = true;
     const initStar = Math.min(cap, item.star);
-    game.seal = { kind: item.kind, elem: spec.elem, star: initStar, prog: 0, cd: 0, dmgDealt: 0, kills: 0 };
+    game.seal = { kind: item.kind, elem: spec.elem, star: initStar, prog: 0, route: null, cd: 0, dmgDealt: 0, kills: 0 };
     addRing(game.hero.x, game.hero.y, ELEMENTS[spec.elem].color, 2.0);
     addFloat(game.hero.x, game.hero.y - 0.5, `转修 ${spec.name} ${initStar}★ (+${refund}金)`, ELEMENTS[spec.elem].color, true);
     AudioKit.play('merge', 1.0);
@@ -2767,20 +3734,38 @@ function sellSubSeal(idx){
 
 function equipGearFromBag(bagIdx){
   if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
-  const gearKey = game.bag[bagIdx];
+  const inst = normalizeGearInstance(game.bag[bagIdx]);
   if (game.hero.gear.length >= HERO_GEAR_SLOTS) {
-    toast(`领主构装槽已满（${HERO_GEAR_SLOTS}/${HERO_GEAR_SLOTS}），请先卸下一件或右键背包构装熔炼换金。`, true);
+    game.inspTarget = { type: 'hero' };
+    toast(`领主构装槽已满（${HERO_GEAR_SLOTS}/${HERO_GEAR_SLOTS}），已在详情面板打开，可卸下、替换、出售或拆解！`, true);
+    renderAllUI(true);
     return false;
   }
   game.bag.splice(bagIdx, 1);
-  game.hero.gear.push(gearKey);
+  game.hero.gear.push(inst);
   syncHeroMaxHp();
+  const syn = recomputeEquipmentSynergies();
   game.mode = null;
-  const fx = describeGearEffect(gearKey);
+  const synTxt = syn.active.length ? ` · 当前联动：${syn.active.map(s => s.name).join(' / ')}` : '';
   addRing(game.hero.x, game.hero.y, '#ffe478', 1.5);
-  addFloat(game.hero.x, game.hero.y - 0.5, `穿戴 ${gearLabel(gearKey)}`, '#ffe88a', true);
+  addFloat(game.hero.x, game.hero.y - 0.5, `穿戴 ${gearLabel(inst)}`, '#ffe88a', true);
   AudioKit.play('chest');
-  toast(`已穿戴【${gearLabel(gearKey)}】生效：${fx}`);
+  toast(`已穿戴【${gearLabel(inst)}】(${inst.slotsCount}槽)${synTxt}`);
+  renderAllUI(true);
+  return true;
+}
+
+function replaceEquippedGear(slotIdx, bagIdx){
+  if (slotIdx < 0 || slotIdx >= game.hero.gear.length) return false;
+  if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
+  const incoming = normalizeGearInstance(game.bag[bagIdx]);
+  const outgoing = game.hero.gear[slotIdx];
+  game.hero.gear[slotIdx] = incoming;
+  game.bag[bagIdx] = outgoing;
+  syncHeroMaxHp();
+  recomputeEquipmentSynergies();
+  AudioKit.play('chest', 1.05);
+  toast(`已用【${gearLabel(incoming)}】替换【${gearLabel(outgoing)}】，联动已实时重算！`);
   renderAllUI(true);
   return true;
 }
@@ -2788,28 +3773,84 @@ function equipGearFromBag(bagIdx){
 function unequipGear(slotIdx){
   const list = game.hero.gear;
   if (!list || slotIdx < 0 || slotIdx >= list.length) return false;
-  const [gk] = list.splice(slotIdx, 1);
-  game.bag.push(gk);
+  const [inst] = list.splice(slotIdx, 1);
+  game.bag.push(inst);
   syncHeroMaxHp();
+  recomputeEquipmentSynergies();
   AudioKit.play('coin', 0.85);
-  toast(`已卸下【${gearLabel(gk)}】放回背包。`);
+  toast(`已卸下【${gearLabel(inst)}】放回背包，联动已重算。`);
   renderAllUI(true);
   return true;
 }
 
-function salvageBagGear(bagIdx){
+function sellBagGear(bagIdx){
   if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
-  const gk = game.bag[bagIdx];
-  const spec = GEARS[gearBase(gk)];
-  const star = gearStar(gk);
-  const gold = Math.round((GEAR_SALVAGE_GOLD[spec?.rarity || 'common'] || 15) * star);
+  const inst = game.bag[bagIdx];
+  const gold = getGearSellGold(inst);
   game.bag.splice(bagIdx, 1);
   game.gold += gold;
   AudioKit.play('coin', 1.1);
-  addFloat(game.hero.x, game.hero.y - 0.5, `熔炼 +${gold} 金`, '#ffe27a');
-  toast(`🔥 已熔炼【${gearLabel(gk)}】，获得 +${gold} 金币！`);
+  addFloat(game.hero.x, game.hero.y - 0.5, `出售 +${gold} 金`, '#ffe27a');
+  toast(`💰 已出售【${gearLabel(inst)}】(${GEAR_RARITY_LABELS[inst.rarity]}·阶段${inst.sourceStage})，获得 +${gold} 金币！`);
   renderAllUI(true);
   return true;
+}
+
+function dismantleBagGear(bagIdx){
+  if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
+  const inst = game.bag[bagIdx];
+  const mats = getGearDismantleMaterials(inst);
+  game.bag.splice(bagIdx, 1);
+  game.materials = (game.materials || 0) + mats;
+  AudioKit.play('merge', 0.9);
+  addFloat(game.hero.x, game.hero.y - 0.5, `拆解 +${mats} 锻材`, '#8ef4ff');
+  toast(`🔧 已拆解【${gearLabel(inst)}】(${GEAR_RARITY_LABELS[inst.rarity]}·阶段${inst.sourceStage})，获得 +${mats} 普通材料！`);
+  renderAllUI(true);
+  return true;
+}
+
+// Backward-compatible alias
+function salvageBagGear(bagIdx){
+  return sellBagGear(bagIdx);
+}
+
+// Stage 2 Normal Material Optimization (Review-approved plan L96):
+// Consumes game.materials to raise enhanceLv (base stats + existing affix numeric tier),
+// STRICTLY preserving rarity, sourceStage, slotsCount, and affix IDs!
+function enhanceGear(target){
+  if (!game?.hero) return { ok: false, reason: 'no_game' };
+  let inst = null;
+  if (typeof target === 'string') {
+    inst = game.hero.gear.find(g => g.uid === target) || game.bag.find(g => g.uid === target) || null;
+  } else if (target && typeof target === 'object') {
+    if (target.location === 'equipped') inst = game.hero.gear[target.idx] || null;
+    else if (target.location === 'bag') inst = game.bag[target.idx] || null;
+    else if (target.uid) inst = game.hero.gear.find(g => g.uid === target.uid) || game.bag.find(g => g.uid === target.uid) || null;
+  }
+  if (!inst || typeof inst !== 'object') return { ok: false, reason: 'not_found' };
+  const cost = getGearEnhanceCost(inst);
+  if (cost === null) {
+    toast(`【${gearLabel(inst)}】已达最高强化档位！`, true);
+    return { ok: false, reason: 'max_level' };
+  }
+  if ((game.materials || 0) < cost) {
+    toast(`材料强化需要 ⚙️${cost} 普通材料（当前 ${game.materials || 0}）！`, true);
+    return { ok: false, reason: 'insufficient_materials', need: cost };
+  }
+  game.materials -= cost;
+  inst.enhanceLv = (inst.enhanceLv || 0) + 1;
+  // Upgrade numeric tier of existing affixes while strictly preserving affix IDs, slotsCount, rarity, sourceStage!
+  for (const a of (inst.affixes || [])) {
+    if (a) a.tier = 1 + inst.enhanceLv;
+  }
+  syncHeroMaxHp();
+  recomputeEquipmentSynergies();
+  AudioKit.play('merge', 1.15);
+  addRing(game.hero.x, game.hero.y, '#8ef4ff', 1.6);
+  addFloat(game.hero.x, game.hero.y - 0.55, `⚙️强化 ${inst.name} +${inst.enhanceLv}`, '#9ef6ff', true);
+  toast(`⚙️ 消耗 ${cost} 锻材优化【${gearLabel(inst)}】：基础属性与已有词条数值档位升至 T${1 + inst.enhanceLv}（原品质/阶段/槽位/词条不变）！`);
+  renderAllUI(true);
+  return { ok: true, uid: inst.uid, enhanceLv: inst.enhanceLv, cost, materialsLeft: game.materials };
 }
 
 /* ==================== WAVE GENERATION (30-WAVE CONTROLLED CURVE) & SHRINE ==================== */
@@ -3052,6 +4093,9 @@ function dealDamage(e, rawDmg, opts = {}){
   const syn = getSynergyCounts();
   const frostSet = gearSetTier('frost');
   const flameSet = gearSetTier('flame');
+  const gearSyn = getActiveGearAffixSynergies();
+  const gm = aggregateGear(game?.hero?.gear || []);
+  const hadFireMarkBeforeHit = (e.fireMarkT || 0) > 0;
   let dmg = rawDmg;
   const frostSub = getSubSeal('frost');
   const chillAmp = frostSub ? SUB_SEAL_RESONANCE.frost.chillAmp[frostSub.star - 1] : 0;
@@ -3059,9 +4103,17 @@ function dealDamage(e, rawDmg, opts = {}){
     if (syn.frost >= 2) dmg *= 1.25;
     if (chillAmp > 0) dmg *= (1 + chillAmp);
     if (frostSet >= 2) dmg *= (frostSet >= 3 ? 1.35 : 1.20);
+    if (gm.chilledDmgPct > 0) dmg *= (1 + gm.chilledDmgPct);
   }
-  if (flameSet >= 2 && (opts.skillKey === 'firewave' || opts.tower?.elem === 'fire' || opts.isFireExp)) {
+  const isFireHit = (opts.skillKey === 'firewave' || opts.tower?.elem === 'fire' || opts.isFireExp || opts.burn > 0);
+  if (flameSet >= 2 && isFireHit) {
     dmg *= (flameSet >= 3 ? 1.40 : 1.25);
+  }
+  if (gm.fireDmgPct > 0 && isFireHit) {
+    dmg *= (1 + gm.fireDmgPct);
+  }
+  if (gm.markedDmgPct > 0 && (e.fireMarkT > 0 || e.burnT > 0)) {
+    dmg *= (1 + gm.markedDmgPct);
   }
   if (e.vulnT > 0) dmg *= 1.20;
 
@@ -3142,15 +4194,20 @@ function dealDamage(e, rawDmg, opts = {}){
   }
 
   // Slow & Frost Tier-4 Freeze Shatter (BLOCKED if Unstoppable windup/leap/charge!)
-  if (opts.slow > 0) {
+  const appliedSlow = Math.max(opts.slow || 0, (opts.fromHero && !opts.noFrostShieldProc) ? (gm.slowOnHit || 0) : 0);
+  if (appliedSlow > 0) {
     if (isEnemyUnstoppable(e)) {
       if ((e.unstopFloatCd || 0) <= 0) {
         e.unstopFloatCd = 0.85;
         addFloat(e.x, e.y - 0.55, '🛡️霸体!', '#ffcc4d', true);
       }
     } else {
-      e.slow = Math.max(e.slow, opts.slow);
+      const hadSlowBefore = (e.slowT || 0) > 0;
+      e.slow = Math.max(e.slow, appliedSlow);
       e.slowT = Math.max(e.slowT, opts.slowDur || 2.4);
+      if (!hadSlowBefore && game?.stats) {
+        game.stats.frostSlowsApplied = (game.stats.frostSlowsApplied || 0) + 1;
+      }
       if (syn.frost >= 4 && !e.boss && e.freezeT <= 0 && game.rnd() < 0.25) {
         e.freezeT = 1.5 * (perkLv('frost_shatter') >= 2 ? 1.5 : 1);
         addRing(e.x, e.y, '#a4f4ff', 0.9);
@@ -3163,6 +4220,60 @@ function dealDamage(e, rawDmg, opts = {}){
   if (opts.burn > 0) {
     e.burnDps = Math.max(e.burnDps, opts.burn);
     e.burnT = Math.max(e.burnT, 3.0);
+  }
+
+  // Stage 2: Independent Fire Brand affix + Fire Detonation Duo / Complete Trio Synergy
+  // Trio STRICTLY replaces Duo (never triggers both on the same hit!)
+  if (!opts.noFireDetonate && opts.skillKey !== 'perk' && (opts.fromHero || opts.tower || isFireHit)) {
+    const sc = BALANCE.equipment?.synergyCombat || {};
+    if (hadFireMarkBeforeHit && (gearSyn.hasFireTrio || gearSyn.hasFireDuo) && (e.fireDetonateCd || 0) <= 0) {
+      if (gearSyn.hasFireTrio) {
+        if (game.stats) game.stats.gearFireTrioProcs = (game.stats.gearFireTrioProcs || 0) + 1;
+        triggerFireDetonation(e, sc.fireTrioDetonateMult || 1.25, {
+          radius: sc.fireTrioRadius || 2.05,
+          skillKey: opts.skillKey || 'firewave'
+        });
+      } else if (gearSyn.hasFireDuo) {
+        if (game.stats) game.stats.gearFireDuoProcs = (game.stats.gearFireDuoProcs || 0) + 1;
+        triggerFireDetonation(e, sc.fireDuoDetonateMult || 1.15, {
+          radius: sc.fireDuoRadius || 1.85,
+          skillKey: opts.skillKey || 'firewave',
+          skipTrioChain: true
+        });
+      }
+    } else if (e.hp > 0 && !hadFireMarkBeforeHit) {
+      const shouldMark = (gearSyn.hasFireTrio || gearSyn.hasFireDuo)
+        ? (isFireHit || opts.fromHero)
+        : (gm.fireMarkChance > 0 && (isFireHit || opts.fromHero) && game.rnd() < gm.fireMarkChance);
+      if (shouldMark) {
+        applyFireMark(e, 1, 'gear_affix', 4.8);
+      }
+    }
+  }
+
+  // Stage 2: Frost Aegis Duo / Complete Trio Synergy (Trio STRICTLY replaces Duo!)
+  if (!opts.noFrostShieldProc && opts.skillKey !== 'perk' && (e.slowT > 0 || e.freezeT > 0) && (gearSyn.hasFrostTrio || gearSyn.hasFrostDuo)) {
+    if ((game.hero.gearFrostShieldCd || 0) <= 0) {
+      const sc = BALANCE.equipment?.synergyCombat || {};
+      if (gearSyn.hasFrostTrio) {
+        game.hero.gearFrostShieldCd = sc.frostTrioShieldCd || 0.40;
+        if (game.stats) game.stats.gearFrostTrioProcs = (game.stats.gearFrostTrioProcs || 0) + 1;
+        gainFrostShield(sc.frostTrioShieldGain || 18, {
+          duration: 5.0,
+          maxShield: sc.frostTrioShieldCap || 115,
+          source: 'gear_frost_trio'
+        });
+      } else if (gearSyn.hasFrostDuo) {
+        game.hero.gearFrostShieldCd = sc.frostDuoShieldCd || 0.45;
+        if (game.stats) game.stats.gearFrostDuoProcs = (game.stats.gearFrostDuoProcs || 0) + 1;
+        gainFrostShield(sc.frostDuoShieldGain || 14, {
+          duration: 4.5,
+          maxShield: sc.frostDuoShieldCap || 95,
+          source: 'gear_frost_duo',
+          noFullShieldPulse: true
+        });
+      }
+    }
   }
 
   // Dual Resonance: Wind+Fire & Frost+Thunder procs
@@ -3192,8 +4303,9 @@ function dealDamage(e, rawDmg, opts = {}){
     applyHeroLifesteal(opts.lifesteal * 0.50);
   }
 
-  // On-hit Volt Crest chain proc
-  if (opts.chainProc > 0 && !opts.noChainProc && game.rnd() < opts.chainProc) {
+  // On-hit Volt Crest / Thunder Spark affix chain proc
+  const chainChance = Math.max(opts.chainProc || 0, (opts.fromHero && !opts.noChainProc) ? (gm.chainProc || 0) : 0);
+  if (chainChance > 0 && !opts.noChainProc && game.rnd() < chainChance) {
     fireChainLightning(e, Math.round(dmg * 0.55), 3, { tower: opts.tower, noChainProc: true, isThunder: true });
   }
 
@@ -3232,9 +4344,15 @@ function onEnemyKilled(e, opts){
   game.stats.kills++;
   if (e.boss) game.stats.bossKills = (game.stats.bossKills || 0) + 1;
   if (opts.tower) opts.tower.kills = (opts.tower.kills || 0) + 1;
-  const bonusGold = (opts.bonusGold || 0);
+  const gm = aggregateGear(game?.hero?.gear || []);
+  const affixGold = (gm.bonusGoldChance > 0 && game.rnd() < gm.bonusGoldChance) ? 1 : 0;
+  const bonusGold = (opts.bonusGold || 0) + affixGold;
   const baseGold = (e.elite || e.boss || e.gold >= 2) ? e.gold : (game.rnd() < BALANCE.economy.singleGoldDropChance ? e.gold : 0);
   game.gold += baseGold + bonusGold;
+
+  if (gm.burnKillHeal > 0 && (e.burnT > 0 || e.fireMarkT > 0)) {
+    applyHeroLifesteal(gm.burnKillHeal);
+  }
 
   // Material drops for v0.60 equipment & crafting loop
   if (e.boss || e.elite) {
@@ -3376,6 +4494,7 @@ function castHeroDash(){
   const h = game.hero;
   if (h.dashCd > 0) { toast(`烈焰冲刺冷却中 (${h.dashCd.toFixed(1)}s)`, true); return false; }
   if (game.curWaveTel) game.curWaveTel.dashCount++;
+  const hadFrostShieldBeforeDash = h.shield > 0 && h.frostShieldActive;
   const hs = getHeroStats();
   if (pointerScreen) pointerWorld = screenToWorld(pointerScreen.x, pointerScreen.y);
   let dx = Number(keys.has('d')||keys.has('arrowright')) - Number(keys.has('a')||keys.has('arrowleft'));
@@ -3392,7 +4511,7 @@ function castHeroDash(){
   h.y = clamp(h.y + dy * dashDist, 1.2, H - 1.2);
   h.invuln = 0.6;
   h.shield = Math.max(h.shield, 35);
-  h.shieldTimer = 3.5;
+  h.shieldTimer = Math.max(h.shieldTimer || 0, 3.5);
   const wgLv = perkLv('wind_gale');
   const cdFactor = wgLv >= 2 ? 0.55 : wgLv === 1 ? 0.75 : 1.0;
   if (wgLv > 0) h.dashBuffT = 2.0;
@@ -3407,6 +4526,12 @@ function castHeroDash(){
         dealDamage(e, Math.round(32 * hs.dmgMult), { fromHero:true, skillKey:'dash', critChance:hs.crit, critDmg:hs.critDmg, col:'#ff8e52', burn:12, lifesteal:hs.lifesteal });
       }
     }
+  }
+  // Stage 2 Frost Complete Trio active trigger (Review-approved plan L98):
+  // When dodging actively with Frost Shield up, dashing unleashes a cooldown-capped Frost Pulse at landing!
+  if (hadFrostShieldBeforeDash && getActiveGearAffixSynergies().hasFrostTrio && (h.frostActivePulseCd || 0) <= 0) {
+    const sc = BALANCE.equipment?.synergyCombat || {};
+    triggerFrostPulse(sc.frostTrioActivePulseRadius || 3.25, sc.frostTrioActivePulseDmg || 46, 1.0, 'dash_shield');
   }
   // Sword Echo (剑影分身): dash unleashes 1 or 4 piercing sword waves!
   const seLv = perkLv('sword_echo');
@@ -3486,6 +4611,8 @@ function updateHero(dt){
   h.dashBuffT = Math.max(0, h.dashBuffT - dt);
   h.thornsCd = Math.max(0, h.thornsCd - dt);
   h.frostPulseCd = Math.max(0, (h.frostPulseCd || 0) - dt);
+  h.frostActivePulseCd = Math.max(0, (h.frostActivePulseCd || 0) - dt);
+  h.gearFrostShieldCd = Math.max(0, (h.gearFrostShieldCd || 0) - dt);
   h.invuln = Math.max(0, h.invuln - dt);
   h.armorBreakT = Math.max(0, (h.armorBreakT || 0) - dt);
   h.leechTimer = (h.leechTimer || 0) + dt;
@@ -4173,21 +5300,31 @@ function triggerSealOnHeroHit(hitEnemy){
     const rad = Math.max(1.70, st.splash);
     addRing(hx, hy, '#ff7b47', rad);
     for (const e of alive) {
-      if (e.hp > 0 && dist(e, hitEnemy) <= rad + e.r) dealDamage(e, st.dmg, { ...dmgOpts, col:'#ff9f66' });
+      if (e.hp > 0 && dist(e, hitEnemy) <= rad + e.r) {
+        if (st.route === 'mastery') applyFireMark(e, 1, 'seal_fire_mastery', 4.5);
+        dealDamage(e, st.dmg, { ...dmgOpts, col:'#ff9f66' });
+      }
     }
     if (a.star >= 2) {
-      game.zones.push({ kind:'lava', x:hx, y:hy, r:rad * 0.82, t:2.8, max:2.8, tick:0.45, dps:st.burn, tower:a });
+      game.zones.push({ kind:'lava', x:hx, y:hy, r:rad * (st.route === 'mastery' ? 0.96 : 0.82), t: st.route === 'mastery' ? 3.5 : 2.8, max: st.route === 'mastery' ? 3.5 : 2.8, tick:0.45, dps:st.burn, tower:a });
     }
     AudioKit.play('fire');
   } else if (a.kind === 'frost') {
     const rad = Math.max(1.85, st.splash);
     addRing(hx, hy, '#6ce2ff', rad);
+    let chilledHit = false;
     for (const e of alive) {
-      if (e.hp > 0 && dist(e, hitEnemy) <= rad + e.r) dealDamage(e, st.dmg, { ...dmgOpts, col:'#8ceeff' });
+      if (e.hp > 0 && dist(e, hitEnemy) <= rad + e.r) {
+        if (e.slowT > 0 || e.freezeT > 0) chilledHit = true;
+        dealDamage(e, st.dmg, { ...dmgOpts, col:'#8ceeff' });
+      }
+    }
+    if (st.route === 'mastery' && chilledHit) {
+      gainFrostShield(10, { duration: 4.5, maxShield: 105, source: 'seal_frost_mastery' });
     }
     AudioKit.play('frost');
   } else if (a.kind === 'thunder') {
-    fireChainLightning(hitEnemy, st.dmg, st.chains, { ...dmgOpts, ox: hx, oy: hy });
+    fireChainLightning(hitEnemy, st.dmg, st.chains, { ...dmgOpts, vuln: st.route === 'mastery' || dmgOpts.vuln, ox: hx, oy: hy });
   } else if (a.kind === 'holy') {
     const baseAng = game.rnd() * Math.PI;
     const rayCount = Math.max(2, st.beams);
@@ -4201,6 +5338,7 @@ function triggerSealOnHeroHit(hitEnemy){
         if (e.hp > 0 && pointToSegDist(e.x, e.y, x1, y1, x2, y2) <= 0.52 + e.r) dealDamage(e, st.dmg, { ...dmgOpts, col:'#fff094' });
       }
     }
+    if (st.route === 'mastery') applyHeroLifesteal(4);
     AudioKit.play('holy');
   }
 
@@ -4841,18 +5979,24 @@ function damageHero(amt){
   if (h.invuln > 0 || !['prep','wave'].includes(game.phase)) return;
   h.invuln = 0.28;
   let rem = amt;
+  const gm = aggregateGear(h.gear);
   if ((h.armorBreakT || 0) > 0) rem = Math.round(rem * 1.25);
   if (perkLv('frost_domain') >= 2) rem = Math.max(1, Math.round(rem * 0.80));
   if (gearSetTier('blood') >= 3 && h.hp <= h.maxHp * 0.5) rem = Math.max(1, Math.round(rem * 0.78));
+  if (gm.dmgReduce > 0) rem = Math.max(1, Math.round(rem * (1 - gm.dmgReduce)));
   const hadFrostShield = h.shield > 0 && h.frostShieldActive;
-  if (hadFrostShield && h.w10Branch?.nova === 'nv_prism_lance') {
-    triggerFrostPulse(2.8, 36, 0.9);
+  const gearSyn = getActiveGearAffixSynergies();
+  if (hadFrostShield && gearSyn.hasFrostTrio) {
+    const sc = BALANCE.equipment?.synergyCombat || {};
+    triggerFrostPulse(sc.frostTrioHitPulseRadius || 3.1, sc.frostTrioHitPulseDmg || 44, 1.0, 'shield_hit');
+  } else if (hadFrostShield && h.w10Branch?.nova === 'nv_prism_lance') {
+    triggerFrostPulse(2.8, 36, 0.9, 'w10');
   }
   if (h.shield > 0) { const a = Math.min(h.shield, rem); h.shield -= a; rem -= a; }
   if (hadFrostShield && h.shield <= 0) {
     h.frostShieldActive = false;
     if (gearSetTier('frost') >= 3 || h.w10Branch?.nova === 'nv_glacial_bastion') {
-      triggerFrostPulse(3.2, 42, 1.0);
+      triggerFrostPulse(3.2, 42, 1.0, 'w10');
     }
   }
   if (rem > 0) {
@@ -5631,12 +6775,12 @@ function pickChestGearChoices(legendBias = false, shrineTier = false){
     epic:   GEAR_KEYS.filter(k => GEARS[k].rarity === 'epic').map(k => GEARS[k]),
     legend: GEAR_KEYS.filter(k => GEARS[k].rarity === 'legend').map(k => GEARS[k])
   };
-  const choices = [];
+  const specs = [];
   const takeRarity = r => {
-    const pool = byRarity[r].filter(g => !choices.includes(g));
+    const pool = byRarity[r].filter(g => !specs.includes(g));
     if (!pool.length) return null;
     const g = pool[Math.floor(game.rnd() * pool.length)];
-    choices.push(g);
+    specs.push(g);
     return g;
   };
   const w = game.wave || 1;
@@ -5648,7 +6792,7 @@ function pickChestGearChoices(legendBias = false, shrineTier = false){
     else if (w <= 15) takeRarity('epic');
     else takeRarity('legend');
   }
-  while (choices.length < 3) {
+  while (specs.length < 3) {
     const r = game.rnd();
     let tier = 'common';
     if (legendBias) {
@@ -5676,7 +6820,27 @@ function pickChestGearChoices(legendBias = false, shrineTier = false){
       if (!picked) break;
     }
   }
-  return choices;
+  // Generate 3 real independent gear instances (independent rarity & 1/2/3 slots, locked sourceStage, filled affixes)
+  return specs.map(sp => {
+    const inst = createGearInstance(sp.key, {
+      wave: w,
+      origin: legendBias ? 'boss_chest' : shrineTier ? 'shrine_chest' : 'elite_chest',
+      highRarityChance: legendBias ? 0.32 : shrineTier ? 0.24 : 0.14,
+      rndFn: game.rnd
+    });
+    inst.key = inst.baseKey; // keep .key alias for UI/tests
+    return inst;
+  });
+}
+
+function renderAffixChipsHtml(inst){
+  return (inst.affixes || []).map((a, idx) => {
+    if (!a) return `<span class="affix-chip">[空槽${idx + 1}]</span>`;
+    const sp = GEAR_AFFIXES[a.id];
+    if (!sp) return '';
+    const cls = `${sp.elem === 'fire' ? 'fire' : sp.elem === 'frost' ? 'frost' : ''} ${sp.rarity}`;
+    return `<span class="affix-chip ${cls}" title="${sp.desc(a.tier || 1)}">${sp.icon}${sp.name}${a.tier > 1 ? ` T${a.tier}` : ''}</span>`;
+  }).join('');
 }
 
 function renderChestModal(legendBias = false, shrineTier = false){
@@ -5685,87 +6849,81 @@ function renderChestModal(legendBias = false, shrineTier = false){
   const title = legendBias ? '👑 首领传说宝箱' : shrineTier ? '🩸 血煞妖碑高阶宝箱' : '📦 精英构装宝箱';
   box.innerHTML = `
     <h2>${title} · 三选一</h2>
-    <p class="lead">构装按波次分四阶（<strong>凡品→灵品→史诗→传说/凶器</strong>），穿戴在<strong>领主 4 个全局槽</strong>中！<strong>同名自动叠星</strong>（2★ ×1.6 / 3★ ×2.3），多余可在背包右键熔炼换取金币！</p>
+    <p class="lead">每件装备为<strong>独立实例</strong>（品质与 <strong>1/2/3 槽</strong>独立随机，锁定当前来源阶段，不再同名合星覆盖词条）。多余装备可在属性面板选择<strong>出售换金</strong>或<strong>拆解获锻材</strong>！</p>
     <div class="choices" id="modalChoices"></div>
   `;
   const grid = box.querySelector('#modalChoices');
   const setCounts = getGearSetCounts();
-  for (const g of choices) {
+  for (const inst of choices) {
     const card = document.createElement('button');
     card.type = 'button';
-    card.className = 'choice-card ' + g.rarity;
-    card.dataset.choice = g.key;
-    const tgt = findGearStackTarget(g.key);
-    const owned = ownedGearStar(g.key);
-    const stackTag = tgt
-      ? `<span class="tag" style="background:rgba(124,232,150,0.25);color:#c9ffd8">已拥有 · 选它叠 ${tgt.star + 1}★</span>`
-      : (owned ? `<span class="tag" style="opacity:.75">已有 3★ · 将入背包</span>` : '');
-    const rTag = g.rarity === 'legend' ? '传说神器' : g.rarity === 'epic' ? '史诗构装' : g.rarity === 'rare' ? '灵品法器' : '凡品法器';
-    const elSpec = ELEMENTS[g.elem];
-    const setSpec = GEAR_SETS[g.set];
-    const curSetCnt = setCounts[g.set] || 0;
-    const willActivateSet = !owned && curSetCnt === 1 ? ' → 选后激活2件!' : !owned && curSetCnt === 2 ? ' → 选后激活3件!' : '';
+    card.className = 'choice-card ' + inst.rarity;
+    card.dataset.choice = inst.baseKey;
+    card.dataset.uid = inst.uid;
+    const rTag = GEAR_RARITY_LABELS[inst.rarity] || '凡品';
+    const stSpec = getSourceStageSpec(inst.sourceStage);
+    const elSpec = ELEMENTS[inst.elem];
+    const setSpec = GEAR_SETS[inst.set];
+    const curSetCnt = setCounts[inst.set] || 0;
+    const itemSyns = evaluateItemSynergies(inst);
+    const synHints = getGearSynergyHints(inst);
     card.innerHTML = `
-      <span class="tag">${rTag}${elSpec ? ` · ${elSpec.icon}${elSpec.name}+1` : ''}</span>
-      ${stackTag}
-      <span class="ci">${g.icon}</span>
-      <span class="cn">${g.name}</span>
-      <span class="cd">${g.desc}</span>
-      ${setSpec ? `<span class="cd" style="color:${setSpec.col};font-size:11px;margin-top:2px">${setSpec.icon} ${setSpec.name} (${curSetCnt}/3${willActivateSet}) · 2件:${setSpec.d2}</span>` : ''}
+      <span class="tag">${rTag} · ${stSpec.label} · ${inst.slotsCount}槽${elSpec ? ` · ${elSpec.icon}${elSpec.name}` : ''}</span>
+      <span class="ci">${inst.icon}</span>
+      <span class="cn">${inst.name}</span>
+      <span class="cd">${describeGearEffect(inst)}</span>
+      <div style="margin-top:3px">${renderAffixChipsHtml(inst)}</div>
+      ${itemSyns.length ? `<span class="syn-badge ${itemSyns[0].badgeClass}">✨ 单件联动：${itemSyns.map(s => `${s.icon}${s.name}(${s.short})`).join(' / ')}</span>` : ''}
+      ${synHints.length ? `<span class="syn-badge hint">💡 ${synHints.join('；')}</span>` : ''}
+      ${setSpec ? `<span class="cd" style="color:${setSpec.col};font-size:11px;margin-top:2px">${setSpec.icon} ${setSpec.name} (${curSetCnt}/3)</span>` : ''}
     `;
-    card.addEventListener('click', () => pickGearReward(g.key));
+    card.addEventListener('click', () => pickGearReward(inst));
     grid.append(card);
   }
   $('modalBackdrop').hidden = false;
 }
 
-function grantGear(key){
-  const spec = GEARS[key];
-  const tgt = findGearStackTarget(key);
-  if (tgt){
-    const ns = tgt.star + 1;
-    tgt.list[tgt.idx] = `${key}#${ns}`;
-    if (tgt.list === game.hero.gear) syncHeroMaxHp();
-    AudioKit.play('merge', 1.1);
-    game.shake = Math.max(game.shake, 5);
-    addRing(game.hero.x, game.hero.y, '#ffe478', 1.8);
-    addFloat(game.hero.x, game.hero.y - 0.6, `✨ ${spec.name} 叠至 ${ns}★！`, '#ffe878', true);
-    toast(`同名构装自动叠星！【${spec.name}】晋升 ${ns}★，效果 ×${GEAR_STAR_MULT[ns - 1]}！`);
-  } else {
-    game.bag.push(key);
-    AudioKit.play('chest', 1.2);
-    toast(`获得构装【${spec.name}】！同名再选自动叠星（最高 3★）。`);
-  }
+function grantGear(input, opts = {}){
+  const inst = isGearInstance(input)
+    ? normalizeGearInstance(input)
+    : createGearInstance(gearBase(input), { wave: game.wave, origin: opts.origin || 'drop', ...opts });
+  // Stage 2: NEVER auto-fuse or overwrite existing gear instances!
+  game.bag.push(inst);
+  AudioKit.play('chest', 1.2);
+  const stSpec = getSourceStageSpec(inst.sourceStage);
+  toast(`获得独立构装【${inst.name}】(${GEAR_RARITY_LABELS[inst.rarity]}·${stSpec.label}·${inst.slotsCount}槽)，已放入背包！`);
   renderAllUI(true);
+  return inst;
 }
 
-function pickGearReward(key){
-  grantGear(key);
+function pickGearReward(itemOrKey){
+  const inst = grantGear(itemOrKey);
   closeModal();
+  return inst;
 }
 
 function showIntroModal(){
   game.activeModal = { type:'intro' };
   const box = $('modalBox');
   box.innerHTML = `
-    <h2>⚔️ 边境守卫 v0.60 · 30 波秘境守卫 × 阶段突破</h2>
-    <p class="lead">64×48 修仙秘境自由游走！迎战 <strong>W1–W30 三阶段成长曲线</strong>与 6 大机制首领（W5/10/15/20/25/30），体验阶段突破带来的流派形态质变！</p>
+    <h2>⚔️ 边境守卫 v0.60 · 30 波秘境 × 独立词条联动</h2>
+    <p class="lead">64×48 修仙秘境自由游走！迎战 <strong>W1–W30 三阶段成长曲线</strong>与 6 大首领，打造<strong>独立槽位随机词条构装</strong>并激活双/三词条实战联动！</p>
     <div class="intro-grid">
       <div class="intro-box">
-        <h4>⚡ W10 首次大型突破 · 形态质变</h4>
-        <p>取消旧四次手动渡劫与装备赌局！隔级选普通神通卡，击败 <strong>W10 首领</strong>后指定 1 门已学主力神通并从 <strong>3 个随机分支中择一</strong>，真实改变技能形态并建立<strong>火标/引爆</strong>或<strong>减速/冰盾</strong>机制！</p>
+        <h4>🔥❄️ 双词条 / 完整三词条实战联动</h4>
+        <p>每件构装独立随机 <strong>1/2/3 槽词条</strong>（不再同名合星覆盖）！凑齐火系引爆或冰系护体 2/3 词条可触发<strong>群体传递引爆 / 孤立聚焦引爆</strong>与<strong>寒冰护盾受击/冲刺/满盾冰环反制</strong>！</p>
       </div>
       <div class="intro-box">
-        <h4>✨ 主印 5★ + 双辅印节点开放</h4>
-        <p>主灵印星级上限（2★→5★）与辅灵印槽（0→2 槽）随 <strong>W6、W10 突破、W16、W20 突破</strong>可配置节点自动开放，触发五行羁绊与双元共鸣！</p>
+        <h4>🏪 商店构装 · 出售 / 拆解 / 锻材强化</h4>
+        <p>商店上架随机词条装备（按阶段+同系递增且有封顶）。多余装备可<strong>出售换金</strong>或<strong>拆解得锻材</strong>（严格按自身品质与来源阶段计算，与槽位数独立）；消耗锻材提升基础属性与已有词条档位！</p>
       </div>
       <div class="intro-box">
-        <h4>⏳ 自由备战 · W29 终局 90s 整备</h4>
-        <p>普通波间自由整备，开启自动开波后若存在<strong>待选突破或奖励将自动暂停</strong>；W29 战后提供独立 <strong>90 秒终局限时整备</strong>迎战 W30 深渊主宰！</p>
+        <h4>⚡ W10 突破与 3★ 主灵印专精路线</h4>
+        <p>击败 W10 首领指定主力神通三选一改变形态，与装备词条共用火标/减速状态；主灵印升至 <strong>3★</strong> 可在<strong>免费进阶 vs 35金机制专精</strong>间取舍！</p>
       </div>
       <div class="intro-box">
-        <h4>📦 构装与锻材 · 详情面板 [C]</h4>
-        <p>精英与首领掉落构装宝箱与<strong>锻材</strong>；按 <strong>[C]</strong> 查看完整属性、W10 突破分支、战斗状态统计与<strong>波次难度体检表</strong>！</p>
+        <h4>📦 装备管理与联动提示 · [C] 面板</h4>
+        <p>左侧构筑总览与按 <strong>[C]</strong> 打开的属性面板实时展示<strong>当前已激活联动</strong>以及<strong>差哪条词条可升级为完整三联动</strong>！</p>
       </div>
     </div>
     <div class="modal-footer">
@@ -5788,10 +6946,14 @@ function showEndModal(victory){
   const w20Info = game.hero.breakthroughs.w20
     ? (game.hero.breakthroughs.w20.placeholder ? '已达成 W20 突破节点（阶段 3 开放完整分支）' : `${game.hero.breakthroughs.w20.directionKey}`)
     : '未达成';
+  const activeGearSyn = getActiveGearAffixSynergies();
+  const synNames = activeGearSyn.active.length
+    ? activeGearSyn.active.map(s => `${s.icon}${s.name}(${s.tier === 3 ? '三联动' : '双联动'})`).join('、')
+    : '无词条联动';
   const box = $('modalBox');
   box.innerHTML = `
     <h2>${victory ? `🏆 30 波秘境守卫大成！你斩杀了第 ${MAIN_WAVES} 波深渊主宰！` : `💀 道消身陨 · 止步第 ${game.wave} / ${MAIN_WAVES} 波（${getRealmStageLabel()}）`}</h2>
-    <p class="lead">${victory ? '你已完成全部 30 波边境守卫与阶段突破考验！以下为本局三维度结算摘要：' : '本局已在当前波次立即结算。复盘下方三维度表现与波次体检数据，调整突破分支与灵印共鸣再来一局！'}</p>
+    <p class="lead">${victory ? '你已完成全部 30 波边境守卫与阶段突破考验！以下为本局三维度结算摘要：' : '本局已在当前波次立即结算。复盘下方三维度表现与波次体检数据，调整词条联动与灵印共鸣再来一局！'}</p>
     <div class="intro-grid" style="margin:10px 0">
       <div class="intro-box">
         <h4>① 通关结果</h4>
@@ -5799,11 +6961,11 @@ function showEndModal(victory){
       </div>
       <div class="intro-box">
         <h4>② 本局表现</h4>
-        <p>总击杀：<b>${game.stats.kills}</b>（首领 <b>${game.stats.bossKills || 0}</b> / 精英 <b>${game.stats.elites}</b>）<br>总输出：<b>${game.stats.dmgTotal.toLocaleString()}</b> · 最低血线：<b>${rep.summary.lowestHpPct}%</b><br>W10 突破：<b>${w10Info}</b><br>W20 突破：<b>${w20Info}</b></p>
+        <p>总击杀：<b>${game.stats.kills}</b>（首领 <b>${game.stats.bossKills || 0}</b> / 精英 <b>${game.stats.elites}</b>）<br>总输出：<b>${game.stats.dmgTotal.toLocaleString()}</b> · 最低血线：<b>${rep.summary.lowestHpPct}%</b><br>W10 突破：<b>${w10Info}</b><br>装备联动：<b>${synNames}</b></p>
       </div>
       <div class="intro-box" style="grid-column:span 2">
-        <h4>③ 长期成长与资源结算（阶段 4 局外功法大树接入预览）</h4>
-        <p>剩余金币：<b>💰 ${game.gold}</b> · 累计锻材：<b>⚙️ ${game.materials || 0}</b> · 突破完成数：<b>${game.stats.breakthroughsCompleted || 0}</b> · 战斗状态联动（火标 <b>${game.stats.fireMarksApplied || 0}</b> / 引爆 <b>${game.stats.fireDetonations || 0}</b> / 冰缓 <b>${game.stats.frostSlowsApplied || 0}</b> / 冰盾 <b>+${game.stats.frostShieldGained || 0}</b>）</p>
+        <h4>③ 长期成长与资源结算（阶段 4–6 局外传承接入预览）</h4>
+        <p>剩余金币：<b>💰 ${game.gold}</b> · 累计锻材：<b>⚙️ ${game.materials || 0}</b> · W20：<b>${w20Info}</b><br>实战联动统计：火标 <b>${game.stats.fireMarksApplied || 0}</b> / 引爆 <b>${game.stats.fireDetonations || 0}</b>（传递 <b>${game.stats.fireChainTransfers || 0}</b> / 孤立聚焦 <b>${game.stats.fireFocusedDetonations || 0}</b>） · 冰缓 <b>${game.stats.frostSlowsApplied || 0}</b> / 冰盾 <b>+${game.stats.frostShieldGained || 0}</b>（受击冰环 <b>${game.stats.frostHitPulses || 0}</b> / 冲刺冰环 <b>${game.stats.frostDashPulses || 0}</b> / 满盾冰环 <b>${game.stats.frostFullShieldPulses || 0}</b>）</p>
       </div>
     </div>
     ${recentRows ? `
@@ -6634,6 +7796,14 @@ function renderBattleHud(force){
     '</div>';
 }
 
+function gearListSig(list){
+  return (list || []).map(g => {
+    if (!g || typeof g !== 'object') return String(g || '');
+    const af = (g.affixes || []).map(a => a ? `${a.id}:${a.tier || 1}` : '_').join('+');
+    return `${g.uid}:${g.enhanceLv || 0}:${g.slotsCount}:${af}`;
+  }).join(',');
+}
+
 function renderLeftHud(force){
   const body = $('leftHudBody');
   const panel = $('leftHud');
@@ -6644,11 +7814,12 @@ function renderLeftHud(force){
   const activeSets = getActiveGearSets();
   const setCounts = getGearSetCounts();
   const duals = getActiveDualResonances();
-  const sealSig = game.seal ? game.seal.kind + ':' + game.seal.star + ':' + game.seal.prog : '0';
-  const subSig = game.subSeals.map(x => x.kind + ':' + x.star + ':' + x.prog).join(',');
+  const gearAffixSyn = getActiveGearAffixSynergies();
+  const sealSig = game.seal ? `${game.seal.kind}:${game.seal.star}:${game.seal.prog}:${game.seal.route || ''}` : '0';
+  const subSig = game.subSeals.map(x => `${x.kind}:${x.star}:${x.prog}`).join(',');
   const skSig = Object.entries(h.skills).map(([k,v]) => k + v + (h.w10Branch?.[k] || '')).join(',');
   const key = [
-    sealSig, subSig, h.gear.join(','), skSig, Object.keys(h.combos).join(','),
+    sealSig, subSig, gearListSig(h.gear), skSig, Object.keys(h.combos).join(','),
     Object.keys(h.perks).join(','), h.realm, h.lv, game.gold, game.materials
   ].join('|');
   if (!force && key === lastLeftHudKey) return;
@@ -6657,8 +7828,10 @@ function renderLeftHud(force){
   let sealHtml = '';
   if (game.seal) {
     const sp = ARTIFACTS[game.seal.kind], st = getSealStats(game.seal);
+    const routeSpec = game.seal.route ? SEAL_SPECIALIZATIONS[game.seal.elem]?.[game.seal.route] : null;
+    const routeTxt = routeSpec ? ` · ${routeSpec.name}` : (game.seal.star >= 3 ? ' · ⚡可选3★专精' : '');
     sealHtml += '<button type="button" class="bh-item" data-open-seal title="' + sp.desc + '">' +
-      '<span class="bh-item-icon">' + sp.icon + '</span><span class="bh-item-main"><b>主灵印 · ' + sp.name + '</b>' +
+      '<span class="bh-item-icon">' + sp.icon + '</span><span class="bh-item-main"><b>主灵印 · ' + sp.name + routeTxt + '</b>' +
       '<small>' + '★'.repeat(game.seal.star) + ' · ' + st.dmg + ' 伤害 / ' + st.cd.toFixed(2) + 's</small></span><span class="bh-item-tag">主</span></button>';
   } else {
     sealHtml += '<div class="bh-empty">尚未铭刻主灵印 · 在底部商店选择五行灵印</div>';
@@ -6688,27 +7861,42 @@ function renderLeftHud(force){
 
   const gearSlots = [];
   for (let idx = 0; idx < HERO_GEAR_SLOTS; idx++) {
-    const gk = h.gear[idx];
-    if (!gk) {
+    const inst = h.gear[idx];
+    if (!inst) {
       gearSlots.push('<div class="bh-gear-slot empty">＋ 空槽</div>');
       continue;
     }
-    const sp = GEARS[gearBase(gk)] || {};
-    const el = ELEMENTS[sp.elem] || { icon:'', color:'#9db7b1', name:'' };
-    const set = GEAR_SETS[sp.set] || { name:'散件', icon:'🧩' };
-    const desc = describeGearEffect(gk);
-    const safeTitle = String(desc).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
-    const shortDesc = desc.length > 48 ? desc.slice(0, 46) + '…' : desc;
+    const sp = GEARS[gearBase(inst)] || {};
+    const stSpec = getSourceStageSpec(inst.sourceStage || 1);
+    const fullDesc = describeGearInstance(inst);
+    const safeTitle = String(fullDesc).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    const afShort = (inst.affixes || []).filter(Boolean).map(a => GEAR_AFFIXES[a.id]?.name || a.id).join('·') || '无词条';
     gearSlots.push(
       '<div class="bh-gear-slot">' +
         '<button type="button" class="bh-gear-open" data-open-hero title="' + safeTitle + '">' +
           '<span class="bh-gear-icon">' + (sp.icon || '🧩') + '</span>' +
-          '<b>' + gearLabel(gk) + '</b><small>' + el.icon + set.name + ' · ' + shortDesc + '</small>' +
+          '<b>' + gearLabel(inst) + ' [' + (inst.slotsCount || 1) + '槽]</b>' +
+          '<small>' + (GEAR_RARITY_LABELS[inst.rarity] || '凡品') + '·' + stSpec.label.slice(0, 3) + ' · ' + afShort + '</small>' +
         '</button>' +
         '<button type="button" class="bh-unequip" data-lh-unequip="' + idx + '" title="卸回背包">×</button>' +
       '</div>'
     );
   }
+
+  let affixSynHtml = '';
+  if (gearAffixSyn.active.length) {
+    affixSynHtml += gearAffixSyn.active.map(s =>
+      `<div class="syn-badge ${s.badgeClass}"><b>${s.icon} ${s.name}（${s.short}）</b><br>${s.desc}</div>`
+    ).join('');
+  }
+  const nonTrioHints = (gearAffixSyn.hints || []).filter(ht => ht.state !== 'trio');
+  if (nonTrioHints.length) {
+    affixSynHtml += nonTrioHints.map(ht => `<div class="syn-badge hint">💡 ${ht.text}</div>`).join('');
+  }
+  if (!affixSynHtml) {
+    affixSynHtml = '<div class="bh-section-note">尚未激活词条联动 · 凑齐火系(炽炎烙印/爆燃核心/余烬连环)或冰系(寒霜侵骨/凝冰护心/凛冬反震)激活双/三联动</div>';
+  }
+
   let setHtml = '';
   for (const [sk, n] of Object.entries(setCounts)) {
     if (!n || !GEAR_SETS[sk]) continue;
@@ -6743,11 +7931,14 @@ function renderLeftHud(force){
     '<div class="lh-sec"><div class="lh-sec-t"><span>✨ 灵印阵盘</span><span>' + sealSlotsUsed + ' 个已占用</span></div>' +
       sealHtml +
     '</div>' +
-    '<div class="lh-sec"><div class="lh-sec-t"><span>🌈 五行羁绊</span><span class="bh-section-note">2 / 4 层</span></div>' +
-      synergyHtml + '<div class="bh-dual-list">' + dualHtml + '</div>' +
+    '<div class="lh-sec"><div class="lh-sec-t"><span>⚡ 装备词条联动</span><span>' + gearAffixSyn.active.length + ' 项激活</span></div>' +
+      affixSynHtml +
     '</div>' +
     '<div class="lh-sec"><div class="lh-sec-t"><span>🛡️ 构装与套装</span><span>' + h.gear.length + '/' + HERO_GEAR_SLOTS + '</span></div>' +
       '<div class="bh-gear-grid">' + gearSlots.join('') + '</div>' + setHtml +
+    '</div>' +
+    '<div class="lh-sec"><div class="lh-sec-t"><span>🌈 五行羁绊</span><span class="bh-section-note">2 / 4 层</span></div>' +
+      synergyHtml + '<div class="bh-dual-list">' + dualHtml + '</div>' +
     '</div>' +
     '<div class="lh-sec"><div class="lh-sec-t"><span>⚔️ 神通与阶段突破</span><span>' + skillEntries.length + ' 项神通</span></div>' +
       '<div class="bh-skill-list">' + skillHtml + '</div>' + comboHtml +
@@ -6862,9 +8053,9 @@ let shopCardNodes = null;
 function renderShop(force){
   const cap = getSealStarCap();
   const subCap = getSubSealSlotCap();
-  const sealSig = game.seal ? `${game.seal.kind}:${game.seal.star}:${game.seal.prog}` : 'none';
+  const sealSig = game.seal ? `${game.seal.kind}:${game.seal.star}:${game.seal.prog}:${game.seal.route || ''}` : 'none';
   const subSig = game.subSeals.map(x => `${x.kind}:${x.star}:${x.prog}`).join(',');
-  const key = `${sealSig}:${cap}:${subCap}:${subSig}|` + game.shop.map(s=>`${s.uid}:${s.bought?1:0}:${s.cost}:${s.star||0}:${s.pillKey||''}:${game.gold>=s.cost?1:0}`).join('|');
+  const key = `${sealSig}:${cap}:${subCap}:${subSig}:${game.wave}|` + game.shop.map(s=>`${s.uid}:${s.itemType}:${s.bought?1:0}:${s.cost}:${s.star||0}:${s.pillKey||''}:${s.gear?.uid||''}:${game.gold>=s.cost?1:0}`).join('|');
   if (!force && key === lastShopKey) return;
   lastShopKey = key;
 
@@ -6906,6 +8097,29 @@ function renderShop(force){
       node.tag.textContent = '丹药';
       node.ic.textContent = p.icon;
       node.nm.textContent = item.bought ? '已购买' : p.name;
+      node.cost.textContent = item.bought ? '—' : `${item.cost} 金`;
+      return;
+    }
+
+    if (item.itemType === 'gear' && item.gear) {
+      const g = item.gear;
+      const el = ELEMENTS[g.elem] || { icon: '🧩', name: '无', color: '#8ad8ce' };
+      const stSpec = getSourceStageSpec(g.sourceStage);
+      const synHints = getGearSynergyHints(g);
+      const itemSyns = evaluateItemSynergies(g);
+      const afLines = (g.affixes || []).filter(Boolean).map(a => {
+        const sp = GEAR_AFFIXES[a.id];
+        return sp ? `• ${sp.icon}${sp.name}：${sp.desc(a.tier || 1)}` : '';
+      }).join('\n');
+      const buyCnt = getShopElemBuyCount(g.elem);
+      node.btn.className = `shop-card gear-card ${g.rarity}` + (synHints.length || itemSyns.length ? ' mergeable' : '');
+      node.btn.style.setProperty('--elem-c', el.color);
+      node.btn.disabled = item.bought || game.gold < item.cost;
+      node.btn.title = `${g.name} [${GEAR_RARITY_LABELS[g.rarity]} · ${stSpec.label} · ${g.slotsCount}槽]\n基础：${describeGearEffect(g)}\n词条：\n${afLines}${itemSyns.length ? `\n单件联动：${itemSyns.map(s => s.name).join('/')}` : ''}${synHints.length ? `\n提示：${synHints.join('；')}` : ''}\n定价：阶段${g.sourceStage} · ${el.name}系已购 ${buyCnt} 次`;
+      node.tag.hidden = item.bought;
+      node.tag.textContent = `${GEAR_RARITY_LABELS[g.rarity]}·${g.slotsCount}槽`;
+      node.ic.textContent = g.icon;
+      node.nm.textContent = item.bought ? '已购买' : g.name;
       node.cost.textContent = item.bought ? '—' : `${item.cost} 金`;
       return;
     }
@@ -6952,7 +8166,7 @@ function renderShop(force){
 }
 
 function renderBag(force){
-  const key = game.bag.join('|') + '|' + game.hero.gear.length;
+  const key = gearListSig(game.bag) + '|' + game.hero.gear.length;
   if (!force && key === lastBagKey) return;
   lastBagKey = key;
 
@@ -6961,22 +8175,27 @@ function renderBag(force){
   if (!game.bag.length) {
     const sp = document.createElement('div');
     sp.className = 'bag-empty';
-    sp.textContent = '构装背包空\n打精英爆装';
+    sp.textContent = '构装背包空\n商店/精英获装';
     tray.append(sp);
     return;
   }
-  game.bag.forEach((gk, idx) => {
-    const g = GEARS[gearBase(gk)];
-    const star = gearStar(gk);
-    const salvageVal = Math.round((GEAR_SALVAGE_GOLD[g.rarity] || 15) * star);
+  game.bag.forEach((inst, idx) => {
+    const g = isGearInstance(inst) ? inst : normalizeGearInstance(inst);
+    const sellGold = getGearSellGold(g);
+    const disMats = getGearDismantleMaterials(g);
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'bag-item ' + g.rarity;
     btn.dataset.bagIdx = String(idx);
-    btn.title = `${gearLabel(gk)} (${GEAR_RARITY_LABELS[g.rarity]})：${g.desc}${star > 1 ? `\n叠星效果 ×${GEAR_STAR_MULT[star - 1]}` : ''}\n左键穿戴 · 右键熔炼(+${salvageVal}金)`;
-    btn.innerHTML = `<span class="ic">${g.icon}</span><span class="nm">${g.name}</span>${star > 1 ? `<span class="star-tag">${star}★</span>` : ''}`;
+    btn.dataset.uid = g.uid;
+    btn.title = `${describeGearInstance(g)}\n左键穿戴 · 右键出售(+${sellGold}金) · Shift+右键拆解(+${disMats}锻材)`;
+    btn.innerHTML = `<span class="ic">${g.icon}</span><span class="nm">${g.name}</span>${g.enhanceLv > 0 ? `<span class="star-tag">+${g.enhanceLv}</span>` : ''}<span class="slot-tag">${g.slotsCount}槽</span>`;
     btn.addEventListener('click', () => equipGearFromBag(idx));
-    btn.addEventListener('contextmenu', ev => { ev.preventDefault(); salvageBagGear(idx); });
+    btn.addEventListener('contextmenu', ev => {
+      ev.preventDefault();
+      if (ev.shiftKey) dismantleBagGear(idx);
+      else sellBagGear(idx);
+    });
     tray.append(btn);
   });
 }
@@ -6993,20 +8212,21 @@ function renderInspector(force){
     const cap = getSealStarCap();
     const subCap = getSubSealSlotCap();
     const subSig = game.subSeals.map(s => `${s.kind}:${s.star}:${s.prog}`).join(',');
-    const key = ['S', a?.kind || 'none', a?.star || 0, a?.prog || 0, cap, subCap, subSig, game.hero.gear.join(','), Math.floor((a?.dmgDealt || 0) / 50)].join('|');
+    const key = ['S', a?.kind || 'none', a?.star || 0, a?.prog || 0, a?.route || '', game.gold, cap, subCap, subSig, gearListSig(game.hero.gear), Math.floor((a?.dmgDealt || 0) / 50)].join('|');
     if (!force && key === lastInspKey && !panel.hidden) return;
     lastInspKey = key;
     panel.hidden = false;
 
     if (a) {
-      const spec = ARTIFACTS[a.kind], el = ELEMENTS[a.elem], st = getSealStats(a);
-      $('inspTitle').textContent = `${spec.icon} 主:${spec.name} ${'★'.repeat(a.star)} ${SEAL_TIER_NAMES[a.star]}`;
+      const spec = ARTIFACTS[a.kind], st = getSealStats(a);
+      const routeSpec = a.route ? SEAL_SPECIALIZATIONS[a.elem]?.[a.route] : null;
+      $('inspTitle').textContent = `${spec.icon} 主:${spec.name} ${'★'.repeat(a.star)} ${SEAL_TIER_NAMES[a.star]}${routeSpec ? ` · ${routeSpec.name}` : ''}`;
       $('inspSub').textContent = `[唯一主灵印 + ${subCap} 辅灵印共鸣阵盘] ${spec.desc}`;
       $('inspStats').innerHTML = `
         <div class="stat-box">爆发伤害 <b>${st.dmg}</b><span class="sub">含辅印与领主全局加成</span></div>
         <div class="stat-box">触发内置CD <b>${st.cd.toFixed(2)}s</b><span class="sub">命中即从受击点扩散</span></div>
         <div class="stat-box">主印星阶 <b>${a.star}★ / 上限${cap}★</b><span class="sub">${a.star>=5?'已达巅峰仙印':`下星进度 ${a.prog}/${SEAL_FUSE_NEED[a.star]}`}</span></div>
-        <div class="stat-box">主印输出 <b>${a.dmgDealt.toLocaleString()}</b><span class="sub">占比 ${game.stats.dmgTotal ? Math.round(a.dmgDealt*100/game.stats.dmgTotal) : 0}%</span></div>
+        <div class="stat-box">3★ 专精路线 <b>${routeSpec ? routeSpec.name : (a.star >= 3 ? '待选择' : '3★解锁')}</b><span class="sub">${routeSpec ? routeSpec.tag : '免费稳健 vs 35金专精'}</span></div>
       `;
     } else {
       $('inspTitle').textContent = `✨ 灵印阵盘`;
@@ -7026,6 +8246,21 @@ function renderInspector(force){
       r2.className = 'gear-fx-row';
       r2.innerHTML = `<b>[4层终极 · 5★激活]</b> ${el.t2} ${getSynergyCounts()[a.elem] >= 4 ? '✅' : '🔒'}`;
       fxWrap.append(r1, r2);
+
+      // Stage 2: 3★ Same-Element Seal Specialization Route comparison & choice
+      const routes = SEAL_SPECIALIZATIONS[a.elem];
+      if (routes) {
+        const routeRow = document.createElement('div');
+        routeRow.className = 'gear-fx-row';
+        if (a.route && routes[a.route]) {
+          routeRow.innerHTML = `<b>✨ 已选 3★ 专精【${routes[a.route].name}】</b>（${routes[a.route].tag}）：${routes[a.route].desc}`;
+        } else if (a.star >= 3) {
+          routeRow.innerHTML = `<b>⚡ 3★ 专精节点二选一（金币取舍）：</b><br>• <b>${routes.standard.name}</b>（免费）：${routes.standard.desc}<br>• <b>${routes.mastery.name}</b>（${routes.mastery.cost} 金）：${routes.mastery.desc}`;
+        } else {
+          routeRow.innerHTML = `<b>🔒 3★ 专精节点预览</b>：主印升至 3★ 后可在【${routes.standard.name}(免费)】与【${routes.mastery.name}(${routes.mastery.cost}金)】间择一！`;
+        }
+        fxWrap.append(routeRow);
+      }
     }
     for (let i = 0; i < game.subSeals.length; i++) {
       const sub = game.subSeals[i];
@@ -7040,6 +8275,19 @@ function renderInspector(force){
     $('inspSkills').replaceChildren();
     const acts = $('inspActions');
     acts.replaceChildren();
+    if (a && a.star >= 3 && !a.route && SEAL_SPECIALIZATIONS[a.elem]) {
+      const routes = SEAL_SPECIALIZATIONS[a.elem];
+      const bStd = document.createElement('button');
+      bStd.type = 'button'; bStd.className = 'btn';
+      bStd.innerHTML = `<span>✨ 选 ${routes.standard.name}</span><small>免费 (0 金)</small>`;
+      bStd.addEventListener('click', () => chooseSealRoute('standard'));
+      const bMas = document.createElement('button');
+      bMas.type = 'button'; bMas.className = 'btn gold';
+      bMas.disabled = game.gold < routes.mastery.cost;
+      bMas.innerHTML = `<span>🔥 选 ${routes.mastery.name}</span><small>消耗 ${routes.mastery.cost} 金</small>`;
+      bMas.addEventListener('click', () => chooseSealRoute('mastery'));
+      acts.append(bStd, bMas);
+    }
     if (a) {
       const spec = ARTIFACTS[a.kind];
       const sell = document.createElement('button');
@@ -7061,13 +8309,14 @@ function renderInspector(force){
     return;
   }
 
-  // Hero Inspector (Complete Stats + Gear + Salvage + Skill Breakdown + W10 Breakthrough + Combos + Perks + Telemetry!)
+  // Hero Inspector (Complete Stats + Independent Gear Instances + Affix Synergies + Enhance/Sell/Dismantle + Telemetry!)
   const h = game.hero, hs = getHeroStats();
+  const gearSyn = getActiveGearAffixSynergies();
   const skSig = Object.entries(h.skills).map(([k,v])=>`${k}${v}${h.w10Branch?.[k]||''}`).join(',');
   const pkSig = Object.entries(h.perks).map(([k,v])=>`${k}${v}`).join(',');
   const cbSig = Object.keys(h.combos).join(',');
   const dmgBucket = Math.floor(game.stats.dmgTotal / 120);
-  const key = ['H', h.realm, h.lv, Math.ceil(h.hp), h.maxHp, h.gear.join(','), skSig, pkSig, cbSig, game.bag.join(','), game.telemetry.length, dmgBucket].join('|');
+  const key = ['H', h.realm, h.lv, Math.ceil(h.hp), h.maxHp, game.gold, game.materials, gearListSig(h.gear), skSig, pkSig, cbSig, gearListSig(game.bag), game.telemetry.length, dmgBucket].join('|');
   if (!force && key === lastInspKey && !panel.hidden) return;
   lastInspKey = key;
   panel.hidden = false;
@@ -7083,55 +8332,126 @@ function renderInspector(force){
     <div class="stat-box">伤害倍率 <b>${Math.round(hs.dmgMult * 100)}%</b><span class="sub">级${baseDmgPct}% 构+${gearDmgPct}% 节点+${Math.round((activeNode.dmgBonus||0)*100)}%</span></div>
     <div class="stat-box">攻速倍率 <b>${Math.round(hs.aspd * 100)}%</b><span class="sub">神通倍率 ${Math.round(hs.skillDmgMult*100)}%</span></div>
     <div class="stat-box">暴击 / 暴伤 <b>${Math.round(hs.crit*100)}% / ${Math.round(hs.critDmg*100)}%</b><span class="sub">构装暴击 +${Math.round(hs.gm.crit*100)}%</span></div>
-    <div class="stat-box">吸血 / 限流 <b>+${(hs.lifesteal*0.5).toFixed(1)} / ${leechCap}/s</b><span class="sub">磁铁 ${hs.magnet.toFixed(1)}格 · 吸修为球</span></div>
-    <div class="stat-box">火标/冰盾联动 <b>🔥${game.stats.fireDetonations||0} / ❄️+${game.stats.frostShieldGained||0}</b><span class="sub">火标 ${game.stats.fireMarksApplied||0} · 冰缓 ${game.stats.frostSlowsApplied||0}</span></div>
+    <div class="stat-box">🔥火系引爆 <b>${game.stats.fireDetonations||0}次</b><span class="sub">传递 ${game.stats.fireChainTransfers||0} · 孤立聚焦 ${game.stats.fireFocusedDetonations||0}</span></div>
+    <div class="stat-box">❄️冰盾反制 <b>+${game.stats.frostShieldGained||0}盾</b><span class="sub">受击${game.stats.frostHitPulses||0} 冲刺${game.stats.frostDashPulses||0} 满盾${game.stats.frostFullShieldPulses||0}</span></div>
   `;
   $('inspSlotLbl').hidden = false;
   const slots = $('inspSlots');
   slots.replaceChildren();
   for (let s = 0; s < HERO_GEAR_SLOTS; s++) {
-    const gk = h.gear[s];
+    const inst = h.gear[s];
     const sb = document.createElement('button');
     sb.type = 'button';
-    sb.className = 'gear-slot' + (gk ? ' filled' : '');
-    sb.innerHTML = gk ? `<span style="font-size:16px">${GEARS[gearBase(gk)].icon}</span><span>${gearLabel(gk)}</span>` : '<span>+ 空槽</span><span style="font-size:9.5px">点此穿戴</span>';
+    sb.className = 'gear-slot' + (inst ? ' filled' : '');
+    sb.innerHTML = inst
+      ? `<span style="font-size:16px">${inst.icon}</span><span>${gearLabel(inst)}</span><span style="font-size:9px;opacity:.85">${GEAR_RARITY_LABELS[inst.rarity]}·${inst.slotsCount}槽</span>`
+      : '<span>+ 空槽</span><span style="font-size:9.5px">点此穿戴</span>';
     sb.addEventListener('click', () => {
-      if (gk) unequipGear(s);
+      if (inst) unequipGear(s);
       else if (game.bag.length) equipGearFromBag(0);
-      else toast('构装背包为空，击败第 2 波起的紫名精英即可爆装！', true);
+      else toast('构装背包为空，可在底部商店购买或击败精英爆箱获得！', true);
     });
     slots.append(sb);
   }
 
   const fxWrap = $('inspGearFx');
   fxWrap.replaceChildren();
+
+  // Active Affix Synergies & Missing Affix Upgrade Hints
+  if (gearSyn.active.length || gearSyn.hints.length) {
+    const synBox = document.createElement('div');
+    synBox.className = 'gear-fx-row';
+    let html = '<b>⚡ 装备词条联动状态</b>';
+    for (const s of gearSyn.active) {
+      html += `<span class="syn-badge ${s.badgeClass}"><b>${s.icon} ${s.name}（${s.short}）</b>：${s.desc}</span>`;
+    }
+    for (const ht of gearSyn.hints) {
+      if (ht.state !== 'trio') html += `<span class="syn-badge hint">💡 ${ht.text}</span>`;
+    }
+    synBox.innerHTML = html;
+    fxWrap.append(synBox);
+  }
+
   if (h.gear.length) {
-    for (const gk of h.gear) {
-      const g = GEARS[gearBase(gk)];
+    h.gear.forEach((inst, sIdx) => {
+      const stSpec = getSourceStageSpec(inst.sourceStage);
+      const enhCost = getGearEnhanceCost(inst);
       const row = document.createElement('div');
       row.className = 'gear-fx-row';
-      row.innerHTML = `<b>${g.icon} ${gearLabel(gk)} [${GEAR_RARITY_LABELS[g.rarity]}]</b>：${describeGearEffect(gk)}`;
+      row.innerHTML = `
+        <div><b>${inst.icon} ${gearLabel(inst)}</b> [${GEAR_RARITY_LABELS[inst.rarity]} · ${stSpec.label} · ${inst.slotsCount}槽]</div>
+        <div style="font-size:11px;opacity:.9;margin-top:2px">基础：${describeGearEffect(inst)}</div>
+        <div style="margin-top:3px">${renderAffixChipsHtml(inst)}</div>
+      `;
+      const actRow = document.createElement('div');
+      actRow.className = 'gear-act-row';
+      const enhBtn = document.createElement('button');
+      enhBtn.type = 'button';
+      enhBtn.className = 'btn';
+      enhBtn.disabled = enhCost === null || (game.materials || 0) < enhCost;
+      enhBtn.textContent = enhCost === null ? '已满强化 (+5)' : `⚙️ 锻材强化 (${enhCost}锻材 → +${inst.enhanceLv + 1})`;
+      enhBtn.addEventListener('click', () => enhanceGear({ location: 'equipped', idx: sIdx }));
+      const uneqBtn = document.createElement('button');
+      uneqBtn.type = 'button';
+      uneqBtn.className = 'btn';
+      uneqBtn.textContent = '卸回背包';
+      uneqBtn.addEventListener('click', () => unequipGear(sIdx));
+      actRow.append(enhBtn, uneqBtn);
+      row.append(actRow);
       fxWrap.append(row);
-    }
+    });
   } else {
     const empty = document.createElement('div');
     empty.className = 'gear-fx-row';
     empty.style.opacity = '0.68';
-    empty.textContent = '尚未穿戴构装：击败精英/妖碑爆箱后点击背包件穿戴，多余构装可右键熔炼换金。';
+    empty.textContent = '尚未穿戴构装：可在底部商店购买带词条构装，或击败精英/妖碑爆箱后点击背包穿戴。';
     fxWrap.append(empty);
   }
 
+  // Bag Management: Equip/Replace, Enhance, Sell (Gold), Dismantle (Materials)
   const acts = $('inspActions');
   acts.replaceChildren();
   if (game.bag.length) {
-    game.bag.forEach((gk, idx) => {
-      const g = GEARS[gearBase(gk)];
-      const val = Math.round((GEAR_SALVAGE_GOLD[g.rarity] || 15) * gearStar(gk));
-      const b = document.createElement('button');
-      b.type = 'button'; b.className = 'btn';
-      b.innerHTML = `<span>🔥 熔炼 ${g.icon}${gearLabel(gk)}</span><small>换取 +${val} 金币</small>`;
-      b.addEventListener('click', () => salvageBagGear(idx));
-      acts.append(b);
+    game.bag.forEach((inst, idx) => {
+      const g = isGearInstance(inst) ? inst : normalizeGearInstance(inst);
+      const stSpec = getSourceStageSpec(g.sourceStage);
+      const sellVal = getGearSellGold(g);
+      const disMats = getGearDismantleMaterials(g);
+      const enhCost = getGearEnhanceCost(g);
+      const card = document.createElement('div');
+      card.className = 'gear-fx-row';
+      card.style.width = '100%';
+      card.innerHTML = `
+        <div><b>🎒 ${g.icon} ${gearLabel(g)}</b> [${GEAR_RARITY_LABELS[g.rarity]} · ${stSpec.label} · ${g.slotsCount}槽]</div>
+        <div style="margin-top:2px">${renderAffixChipsHtml(g)}</div>
+      `;
+      const rowBtns = document.createElement('div');
+      rowBtns.className = 'gear-act-row';
+      const eqBtn = document.createElement('button');
+      eqBtn.type = 'button'; eqBtn.className = 'btn';
+      if (h.gear.length < HERO_GEAR_SLOTS) {
+        eqBtn.textContent = '穿戴';
+        eqBtn.addEventListener('click', () => equipGearFromBag(idx));
+      } else {
+        eqBtn.textContent = '替换槽1';
+        eqBtn.addEventListener('click', () => replaceEquippedGear(0, idx));
+      }
+      const enhBtn = document.createElement('button');
+      enhBtn.type = 'button'; enhBtn.className = 'btn';
+      enhBtn.disabled = enhCost === null || (game.materials || 0) < enhCost;
+      enhBtn.textContent = enhCost === null ? '满强化' : `⚙️强化(${enhCost}材)`;
+      enhBtn.addEventListener('click', () => enhanceGear({ location: 'bag', idx }));
+      const sellBtn = document.createElement('button');
+      sellBtn.type = 'button'; sellBtn.className = 'btn';
+      sellBtn.textContent = `💰出售(+${sellVal}金)`;
+      sellBtn.addEventListener('click', () => sellBagGear(idx));
+      const disBtn = document.createElement('button');
+      disBtn.type = 'button'; disBtn.className = 'btn';
+      disBtn.textContent = `🔧拆解(+${disMats}锻材)`;
+      disBtn.addEventListener('click', () => dismantleBagGear(idx));
+      rowBtns.append(eqBtn, enhBtn, sellBtn, disBtn);
+      card.append(rowBtns);
+      acts.append(card);
     });
   }
 
@@ -7407,6 +8727,7 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
     elem: ARTIFACTS[mainKind].elem,
     star: mainStar,
     prog: 0,
+    route: mainStar >= 3 ? (normTier === 'strong' ? 'mastery' : normTier === 'standard' ? 'standard' : null) : null,
     cd: 0,
     kills: 0,
     dmgDealt: 0
@@ -7430,19 +8751,31 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
     });
   }
 
-  // Initialize Gear according to build, wave, and tier
-  const gearStarLv = clamp(
-    (targetWave >= 25 ? 3 : targetWave >= 15 ? 2 : 1) + (normTier === 'strong' ? 1 : normTier === 'weak' ? -1 : 0),
-    1, 3
-  );
+  // Stage 2: Initialize real independent Gear Instances according to build, wave, and tier
+  // weak = 1-slot single affix (no synergy), standard = 2-slot Duo synergy, strong = 3-slot Complete Trio synergy!
+  const srcStage = getSourceStageForWave(targetWave);
+  const enhanceLv = normTier === 'strong' ? Math.min(3, srcStage) : normTier === 'standard' ? Math.max(0, srcStage - 1) : 0;
   const gearPool = normBuild === 'frost'
     ? ['frost_mirror', 'frost_orb', 'jade_pendant', 'seal_astrolabe']
     : ['flame_fan', 'burn_core', 'crit_axe', 'vamp_fang'];
+  const coreAffixes = normBuild === 'frost'
+    ? (normTier === 'strong' ? ['frost_chill', 'frost_ward', 'frost_nova_counter'] : normTier === 'standard' ? ['frost_chill', 'frost_ward'] : ['frost_chill'])
+    : (normTier === 'strong' ? ['fire_brand', 'fire_burst', 'fire_chain'] : normTier === 'standard' ? ['fire_brand', 'fire_burst'] : ['fire_brand']);
+  const auxAffixSets = normBuild === 'frost'
+    ? [['iron_bastion'], ['wind_tempest'], ['fortune_mint']]
+    : [['fury_crit'], ['vamp_siphon'], ['wind_tempest']];
   const slotCount = targetWave >= 20 ? 4 : targetWave >= 10 ? (normTier === 'weak' ? 2 : 3) : 2;
   h.gear = [];
   for (let i = 0; i < slotCount && i < gearPool.length; i++) {
     const gk = gearPool[i];
-    h.gear.push(gearStarLv > 1 ? `${gk}#${gearStarLv}` : gk);
+    const affs = i === 0 ? coreAffixes : (auxAffixSets[i - 1] || ['vamp_siphon']);
+    h.gear.push(createGearInstance(gk, {
+      sourceStage: srcStage,
+      slotsCount: affs.length,
+      affixes: affs,
+      enhanceLv: i === 0 ? enhanceLv : Math.max(0, enhanceLv - 1),
+      origin: 'preset'
+    }));
   }
 
   // Initialize Perks for mid/late waves
@@ -7470,6 +8803,7 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
     : Math.max(0, Math.round((targetWave - 1) * 1.4 * tierEconMult));
 
   syncHeroMaxHp();
+  const activeSynergies = recomputeEquipmentSynergies();
   h.hp = h.maxHp;
   refreshCombos(false);
   rollShop(true);
@@ -7498,17 +8832,111 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
       w10Branch: { ...h.w10Branch },
       breakthroughs: JSON.parse(JSON.stringify(h.breakthroughs)),
       vouchers: { ...h.vouchers },
-      gear: h.gear.slice()
+      gear: JSON.parse(JSON.stringify(h.gear)),
+      activeGearSynergies: activeSynergies.active.map(s => ({ id: s.id, name: s.name, tier: s.tier, chain: s.chain }))
     },
-    seal: game.seal ? { kind: game.seal.kind, star: game.seal.star } : null,
+    seal: game.seal ? { kind: game.seal.kind, star: game.seal.star, route: game.seal.route || null } : null,
     subSeals: game.subSeals.map(s => ({ kind: s.kind, star: s.star })),
     unimplementedStageFeatures: {
-      stage2_equipmentCraftingAndAffixes: 'Pending Stage 2 (materials budget initialized and ready for crafting/reforge)',
+      stage2_equipmentCraftingAndAffixes: 'Implemented in Stage 2 (independent gear instances, 1-3 slots, duo/trio synergies, shop pricing, sell/dismantle & material enhance; Fate Transfer scheduled for Stage 4)',
       stage3_w20FullBreakthroughAndW21Elites: hasW20
         ? 'W20 breakthrough state marked with Stage 1 placeholder (full direction + enhancement UI scheduled for Stage 3)'
         : 'Pending Stage 3',
       stage4_metaTreeAndDifficultyModifiers: 'Pending Stage 4'
     }
+  };
+}
+
+function exportBuildPreset(){
+  if (!game?.hero) return null;
+  const h = game.hero;
+  const syn = recomputeEquipmentSynergies();
+  return JSON.parse(JSON.stringify({
+    schema: 'bg60-build-preset-v2',
+    seed: game.seed,
+    wave: game.wave,
+    gold: game.gold,
+    materials: game.materials,
+    shopElemBuyCounts: { ...(game.shopElemBuyCounts || {}) },
+    shopElemBuyStage: game.shopElemBuyStage || getSourceStageForWave(game.wave),
+    seal: game.seal ? { kind: game.seal.kind, elem: game.seal.elem, star: game.seal.star, prog: game.seal.prog || 0, route: game.seal.route || null } : null,
+    subSeals: game.subSeals.map(s => ({ kind: s.kind, elem: s.elem, star: s.star, prog: s.prog || 0 })),
+    hero: {
+      lv: h.lv,
+      xp: h.xp,
+      baseMaxHp: h.baseMaxHp,
+      skills: { ...h.skills },
+      w10Branch: { ...h.w10Branch },
+      breakthroughs: h.breakthroughs,
+      vouchers: { ...h.vouchers },
+      perks: { ...h.perks },
+      combos: { ...h.combos },
+      gear: h.gear.map(g => normalizeGearInstance(g))
+    },
+    bag: game.bag.map(g => normalizeGearInstance(g)),
+    activeGearSynergies: syn.active.map(s => s.id)
+  }));
+}
+
+function importBuildPreset(snapshot){
+  if (!snapshot || typeof snapshot !== 'object') return { ok: false, reason: 'invalid_snapshot' };
+  const data = typeof snapshot === 'string' ? JSON.parse(snapshot) : JSON.parse(JSON.stringify(snapshot));
+  paused = false;
+  closeModal();
+  game = makeGame(Number.isFinite(Number(data.seed)) ? Number(data.seed) : 2026);
+  game.wave = clamp(Math.round(Number(data.wave || 1)), 1, MAIN_WAVES);
+  game.phase = 'prep';
+  game.gold = Math.max(0, Math.round(Number(data.gold ?? BALANCE.progression.initialGold)));
+  game.materials = Math.max(0, Math.round(Number(data.materials ?? 0)));
+  game.shopElemBuyCounts = { wind:0, fire:0, frost:0, thunder:0, holy:0, ...(data.shopElemBuyCounts || {}) };
+  game.shopElemBuyStage = Number(data.shopElemBuyStage || getSourceStageForWave(game.wave));
+
+  const h = game.hero;
+  const hd = data.hero || {};
+  h.lv = Math.max(1, Math.round(Number(hd.lv || 1)));
+  h.xp = Math.max(0, Math.round(Number(hd.xp || 0)));
+  h.xpNext = xpForLevel(h.lv);
+  h.baseMaxHp = Math.max(100, Math.round(Number(hd.baseMaxHp || BALANCE.progression.initialHp)));
+  h.skills = { blades:0, firewave:0, thunder:0, nova:0, stomp:0, berserk:0, ...(hd.skills || {}) };
+  h.w10Branch = { ...(hd.w10Branch || {}) };
+  h.breakthroughs = { w10: hd.breakthroughs?.w10 || null, w20: hd.breakthroughs?.w20 || null };
+  h.vouchers = { w10: !!hd.vouchers?.w10, w20: !!hd.vouchers?.w20 };
+  h.perks = { ...(hd.perks || {}) };
+  h.combos = { ...(hd.combos || {}) };
+  h.gear = (Array.isArray(hd.gear) ? hd.gear : []).slice(0, HERO_GEAR_SLOTS).map(g => normalizeGearInstance(g));
+  game.bag = (Array.isArray(data.bag) ? data.bag : []).map(g => normalizeGearInstance(g));
+
+  game.seal = data.seal ? {
+    kind: data.seal.kind,
+    elem: data.seal.elem || ARTIFACTS[data.seal.kind]?.elem,
+    star: clamp(Number(data.seal.star || 1), 1, 5),
+    prog: Math.max(0, Number(data.seal.prog || 0)),
+    route: data.seal.route || null,
+    cd: 0, dmgDealt: 0, kills: 0
+  } : null;
+  game.subSeals = (Array.isArray(data.subSeals) ? data.subSeals : []).slice(0, 2).map(s => ({
+    kind: s.kind,
+    elem: s.elem || ARTIFACTS[s.kind]?.elem,
+    star: clamp(Number(s.star || 1), 1, 3),
+    prog: Math.max(0, Number(s.prog || 0)),
+    dmgDealt: 0
+  }));
+
+  const node = getActiveUnlockNode();
+  h.realm = node.idx;
+  game.shopTierBonus = node.idx;
+  syncHeroMaxHp();
+  h.hp = h.maxHp;
+  const activeSynergies = recomputeEquipmentSynergies();
+  refreshCombos(false);
+  rollShop(true);
+  renderAllUI(true);
+  return {
+    ok: true,
+    wave: game.wave,
+    gearCount: h.gear.length,
+    bagCount: game.bag.length,
+    activeGearSynergies: activeSynergies.active.map(s => s.id)
   };
 }
 
@@ -7545,26 +8973,33 @@ game.pendingModals.push({ type: 'starter' });
 requestAnimationFrame(loop);
 
 window.BG60 = {
-  version: '0.60.0-stage1',
+  version: '0.60.0-stage2',
   get game(){ return game; },
   get cam(){ return cam; },
   get perf(){ return { ...perfStats, enemies: game?.enemies.length || 0, projectiles: game?.projectiles.length || 0 }; },
-  loadTestPreset,
+  loadTestPreset, exportBuildPreset, importBuildPreset,
   startNewRun, startWave, completeWaveClear, finishGame, enterW29FinalPrep,
-  rollShop, buyShopItem, sellSeal, sellSubSeal, salvageBagGear,
-  equipGearFromBag, unequipGear, castHeroDash, castHeroOverdrive, pickHeroSkill, pickGearReward,
+  rollShop, buyShopItem, sellSeal, sellSubSeal, chooseSealRoute,
+  sellBagGear, dismantleBagGear, salvageBagGear, enhanceGear,
+  equipGearFromBag, replaceEquippedGear, unequipGear,
+  castHeroDash, castHeroOverdrive, pickHeroSkill, pickGearReward,
   grantGear, gearBase, gearStar, gearLabel, findGearStackTarget, GEAR_STAR_MULT, GEAR_SALVAGE_GOLD,
+  getSourceStageForWave, getSourceStageSpec, rollGearSlotsCount, rollGearAffixes, validateGearAffixes,
+  createGearInstance, normalizeGearInstance, isGearInstance, describeGearInstance,
+  evaluateItemSynergies, evaluateEquipmentSynergies, recomputeEquipmentSynergies, getActiveGearAffixSynergies, getGearSynergyHints,
+  getShopElemBuyCount, calcShopGearPrice, getGearSellGold, getGearDismantleMaterials, getGearEnhanceCost,
   gainHeroXp, damageHero, dealDamage, spawnEnemy, spawnPosAroundHero, xpForLevel,
   getActiveUnlockNode, getUnlockedSkillPool, hasPendingDecision,
   getRealm, getRealmStageLabel, getSealStarCap, getSubSealSlotCap, getShopTier,
   getLearnedSkillKeys, rollW10BranchChoices, selectW10BreakthroughSkill, pickW10BreakthroughBranch,
-  applyFireMark, triggerFireDetonation, applyFrostSlow, triggerFrostPulse, gainFrostShield,
+  applyFireMark, triggerFireDetonation, applyFrostSlow, triggerFrostPulse, gainFrostShield, getHeroMaxFrostShield,
   rollPerkChoices, pickPerk, refreshCombos, hasCombo, perkLv,
   getWavePhaseMeta, buildWaveQueue, pickChestGearChoices, getTelemetryReport,
   tick, closeModal, openNextModal, queueModal,
   getSynergyCounts, getSealStats, getHeroStats, worldToScreen, screenToWorld,
   getGearSetCounts, getActiveGearSets, gearSetTier, getActiveDualResonances, hasDualRes, isEnemyUnstoppable, toggleLeftHud, toggleBattleHud,
-  BALANCE, UNLOCK_NODES, W10_SKILL_BRANCHES, REALMS, SHRINE_WAVES, ARTIFACTS, SUB_SEAL_RESONANCE, ELEMENTS, GEARS, GEAR_SETS, DUAL_RESONANCES, HERO_SKILLS, COMBOS, PERKS, PILLS, MAIN_WAVES, W, H, MAX_ENEMIES
+  BALANCE, UNLOCK_NODES, W10_SKILL_BRANCHES, REALMS, SHRINE_WAVES, ARTIFACTS, SUB_SEAL_RESONANCE, SEAL_SPECIALIZATIONS,
+  ELEMENTS, GEARS, GEAR_SETS, GEAR_AFFIXES, GEAR_SYNERGIES, SOURCE_STAGES, DUAL_RESONANCES, HERO_SKILLS, COMBOS, PERKS, PILLS, MAIN_WAVES, W, H, MAX_ENEMIES
 };
 window.BG52 = window.BG60;
 })();
