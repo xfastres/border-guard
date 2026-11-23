@@ -89,7 +89,7 @@ function bootBG60() {
 
 test('1. W16-W20 preselection, W19 fair W20 Boss intel & combat execution, W20 lock-in, and W20 defeat immediate settlement', () => {
   const { B, doc } = bootBG60();
-  assert.equal(B.version, '0.60.0-stage3');
+  assert.match(B.version, /^0\.60\.0-stage[3-9]/);
 
   // W15 prep: preselection NOT open yet, W20 Boss intel NOT revealed yet
   B.loadTestPreset({ wave: 15, tier: 'standard', build: 'fire', seed: 2026 });

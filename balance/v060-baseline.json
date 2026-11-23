@@ -1,11 +1,13 @@
 {
   "schemaVersion": 1,
-  "baseline": "v0.60/stage3-w16-w28-flow",
+  "baseline": "v0.60/stage4-destiny-transfer-endgame",
   "mainWaves": 30,
-  "notes": "v0.60 阶段 3（W16-W28 贯通）数值基线：新增 W16-W19 方向预选、W19 首领情报与公平随机辅助机制池、W20 二破基础效果与付费整组重抽（K=2, 4/6/8...）、W22-W24 同源威胁组合递进、W25-W28 独立无剧透敌群抽取与 W28 终局预兆。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
+  "notes": "v0.60 阶段 4（天命赌局、转印和终局精修）数值基线：新增天命赌局（自由押注、空劫、4×25% 类别权重、珍贵池门槛、天命专属强化与转印符）、词条转移台原子费用与防套利规则、W21-W29 终局精修资源倾斜与 +6 强化上限。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
   "progression": {
     "initialGold": 55,
     "initialMaterials": 0,
+    "initialTransferTokens": 0,
+    "bagCapacity": 12,
     "initialHp": 220,
     "xpBase": 115,
     "xpEarlyPerLevel": 30,
@@ -226,13 +228,14 @@
       "highRarityAffixChance": 0.16
     },
     "materialEnhance": {
-      "maxEnhanceLv": 5,
+      "maxEnhanceLv": 6,
       "matCostByNextLv": [
         2,
         3,
         5,
         7,
-        10
+        10,
+        14
       ],
       "baseStatStepPerLv": 0.18,
       "affixTierStepPerLv": 0.16
@@ -262,6 +265,115 @@
       "frostTrioActivePulseDmg": 46,
       "frostTrioActivePulseCd": 1.5
     }
+  },
+  "destinyGamble": {
+    "minBet": 30,
+    "emptyTribulationChance": 0.22,
+    "categoryWeights": {
+      "seal": 0.25,
+      "gear": 0.25,
+      "pill": 0.25,
+      "special": 0.25
+    },
+    "allowDuplicateCategories": true,
+    "preciousThresholds": {
+      "rare": 60,
+      "transferToken": 100,
+      "epic": 120,
+      "destinyExclusive": 120,
+      "legend": 220
+    },
+    "betQuickPresets": [
+      30,
+      60,
+      100,
+      120,
+      220,
+      320
+    ],
+    "specialSubPoolWeights": {
+      "transferToken": 0.42,
+      "destinyExclusive": 0.58
+    },
+    "qualityChanceByBetBand": {
+      "low": {
+        "common": 1,
+        "rare": 0,
+        "epic": 0,
+        "legend": 0
+      },
+      "mid": {
+        "common": 0.55,
+        "rare": 0.45,
+        "epic": 0,
+        "legend": 0
+      },
+      "high": {
+        "common": 0.2,
+        "rare": 0.46,
+        "epic": 0.34,
+        "legend": 0
+      },
+      "supreme": {
+        "common": 0.1,
+        "rare": 0.32,
+        "epic": 0.38,
+        "legend": 0.2
+      }
+    },
+    "transferTokenYieldByBet": [
+      {
+        "minBet": 100,
+        "count": 1
+      },
+      {
+        "minBet": 240,
+        "count": 2
+      }
+    ],
+    "sealEssenceBonusByRarity": {
+      "common": 0.1,
+      "rare": 0.15,
+      "epic": 0.22,
+      "legend": 0.3
+    }
+  },
+  "affixTransfer": {
+    "baseTokenCost": 1,
+    "overwriteExtraTokenCost": 0,
+    "goldCostByAffixRarity": {
+      "common": 28,
+      "rare": 45,
+      "epic": 68
+    },
+    "overwriteGoldExtra": 18
+  },
+  "endgameRefinement": {
+    "startWave": 21,
+    "eliteMaterialDropW21To24": 2,
+    "eliteMaterialDropW25To29": 3,
+    "bossMaterialDropW21Plus": 6,
+    "shrineMaterialDropW21Plus": 4,
+    "waveClearMaterialsByBand": [
+      {
+        "from": 21,
+        "to": 24,
+        "materials": 1
+      },
+      {
+        "from": 25,
+        "to": 27,
+        "materials": 2
+      },
+      {
+        "from": 28,
+        "to": 29,
+        "materials": 3
+      }
+    ],
+    "shopHighRarityAffixBonusW21Plus": 0.14,
+    "shopSecondGearChanceW21Plus": 0.65,
+    "chestHighRarityAffixBonusW21Plus": 0.12
   },
   "wave": {
     "mainWaves": 30,

@@ -375,4 +375,119 @@ window.BG60.loadTestPreset({ wave: 29, tier: 'strong',   build: 'frost', materia
 window.BG60.loadTestPreset({ wave: 30, tier: 'standard', build: 'fire',  materials: 30, gold: 800, seed: 2026 });
 ```
 
+---
+
+## 阶段 4 · 天命赌局、转印和终局精修（已完成）
+
+### 1. 分支、基线与变更文件
+- **工作分支**：`feat/v060-30wave`
+- **接手基线提交**：`bfd2d3e`（阶段 3 交付提交）
+- **未改动基线核对**：`Border-Guard-v0.52.html` 与 `balance/v052-baseline.json` 保持完全未动，`node --test tests/v052-balance-lab.test.cjs` 100% 通过。
+- **阶段 4 变更文件清单**：
+  - `balance/v060-baseline.json`：更新基线标识为 `v0.60/stage4-destiny-transfer-endgame`；新增 `progression.initialTransferTokens` 与 `progression.bagCapacity (12)`；`equipment.materialEnhance` 扩展至 `+6` 精修上限（`[2, 3, 5, 7, 10, 14]`）；新增 `destinyGamble`（`minBet: 30`、`emptyTribulationChance: 0.22`、`categoryWeights` 严格四类各 `0.25`、`allowDuplicateCategories: true`、`preciousThresholds` 稀有 `60` / 转印符 `100` / 史诗&天命专属 `120` / 传说 `220`、`qualityChanceByBetBand`、`transferTokenYieldByBet`、`sealEssenceBonusByRarity`）、`affixTransfer`（转印符与金币费用）及 `endgameRefinement`（W21–W29 精英/首领/血碑/过波锻材倾斜与高稀有词条权重加成）。
+  - `Border-Guard-v0.60.html`：同步内嵌 `BALANCE`；落地【🎲 天命赌局】完整系统与弹窗、8 条带真实战斗钩子的天命专属强化（`DESTINY_ENHANCEMENTS`）、独立安全领奖路径（`grantGearSafely` / `grantSealSafely` + `game.rewardStash` 满溢暂存，绝不覆盖/卖掉在用 5★ 主灵印）、【✨ 词条转移台】零副作用预览/取消与单次原子提交（`previewAffixTransfer` / `cancelAffixTransferPreview` / `commitAffixTransfer`）、W21–W29 终局精修掉落与过波锻材倾斜、W29 90 秒整备期间打开赌局/转移台不暂停倒计时及超时自动清草稿/安全自动领奖收尾、顶栏 `#tokenPill` 与次栏 `#destinyBtn`/`#transferBtn` 入口、`BG60` 升级至 `0.60.0-stage4`（含 `loadTestPreset` 支持 `transferTokens` 初始化与显式覆盖、`export/importBuildPreset` `v4` 序列化）。
+  - `tests/v060-stage4.test.cjs`：阶段 4 自动化验收测试套件（5 大场景全覆盖）。
+  - `tests/v060-stage3.test.cjs`：兼容版本号断言调整为匹配 `0.60.0-stage[3-9]`。
+  - `docs/v0.60-review/30-wave-development-progress.md`：追加本阶段完整交接文档。
+- **试玩入口**：直接离线打开仓库根目录 `Border-Guard-v0.60.html`（控制台暴露 `window.BG60`）。
+
+---
+
+### 2. 已实现规则（阶段 4 全部要求落地）
+
+1. **天命赌局系统（Destiny Gamble）**：
+   - **自由押注与单次原子扣款**：`rollDestinyGamble(betAmount)` 在备战期接受任意 `bet >= minBet (30)` 且 `bet <= game.gold` 的押注；确认后单次原子扣款并立即完成开奖，不可无痛撤回。低于最低门槛、余额不足、战斗中或存在未领取 `pendingOffer` 时直接拒绝、零扣款。
+   - **空劫与珍贵门槛严格隔离**：空劫概率配置为 `22%`（触发空劫时仅扣合法押注、`pendingOffer = null`、不生成候选、不发奖）。低押注严格按 `preciousThresholds` 拦截：`< 60` 仅凡品、`< 100` 绝不出转印符、`< 120` 绝不出史诗与天命专属强化、`< 220` 绝不出传说。
+   - **严格 4×25% 顶层权重与无稀有度保底**：中奖生成 3 件随机候选，`seal / gear / pill / special` 严格各占 `25%` 权重（支持 `allowDuplicateCategories` 配置开关）；品质纯按押注档位概率分布，**无稀有度保底**。
+   - **转印物资与 8 条天命专属强化隔离**：
+     - **天命转印符（`game.transferTokens`）** 置于 `special` 类别子池内部（与另外 2 件候选三选一取舍），普通商店与普通装备/灵印拆解绝不提供稳定获取。
+     - **8 条天命专属强化（`DESTINY_ENHANCEMENTS`）** 仅由天命赌局产出（绝不进普通商店或升级池），具备非重复持有与 3 组显式互斥约束（`destiny_offense`、`destiny_defense`、`destiny_mobility`），并全部接入共享实战状态钩子：`destiny_ember_echo`（火标引爆补挂火标+下爆增伤）、`destiny_glacial_aegis`（冰盾上限+40与冰环反制回盾加速）、`destiny_phantom_stride`（冲刺减CD+路径火标/冰缓+暴击）、`destiny_fate_breaker`（首领/精英增伤+暴击易伤爆发）、`destiny_aegis_bulwark`（最大生命+90/减伤10%+每8s自动凝结32冰盾）、`destiny_resonance_crown`（神通伤害/暴伤与主印冷却）、`destiny_overdrive_nova`（超载减CD+星陨震爆+45冰盾）、`destiny_golden_temper`（每件≥+2构装增伤/攻速+入场赠4锻材）。
+   - **已满级/不可用同类别替换**：主辅灵印全满星时自动替换为同类别可用项【灵印淬魂晶 (`seal_essence`)】永久增幅主印伤害；已拥有或互斥阻断的天命专属强化自动替换为同类别可用专属强化或转印符/特殊礼盒。
+   - **已开奖未领取状态与严格幂等安全领奖**：
+     - 状态结构：`game.destiny.pendingOffer = { offerId, bet, wave, choices: [...], claimed: false, claimedChoiceIndex: null, claimedAtWave: null }`。
+     - 统一领取入口：`claimDestinyReward(choiceIndex)` 领奖前立即原子置 `offer.claimed = true` 并登记 `claimedOfferIds`，重复点击或重放同一 `offerId` 绝不重复发奖。
+     - 安全领奖路径：`grantGearSafely` 与 `grantSealSafely` 彻底独立于旧商店 `buyShopItem`，**绝不自动折价卖掉或覆盖在用 5★ 主灵印**；装备/无法吸收的异系灵印在背包有空时入 `game.bag`，满溢（`>= 12`）时安全入 `game.rewardStash`（可在属性面板取出）。
+
+2. **词条转移台（Affix Transfer Workbench）**：
+   - 支持已穿戴 4 槽构装与背包构装直接互转，**无需先卸下主力装备**。
+   - **零副作用预览与取消**：`previewAffixTransfer({ source, sourceSlot, target, targetSlot })` 计算源/目标/领主全局双/三联动变化与费用并存入 `game.transferDraft`；`cancelAffixTransferPreview()` 仅清空草稿，转印符、金币、装备与联动 100% 不变。
+   - **一次性原子提交**：`commitAffixTransfer` 在提交瞬间重新校验 7 项条件（源/目标非同件、源槽非空、目标槽合法、排除目标被覆盖槽后无同名词条与互斥组冲突、转印符与金币余额充足），全部通过后原子扣费、源槽置 `null`（保留原装备、`extractedCount++`）、写入目标槽位并实时重算源/目标/全局联动与最大生命；任意失败零扣费、零状态变更。
+   - **防套利验证**：沿用 Stage 2 的 `rarity + sourceStage` 回收口径与 `paidGoldSellCapRatio = 0.72` 上界，叠加转印金币（`28/45/68 + 18覆盖`）与天命转印符成本，买入→转印→出售/拆解空壳在全阶段、全品质下均严格负收益，无套利循环。
+
+3. **W21–W29 终局精修经济闭环（R30-04）**：
+   - W21–W29 保留装备掉落并提升商店/宝箱高稀有词条概率与第二构装槽几率，同时逐段提升普通材料产出（精英 `1→2→3` 锻材、首领 `3→6` 锻材、血碑 `2→4` 锻材、过波精修补贴 W21–24 `+1` / W25–27 `+2` / W28–29 `+3`），叠加 `+6` 材料精修上限（单件满强化需 `41` 锻材，4 槽共 `164` 锻材），确保常规经营（0 赌局）与赌局+转印双路线在 W28–W29 均具备清晰、持续的资源消费出口。
+
+---
+
+### 3. 实测命令与定量验证数据（全部 100% 实测通过）
+
+执行全量回归命令：
+```bash
+node scripts/sync-balance.cjs --check
+node --test tests/v052-balance-lab.test.cjs
+node --test tests/v060-stage1.test.cjs
+node --test tests/v060-stage2.test.cjs
+node --test tests/v060-stage3.test.cjs
+node --test tests/v060-stage4.test.cjs
+```
+结果汇总：
+- `sync-balance.cjs --check`：v0.52 与 v0.60 内嵌 `BALANCE` 均 `PASS`
+- `tests/v052-balance-lab.test.cjs`：`7/7 pass`
+- `tests/v060-stage1.test.cjs`：`5/5 pass`
+- `tests/v060-stage2.test.cjs`：`5/5 pass`
+- `tests/v060-stage3.test.cjs`：`5/5 pass`
+- `tests/v060-stage4.test.cjs`：`5/5 pass`（总计 **27/27 pass, 0 fail**）
+
+#### 3.1 天命赌局大样本统计实测（种子 `4003`，押注 `260 金`，`1600` 次开奖）
+- **空劫触发率**：**21.56%**（配置 `22%`），空劫时均只扣合法押注、零发奖、零 `pendingOffer`。
+- **顶层四类权重收敛**（`3765` 件中奖候选）：灵印 **23.96%** · 构装 **25.76%** · 丹药 **25.82%** · 特殊强化 **24.46%**（严格收敛于各 `25%`）。
+- **品质分布（无稀有度保底）**：凡品 `284` · 稀有 `904` · 史诗 `1463` · 传说 `1114`；特殊强化子池产出转印符 `371` 次、天命专属强化 `550` 次。
+- **低押注隔离大样本**（`bet = 40` 与 `bet = 80` 各 `1200` 候选，共 `2400` 候选）：史诗 `0`、传说 `0`、天命专属强化 `0`、转印符 `0`。
+
+#### 3.2 W21 → W29 双路线后期经济实测对比
+| 路线与种子 | 到达波次 | 天命赌局(空劫) | 词条转移 | 天命专属强化 | 核心联动 | 4 槽强化档位 | W28–W29 有效强化次数 | 伤害倍率变化 | W29 备战余额 |
+| --- | :---: | :---: | :---: | --- | --- | --- | :---: | :---: | --- |
+| 常规经营路线（0 赌局 · 种子 `4031`） | W29 | 0 (0) | 0 | 无 | 火系双联动 | `[+6,+6,+6,+6]` | **3 次** | `3.92× → 4.75×` | `699金 / 24锻材 / 0符` |
+| 赌局+转印路线（种子 `4032`） | W29 | 9 (4) | 1 | 天命·踏虚步法 | **火系完整三联动** | `[+6,+6,+6,+5]` | **2 次** | `3.96× → 4.70×` | `278金 / 13锻材 / 1符` |
+
+---
+
+### 4. 下一阶段（阶段 5 · W29 最终整备与 W30）起手入口与可复制 `BG60` 调用
+
+#### 4.1 阶段 5 可直接复用的阶段 4 核心接口与状态
+- **单次结账与已开奖未领取状态**：
+  - 查询：`BG60.getPendingDestinyOffer()` / `BG60.game.destiny.pendingOffer`（`{ offerId, bet, wave, choices[3], claimed }`）
+  - 统一幂等领奖：`BG60.claimDestinyReward(choiceIndex)`
+  - W29 超时自动领奖：`BG60.autoClaimPendingDestinyReward()`（已在 `tick()` 的 W29 90s 倒计时归零路径接通：清空 `game.transferDraft` → 自动随机领一件并走独立安全路径 → 关闭备战弹窗 → 进入 W30）
+- **安全领奖与暂存箱**：`BG60.grantGearSafely(inst)`、`BG60.grantSealSafely(kind, star, opts)`、`BG60.claimRewardStashItem(idx)`、`BG60.game.rewardStash`（绝不覆盖/卖掉 5★ 主灵印）。
+- **词条转移原子接口**：`BG60.previewAffixTransfer(params)`、`BG60.cancelAffixTransferPreview()`、`BG60.commitAffixTransfer(params)`、`BG60.game.transferDraft`。
+- **W29 非阻塞倒计时**：`tick()` 中已放行 `destiny_gamble` 与 `affix_transfer` 弹窗不暂停 W29 90s 真实倒计时；阶段 5 可直接在此基础上补全商店购物确认、查看详情、快速连点与 W29 波末遗留宝箱/升级先结清后再启动倒计时的全边界验收。
+
+#### 4.2 阶段 5 可直接复制的 `BG60` 调试命令
+```js
+// 1. W29 标准/强势起手（含真实 W10 + 阶段 2 装备 + 真实 W20 突破 + 阶段 4 转印符与预算）
+window.BG60.loadTestPreset({ wave: 29, tier: 'standard', build: 'fire',  materials: 28, gold: 800, transferTokens: 3, seed: 2026 });
+window.BG60.loadTestPreset({ wave: 29, tier: 'strong',   build: 'frost', materials: 42, gold: 980, transferTokens: 4, seed: 2026 });
+
+// 2. 复现 W29 90s 整备期赌赢未领 + 转移草稿未提交 + 超时自动安全收尾
+window.BG60.loadTestPreset({ wave: 29, tier: 'strong', build: 'fire', gold: 900, transferTokens: 3, seed: 4044 });
+window.BG60.enterW29FinalPrep(90);
+window.BG60.openDestinyGambleModal();
+window.BG60.rollDestinyGamble(150);
+window.BG60.getPendingDestinyOffer(); // 查看未领取三选一
+window.BG60.autoClaimPendingDestinyReward(); // 超时单次幂等安全领奖
+
+// 3. 词条转移台预览 / 取消 / 原子提交
+window.BG60.openAffixTransferModal();
+window.BG60.previewAffixTransfer({ source: { location: 'bag', idx: 0 }, sourceSlot: 0, target: { location: 'equipped', idx: 0 }, targetSlot: 2 });
+window.BG60.cancelAffixTransferPreview(); // 零副作用取消
+window.BG60.commitAffixTransfer({ source: { location: 'bag', idx: 0 }, sourceSlot: 0, target: { location: 'equipped', idx: 0 }, targetSlot: 2 });
+
+// 4. W30 偏弱 / 标准 / 强势三档 Boss 标定起手
+window.BG60.loadTestPreset({ wave: 30, tier: 'weak',     build: 'fire',  materials: 16, gold: 420, transferTokens: 1, seed: 2026 });
+window.BG60.loadTestPreset({ wave: 30, tier: 'standard', build: 'fire',  materials: 30, gold: 760, transferTokens: 2, seed: 2026 });
+window.BG60.loadTestPreset({ wave: 30, tier: 'strong',   build: 'frost', materials: 48, gold: 1050, transferTokens: 4, seed: 2026 });
+```
+
+
 

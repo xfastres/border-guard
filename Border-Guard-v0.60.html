@@ -513,6 +513,29 @@
   .intro-box h4{margin:0 0 4px;font-size:13px;color:#ffe38c}
   .intro-box p{margin:0;font-size:12px;color:#c4ddd8;line-height:1.45}
 
+  /* Stage 4: Destiny Gamble & Affix Transfer Workbench Styles */
+  .destiny-meta-row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px;font-size:11.5px}
+  .destiny-chip{padding:4px 9px;border-radius:999px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#d7efe9}
+  .destiny-chip.gold{border-color:rgba(255,214,102,0.45);color:#ffe484;background:rgba(255,196,61,0.12)}
+  .destiny-chip.purple{border-color:rgba(198,140,255,0.5);color:#e4c4ff;background:rgba(155,88,235,0.16)}
+  .destiny-bet-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1)}
+  .destiny-bet-input{width:92px;padding:6px 9px;border-radius:8px;border:1px solid rgba(255,214,102,0.45);background:rgba(10,18,22,0.85);color:#ffe484;font-weight:800;font-size:13px}
+  .destiny-band-box{padding:8px 11px;border-radius:10px;background:rgba(16,32,36,0.75);border:1px solid rgba(114,242,180,0.22);font-size:12px;color:#cce7e1;line-height:1.5;margin-bottom:10px}
+  .destiny-empty-alert{padding:9px 12px;border-radius:10px;background:rgba(255,92,122,0.14);border:1px solid rgba(255,92,122,0.45);color:#ffc2ce;font-size:12px;margin:8px 0}
+  .transfer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+  .transfer-col{padding:10px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);max-height:290px;overflow-y:auto}
+  .transfer-col h4{margin:0 0 7px;font-size:12.5px;color:#ffe38c}
+  .transfer-gear-card{padding:7px 8px;border-radius:9px;margin-bottom:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1)}
+  .transfer-gear-card.sel{border-color:#ffd666;background:rgba(255,214,102,0.11)}
+  .transfer-gear-head{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:700;margin-bottom:4px;gap:4px}
+  .transfer-slot-row{display:flex;flex-wrap:wrap;gap:4px}
+  .transfer-slot-btn{padding:3px 7px;border-radius:7px;font-size:11px;border:1px solid rgba(255,255,255,0.18);background:rgba(10,20,24,0.75);color:#dff5ef;cursor:pointer}
+  .transfer-slot-btn.active{border-color:#72f2b4;background:rgba(114,242,180,0.22);color:#fff;font-weight:700}
+  .transfer-slot-btn.empty-slot{border-style:dashed;color:#9bc5bc}
+  .transfer-slot-btn:disabled{opacity:0.42;cursor:not-allowed}
+  .transfer-preview-box{padding:10px 12px;border-radius:11px;background:rgba(14,28,32,0.85);border:1px solid rgba(114,242,180,0.28);font-size:12px;line-height:1.5;margin-top:8px}
+  .transfer-preview-box.err{border-color:rgba(255,92,122,0.55);background:rgba(68,18,28,0.45);color:#ffd2dc}
+
   @media (max-width:980px){
     .battle-hud,.build-hud{max-height:calc(100vh - var(--sub-bottom) - 108px)}
     .battle-hud:not(.collapsed),.build-hud:not(.collapsed){width:min(320px,calc(100vw - 20px));max-width:calc(100vw - 20px)}
@@ -520,7 +543,7 @@
     .battle-hud .lh-head,.build-hud .lh-head{font-size:11px}
   }
   @media (max-width:760px){
-    .choices,.choices.two,.intro-grid{grid-template-columns:1fr}
+    .choices,.choices.two,.intro-grid,.transfer-grid{grid-template-columns:1fr}
     .topbar{padding:5px 8px;gap:5px}
     .brand{font-size:13.5px}
     .pill{padding:3px 7px;font-size:11px}
@@ -538,10 +561,11 @@
 
 <header class="topbar" id="topbar">
   <div class="top-left">
-    <div class="brand">⚔️ 边境守卫 <span class="ver">v0.60 · W16–W28 贯通</span></div>
+    <div class="brand">⚔️ 边境守卫 <span class="ver">v0.60 · 天命转印与终局精修</span></div>
     <span class="pill wave-prep" id="wavePill">第 1 / 30 波 · 备战</span>
     <span class="pill gold" id="goldPill">💰 55</span>
     <span class="pill" id="matPill" title="普通材料（用于常规装备优化与W20突破强化重抽）">⚙️ 0 锻材</span>
+    <span class="pill" id="tokenPill" title="天命转印符（仅通过天命赌局特殊强化子池获取，用于词条转移台）">🔮 0 转印符</span>
     <span class="pill hp" id="heroHpPill">❤️ 220/220</span>
     <button class="pill realm-btn" id="heroPill" type="button" title="当前成长阶段与等级（点击查看属性与W10/W20突破详情）">
       <span id="heroLvTxt">炼气·初探 Lv.1</span>
@@ -564,6 +588,8 @@
   <div class="sub-actions">
     <div class="skill-strip" id="skillStrip" title="已学领主神通（点击展开属性与伤害构成）"></div>
     <button class="btn gold" id="w20PrepBtn" type="button" hidden title="W16-W20 预选第二次突破方向与查看 W19 首领情报">⚡ W20 方向预选</button>
+    <button class="btn gold" id="destinyBtn" type="button" title="天命赌局：自由押注金币抽取灵印/构装/丹药/天命专属强化与转印符（备战期可用）">🎲 天命赌局</button>
+    <button class="btn" id="transferBtn" type="button" title="词条转移台：消耗天命转印符与金币，在已穿戴与背包装备间转移词条（备战期可用）">✨ 词条转移台</button>
     <button class="meta-badge" id="metaBadge" type="button" title="查看W10/W20突破与配方组合技">✨ 突破 0/2 · 组合 0/4</button>
     <button class="btn" id="heroPanelBtn" type="button">👑 属性/神通 [C]</button>
     <button class="btn" id="autoWaveBtn" type="button">自动下波：关</button>
@@ -648,12 +674,14 @@
 /* BALANCE_CONFIG_START — generated from balance/v060-baseline.json */
 const BALANCE = {
   "schemaVersion": 1,
-  "baseline": "v0.60/stage3-w16-w28-flow",
+  "baseline": "v0.60/stage4-destiny-transfer-endgame",
   "mainWaves": 30,
-  "notes": "v0.60 阶段 3（W16-W28 贯通）数值基线：新增 W16-W19 方向预选、W19 首领情报与公平随机辅助机制池、W20 二破基础效果与付费整组重抽（K=2, 4/6/8...）、W22-W24 同源威胁组合递进、W25-W28 独立无剧透敌群抽取与 W28 终局预兆。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
+  "notes": "v0.60 阶段 4（天命赌局、转印和终局精修）数值基线：新增天命赌局（自由押注、空劫、4×25% 类别权重、珍贵池门槛、天命专属强化与转印符）、词条转移台原子费用与防套利规则、W21-W29 终局精修资源倾斜与 +6 强化上限。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
   "progression": {
     "initialGold": 55,
     "initialMaterials": 0,
+    "initialTransferTokens": 0,
+    "bagCapacity": 12,
     "initialHp": 220,
     "xpBase": 115,
     "xpEarlyPerLevel": 30,
@@ -874,13 +902,14 @@ const BALANCE = {
       "highRarityAffixChance": 0.16
     },
     "materialEnhance": {
-      "maxEnhanceLv": 5,
+      "maxEnhanceLv": 6,
       "matCostByNextLv": [
         2,
         3,
         5,
         7,
-        10
+        10,
+        14
       ],
       "baseStatStepPerLv": 0.18,
       "affixTierStepPerLv": 0.16
@@ -910,6 +939,115 @@ const BALANCE = {
       "frostTrioActivePulseDmg": 46,
       "frostTrioActivePulseCd": 1.5
     }
+  },
+  "destinyGamble": {
+    "minBet": 30,
+    "emptyTribulationChance": 0.22,
+    "categoryWeights": {
+      "seal": 0.25,
+      "gear": 0.25,
+      "pill": 0.25,
+      "special": 0.25
+    },
+    "allowDuplicateCategories": true,
+    "preciousThresholds": {
+      "rare": 60,
+      "transferToken": 100,
+      "epic": 120,
+      "destinyExclusive": 120,
+      "legend": 220
+    },
+    "betQuickPresets": [
+      30,
+      60,
+      100,
+      120,
+      220,
+      320
+    ],
+    "specialSubPoolWeights": {
+      "transferToken": 0.42,
+      "destinyExclusive": 0.58
+    },
+    "qualityChanceByBetBand": {
+      "low": {
+        "common": 1,
+        "rare": 0,
+        "epic": 0,
+        "legend": 0
+      },
+      "mid": {
+        "common": 0.55,
+        "rare": 0.45,
+        "epic": 0,
+        "legend": 0
+      },
+      "high": {
+        "common": 0.2,
+        "rare": 0.46,
+        "epic": 0.34,
+        "legend": 0
+      },
+      "supreme": {
+        "common": 0.1,
+        "rare": 0.32,
+        "epic": 0.38,
+        "legend": 0.2
+      }
+    },
+    "transferTokenYieldByBet": [
+      {
+        "minBet": 100,
+        "count": 1
+      },
+      {
+        "minBet": 240,
+        "count": 2
+      }
+    ],
+    "sealEssenceBonusByRarity": {
+      "common": 0.1,
+      "rare": 0.15,
+      "epic": 0.22,
+      "legend": 0.3
+    }
+  },
+  "affixTransfer": {
+    "baseTokenCost": 1,
+    "overwriteExtraTokenCost": 0,
+    "goldCostByAffixRarity": {
+      "common": 28,
+      "rare": 45,
+      "epic": 68
+    },
+    "overwriteGoldExtra": 18
+  },
+  "endgameRefinement": {
+    "startWave": 21,
+    "eliteMaterialDropW21To24": 2,
+    "eliteMaterialDropW25To29": 3,
+    "bossMaterialDropW21Plus": 6,
+    "shrineMaterialDropW21Plus": 4,
+    "waveClearMaterialsByBand": [
+      {
+        "from": 21,
+        "to": 24,
+        "materials": 1
+      },
+      {
+        "from": 25,
+        "to": 27,
+        "materials": 2
+      },
+      {
+        "from": 28,
+        "to": 29,
+        "materials": 3
+      }
+    ],
+    "shopHighRarityAffixBonusW21Plus": 0.14,
+    "shopSecondGearChanceW21Plus": 0.65,
+    "chestHighRarityAffixBonusW21Plus": 0.12
   },
   "wave": {
     "mainWaves": 30,
@@ -3754,6 +3892,145 @@ const ENEMY_SPECS = {
   boss6:  { name:'终焉魔帝(W30终局Boss·阶段5深化)',...(BALANCE.enemies.boss6 || BALANCE.enemies.boss4), r:0.68, col:'#ff1e42', rim:'#fff09c', boss:true, tempStage1:true }
 };
 
+/* ==================== STAGE 4: DESTINY GAMBLE EXCLUSIVE ENHANCEMENTS, BOONS & PILLS ====================
+   - DESTINY_ENHANCEMENTS: Obtainable STRICTLY via Destiny Gamble (special category when bet >= destinyExclusive threshold).
+     NEVER appear in regular shop, level-up skill pool, chests, or W20 enhancement pool!
+   - Non-duplicate ownership + explicit conflictGroup mutual exclusion.
+===================================================================================================== */
+const DESTINY_ENHANCEMENTS = {
+  destiny_ember_echo: {
+    key: 'destiny_ember_echo',
+    name: '天命·余烬回响',
+    icon: '🔥',
+    rarity: 'epic',
+    tag: '火标 / 引爆',
+    conflictGroup: 'destiny_offense',
+    exclusiveSource: 'destiny_gamble',
+    desc: '每次触发【火标引爆】后，立即向主目标周围 2.8 格敌军补挂 1 层【火标】并使下一次火标引爆伤害 +18%（0.6s 冷却，与「破劫裁决」互斥）'
+  },
+  destiny_glacial_aegis: {
+    key: 'destiny_glacial_aegis',
+    name: '天命·寒穹天幕',
+    icon: '❄️',
+    rarity: 'epic',
+    tag: '冰盾 / 反制',
+    conflictGroup: 'destiny_defense',
+    exclusiveSource: 'destiny_gamble',
+    desc: '寒冰护盾上限 +40；触发任意【冰环反制】后立即回复 14 点寒冰护盾并获得 2.5s 移速 +12%（主动冲刺与受击均可触发，与「玄天金钟」互斥）'
+  },
+  destiny_phantom_stride: {
+    key: 'destiny_phantom_stride',
+    name: '天命·踏虚步法',
+    icon: '💨',
+    rarity: 'epic',
+    tag: '走位 / 冲刺',
+    conflictGroup: 'destiny_mobility',
+    exclusiveSource: 'destiny_gamble',
+    desc: '冲刺冷却 -18%，冲刺路径附近敌人同时施加【火标】与 40%【冰缓】，且冲刺后 2.2s 暴击率 +20%（与「星陨超载」互斥）'
+  },
+  destiny_fate_breaker: {
+    key: 'destiny_fate_breaker',
+    name: '天命·破劫裁决',
+    icon: '⚔️',
+    rarity: 'legend',
+    tag: '爆发 / 破盾',
+    conflictGroup: 'destiny_offense',
+    exclusiveSource: 'destiny_gamble',
+    desc: '对首领/精英或易伤目标全伤害 +22%；暴击命中首领/精英时施加 2.5s 易伤 (+20%) 并附加 35% 破劫额外爆发（1.2s 冷却，与「余烬回响」互斥）'
+  },
+  destiny_aegis_bulwark: {
+    key: 'destiny_aegis_bulwark',
+    name: '天命·玄天金钟',
+    icon: '🛡️',
+    rarity: 'legend',
+    tag: '生存 / 护盾',
+    conflictGroup: 'destiny_defense',
+    exclusiveSource: 'destiny_gamble',
+    desc: '最大生命 +90、受击减伤 +10%；每 8 秒自动凝结 32 点【寒冰护盾】（无需受击即可支撑冰盾联动，与「寒穹天幕」互斥）'
+  },
+  destiny_resonance_crown: {
+    key: 'destiny_resonance_crown',
+    name: '天命·天衍共鸣',
+    icon: '👑',
+    rarity: 'epic',
+    tag: '灵印 / 神通',
+    conflictGroup: null,
+    exclusiveSource: 'destiny_gamble',
+    desc: '全神通伤害 +16%、全暴击伤害 +25%，主灵印触发冷却 -14%'
+  },
+  destiny_overdrive_nova: {
+    key: 'destiny_overdrive_nova',
+    name: '天命·星陨超载',
+    icon: '🌠',
+    rarity: 'legend',
+    tag: '爆发 / 超载',
+    conflictGroup: 'destiny_mobility',
+    exclusiveSource: 'destiny_gamble',
+    desc: '「全军超载(R)」冷却 -22%，开启瞬间以领主为中心迸发星陨震爆（挂火标+冰缓+范围重击）并凝结 45 点寒冰护盾（与「踏虚步法」互斥）'
+  },
+  destiny_golden_temper: {
+    key: 'destiny_golden_temper',
+    name: '天命·天工淬炼',
+    icon: '⚒️',
+    rarity: 'epic',
+    tag: '精修 / 属性',
+    conflictGroup: null,
+    exclusiveSource: 'destiny_gamble',
+    desc: '每穿戴 1 件强化等级 ≥+2 的构装，全伤害 +7%、攻速 +5%；获得时立即附赠 ⚙️+4 锻材'
+  }
+};
+const DESTINY_ENHANCEMENT_KEYS = Object.keys(DESTINY_ENHANCEMENTS);
+
+// Non-precious ordinary special boons (used in 'special' category when bet is below precious thresholds, or fallback if all exclusives & tokens exhausted)
+const DESTINY_SPECIAL_BOONS = {
+  boon_forge_bundle: {
+    key: 'boon_forge_bundle',
+    name: '灵炉锻材包',
+    icon: '⚙️',
+    desc: r => `提炼 +${r === 'rare' ? 4 : 2} 份普通材料（锻材），可直接用于装备强化精修`,
+    materialsByRarity: { common: 2, rare: 4, epic: 6, legend: 9 }
+  },
+  boon_vital_temper: {
+    key: 'boon_vital_temper',
+    name: '玄脉淬体礼',
+    icon: '❤️',
+    desc: r => `永久最大生命 +${r === 'rare' ? 32 : 18} 并恢复 ${r === 'rare' ? 70 : 40} 生命`,
+    hpByRarity: { common: 18, rare: 32, epic: 48, legend: 68 }
+  },
+  boon_battle_ward: {
+    key: 'boon_battle_ward',
+    name: '护身灵符礼',
+    icon: '💠',
+    desc: r => `获得 +${r === 'rare' ? 3 : 1} 份锻材并立即凝结 ${r === 'rare' ? 60 : 35} 点护盾与回复 35 生命`,
+    materialsByRarity: { common: 1, rare: 3, epic: 5, legend: 7 },
+    shieldByRarity: { common: 35, rare: 60, epic: 85, legend: 110 }
+  }
+};
+const DESTINY_SPECIAL_BOON_KEYS = Object.keys(DESTINY_SPECIAL_BOONS);
+
+// Clean v0.60 Destiny Pills by rarity tier (ZERO old tribulation pills!)
+const DESTINY_PILLS = {
+  common: [
+    { key: 'xp',     name: '修为丹',   icon: '💊', rarity: 'common', desc: '立即注入当前等级 35% 修为' },
+    { key: 'heal',   name: '回春丹',   icon: '🌿', rarity: 'common', desc: '立即恢复 65 生命并凝结 25 护盾' },
+    { key: 'temper', name: '淬灵丹',   icon: '⚗️', rarity: 'common', desc: '普通材料 +2 并恢复 25 生命' }
+  ],
+  rare: [
+    { key: 'rare_xp',     name: '聚灵丹',   icon: '💊', rarity: 'rare', desc: '立即注入当前等级 55% 修为' },
+    { key: 'rare_heal',   name: '碧玉灵丹', icon: '🌿', rarity: 'rare', desc: '立即恢复 105 生命并凝结 45 护盾' },
+    { key: 'rare_temper', name: '精锻灵丹', icon: '⚗️', rarity: 'rare', desc: '普通材料 +4 并恢复 40 生命' }
+  ],
+  epic: [
+    { key: 'epic_xp',     name: '元婴秘丹', icon: '💊', rarity: 'epic', desc: '立即注入当前等级 85% 修为并恢复 50 生命' },
+    { key: 'epic_vital',  name: '固本玄丹', icon: '🌿', rarity: 'epic', desc: '永久最大生命 +35 并立即回复 130 生命与 60 护盾' },
+    { key: 'epic_temper', name: '天工玄丹', icon: '⚗️', rarity: 'epic', desc: '普通材料 +6 并恢复 55 生命' }
+  ],
+  legend: [
+    { key: 'legend_ascend', name: '仙元圣丹', icon: '🌟', rarity: 'legend', desc: '立即直升 1 整级修为 + 永久最大生命 +45 + 全额回复生命' },
+    { key: 'legend_temper', name: '造化圣丹', icon: '⚗️', rarity: 'legend', desc: '普通材料 +9 + 永久最大生命 +25 并恢复 80 生命' }
+  ]
+};
+
 /* ==================== AUDIO ENGINE ==================== */
 const AudioKit = {
   ctx: null, enabled: true, last: {},
@@ -3921,6 +4198,7 @@ function hasPendingDecision(){
   if (game.activeModal && game.activeModal.type !== 'intro') return true;
   if (game.pendingModals && game.pendingModals.length > 0) return true;
   if (game.pendingBreakthrough) return true;
+  if (game.destiny?.pendingOffer && !game.destiny.pendingOffer.claimed) return true;
   if (game.chests && game.chests.length > 0) return true;
   return false;
 }
@@ -3949,6 +4227,7 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
     speed: 1,
     gold: BALANCE.progression.initialGold,
     materials: BALANCE.progression.initialMaterials || 0,
+    transferTokens: BALANCE.progression.initialTransferTokens || 0,
     rerollCost: BALANCE.economy.rerollStart,
     shopTierBonus: 0,
     shake: 0,
@@ -3964,6 +4243,20 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
       lockedAtWave: null
     },
     w20Draft: null,
+    destiny: {
+      pendingOffer: null, // { offerId, bet, wave, choices: [...], claimed: false, claimedChoiceIndex: null }
+      lastOffer: null,
+      lastOutcome: null,
+      claimedOfferIds: [],
+      totalRolls: 0,
+      emptyTribulations: 0,
+      wins: 0,
+      totalGoldBet: 0,
+      history: [],
+      nextOfferSeq: 1
+    },
+    transferDraft: null, // Preview-only draft, zero side effects on cancel
+    rewardStash: [],     // Overflow safe storage when bag is full (Stage 4 & Stage 5 W29 timeout handoff)
     finalPrep: {
       active: false,
       waitingWaveRewards: false,
@@ -4007,7 +4300,7 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
     shop: [],
     shopElemBuyCounts: { wind: 0, fire: 0, frost: 0, thunder: 0, holy: 0 },
     shopElemBuyStage: 1,
-    bag: [], // array of independent gear instances
+    bag: [], // array of independent gear instances (and safely stored unequipped seals if any)
     pills: { xp: 0, heal: 0, temper: 0 },
 
     hero: {
@@ -4023,6 +4316,14 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
       wanjianTimer: 2.4, frostDomainTick: 0.4, swordSetTimer: 1.2, bloodKills: 0,
       w10AuraTimer: 0.55, w10SecondaryTimer: 0.85,
       w20FrostAuraTimer: 1.6, w20ShieldPillarAccum: 0, w20EchoFireCnt: 0, w20EchoFrostCnt: 0, w20TacticalReadyT: 0, w20AftershockQueue: [],
+      destinyEnhancements: {},
+      sealEssenceBonus: 0,
+      destinyDashBuffT: 0,
+      destinyFrostMoveT: 0,
+      destinyEmberNextBoost: false,
+      destinyEmberCd: 0,
+      destinyBreakerCd: 0,
+      destinyBulwarkTimer: 8.0,
       leechUsed: 0, leechTimer: 0,
       gear: [], // up to 4 independent gear instances
       activeGearSynergies: null,
@@ -4044,7 +4345,8 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
         frostPulsesTriggered: 0,
         w10BranchProcs: 0,
         w20BaseProcs: 0,
-        w20EnhancementProcs: 0
+        w20EnhancementProcs: 0,
+        destinyEnhancementProcs: 0
       },
       combos: {},
       perks: {},
@@ -4081,6 +4383,7 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
       gearFrostDuoProcs: 0, gearFrostTrioProcs: 0, frostHitPulses: 0, frostDashPulses: 0, frostFullShieldPulses: 0,
       w20BaseProcs: 0, w20EnhancementProcs: 0, w20FirePulls: 0, w20FrostCounterProcs: 0, w20BreakerSlams: 0,
       w20BossAuxTriggers: 0, w20TotemsDestroyed: 0,
+      destinyRolls: 0, destinyEmptyTribulations: 0, destinyClaims: 0, destinyEnhancementProcs: 0, affixTransfers: 0,
       skillDmg: { blades:0, firewave:0, thunder:0, nova:0, stomp:0, berserk:0, dash:0, spirit:0, combo:0, perk:0 }
     }
   };
@@ -4139,6 +4442,23 @@ function recordW20Proc(kind = 'base'){
   } else {
     if (game.stats) game.stats.w20EnhancementProcs = (game.stats.w20EnhancementProcs || 0) + 1;
     if (game.hero?.combatStateStats) game.hero.combatStateStats.w20EnhancementProcs = (game.hero.combatStateStats.w20EnhancementProcs || 0) + 1;
+  }
+}
+
+function hasDestinyEnhancement(key){
+  return !!(key && game?.hero?.destinyEnhancements?.[key]);
+}
+
+function getOwnedDestinyEnhancements(){
+  const map = game?.hero?.destinyEnhancements || {};
+  return Object.keys(map).filter(k => map[k] && DESTINY_ENHANCEMENTS[k]).map(k => DESTINY_ENHANCEMENTS[k]);
+}
+
+function recordDestinyProc(key = null){
+  if (!game) return;
+  if (game.stats) game.stats.destinyEnhancementProcs = (game.stats.destinyEnhancementProcs || 0) + 1;
+  if (game.hero?.combatStateStats) {
+    game.hero.combatStateStats.destinyEnhancementProcs = (game.hero.combatStateStats.destinyEnhancementProcs || 0) + 1;
   }
 }
 
@@ -4217,7 +4537,13 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
   e.fireDetonateCd = 0.22;
   const stacks = Math.max(1, e.fireMarkStacks || 1);
   const stackMult = 1 + Math.max(0, stacks - 1) * 0.25;
-  const detDmg = Math.max(10, Math.round(baseDmg * stackMult));
+  let destinyDetBoost = 1;
+  if (hasDestinyEnhancement('destiny_ember_echo') && game.hero?.destinyEmberNextBoost) {
+    destinyDetBoost = 1.18;
+    game.hero.destinyEmberNextBoost = false;
+    recordDestinyProc('destiny_ember_echo');
+  }
+  const detDmg = Math.max(10, Math.round(baseDmg * stackMult * destinyDetBoost));
   if (consumeMark) {
     e.fireMarkStacks = Math.max(0, (e.fireMarkStacks || 1) - 1);
     if (e.fireMarkStacks <= 0) e.fireMarkT = 0;
@@ -4417,6 +4743,16 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
         triggerW20ElementalEcho();
       }
     }
+    if (hasDestinyEnhancement('destiny_ember_echo') && game.hero && (game.hero.destinyEmberCd || 0) <= 0) {
+      game.hero.destinyEmberCd = 0.6;
+      game.hero.destinyEmberNextBoost = true;
+      recordDestinyProc('destiny_ember_echo');
+      for (const o of game.enemies) {
+        if (o.hp > 0 && dist(o, e) <= 2.8 + o.r) {
+          applyFireMark(o, 1, 'destiny_ember_echo', 4.5);
+        }
+      }
+    }
   }
   return totalDealt;
 }
@@ -4445,7 +4781,8 @@ function getHeroMaxFrostShield(baseCap = 90){
   const be = BALANCE.w20Breakthrough?.baseEffects || {};
   const synBase = syn.hasFrostTrio ? (sc.frostTrioShieldCap || 115) : syn.hasFrostDuo ? (sc.frostDuoShieldCap || 95) : baseCap;
   const w20Bonus = hasW20Direction('frost_bastion_counter') ? (be.frostBaseShieldCapBonus || 35) : 0;
-  return Math.max(baseCap, synBase) + (gm.frostShieldCapBonus || 0) + w20Bonus;
+  const destinyBonus = hasDestinyEnhancement('destiny_glacial_aegis') ? 40 : 0;
+  return Math.max(baseCap, synBase) + (gm.frostShieldCapBonus || 0) + w20Bonus + destinyBonus;
 }
 
 function triggerFrostPulse(radius = 2.8, rawDmg = 36, freezeDur = 0.9, source = 'w10', extraOpts = {}){
@@ -4573,6 +4910,11 @@ function triggerFrostPulse(radius = 2.8, rawDmg = 36, freezeDur = 0.9, source = 
       h.w20EchoFrostCnt = 0;
       triggerW20ElementalEcho();
     }
+  }
+  if (hasDestinyEnhancement('destiny_glacial_aegis')) {
+    recordDestinyProc('destiny_glacial_aegis');
+    h.destinyFrostMoveT = Math.max(h.destinyFrostMoveT || 0, 2.5);
+    gainFrostShield(14, { duration: 5.0, noFullShieldPulse: true, source: 'destiny_glacial_aegis' });
   }
   return hitCnt;
 }
@@ -4756,7 +5098,8 @@ function syncHeroMaxHp(){
   const h = game.hero;
   const gm = aggregateGear(h.gear);
   const oldMax = h.maxHp;
-  const rawMax = Math.round((h.baseMaxHp + gm.flatHp) * Math.max(0.4, 1 + gm.hpPct));
+  const destinyFlatHp = hasDestinyEnhancement('destiny_aegis_bulwark') ? 90 : 0;
+  const rawMax = Math.round((h.baseMaxHp + gm.flatHp + destinyFlatHp) * Math.max(0.4, 1 + gm.hpPct));
   h.maxHp = Math.max(60, rawMax);
   if (h.maxHp > oldMax) h.hp = Math.min(h.maxHp, h.hp + (h.maxHp - oldMax));
   else h.hp = Math.min(h.hp, h.maxHp);
@@ -4801,13 +5144,24 @@ function getHeroStats(){
   const shieldAffixMove = hasShieldNow ? (gm.shieldedMovePct || 0) : 0;
   const holyMasteryCritDmg = (game.seal?.kind === 'holy' && game.seal?.route === 'mastery') ? 0.20 : 0;
 
-  const aspd = Math.max(0.5, 1 + gm.aspd + berkLv * 0.18 + holyAura + (syn.wind >= 2 ? 0.25 : 0) + (h.ultTimer > 0 ? 0.80 : 0) + bloodAspd + dashAspd + greedAspd);
-  const dmgMult = 1 + gm.dmgPct + shieldAffixDmg + (h.lv - 1) * BALANCE.progression.heroDmgPerLevel + r.dmgBonus + bloodDmg + goldDmg + sealDmgBonus + bloodKillDmg;
+  // Stage 4 Destiny Exclusive Enhancement stat hooks
+  const temperedGearCount = hasDestinyEnhancement('destiny_golden_temper')
+    ? (h.gear || []).filter(g => (g?.enhanceLv || 0) >= 2).length
+    : 0;
+  const destinyTemperDmg = temperedGearCount * 0.07;
+  const destinyTemperAspd = temperedGearCount * 0.05;
+  const destinyCrownSkillMult = hasDestinyEnhancement('destiny_resonance_crown') ? 1.16 : 1.0;
+  const destinyCrownCritDmg = hasDestinyEnhancement('destiny_resonance_crown') ? 0.25 : 0;
+  const destinyDashCrit = (hasDestinyEnhancement('destiny_phantom_stride') && (h.destinyDashBuffT || 0) > 0) ? 0.20 : 0;
+  const destinyFrostMove = (hasDestinyEnhancement('destiny_glacial_aegis') && (h.destinyFrostMoveT || 0) > 0) ? 0.12 : 0;
+
+  const aspd = Math.max(0.5, 1 + gm.aspd + berkLv * 0.18 + holyAura + (syn.wind >= 2 ? 0.25 : 0) + (h.ultTimer > 0 ? 0.80 : 0) + bloodAspd + dashAspd + greedAspd + destinyTemperAspd);
+  const dmgMult = 1 + gm.dmgPct + shieldAffixDmg + (h.lv - 1) * BALANCE.progression.heroDmgPerLevel + r.dmgBonus + bloodDmg + goldDmg + sealDmgBonus + bloodKillDmg + destinyTemperDmg;
 
   const ownedSkills = Object.values(h.skills).filter(v => v > 0).length;
   const mmLv = perkLv('mono_mastery');
   const mmActive = (mmLv === 1 && ownedSkills <= 2) || (mmLv >= 2 && ownedSkills <= 3);
-  const skillDmgMult = dmgMult * (mmActive ? (mmLv >= 2 ? 1.55 : 1.30) : 1);
+  const skillDmgMult = dmgMult * (mmActive ? (mmLv >= 2 ? 1.55 : 1.30) : 1) * destinyCrownSkillMult;
   const rangeMult = Math.max(0.65, 1 + gm.rangePct);
   const skillRangeMult = rangeMult * (mmActive ? (mmLv >= 2 ? 1.15 : 1.08) : 1);
   const skillCdMult = r.cdMult * (mmActive && mmLv >= 2 ? 0.80 : 1);
@@ -4816,15 +5170,15 @@ function getHeroStats(){
   const swordSetCrit = swordSet >= 3 ? 0.20 : swordSet >= 2 ? 0.12 : 0;
   const rawCrit = BALANCE.progression.heroBaseCrit + gm.crit + berkLv * 0.08 + (syn.holy >= 2 ? 0.15 : 0) + holySubCrit + (h.ultTimer > 0 ? 0.35 : 0)
     + swordSetCrit + (csLv === 2 ? 0.25 : csLv === 1 ? 0.15 : 0)
-    + (windGaleLv >= 1 && h.dashBuffT > 0 ? 1.0 : 0);
+    + (windGaleLv >= 1 && h.dashBuffT > 0 ? 1.0 : 0) + destinyDashCrit;
   const overflowCrit = Math.max(0, rawCrit - 1.0);
   const crit = Math.min(1.0, rawCrit);
   const critDmg = (syn.holy >= 4 ? 2.2 : BALANCE.progression.heroBaseCritMultiplier) + gm.critDmg + holyMasteryCritDmg + (hasDualRes('holy_omni') ? 0.25 : 0)
     + (csLv === 2 ? overflowCrit * 3 : csLv === 1 ? overflowCrit * 2 : 0)
-    + (perkLv('sword_rain') >= 2 ? 0.60 : 0);
+    + (perkLv('sword_rain') >= 2 ? 0.60 : 0) + destinyCrownCritDmg;
 
   const moveSpd = (BALANCE.progression.heroBaseMove + berkLv * BALANCE.progression.heroMovePerBerserkLv)
-    * (1 + gm.movePct + shieldAffixMove + greedMove + wfDualMove + (windGaleLv === 2 ? 0.30 : windGaleLv === 1 ? 0.20 : 0) + (perkLv('ult_engine') >= 1 && h.ultTimer > 0 ? 0.30 : 0));
+    * (1 + gm.movePct + shieldAffixMove + greedMove + wfDualMove + destinyFrostMove + (windGaleLv === 2 ? 0.30 : windGaleLv === 1 ? 0.20 : 0) + (perkLv('ult_engine') >= 1 && h.ultTimer > 0 ? 0.30 : 0));
   const magnet = 2.9 + berkLv * 0.85 + gm.rangePct * 2.0;
   const lifesteal = gm.lifesteal + berkLv * 2 + bloodLeech;
 
@@ -4852,8 +5206,10 @@ function getSealStats(a = game.seal){
   const routeDmgMult = route === 'standard' ? 1.18 : 1;
   const routeCdMult = route === 'standard' ? 0.92 : (route === 'mastery' && a.kind === 'wind' ? 0.90 : 1);
   const fireMult = (a.elem === 'fire' && syn.fire >= 2) ? 1.35 : 1;
-  const dmg = Math.max(5, Math.round(base.dmg * hs.dmgMult * fireMult * fireSubMult * routeDmgMult));
-  const cd = Math.max(0.16, base.cd * windSubCd * routeCdMult * (ocLv >= 1 ? 0.75 : 1) / hs.aspd);
+  const essenceMult = 1 + (game.hero?.sealEssenceBonus || 0);
+  const destinyCrownSealCd = hasDestinyEnhancement('destiny_resonance_crown') ? 0.86 : 1;
+  const dmg = Math.max(5, Math.round(base.dmg * hs.dmgMult * fireMult * fireSubMult * routeDmgMult * essenceMult));
+  const cd = Math.max(0.16, base.cd * windSubCd * routeCdMult * destinyCrownSealCd * (ocLv >= 1 ? 0.75 : 1) / hs.aspd);
   const range = Number((base.range * hs.rangeMult * (ocLv >= 2 ? 1.3 : 1)).toFixed(2));
   const shots = (base.shots || 1) + gm.extraShot + (ocLv >= 2 ? 1 : 0) + (route === 'mastery' && a.kind === 'wind' ? 1 : 0);
   const chains = (base.chains || 0) + (syn.thunder >= 2 ? 2 : 0) + gm.extraShot + (ocLv >= 2 ? 1 : 0) + (route === 'mastery' && a.kind === 'thunder' ? 2 : 0);
@@ -4941,13 +5297,64 @@ function getGearDismantleMaterials(inst){
 }
 
 function getGearEnhanceCost(inst){
-  if (!inst || typeof inst !== 'object') return null;
+  if (!inst || typeof inst !== 'object' || inst.itemType === 'seal') return null;
   const cfg = BALANCE.equipment?.materialEnhance || {};
-  const maxLv = cfg.maxEnhanceLv || 5;
+  const maxLv = cfg.maxEnhanceLv || 6;
   const curLv = inst.enhanceLv || 0;
   if (curLv >= maxLv) return null;
-  const table = Array.isArray(cfg.matCostByNextLv) ? cfg.matCostByNextLv : [2, 3, 5, 7, 10];
+  const table = Array.isArray(cfg.matCostByNextLv) ? cfg.matCostByNextLv : [2, 3, 5, 7, 10, 14];
   return table[curLv] ?? (2 + curLv * 2);
+}
+
+function getBagCapacity(){
+  return Math.max(4, Number(BALANCE.progression?.bagCapacity || 12));
+}
+
+function isBagSeal(item){
+  return !!(item && typeof item === 'object' && item.itemType === 'seal');
+}
+
+function getEndgameRefinementConfig(){
+  return BALANCE.endgameRefinement || {
+    startWave: 21,
+    eliteMaterialDropW21To24: 2,
+    eliteMaterialDropW25To29: 3,
+    bossMaterialDropW21Plus: 6,
+    shrineMaterialDropW21Plus: 4,
+    waveClearMaterialsByBand: [
+      { from: 21, to: 24, materials: 1 },
+      { from: 25, to: 27, materials: 2 },
+      { from: 28, to: 29, materials: 3 }
+    ],
+    shopHighRarityAffixBonusW21Plus: 0.14,
+    shopSecondGearChanceW21Plus: 0.65,
+    chestHighRarityAffixBonusW21Plus: 0.12
+  };
+}
+
+function getEnemyMaterialDrop(e, wave = game?.wave || 1){
+  const cfg = getEndgameRefinementConfig();
+  if (e?.isShrineBoss) {
+    return wave >= (cfg.startWave || 21) ? (cfg.shrineMaterialDropW21Plus || 4) : 2;
+  }
+  if (e?.boss) {
+    return wave >= (cfg.startWave || 21) ? (cfg.bossMaterialDropW21Plus || 6) : (BALANCE.economy.bossMaterialDrop || 3);
+  }
+  if (e?.elite) {
+    if (wave >= 25) return cfg.eliteMaterialDropW25To29 || 3;
+    if (wave >= (cfg.startWave || 21)) return cfg.eliteMaterialDropW21To24 || 2;
+    return BALANCE.economy.eliteMaterialDrop || 1;
+  }
+  return 0;
+}
+
+function getWaveClearMaterialBonus(clearedWave){
+  const cfg = getEndgameRefinementConfig();
+  const bands = Array.isArray(cfg.waveClearMaterialsByBand) ? cfg.waveClearMaterialsByBand : [];
+  for (const b of bands) {
+    if (clearedWave >= b.from && clearedWave <= b.to) return Math.max(0, Number(b.materials || 0));
+  }
+  return 0;
 }
 
 /* ==================== SHOP (SEALS + STAGE 2 GEAR + V0.60 CLEAN PILLS) ==================== */
@@ -4965,6 +5372,8 @@ function rollShop(free = false){
   }
   const tier = getShopTier();
   const isHuashen = getActiveUnlockNode().idx >= 4;
+  const refCfg = getEndgameRefinementConfig();
+  const isEndgameRef = (game.wave || 1) >= (refCfg.startWave || 21);
   game.shop = [];
 
   const pushSealOffer = () => {
@@ -4986,10 +5395,12 @@ function rollShop(free = false){
 
   const pushGearOffer = () => {
     const baseKey = pickShopGearBaseKey(game.wave, game.rnd);
+    const highAffixChance = (BALANCE.equipment?.shopPricing?.highRarityAffixChance || 0.16)
+      + (isEndgameRef ? (refCfg.shopHighRarityAffixBonusW21Plus || 0.14) : 0);
     const gear = createGearInstance(baseKey, {
       wave: game.wave,
       origin: 'shop',
-      highRarityChance: BALANCE.equipment?.shopPricing?.highRarityAffixChance || 0.16,
+      highRarityChance: Math.min(0.65, highAffixChance),
       rndFn: game.rnd
     });
     const cost = calcShopGearPrice(gear.rarity, gear.elem, game.wave);
@@ -5010,12 +5421,12 @@ function rollShop(free = false){
       pushGearOffer();
       continue;
     }
-    // Slot 3: In-run clean Pill slot (only xp/heal/temper) or 2nd gear / seal offer
+    // Slot 3: In-run clean Pill slot (only xp/heal/temper — NEVER transferTokens or Destiny Exclusives!) or 2nd gear / seal offer
     if (i === 3) {
       if (game.rnd() < BALANCE.economy.pillSlotChance) {
         const pk = PILL_KEYS[Math.floor(game.rnd() * PILL_KEYS.length)];
         game.shop.push({ uid: Math.floor(game.rnd() * 1e9), itemType: 'pill', pillKey: pk, cost: PILLS[pk].cost, bought: false });
-      } else if (game.rnd() < (BALANCE.economy.gearSecondSlotChance || 0.45)) {
+      } else if (game.rnd() < (isEndgameRef ? (refCfg.shopSecondGearChanceW21Plus || 0.65) : (BALANCE.economy.gearSecondSlotChance || 0.45))) {
         pushGearOffer();
       } else {
         pushSealOffer();
@@ -5252,7 +5663,20 @@ function sellSubSeal(idx){
 
 function equipGearFromBag(bagIdx){
   if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
-  const inst = normalizeGearInstance(game.bag[bagIdx]);
+  const raw = game.bag[bagIdx];
+  if (isBagSeal(raw)) {
+    // Safe non-destructive attempt to absorb/equip stashed seal without overwriting active Main Seal!
+    const res = grantSealSafely(raw.kind, raw.star, { rarity: raw.rarity, origin: raw.origin || 'bag_seal', dryIfStore: true });
+    if (res.ok && res.action !== 'stored_bag' && res.action !== 'stored_stash') {
+      game.bag.splice(bagIdx, 1);
+      renderAllUI(true);
+      return true;
+    }
+    toast(`在用主辅灵印已满，【${raw.name} ${raw.star}★】不会覆盖当前主灵印！可右键出售换金或 Shift+右键拆解换锻材。`, true);
+    renderAllUI(true);
+    return false;
+  }
+  const inst = normalizeGearInstance(raw);
   if (game.hero.gear.length >= HERO_GEAR_SLOTS) {
     game.inspTarget = { type: 'hero' };
     toast(`领主构装槽已满（${HERO_GEAR_SLOTS}/${HERO_GEAR_SLOTS}），已在详情面板打开，可卸下、替换、出售或拆解！`, true);
@@ -5276,6 +5700,10 @@ function equipGearFromBag(bagIdx){
 function replaceEquippedGear(slotIdx, bagIdx){
   if (slotIdx < 0 || slotIdx >= game.hero.gear.length) return false;
   if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
+  if (isBagSeal(game.bag[bagIdx])) {
+    toast('灵印物品无法替换领主构装槽！', true);
+    return false;
+  }
   const incoming = normalizeGearInstance(game.bag[bagIdx]);
   const outgoing = game.hero.gear[slotIdx];
   game.hero.gear[slotIdx] = incoming;
@@ -5304,6 +5732,18 @@ function unequipGear(slotIdx){
 function sellBagGear(bagIdx){
   if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
   const inst = game.bag[bagIdx];
+  if (isBagSeal(inst)) {
+    const spec = ARTIFACTS[inst.kind] || { cost: 22, name: inst.name || '灵印' };
+    const pts = inst.star === 3 ? 4 : inst.star === 2 ? 2 : 1;
+    const gold = Math.max(8, Math.round(spec.cost * pts * 0.65));
+    game.bag.splice(bagIdx, 1);
+    game.gold += gold;
+    AudioKit.play('coin', 1.1);
+    addFloat(game.hero.x, game.hero.y - 0.5, `售灵印 +${gold} 金`, '#ffe27a');
+    toast(`💰 已出售未装备灵印【${spec.name} ${inst.star}★】，获得 +${gold} 金币！`);
+    renderAllUI(true);
+    return true;
+  }
   const gold = getGearSellGold(inst);
   game.bag.splice(bagIdx, 1);
   game.gold += gold;
@@ -5317,6 +5757,17 @@ function sellBagGear(bagIdx){
 function dismantleBagGear(bagIdx){
   if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
   const inst = game.bag[bagIdx];
+  if (isBagSeal(inst)) {
+    // Dismantling seals yields ONLY ordinary materials, NEVER transfer tokens!
+    const mats = Math.max(1, (inst.star || 1) * 2);
+    game.bag.splice(bagIdx, 1);
+    game.materials = (game.materials || 0) + mats;
+    AudioKit.play('merge', 0.9);
+    addFloat(game.hero.x, game.hero.y - 0.5, `拆灵印 +${mats} 锻材`, '#8ef4ff');
+    toast(`🔧 已拆解未装备灵印【${inst.name} ${inst.star}★】，获得 +${mats} 普通材料！`);
+    renderAllUI(true);
+    return true;
+  }
   const mats = getGearDismantleMaterials(inst);
   game.bag.splice(bagIdx, 1);
   game.materials = (game.materials || 0) + mats;
@@ -5332,6 +5783,145 @@ function salvageBagGear(bagIdx){
   return sellBagGear(bagIdx);
 }
 
+// Stage 4 Safe Claim Paths (NEVER auto-sell or overwrite active 5★ Main Seal; overflow goes to game.rewardStash!)
+function grantGearSafely(input, opts = {}){
+  const inst = isGearInstance(input)
+    ? normalizeGearInstance(input)
+    : createGearInstance(gearBase(input), { wave: game.wave, origin: opts.origin || 'destiny_gamble', ...opts });
+  const cap = getBagCapacity();
+  if (game.bag.length < cap) {
+    game.bag.push(inst);
+    AudioKit.play('chest', 1.2);
+    if (!opts.silent) {
+      const stSpec = getSourceStageSpec(inst.sourceStage);
+      toast(`获得构装【${inst.name}】(${GEAR_RARITY_LABELS[inst.rarity]}·${stSpec.label}·${inst.slotsCount}槽)，已安全放入背包！`);
+    }
+    renderAllUI(true);
+    return { ok: true, storedIn: 'bag', item: inst };
+  }
+  game.rewardStash = game.rewardStash || [];
+  game.rewardStash.push({ itemType: 'gear', item: inst, storedAtWave: game.wave, origin: opts.origin || 'destiny_gamble' });
+  AudioKit.play('chest', 1.1);
+  if (!opts.silent) {
+    toast(`背包已满（${cap}/${cap}），构装【${inst.name}】已安全转入暂存箱（可随时在属性面板提取）！`);
+  }
+  renderAllUI(true);
+  return { ok: true, storedIn: 'stash', item: inst };
+}
+
+function grantSealSafely(kind, star = 1, opts = {}){
+  const spec = ARTIFACTS[kind];
+  if (!spec) return { ok: false, reason: 'invalid_seal' };
+  const cap = getSealStarCap();
+  const subCap = getSubSealSlotCap();
+  const normStar = clamp(Math.round(Number(star) || 1), 1, 3);
+  const cardPts = normStar === 3 ? 4 : normStar === 2 ? 2 : 1;
+  const subIdx = game.subSeals.findIndex(s => s.kind === kind);
+
+  // Case 1: No Main Seal equipped yet -> equip safely
+  if (!game.seal) {
+    const initStar = Math.min(cap, normStar);
+    game.seal = { kind, elem: spec.elem, star: initStar, prog: 0, route: null, cd: 0, dmgDealt: 0, kills: 0 };
+    AudioKit.play('merge', 1.1);
+    if (!opts.silent) toast(`✨ 安全领奖：已铭刻主灵印【${spec.name} ${initStar}★】！`);
+    renderAllUI(true);
+    return { ok: true, action: 'equipped_main', mainSealPreserved: true, seal: game.seal };
+  }
+
+  // Case 2: Matches Main Seal & Main Seal is below current star cap -> absorb fusion points
+  if (game.seal.kind === kind && game.seal.star < cap) {
+    game.seal.prog += cardPts;
+    let leveled = false;
+    while (game.seal.star < cap && game.seal.prog >= SEAL_FUSE_NEED[game.seal.star]) {
+      game.seal.prog -= SEAL_FUSE_NEED[game.seal.star];
+      game.seal.star++;
+      game.stats.merges++;
+      leveled = true;
+    }
+    if (game.seal.star >= cap) game.seal.prog = 0;
+    AudioKit.play('merge', 1.15);
+    if (!opts.silent) toast(leveled ? `★ 主灵印【${spec.name}】晋升 ${game.seal.star}★！` : `✨ 主灵印【${spec.name}】吸收灵印精华！`);
+    renderAllUI(true);
+    return { ok: true, action: 'upgraded_main', leveled, mainSealPreserved: true, seal: game.seal };
+  }
+
+  // Case 3: Matches existing Sub-Seal & Sub-Seal is below 3★ -> absorb fusion points
+  if (subIdx >= 0 && game.subSeals[subIdx].star < 3) {
+    const sub = game.subSeals[subIdx];
+    sub.prog += cardPts;
+    let leveled = false;
+    while (sub.star < 3 && sub.prog >= SEAL_FUSE_NEED[sub.star]) {
+      sub.prog -= SEAL_FUSE_NEED[sub.star];
+      sub.star++;
+      game.stats.merges++;
+      leveled = true;
+    }
+    if (sub.star >= 3) sub.prog = 0;
+    AudioKit.play('merge', 1.1);
+    if (!opts.silent) toast(leveled ? `★ 辅灵印【${spec.name}】晋升 ${sub.star}★！` : `✨ 辅灵印【${spec.name}】吸收灵印精华！`);
+    renderAllUI(true);
+    return { ok: true, action: 'upgraded_sub', leveled, mainSealPreserved: true, subSeal: sub };
+  }
+
+  // Case 4: Off-element seal & empty Sub-Seal slot available -> equip into Sub-Seal slot (Main Seal untouched!)
+  if (game.seal.kind !== kind && subIdx < 0 && game.subSeals.length < subCap) {
+    const initStar = Math.min(3, normStar);
+    const sub = { kind, elem: spec.elem, star: initStar, prog: 0, dmgDealt: 0 };
+    game.subSeals.push(sub);
+    AudioKit.play('merge', 1.1);
+    if (!opts.silent) toast(`✨ 辅印共鸣激活！【${SUB_SEAL_RESONANCE[spec.elem].name} ${initStar}★】已入空辅印槽，主灵印完好保留！`);
+    renderAllUI(true);
+    return { ok: true, action: 'equipped_sub', mainSealPreserved: true, subSeal: sub };
+  }
+
+  // Case 5 (SAFE IRON RULE): Off-element with full slots OR maxed same-element seal ->
+  // NEVER call buyShopItem, NEVER sell or overwrite active Main/Sub Seal! Store as unequipped seal in bag or rewardStash!
+  if (opts.dryIfStore) {
+    return { ok: false, reason: 'slots_full_or_maxed', mainSealPreserved: true };
+  }
+  const sealItem = {
+    itemType: 'seal',
+    uid: nextGearUid(),
+    kind,
+    elem: spec.elem,
+    star: normStar,
+    name: spec.name,
+    icon: spec.icon,
+    rarity: opts.rarity || (normStar >= 3 ? 'epic' : normStar === 2 ? 'rare' : 'common'),
+    origin: opts.origin || 'destiny_gamble'
+  };
+  const bagCap = getBagCapacity();
+  if (game.bag.length < bagCap) {
+    game.bag.push(sealItem);
+    AudioKit.play('chest', 1.05);
+    if (!opts.silent) toast(`🛡️ 安全领奖：【${spec.name} ${normStar}★】已收纳至背包，在用主辅灵印（含 5★ 主印）完好保留！`);
+    renderAllUI(true);
+    return { ok: true, action: 'stored_bag', storedIn: 'bag', item: sealItem, mainSealPreserved: true };
+  }
+  game.rewardStash = game.rewardStash || [];
+  game.rewardStash.push({ itemType: 'seal', item: sealItem, storedAtWave: game.wave, origin: opts.origin || 'destiny_gamble' });
+  AudioKit.play('chest', 1.05);
+  if (!opts.silent) toast(`🛡️ 背包已满，【${spec.name} ${normStar}★】已安全存入暂存箱，在用主辅灵印完好保留！`);
+  renderAllUI(true);
+  return { ok: true, action: 'stored_stash', storedIn: 'stash', item: sealItem, mainSealPreserved: true };
+}
+
+function claimRewardStashItem(stashIdx = 0){
+  if (!game?.rewardStash || stashIdx < 0 || stashIdx >= game.rewardStash.length) {
+    return { ok: false, reason: 'invalid_stash_index' };
+  }
+  if (game.bag.length >= getBagCapacity()) {
+    toast(`背包已满（${getBagCapacity()}/${getBagCapacity()}），请先出售或拆解腾出空位！`, true);
+    return { ok: false, reason: 'bag_full' };
+  }
+  const [entry] = game.rewardStash.splice(stashIdx, 1);
+  game.bag.push(entry.item);
+  AudioKit.play('chest', 1.0);
+  toast(`📦 已从暂存箱取出【${entry.item.name}】放入背包！`);
+  renderAllUI(true);
+  return { ok: true, item: entry.item, stashLeft: game.rewardStash.length };
+}
+
 // Stage 2 Normal Material Optimization (Review-approved plan L96):
 // Consumes game.materials to raise enhanceLv (base stats + existing affix numeric tier),
 // STRICTLY preserving rarity, sourceStage, slotsCount, and affix IDs!
@@ -5345,7 +5935,7 @@ function enhanceGear(target){
     else if (target.location === 'bag') inst = game.bag[target.idx] || null;
     else if (target.uid) inst = game.hero.gear.find(g => g.uid === target.uid) || game.bag.find(g => g.uid === target.uid) || null;
   }
-  if (!inst || typeof inst !== 'object') return { ok: false, reason: 'not_found' };
+  if (!inst || typeof inst !== 'object' || isBagSeal(inst)) return { ok: false, reason: 'not_found' };
   const cost = getGearEnhanceCost(inst);
   if (cost === null) {
     toast(`【${gearLabel(inst)}】已达最高强化档位！`, true);
@@ -5577,10 +6167,19 @@ function startWave(){
     renderAllUI();
     return false;
   }
+  if (game.destiny?.pendingOffer && !game.destiny.pendingOffer.claimed) {
+    openDestinyGambleModal();
+    toast('🎲 天命赌局尚有未领取的三选一奖励，请先领取再开战！', true);
+    renderAllUI(true);
+    return false;
+  }
   if (game.pendingBreakthrough || game.activeModal || game.pendingModals.length > 0) {
     toast('请先完成当前待选突破或奖励！', true);
     renderAllUI();
     return false;
+  }
+  if (game.transferDraft) {
+    cancelAffixTransferPreview();
   }
 
   // Stage 3: W20 start requires a confirmed preselected direction and locks it immediately!
@@ -5804,6 +6403,9 @@ function dealDamage(e, rawDmg, opts = {}){
     dmg *= (1 + gm.markedDmgPct);
   }
   if (e.vulnT > 0) dmg *= 1.20;
+  if (hasDestinyEnhancement('destiny_fate_breaker') && (e.boss || e.elite || e.vulnT > 0)) {
+    dmg *= 1.22;
+  }
 
   // Dual Cataclysm (雷火劫印): burning enemy takes bonus thunder dmg + instant burn burst!
   const dcLv = perkLv('dual_cataclysm');
@@ -5817,6 +6419,13 @@ function dealDamage(e, rawDmg, opts = {}){
 
   const isCrit = opts.critChance ? game.rnd() < opts.critChance : false;
   if (isCrit) dmg *= (opts.critDmg || 1.7);
+  if (isCrit && hasDestinyEnhancement('destiny_fate_breaker') && (e.boss || e.elite) && !opts.fromDestinyBreaker && (game.hero?.destinyBreakerCd || 0) <= 0) {
+    game.hero.destinyBreakerCd = 1.2;
+    e.vulnT = Math.max(e.vulnT || 0, 2.5);
+    dmg = Math.round(dmg * 1.35);
+    recordDestinyProc('destiny_fate_breaker');
+    addFloat(e.x, e.y - 0.85, '⚔️破劫裁决!', '#ffe484', true);
+  }
   dmg = Math.max(1, Math.round(dmg));
 
   // Zero Execution (绝对零度): Boss extra missing HP true dmg at Lv.2
@@ -6073,9 +6682,9 @@ function onEnemyKilled(e, opts){
     return;
   }
 
-  // Material drops for v0.60 equipment & crafting loop
+  // Material drops for v0.60 equipment & crafting loop (scales up in W21-W29 endgame refinement!)
   if (e.boss || e.elite) {
-    const matDrop = e.boss ? (BALANCE.economy.bossMaterialDrop || 3) : (BALANCE.economy.eliteMaterialDrop || 1);
+    const matDrop = getEnemyMaterialDrop(e, game.wave);
     game.materials = (game.materials || 0) + matDrop;
   }
 
@@ -6145,16 +6754,17 @@ function onEnemyKilled(e, opts){
     game.gems.push({ x: e.x + 0.35, y: e.y - 0.25, xp: 28, big: true, vx: 1.2, vy: -1.0, t: 0 });
   }
 
-  // Blood Shrine Boss Reward (Chapter-capped chest + 25 gold + 2 materials)
+  // Blood Shrine Boss Reward (Chapter-capped chest + 25 gold + materials scaled in W21+)
   if (e.isShrineBoss) {
     game.stats.elites++;
     if (game.shrine) game.shrine.cleared = true;
     if (game.curWaveTel) game.curWaveTel.shrineCleared = true;
+    const shrineMats = getEnemyMaterialDrop(e, game.wave);
     game.gold += 25;
-    game.materials = (game.materials || 0) + 2;
+    game.materials = (game.materials || 0) + shrineMats;
     game.chests.push({ x: e.x, y: e.y, legend: game.wave >= 12, shrineTier: true, bob: 0 });
     addRing(e.x, e.y, '#ff4d6d', 2.8);
-    showBanner('🩸 血煞妖王已伏诛！', '掉落章节血碑宝箱 + 25 金币 + 2 锻材！', 'good');
+    showBanner('🩸 血煞妖王已伏诛！', `掉落章节血碑宝箱 + 25 金币 + ${shrineMats} 锻材！`, 'good');
     AudioKit.play('chest', 1.2);
     game.shake = Math.max(game.shake, 8);
     return;
@@ -6298,6 +6908,12 @@ function castHeroDash(){
     cdFactor *= 0.75;
     h.w20TacticalReadyT = 2.5;
   }
+  const hasPhantomStride = hasDestinyEnhancement('destiny_phantom_stride');
+  if (hasPhantomStride) {
+    cdFactor *= 0.82;
+    h.destinyDashBuffT = 2.2;
+    recordDestinyProc('destiny_phantom_stride');
+  }
   if (wgLv > 0) h.dashBuffT = 2.0;
   h.dashCd = Math.max(1.0, (4.2 * cdFactor) / (1 + Math.max(0, hs.gm.aspd) * 0.6));
 
@@ -6305,10 +6921,14 @@ function castHeroDash(){
   for (let s = 0; s < 3; s++) {
     const px = ox + (h.x - ox) * (s / 2);
     const py = oy + (h.y - oy) * (s / 2);
-    addRing(px, py, '#ff7b47', 1.45);
+    addRing(px, py, hasPhantomStride ? '#9effea' : '#ff7b47', 1.45);
     for (const e of game.enemies) {
       if (e.hp > 0 && dist(e, {x:px,y:py}) <= 1.55) {
         if (w20FireDash) applyFireMark(e, 2, 'w20_fire_dash_detonator', 5.0);
+        if (hasPhantomStride) {
+          applyFireMark(e, 1, 'destiny_phantom_stride', 4.5);
+          applyFrostSlow(e, 0.40, 2.8, 'destiny_phantom_stride');
+        }
         dealDamage(e, Math.round(32 * hs.dmgMult), { fromHero:true, skillKey:'dash', critChance:hs.crit, critDmg:hs.critDmg, col:'#ff8e52', burn:12, lifesteal:hs.lifesteal });
       }
     }
@@ -6411,10 +7031,28 @@ function castHeroOverdrive(){
   if (h.ultCd > 0) { toast(`全军超载冷却中 (${h.ultCd.toFixed(1)}s)`, true); return false; }
   if (game.curWaveTel) game.curWaveTel.ultCount++;
   h.ultTimer = perkLv('ult_engine') >= 2 ? 8.0 : 5.0;
-  h.ultCd = 18.0;
+  const hasOdNova = hasDestinyEnhancement('destiny_overdrive_nova');
+  h.ultCd = hasOdNova ? Number((18.0 * 0.78).toFixed(2)) : 18.0;
   game.shake = 6;
   addRing(h.x, h.y, '#ffe478', 4.5);
   addFloat(h.x, h.y - 0.6, `⚡ 全军超载 ${h.ultTimer}s！攻速+80% 暴击+35%`, '#ffe878', true);
+  if (hasOdNova) {
+    recordDestinyProc('destiny_overdrive_nova');
+    const hs = getHeroStats();
+    const novaRad = 4.6;
+    addRing(h.x, h.y, '#c89eff', novaRad);
+    addFloat(h.x, h.y - 1.0, '🌠 天命·星陨超载!', '#e4c4ff', true);
+    gainFrostShield(45, { duration: 6.0, source: 'destiny_overdrive_nova' });
+    for (const e of game.enemies) {
+      if (e.hp > 0 && dist(e, h) <= novaRad + e.r) {
+        applyFireMark(e, 1, 'destiny_overdrive_nova', 5.0);
+        applyFrostSlow(e, 0.50, 3.2, 'destiny_overdrive_nova');
+        dealDamage(e, Math.round(78 * hs.skillDmgMult), {
+          fromHero: true, skillKey: 'perk', critChance: hs.crit, critDmg: hs.critDmg, col: '#e4c4ff'
+        });
+      }
+    }
+  }
   AudioKit.play('merge', 1.15);
   renderAllUI();
   return true;
@@ -6450,6 +7088,10 @@ function updateHero(dt){
   h.ultCd = Math.max(0, h.ultCd - dt);
   h.ultTimer = Math.max(0, h.ultTimer - dt);
   h.dashBuffT = Math.max(0, h.dashBuffT - dt);
+  h.destinyDashBuffT = Math.max(0, (h.destinyDashBuffT || 0) - dt);
+  h.destinyFrostMoveT = Math.max(0, (h.destinyFrostMoveT || 0) - dt);
+  h.destinyEmberCd = Math.max(0, (h.destinyEmberCd || 0) - dt);
+  h.destinyBreakerCd = Math.max(0, (h.destinyBreakerCd || 0) - dt);
   h.thornsCd = Math.max(0, h.thornsCd - dt);
   h.frostPulseCd = Math.max(0, (h.frostPulseCd || 0) - dt);
   h.frostActivePulseCd = Math.max(0, (h.frostActivePulseCd || 0) - dt);
@@ -6462,6 +7104,16 @@ function updateHero(dt){
   if (h.shieldTimer > 0) {
     h.shieldTimer = Math.max(0, h.shieldTimer - dt);
     if (h.shieldTimer === 0) { h.shield = 0; h.frostShieldActive = false; }
+  }
+  // Stage 4 Destiny Enhancement [destiny_aegis_bulwark]: auto-refresh 32 Frost Shield every 8s during wave!
+  if (game.phase === 'wave' && hasDestinyEnhancement('destiny_aegis_bulwark')) {
+    h.destinyBulwarkTimer = (h.destinyBulwarkTimer ?? 8.0) - dt;
+    if (h.destinyBulwarkTimer <= 0) {
+      h.destinyBulwarkTimer = 8.0;
+      recordDestinyProc('destiny_aegis_bulwark');
+      gainFrostShield(32, { duration: 5.5, source: 'destiny_aegis_bulwark' });
+      addFloat(h.x, h.y - 0.75, '🛡️玄天金钟 +32盾', '#ffe484');
+    }
   }
   // Process W20 delayed Breaker Aftershocks
   if (h.w20AftershockQueue?.length) {
@@ -7932,6 +8584,7 @@ function damageHero(amt){
   if (perkLv('frost_domain') >= 2) rem = Math.max(1, Math.round(rem * 0.80));
   if (gearSetTier('blood') >= 3 && h.hp <= h.maxHp * 0.5) rem = Math.max(1, Math.round(rem * 0.78));
   if (gm.dmgReduce > 0) rem = Math.max(1, Math.round(rem * (1 - gm.dmgReduce)));
+  if (hasDestinyEnhancement('destiny_aegis_bulwark')) rem = Math.max(1, Math.round(rem * 0.90));
   const hadFrostShield = h.shield > 0 && h.frostShieldActive;
   const gearSyn = getActiveGearAffixSynergies();
   if (hadFrostShield && (gearSyn.hasFrostTrio || hasW20Direction('frost_bastion_counter'))) {
@@ -8070,7 +8723,9 @@ function completeWaveClear(){
   const greedBonus = gearSetTier('greed') >= 2 ? 12 : 0;
   const clearBonus = BALANCE.economy.waveClearBase + clearedWave * BALANCE.economy.waveClearPerWave + greedBonus;
   const interest = perkLv('gold_power') >= 1 ? Math.min(25, Math.floor(game.gold * 0.10)) : 0;
+  const clearMatBonus = getWaveClearMaterialBonus(clearedWave);
   game.gold += clearBonus + interest;
+  if (clearMatBonus > 0) game.materials = (game.materials || 0) + clearMatBonus;
   game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + BALANCE.progression.waveClearHeal);
   $('hpVignette')?.classList.toggle('danger', game.hero.hp < game.hero.maxHp * 0.35);
 
@@ -8176,7 +8831,8 @@ function completeWaveClear(){
     const om = BALANCE.wave?.w28Omen || {};
     showBanner(om.clearTitle || '🌑 终局预兆已现 · W29 前哨即将开启！', om.clearSub || 'W29 将公布 W30 终焉魔帝情报并在战后开启 90 秒独立最终整备！', 'boss');
   } else if (clearedWave !== 29) {
-    showBanner(`✅ 第 ${clearedWave} / ${MAIN_WAVES} 波通关！`, `赏金 +${clearBonus}${intNote} 金 · 回血 +${BALANCE.progression.waveClearHeal}${chestNote}`, 'good');
+    const matNote = clearMatBonus > 0 ? ` · 精修锻材 +${clearMatBonus}` : '';
+    showBanner(`✅ 第 ${clearedWave} / ${MAIN_WAVES} 波通关！`, `赏金 +${clearBonus}${intNote} 金${matNote} · 回血 +${BALANCE.progression.waveClearHeal}${chestNote}`, 'good');
   }
   AudioKit.play('merge');
 
@@ -8215,11 +8871,19 @@ function tick(dt){
   // In prep phase, check auto-wave decision pause and W29 90s real-time final prep countdown
   if (game.phase === 'prep') {
     if (game.finalPrep && game.finalPrep.active) {
-      // Wait for W29 wave-clear modals (e.g., levelup/chest) to close, then count down 90s in real time
-      if (!game.activeModal && game.pendingModals.length === 0 && !game.pendingBreakthrough) {
+      // Wait for W29 wave-clear modals (e.g., levelup/chest) to close, then count down 90s in real time.
+      // Opening Destiny Gamble or Affix Transfer does NOT pause the W29 90s countdown!
+      const isPrepInteractiveModal = game.activeModal && ['destiny_gamble', 'affix_transfer'].includes(game.activeModal.type);
+      if ((!game.activeModal || isPrepInteractiveModal) && game.pendingModals.length === 0 && !game.pendingBreakthrough) {
         const realDt = dt / Math.max(1, game.speed || 1);
         game.finalPrep.timer = Math.max(0, game.finalPrep.timer - realDt);
         if (game.finalPrep.timer <= 0) {
+          // Stage 4 -> Stage 5 handoff: clear uncommitted transfer draft, auto-claim any won-but-unclaimed Destiny offer once, close prep modal, then enter W30!
+          if (game.transferDraft) cancelAffixTransferPreview();
+          if (game.destiny?.pendingOffer && !game.destiny.pendingOffer.claimed) {
+            autoClaimPendingDestinyReward();
+          }
+          if (isPrepInteractiveModal) closeModal();
           startWave();
           return;
         }
@@ -8395,6 +9059,8 @@ function openNextModal(){
   else if (m.type === 'w20_breakthrough') renderW20BreakthroughModal();
   else if (m.type === 'chest') renderChestModal(!!m.legend, !!m.shrineTier);
   else if (m.type === 'perk') renderPerkModal(m.quality || 'ren');
+  else if (m.type === 'destiny_gamble') renderDestinyGambleModal();
+  else if (m.type === 'affix_transfer') renderAffixTransferModal();
 }
 
 function closeModal(){
@@ -9247,11 +9913,13 @@ function pickChestGearChoices(legendBias = false, shrineTier = false){
     }
   }
   // Generate 3 real independent gear instances (independent rarity & 1/2/3 slots, locked sourceStage, filled affixes)
+  const refCfg = getEndgameRefinementConfig();
+  const endgameBonus = w >= (refCfg.startWave || 21) ? (refCfg.chestHighRarityAffixBonusW21Plus || 0.12) : 0;
   return specs.map(sp => {
     const inst = createGearInstance(sp.key, {
       wave: w,
       origin: legendBias ? 'boss_chest' : shrineTier ? 'shrine_chest' : 'elite_chest',
-      highRarityChance: legendBias ? 0.32 : shrineTier ? 0.24 : 0.14,
+      highRarityChance: Math.min(0.70, (legendBias ? 0.32 : shrineTier ? 0.24 : 0.14) + endgameBonus),
       rndFn: game.rnd
     });
     inst.key = inst.baseKey; // keep .key alias for UI/tests
@@ -9394,7 +10062,7 @@ function showEndModal(victory){
       </div>
       <div class="intro-box" style="grid-column:span 2">
         <h4>③ 长期成长与资源结算（阶段 4–6 局外传承接入预览）</h4>
-        <p>剩余金币：<b>💰 ${game.gold}</b> · 累计锻材：<b>⚙️ ${game.materials || 0}</b> · W20：<b>${w20Info}</b><br>实战联动统计：火标 <b>${game.stats.fireMarksApplied || 0}</b> / 引爆 <b>${game.stats.fireDetonations || 0}</b>（传递 <b>${game.stats.fireChainTransfers || 0}</b> / 孤立聚焦 <b>${game.stats.fireFocusedDetonations || 0}</b> / 聚焰牵引 <b>${game.stats.w20FirePulls || 0}</b>） · 冰缓 <b>${game.stats.frostSlowsApplied || 0}</b> / 冰盾 <b>+${game.stats.frostShieldGained || 0}</b>（受击冰环 <b>${game.stats.frostHitPulses || 0}</b> / 冲刺冰环 <b>${game.stats.frostDashPulses || 0}</b> / 满盾冰环 <b>${game.stats.frostFullShieldPulses || 0}</b>） · W20 基础/强化触发 <b>${game.stats.w20BaseProcs || 0} / ${game.stats.w20EnhancementProcs || 0}</b></p>
+        <p>剩余金币：<b>💰 ${game.gold}</b> · 累计锻材：<b>⚙️ ${game.materials || 0}</b> · 天命转印符：<b>🔮 ${game.transferTokens || 0}</b> · W20：<b>${w20Info}</b><br>天命赌局：<b>${game.stats.destinyRolls || 0}</b> 次（空劫 <b>${game.stats.destinyEmptyTribulations || 0}</b> / 领奖 <b>${game.stats.destinyClaims || 0}</b>） · 词条转移：<b>${game.stats.affixTransfers || 0}</b> 次 · 天命专属强化：<b>${getOwnedDestinyEnhancements().map(e => e.name).join('、') || '无'}</b><br>实战联动统计：火标 <b>${game.stats.fireMarksApplied || 0}</b> / 引爆 <b>${game.stats.fireDetonations || 0}</b>（传递 <b>${game.stats.fireChainTransfers || 0}</b> / 孤立聚焦 <b>${game.stats.fireFocusedDetonations || 0}</b> / 聚焰牵引 <b>${game.stats.w20FirePulls || 0}</b>） · 冰缓 <b>${game.stats.frostSlowsApplied || 0}</b> / 冰盾 <b>+${game.stats.frostShieldGained || 0}</b>（受击冰环 <b>${game.stats.frostHitPulses || 0}</b> / 冲刺冰环 <b>${game.stats.frostDashPulses || 0}</b> / 满盾冰环 <b>${game.stats.frostFullShieldPulses || 0}</b>） · W20/天命触发 <b>${game.stats.w20BaseProcs || 0}/${game.stats.w20EnhancementProcs || 0}/${game.stats.destinyEnhancementProcs || 0}</b></p>
       </div>
     </div>
     ${recentRows ? `
@@ -9410,6 +10078,1222 @@ function showEndModal(victory){
     </div>
   `;
   box.querySelector('#restartGo').addEventListener('click', () => startNewRun());
+  $('modalBackdrop').hidden = false;
+}
+
+/* ==================== STAGE 4: DESTINY GAMBLE SYSTEM (天命赌局) ==================== */
+function getDestinyConfig(){
+  const raw = BALANCE.destinyGamble || {};
+  return {
+    minBet: Math.max(1, Number(raw.minBet ?? 30)),
+    emptyTribulationChance: clamp(Number(raw.emptyTribulationChance ?? 0.22), 0, 0.95),
+    categoryWeights: {
+      seal: Number(raw.categoryWeights?.seal ?? 0.25),
+      gear: Number(raw.categoryWeights?.gear ?? 0.25),
+      pill: Number(raw.categoryWeights?.pill ?? 0.25),
+      special: Number(raw.categoryWeights?.special ?? 0.25)
+    },
+    allowDuplicateCategories: raw.allowDuplicateCategories !== false,
+    preciousThresholds: {
+      rare: Number(raw.preciousThresholds?.rare ?? 60),
+      transferToken: Number(raw.preciousThresholds?.transferToken ?? 100),
+      epic: Number(raw.preciousThresholds?.epic ?? 120),
+      destinyExclusive: Number(raw.preciousThresholds?.destinyExclusive ?? 120),
+      legend: Number(raw.preciousThresholds?.legend ?? 220)
+    },
+    betQuickPresets: Array.isArray(raw.betQuickPresets) ? raw.betQuickPresets : [30, 60, 100, 120, 220, 320],
+    specialSubPoolWeights: {
+      transferToken: Number(raw.specialSubPoolWeights?.transferToken ?? 0.42),
+      destinyExclusive: Number(raw.specialSubPoolWeights?.destinyExclusive ?? 0.58)
+    },
+    qualityChanceByBetBand: raw.qualityChanceByBetBand || {
+      low:     { common: 1.0,  rare: 0,    epic: 0,    legend: 0 },
+      mid:     { common: 0.55, rare: 0.45, epic: 0,    legend: 0 },
+      high:    { common: 0.20, rare: 0.46, epic: 0.34, legend: 0 },
+      supreme: { common: 0.10, rare: 0.32, epic: 0.38, legend: 0.20 }
+    },
+    transferTokenYieldByBet: Array.isArray(raw.transferTokenYieldByBet) ? raw.transferTokenYieldByBet : [
+      { minBet: 100, count: 1 },
+      { minBet: 240, count: 2 }
+    ],
+    sealEssenceBonusByRarity: raw.sealEssenceBonusByRarity || { common: 0.10, rare: 0.15, epic: 0.22, legend: 0.30 }
+  };
+}
+
+function getDestinyBetBand(bet){
+  const cfg = getDestinyConfig();
+  const t = cfg.preciousThresholds;
+  const allowRare = bet >= t.rare;
+  const allowTransferToken = bet >= t.transferToken;
+  const allowEpic = bet >= t.epic;
+  const allowDestinyExclusive = bet >= t.destinyExclusive;
+  const allowLegend = bet >= t.legend;
+  const band = allowLegend ? 'supreme' : allowEpic ? 'high' : allowRare ? 'mid' : 'low';
+  return {
+    bet, band,
+    allowRare, allowTransferToken, allowEpic, allowDestinyExclusive, allowLegend,
+    allowPrecious: allowTransferToken || allowEpic || allowDestinyExclusive || allowLegend
+  };
+}
+
+function rollDestinyQuality(bet, rndFn = game?.rnd || Math.random){
+  const cfg = getDestinyConfig();
+  const b = getDestinyBetBand(bet);
+  const raw = cfg.qualityChanceByBetBand[b.band] || { common: 1, rare: 0, epic: 0, legend: 0 };
+  const weights = {
+    common: Math.max(0, Number(raw.common || 0)),
+    rare: b.allowRare ? Math.max(0, Number(raw.rare || 0)) : 0,
+    epic: b.allowEpic ? Math.max(0, Number(raw.epic || 0)) : 0,
+    legend: b.allowLegend ? Math.max(0, Number(raw.legend || 0)) : 0
+  };
+  const total = weights.common + weights.rare + weights.epic + weights.legend;
+  if (total <= 0) return 'common';
+  let roll = rndFn() * total;
+  for (const r of ['common', 'rare', 'epic', 'legend']) {
+    roll -= weights[r];
+    if (roll <= 0) return r;
+  }
+  return 'common';
+}
+
+function rollDestinyCategories(count = 3, rndFn = game?.rnd || Math.random, allowDuplicateOverride = null){
+  const cfg = getDestinyConfig();
+  const allowDup = allowDuplicateOverride !== null ? !!allowDuplicateOverride : cfg.allowDuplicateCategories;
+  const keys = ['seal', 'gear', 'pill', 'special'];
+  const baseWeights = keys.map(k => ({ key: k, w: Math.max(0, Number(cfg.categoryWeights[k] ?? 0.25)) }));
+  const picked = [];
+  const pool = baseWeights.slice();
+  for (let i = 0; i < count; i++) {
+    const activePool = allowDup ? baseWeights : pool;
+    const total = activePool.reduce((s, e) => s + e.w, 0);
+    if (total <= 0 || !activePool.length) { picked.push(keys[i % keys.length]); continue; }
+    let r = rndFn() * total;
+    let chosenIdx = activePool.length - 1;
+    for (let j = 0; j < activePool.length; j++) {
+      r -= activePool[j].w;
+      if (r <= 0) { chosenIdx = j; break; }
+    }
+    picked.push(activePool[chosenIdx].key);
+    if (!allowDup) pool.splice(chosenIdx, 1);
+  }
+  return picked;
+}
+
+function isAllEquippedSealsMaxed(){
+  if (!game?.seal) return false;
+  const cap = getSealStarCap();
+  const subCap = getSubSealSlotCap();
+  if (game.seal.star < cap) return false;
+  if (game.subSeals.length < subCap) return false;
+  return game.subSeals.every(s => s.star >= 3);
+}
+
+function isSealKindCurrentlyMaxed(kind){
+  if (!game) return false;
+  const cap = getSealStarCap();
+  if (game.seal && game.seal.kind === kind && game.seal.star >= cap) return true;
+  const sub = game.subSeals.find(s => s.kind === kind);
+  if (sub && sub.star >= 3) return true;
+  return false;
+}
+
+function getAvailableDestinyEnhancements({ allowLegend = true, excludeKeys = null } = {}){
+  const owned = game?.hero?.destinyEnhancements || {};
+  const blockedGroups = new Set();
+  for (const k of Object.keys(owned)) {
+    if (!owned[k]) continue;
+    const sp = DESTINY_ENHANCEMENTS[k];
+    if (sp?.conflictGroup) blockedGroups.add(sp.conflictGroup);
+  }
+  return DESTINY_ENHANCEMENT_KEYS
+    .map(k => DESTINY_ENHANCEMENTS[k])
+    .filter(sp => {
+      if (!sp) return false;
+      if (owned[sp.key]) return false;
+      if (excludeKeys && excludeKeys.has(sp.key)) return false;
+      if (sp.conflictGroup && blockedGroups.has(sp.conflictGroup)) return false;
+      if (!allowLegend && sp.rarity === 'legend') return false;
+      return true;
+    });
+}
+
+function buildDestinyCandidate(category, bet, rndFn, offerCtx){
+  const cfg = getDestinyConfig();
+  const band = getDestinyBetBand(bet);
+  const rarity = rollDestinyQuality(bet, rndFn);
+  const isPreciousRarity = rarity === 'epic' || rarity === 'legend';
+
+  if (category === 'seal') {
+    const cap = getSealStarCap();
+    const subCap = getSubSealSlotCap();
+    const star = rarity === 'legend' ? 3 : rarity === 'epic' ? 3 : rarity === 'rare' ? 2 : 1;
+
+    // Check if ALL equipped main & sub seals are maxed -> replace with same-category available item (Seal Essence)
+    if (isAllEquippedSealsMaxed()) {
+      const bonusPct = Number(cfg.sealEssenceBonusByRarity?.[rarity] ?? 0.15);
+      return {
+        category: 'seal',
+        subType: 'seal_essence',
+        rarity,
+        isPrecious: isPreciousRarity,
+        isTransferToken: false,
+        isDestinyExclusive: false,
+        replacedFromMaxed: true,
+        replacedReason: 'all_seals_maxed',
+        bonusPct,
+        icon: '✨',
+        name: `${GEAR_RARITY_LABELS[rarity]}·灵印淬魂晶`,
+        tag: `灵印类 · 满星替换 · ${GEAR_RARITY_LABELS[rarity]}`,
+        desc: `主辅灵印已全满星，自动替换为同类别可用项：永久提升主灵印爆发伤害 +${Math.round(bonusPct * 100)}%！`
+      };
+    }
+
+    let kind = ARTIFACT_KEYS[Math.floor(rndFn() * ARTIFACT_KEYS.length)];
+    let replacedFromMaxed = false;
+    let replacedReason = null;
+    if (isSealKindCurrentlyMaxed(kind)) {
+      // Find an upgradeable same-category seal (unmaxed main, unmaxed sub, or open sub-slot element)
+      const upgradeable = ARTIFACT_KEYS.filter(k => {
+        if (isSealKindCurrentlyMaxed(k)) return false;
+        if (!game.seal) return true;
+        if (game.seal.kind === k && game.seal.star < cap) return true;
+        if (game.subSeals.some(s => s.kind === k && s.star < 3)) return true;
+        if (game.seal.kind !== k && !game.subSeals.some(s => s.kind === k) && game.subSeals.length < subCap) return true;
+        return false;
+      });
+      if (upgradeable.length) {
+        kind = upgradeable[Math.floor(rndFn() * upgradeable.length)];
+        replacedFromMaxed = true;
+        replacedReason = 'rolled_seal_maxed';
+      } else {
+        const bonusPct = Number(cfg.sealEssenceBonusByRarity?.[rarity] ?? 0.15);
+        return {
+          category: 'seal',
+          subType: 'seal_essence',
+          rarity,
+          isPrecious: isPreciousRarity,
+          isTransferToken: false,
+          isDestinyExclusive: false,
+          replacedFromMaxed: true,
+          replacedReason: 'no_upgradeable_seal_slot',
+          bonusPct,
+          icon: '✨',
+          name: `${GEAR_RARITY_LABELS[rarity]}·灵印淬魂晶`,
+          tag: `灵印类 · 满星替换 · ${GEAR_RARITY_LABELS[rarity]}`,
+          desc: `原随出灵印已达星级上限，自动替换为同类别可用项：永久提升主灵印爆发伤害 +${Math.round(bonusPct * 100)}%！`
+        };
+      }
+    }
+    const spec = ARTIFACTS[kind];
+    const safetyHint = (game.seal && game.seal.kind !== kind && game.subSeals.length >= subCap)
+      ? '（安全领奖：异系灵印将入背包/暂存，绝不覆盖在用主灵印）'
+      : '（安全领奖：同系自动升星或入空辅印槽）';
+    return {
+      category: 'seal',
+      subType: 'seal',
+      rarity,
+      isPrecious: isPreciousRarity,
+      isTransferToken: false,
+      isDestinyExclusive: false,
+      replacedFromMaxed,
+      replacedReason,
+      kind,
+      elem: spec.elem,
+      star,
+      icon: spec.icon,
+      name: `${spec.name} ${star}★`,
+      tag: `灵印类 · ${GEAR_RARITY_LABELS[rarity]}${replacedFromMaxed ? ' · 满星替换' : ''}`,
+      desc: `${spec.desc} ${safetyHint}`
+    };
+  }
+
+  if (category === 'gear') {
+    const pool = GEAR_KEYS.filter(k => GEARS[k].rarity === rarity);
+    const list = pool.length ? pool : GEAR_KEYS;
+    const baseKey = list[Math.floor(rndFn() * list.length)];
+    const gear = createGearInstance(baseKey, {
+      rarity,
+      wave: game.wave,
+      origin: 'destiny_gamble',
+      highRarityChance: rarity === 'legend' ? 0.42 : rarity === 'epic' ? 0.28 : 0.16,
+      rndFn
+    });
+    const itemSyns = evaluateItemSynergies(gear);
+    const synHints = getGearSynergyHints(gear);
+    return {
+      category: 'gear',
+      subType: 'gear',
+      rarity: gear.rarity,
+      isPrecious: gear.rarity === 'epic' || gear.rarity === 'legend',
+      isTransferToken: false,
+      isDestinyExclusive: false,
+      replacedFromMaxed: false,
+      gear,
+      icon: gear.icon,
+      name: `${gear.name} [${gear.slotsCount}槽]`,
+      tag: `构装类 · ${GEAR_RARITY_LABELS[gear.rarity]} · 阶段${gear.sourceStage}`,
+      desc: describeGearEffect(gear),
+      synNote: itemSyns.length ? `单件联动：${itemSyns.map(s => s.name).join('/')}` : (synHints[0] || '')
+    };
+  }
+
+  if (category === 'pill') {
+    const tierList = DESTINY_PILLS[rarity] || DESTINY_PILLS.common;
+    const pill = tierList[Math.floor(rndFn() * tierList.length)];
+    return {
+      category: 'pill',
+      subType: 'pill',
+      rarity: pill.rarity,
+      isPrecious: pill.rarity === 'epic' || pill.rarity === 'legend',
+      isTransferToken: false,
+      isDestinyExclusive: false,
+      replacedFromMaxed: false,
+      pillKey: pill.key,
+      pill,
+      icon: pill.icon,
+      name: pill.name,
+      tag: `丹药类 · ${GEAR_RARITY_LABELS[pill.rarity]}`,
+      desc: pill.desc
+    };
+  }
+
+  // category === 'special' (Contains Transfer Tokens & Destiny Exclusive Enhancements ONLY when bet meets thresholds!)
+  const makeTransferTokenCandidate = (replacedFromMaxed = false, replacedReason = null) => {
+    let tokenCount = 1;
+    for (const row of cfg.transferTokenYieldByBet) {
+      if (bet >= row.minBet) tokenCount = Math.max(tokenCount, Number(row.count || 1));
+    }
+    const tokRarity = (tokenCount >= 2 && band.allowLegend) ? 'legend' : (band.allowEpic ? 'epic' : 'rare');
+    return {
+      category: 'special',
+      subType: 'transfer_token',
+      rarity: tokRarity,
+      isPrecious: true,
+      isTransferToken: true,
+      isDestinyExclusive: false,
+      replacedFromMaxed,
+      replacedReason,
+      tokenCount,
+      icon: '🔮',
+      name: tokenCount > 1 ? `天命转印符 ×${tokenCount}` : '天命转印符 ×1',
+      tag: `特殊强化 · 转印物资${replacedFromMaxed ? ' · 满额替换' : ''}`,
+      desc: `获得 🔮+${tokenCount} 天命转印符（仅天命赌局产出）。可在【✨ 词条转移台】将一件装备的词条转移至另一件装备拼装完整三联动！`
+    };
+  };
+
+  const makeSpecialBoonCandidate = (boonRarity, replacedFromMaxed = false, replacedReason = null) => {
+    const bk = DESTINY_SPECIAL_BOON_KEYS[Math.floor(rndFn() * DESTINY_SPECIAL_BOON_KEYS.length)];
+    const spec = DESTINY_SPECIAL_BOONS[bk];
+    return {
+      category: 'special',
+      subType: 'special_boon',
+      rarity: boonRarity,
+      isPrecious: boonRarity === 'epic' || boonRarity === 'legend',
+      isTransferToken: false,
+      isDestinyExclusive: false,
+      replacedFromMaxed,
+      replacedReason,
+      boonKey: spec.key,
+      icon: spec.icon,
+      name: spec.name,
+      tag: `特殊强化 · ${GEAR_RARITY_LABELS[boonRarity]}${replacedFromMaxed ? ' · 满额替换' : ''}`,
+      desc: spec.desc(boonRarity)
+    };
+  };
+
+  // Low bet: STRICTLY cannot enter precious pool (no transferToken, no destinyExclusive, no epic/legend)!
+  if (!band.allowTransferToken && !band.allowDestinyExclusive) {
+    return makeSpecialBoonCandidate(rarity, false, null);
+  }
+
+  // Mid-precious bet (can drop transferToken, below destinyExclusive threshold)
+  if (band.allowTransferToken && !band.allowDestinyExclusive) {
+    const tokChance = clamp(cfg.specialSubPoolWeights.transferToken || 0.42, 0.15, 0.85);
+    if (rndFn() < tokChance) return makeTransferTokenCandidate(false, null);
+    return makeSpecialBoonCandidate(rarity, false, null);
+  }
+
+  // High / Supreme bet (meets destinyExclusive threshold, and transferToken threshold if >= transferToken)
+  const wTok = band.allowTransferToken ? Math.max(0, cfg.specialSubPoolWeights.transferToken || 0.42) : 0;
+  const wExc = Math.max(0, cfg.specialSubPoolWeights.destinyExclusive || 0.58);
+  const rollSub = rndFn() * (wTok + wExc);
+  if (wTok > 0 && rollSub < wTok) {
+    return makeTransferTokenCandidate(false, null);
+  }
+
+  // Pick a Destiny-Exclusive Enhancement (with non-duplicate & conflictGroup replacement!)
+  const eligibleAll = DESTINY_ENHANCEMENT_KEYS
+    .map(k => DESTINY_ENHANCEMENTS[k])
+    .filter(sp => band.allowLegend || sp.rarity !== 'legend');
+  const rawPick = eligibleAll[Math.floor(rndFn() * eligibleAll.length)];
+  const avail = getAvailableDestinyEnhancements({ allowLegend: band.allowLegend, excludeKeys: offerCtx.usedExclusiveKeys });
+
+  if (rawPick && avail.some(a => a.key === rawPick.key)) {
+    offerCtx.usedExclusiveKeys.add(rawPick.key);
+    return {
+      category: 'special',
+      subType: 'destiny_exclusive',
+      rarity: rawPick.rarity,
+      isPrecious: true,
+      isTransferToken: false,
+      isDestinyExclusive: true,
+      replacedFromMaxed: false,
+      enhancementKey: rawPick.key,
+      icon: rawPick.icon,
+      name: rawPick.name,
+      tag: `特殊强化 · 天命专属 · ${rawPick.tag}`,
+      desc: rawPick.desc
+    };
+  }
+  if (avail.length > 0) {
+    const rep = avail[Math.floor(rndFn() * avail.length)];
+    offerCtx.usedExclusiveKeys.add(rep.key);
+    return {
+      category: 'special',
+      subType: 'destiny_exclusive',
+      rarity: rep.rarity,
+      isPrecious: true,
+      isTransferToken: false,
+      isDestinyExclusive: true,
+      replacedFromMaxed: true,
+      replacedReason: 'exclusive_owned_or_conflicted',
+      enhancementKey: rep.key,
+      icon: rep.icon,
+      name: rep.name,
+      tag: `特殊强化 · 天命专属(替换) · ${rep.tag}`,
+      desc: rep.desc
+    };
+  }
+  // All eligible Destiny-Exclusive Enhancements owned/blocked -> replace with same-category available item!
+  if (band.allowTransferToken) {
+    return makeTransferTokenCandidate(true, 'all_destiny_exclusives_owned');
+  }
+  return makeSpecialBoonCandidate(rarity, true, 'all_destiny_exclusives_owned');
+}
+
+function getPendingDestinyOffer(){
+  const p = game?.destiny?.pendingOffer;
+  return (p && !p.claimed) ? p : null;
+}
+
+// Single atomic checkout: validates bet & pendingOffer, deducts gold ONCE, resolves empty tribulation OR generates 3 candidates!
+function rollDestinyGamble(betAmount, opts = {}){
+  if (!game || !game.destiny) return { ok: false, reason: 'no_game' };
+  if (game.phase !== 'prep') {
+    toast('仅在备战期（含 W29 终局整备）可开启天命赌局！', true);
+    return { ok: false, reason: 'not_in_prep' };
+  }
+  if (game.destiny.pendingOffer && !game.destiny.pendingOffer.claimed) {
+    toast('当前已有未领取的天命三选一奖励，请先领取再继续押注！', true);
+    return { ok: false, reason: 'pending_offer_unclaimed', pendingOffer: game.destiny.pendingOffer };
+  }
+  const cfg = getDestinyConfig();
+  const bet = Math.floor(Number(betAmount));
+  if (!Number.isFinite(bet) || bet < cfg.minBet) {
+    toast(`押注金额不得低于最低门槛 ${cfg.minBet} 金币！`, true);
+    return { ok: false, reason: 'below_min_bet', minBet: cfg.minBet };
+  }
+  if (game.gold < bet) {
+    toast(`金币不足！本次押注需要 💰${bet}（当前 💰${game.gold}）`, true);
+    return { ok: false, reason: 'insufficient_gold', need: bet, have: game.gold };
+  }
+
+  // ATOMIC DEDUCTION (irreversible once confirmed)
+  const rndFn = opts.rndFn || game.rnd;
+  game.gold -= bet;
+  game.destiny.totalRolls++;
+  game.destiny.totalGoldBet += bet;
+  if (game.stats) game.stats.destinyRolls = (game.stats.destinyRolls || 0) + 1;
+
+  const isEmpty = opts.forceOutcome === 'empty'
+    ? true
+    : opts.forceOutcome === 'win'
+      ? false
+      : (rndFn() < cfg.emptyTribulationChance);
+
+  if (isEmpty) {
+    game.destiny.emptyTribulations++;
+    game.destiny.pendingOffer = null;
+    game.destiny.lastOutcome = { outcome: 'empty_tribulation', bet, wave: game.wave };
+    game.destiny.history.push({ outcome: 'empty_tribulation', bet, wave: game.wave });
+    if (game.stats) game.stats.destinyEmptyTribulations = (game.stats.destinyEmptyTribulations || 0) + 1;
+    AudioKit.play('hit', 0.9);
+    flashScreen('fail');
+    if (!opts.silent) toast(`🌩️ 触发天命空劫！本次押注 💰${bet} 归零，无候选奖励。`, true);
+    if (game.activeModal?.type === 'destiny_gamble') renderDestinyGambleModal();
+    renderAllUI(true);
+    return { ok: true, outcome: 'empty_tribulation', bet, goldLeft: game.gold, pendingOffer: null };
+  }
+
+  // WIN: Generate 3 random candidates with strict 4x25% category weights and pure probability quality (NO rarity pity!)
+  const categories = rollDestinyCategories(3, rndFn, opts.allowDuplicateCategories ?? null);
+  const offerCtx = { usedExclusiveKeys: new Set() };
+  const choices = categories.map((cat, idx) => ({
+    choiceIndex: idx,
+    ...buildDestinyCandidate(cat, bet, rndFn, offerCtx)
+  }));
+  const offer = {
+    offerId: `dg_${game.wave}_${game.destiny.nextOfferSeq++}`,
+    bet,
+    wave: game.wave,
+    choices,
+    claimed: false,
+    claimedChoiceIndex: null,
+    claimedAtWave: null
+  };
+  game.destiny.pendingOffer = offer;
+  game.destiny.wins++;
+  game.destiny.lastOutcome = { outcome: 'win', bet, wave: game.wave, offerId: offer.offerId };
+  AudioKit.play('chest', 1.2);
+  flashScreen('gold');
+  if (!opts.silent) toast(`🎲 天命开奖成功（押注 💰${bet}）！请从 3 件天命候选中择一领取！`);
+  if (game.activeModal?.type === 'destiny_gamble') renderDestinyGambleModal();
+  renderAllUI(true);
+  return { ok: true, outcome: 'win', bet, goldLeft: game.gold, pendingOffer: offer };
+}
+
+function applyDestinyPillReward(pillKey){
+  const h = game.hero;
+  if (pillKey === 'xp') {
+    const gain = Math.round(h.xpNext * 0.35);
+    gainHeroXp(gain);
+    return { effect: `修为 +${gain}` };
+  }
+  if (pillKey === 'heal') {
+    h.hp = Math.min(h.maxHp, h.hp + 65);
+    gainFrostShield(25, { maxShield: 90, duration: 6.0, source: 'destiny_pill' });
+    return { effect: '生命 +65, 护盾 +25' };
+  }
+  if (pillKey === 'temper') {
+    game.materials = (game.materials || 0) + 2;
+    h.hp = Math.min(h.maxHp, h.hp + 25);
+    return { effect: '锻材 +2, 生命 +25' };
+  }
+  if (pillKey === 'rare_xp') {
+    const gain = Math.round(h.xpNext * 0.55);
+    gainHeroXp(gain);
+    return { effect: `修为 +${gain}` };
+  }
+  if (pillKey === 'rare_heal') {
+    h.hp = Math.min(h.maxHp, h.hp + 105);
+    gainFrostShield(45, { maxShield: 110, duration: 6.0, source: 'destiny_pill' });
+    return { effect: '生命 +105, 护盾 +45' };
+  }
+  if (pillKey === 'rare_temper') {
+    game.materials = (game.materials || 0) + 4;
+    h.hp = Math.min(h.maxHp, h.hp + 40);
+    return { effect: '锻材 +4, 生命 +40' };
+  }
+  if (pillKey === 'epic_xp') {
+    const gain = Math.round(h.xpNext * 0.85);
+    gainHeroXp(gain);
+    h.hp = Math.min(h.maxHp, h.hp + 50);
+    return { effect: `修为 +${gain}, 生命 +50` };
+  }
+  if (pillKey === 'epic_vital') {
+    h.baseMaxHp += 35;
+    syncHeroMaxHp();
+    h.hp = Math.min(h.maxHp, h.hp + 130);
+    gainFrostShield(60, { maxShield: 120, duration: 6.5, source: 'destiny_pill' });
+    return { effect: '永久最大生命 +35, 生命 +130, 护盾 +60' };
+  }
+  if (pillKey === 'epic_temper') {
+    game.materials = (game.materials || 0) + 6;
+    h.hp = Math.min(h.maxHp, h.hp + 55);
+    return { effect: '锻材 +6, 生命 +55' };
+  }
+  if (pillKey === 'legend_ascend') {
+    h.baseMaxHp += 45;
+    syncHeroMaxHp();
+    gainHeroXp(h.xpNext);
+    h.hp = h.maxHp;
+    return { effect: '直升 1 级, 永久最大生命 +45, 生命全满' };
+  }
+  if (pillKey === 'legend_temper') {
+    game.materials = (game.materials || 0) + 9;
+    h.baseMaxHp += 25;
+    syncHeroMaxHp();
+    h.hp = Math.min(h.maxHp, h.hp + 80);
+    return { effect: '锻材 +9, 永久最大生命 +25, 生命 +80' };
+  }
+  return { effect: '丹药生效' };
+}
+
+// Unified single-checkout STRICTLY IDEMPOTENT reward claim entry (reusable by Stage 5 W29 timeout!)
+function claimDestinyReward(choiceIndex, opts = {}){
+  if (!game?.destiny) return { ok: false, reason: 'no_game' };
+  const offer = game.destiny.pendingOffer;
+  if (!offer) return { ok: false, reason: 'no_pending_offer' };
+  if (opts.offerId && offer.offerId !== opts.offerId) {
+    return { ok: false, reason: 'offer_id_mismatch' };
+  }
+  game.destiny.claimedOfferIds = game.destiny.claimedOfferIds || [];
+  if (offer.claimed || game.destiny.claimedOfferIds.includes(offer.offerId)) {
+    game.destiny.pendingOffer = null;
+    return { ok: false, reason: 'already_claimed', offerId: offer.offerId };
+  }
+  const idx = Math.floor(Number(choiceIndex));
+  if (!Number.isFinite(idx) || idx < 0 || idx >= offer.choices.length) {
+    return { ok: false, reason: 'invalid_choice_index' };
+  }
+
+  // ATOMIC SINGLE-CHECKOUT LOCK BEFORE GRANTING REWARD (prevents any duplicate grant on double click!)
+  offer.claimed = true;
+  offer.claimedChoiceIndex = idx;
+  offer.claimedAtWave = game.wave;
+  game.destiny.claimedOfferIds.push(offer.offerId);
+  game.destiny.pendingOffer = null;
+  game.destiny.lastOffer = offer;
+  if (game.stats) game.stats.destinyClaims = (game.stats.destinyClaims || 0) + 1;
+
+  const chosen = offer.choices[idx];
+  let grantResult = null;
+
+  if (chosen.category === 'gear' && chosen.gear) {
+    grantResult = grantGearSafely(chosen.gear, { origin: 'destiny_gamble', silent: !!opts.silent });
+  } else if (chosen.category === 'seal') {
+    if (chosen.subType === 'seal_essence') {
+      game.hero.sealEssenceBonus = Number(((game.hero.sealEssenceBonus || 0) + (chosen.bonusPct || 0.15)).toFixed(4));
+      grantResult = { ok: true, action: 'seal_essence_applied', sealEssenceBonus: game.hero.sealEssenceBonus };
+      AudioKit.play('merge', 1.2);
+      if (!opts.silent) toast(`✨ 吸收【${chosen.name}】，主灵印永久伤害累计 +${Math.round(game.hero.sealEssenceBonus * 100)}%！`);
+    } else {
+      // SAFE CLAIM PATH: NEVER calls buyShopItem, NEVER overwrites/sells active 5★ Main Seal!
+      grantResult = grantSealSafely(chosen.kind, chosen.star, { rarity: chosen.rarity, origin: 'destiny_gamble', silent: !!opts.silent });
+    }
+  } else if (chosen.category === 'pill') {
+    grantResult = { ok: true, ...applyDestinyPillReward(chosen.pillKey) };
+    AudioKit.play('chest', 1.15);
+    if (!opts.silent) toast(`💊 领取【${chosen.name}】：${grantResult.effect}！`);
+  } else if (chosen.category === 'special') {
+    if (chosen.subType === 'transfer_token') {
+      const cnt = Math.max(1, Number(chosen.tokenCount || 1));
+      game.transferTokens = (game.transferTokens || 0) + cnt;
+      grantResult = { ok: true, action: 'transfer_token_granted', tokenCount: cnt, totalTokens: game.transferTokens };
+      AudioKit.play('level', 1.15);
+      if (!opts.silent) toast(`🔮 获得【${chosen.name}】！当前天命转印符：${game.transferTokens} 枚！`);
+    } else if (chosen.subType === 'destiny_exclusive') {
+      const ek = chosen.enhancementKey;
+      game.hero.destinyEnhancements = game.hero.destinyEnhancements || {};
+      game.hero.destinyEnhancements[ek] = true;
+      if (ek === 'destiny_aegis_bulwark') syncHeroMaxHp();
+      if (ek === 'destiny_golden_temper') game.materials = (game.materials || 0) + 4;
+      grantResult = { ok: true, action: 'destiny_exclusive_granted', enhancementKey: ek };
+      AudioKit.play('level', 1.25);
+      addRing(game.hero.x, game.hero.y, '#e4c4ff', 2.8);
+      if (!opts.silent) toast(`🌟 习得天命专属强化【${chosen.name}】：${chosen.desc}`);
+    } else if (chosen.subType === 'special_boon') {
+      const spec = DESTINY_SPECIAL_BOONS[chosen.boonKey] || DESTINY_SPECIAL_BOONS.boon_forge_bundle;
+      const r = chosen.rarity || 'common';
+      if (spec.materialsByRarity?.[r]) game.materials = (game.materials || 0) + spec.materialsByRarity[r];
+      if (spec.hpByRarity?.[r]) {
+        game.hero.baseMaxHp += spec.hpByRarity[r];
+        syncHeroMaxHp();
+        game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + (r === 'rare' ? 70 : 40));
+      }
+      if (spec.shieldByRarity?.[r]) {
+        gainFrostShield(spec.shieldByRarity[r], { maxShield: 120, duration: 6.5, source: 'destiny_boon' });
+        game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + 35);
+      }
+      grantResult = { ok: true, action: 'special_boon_granted', boonKey: spec.key };
+      AudioKit.play('chest', 1.1);
+      if (!opts.silent) toast(`✨ 领取【${chosen.name}】：${chosen.desc}`);
+    }
+  }
+
+  game.destiny.history.push({
+    outcome: 'claimed',
+    offerId: offer.offerId,
+    bet: offer.bet,
+    wave: game.wave,
+    choiceIndex: idx,
+    category: chosen.category,
+    subType: chosen.subType,
+    name: chosen.name
+  });
+
+  if (game.activeModal?.type === 'destiny_gamble') renderDestinyGambleModal();
+  renderAllUI(true);
+  return { ok: true, offerId: offer.offerId, choiceIndex: idx, chosen, grantResult };
+}
+
+function autoClaimPendingDestinyReward(rndFn = game?.rnd || Math.random){
+  const offer = getPendingDestinyOffer();
+  if (!offer) return { ok: false, reason: 'no_pending_offer' };
+  const idx = Math.floor(rndFn() * offer.choices.length);
+  return claimDestinyReward(idx, { offerId: offer.offerId, autoTimeout: true });
+}
+
+/* ==================== STAGE 4: AFFIX TRANSFER WORKBENCH (词条转移台) ==================== */
+function resolveGearLocation(ref){
+  if (!game?.hero || !ref) return null;
+  if (typeof ref === 'string') {
+    const eqIdx = game.hero.gear.findIndex(g => g && g.uid === ref);
+    if (eqIdx >= 0) return { inst: game.hero.gear[eqIdx], location: 'equipped', idx: eqIdx };
+    const bagIdx = game.bag.findIndex(g => g && !isBagSeal(g) && g.uid === ref);
+    if (bagIdx >= 0) return { inst: game.bag[bagIdx], location: 'bag', idx: bagIdx };
+    return null;
+  }
+  if (typeof ref === 'object') {
+    if (ref.uid) return resolveGearLocation(ref.uid);
+    if (ref.location === 'equipped') {
+      const inst = game.hero.gear[ref.idx];
+      return (inst && isGearInstance(inst)) ? { inst, location: 'equipped', idx: ref.idx } : null;
+    }
+    if (ref.location === 'bag') {
+      const inst = game.bag[ref.idx];
+      return (inst && !isBagSeal(inst) && isGearInstance(inst)) ? { inst, location: 'bag', idx: ref.idx } : null;
+    }
+  }
+  return null;
+}
+
+function getAffixTransferCost(affixId, isOverwrite = false){
+  const cfg = BALANCE.affixTransfer || {};
+  const spec = GEAR_AFFIXES[affixId];
+  const rar = spec?.rarity || 'common';
+  const baseTokens = Math.max(1, Number(cfg.baseTokenCost ?? 1));
+  const extraTokens = isOverwrite ? Math.max(0, Number(cfg.overwriteExtraTokenCost ?? 0)) : 0;
+  const goldMap = cfg.goldCostByAffixRarity || { common: 28, rare: 45, epic: 68 };
+  const baseGold = Math.max(1, Number(goldMap[rar] ?? 35));
+  const extraGold = isOverwrite ? Math.max(0, Number(cfg.overwriteGoldExtra ?? 18)) : 0;
+  return {
+    costTokens: baseTokens + extraTokens,
+    costGold: baseGold + extraGold,
+    isOverwrite: !!isOverwrite
+  };
+}
+
+function validateAffixTransfer(params = {}){
+  const { source, sourceSlot, target, targetSlot } = params || {};
+  if (!game?.hero) return { ok: false, reason: 'no_game' };
+  const src = resolveGearLocation(source);
+  if (!src) return { ok: false, reason: 'invalid_source' };
+  const tgt = resolveGearLocation(target);
+  if (!tgt) return { ok: false, reason: 'invalid_target' };
+  if (src.inst.uid === tgt.inst.uid) return { ok: false, reason: 'same_gear' };
+
+  const sIdx = Math.floor(Number(sourceSlot));
+  if (!Number.isFinite(sIdx) || sIdx < 0 || sIdx >= src.inst.slotsCount) {
+    return { ok: false, reason: 'invalid_source_slot' };
+  }
+  const srcAffix = src.inst.affixes?.[sIdx] || null;
+  if (!srcAffix || !GEAR_AFFIXES[srcAffix.id]) {
+    return { ok: false, reason: 'empty_source_slot' };
+  }
+
+  const tIdx = Math.floor(Number(targetSlot));
+  if (!Number.isFinite(tIdx) || tIdx < 0 || tIdx >= tgt.inst.slotsCount) {
+    return { ok: false, reason: 'invalid_target_slot' };
+  }
+
+  const incomingSpec = GEAR_AFFIXES[srcAffix.id];
+  const replacedAffix = tgt.inst.affixes?.[tIdx] || null;
+  const isOverwrite = !!replacedAffix;
+
+  // Check duplicate affix & conflict group on target gear EXCLUDING targetSlot (which is being overwritten)
+  for (let i = 0; i < tgt.inst.slotsCount; i++) {
+    if (i === tIdx) continue;
+    const other = tgt.inst.affixes?.[i];
+    if (!other || !GEAR_AFFIXES[other.id]) continue;
+    if (other.id === srcAffix.id) {
+      return { ok: false, reason: 'duplicate_affix_on_target', affixId: srcAffix.id };
+    }
+    const otherSpec = GEAR_AFFIXES[other.id];
+    if (incomingSpec.conflictGroup && otherSpec.conflictGroup === incomingSpec.conflictGroup) {
+      return {
+        ok: false,
+        reason: 'conflict_group_on_target',
+        conflictGroup: incomingSpec.conflictGroup,
+        conflictingAffixId: other.id
+      };
+    }
+  }
+
+  const { costTokens, costGold } = getAffixTransferCost(srcAffix.id, isOverwrite);
+  if ((game.transferTokens || 0) < costTokens) {
+    return {
+      ok: false,
+      reason: 'insufficient_transfer_tokens',
+      costTokens, costGold, isOverwrite,
+      haveTokens: game.transferTokens || 0,
+      haveGold: game.gold || 0
+    };
+  }
+  if ((game.gold || 0) < costGold) {
+    return {
+      ok: false,
+      reason: 'insufficient_gold',
+      costTokens, costGold, isOverwrite,
+      haveTokens: game.transferTokens || 0,
+      haveGold: game.gold || 0
+    };
+  }
+
+  return {
+    ok: true,
+    reason: null,
+    src, tgt,
+    sourceSlot: sIdx,
+    targetSlot: tIdx,
+    srcAffix,
+    replacedAffix,
+    isOverwrite,
+    costTokens,
+    costGold
+  };
+}
+
+function describeTransferError(reason){
+  const map = {
+    invalid_source: '请选择有效的源装备',
+    invalid_target: '请选择有效的目标装备',
+    same_gear: '源装备与目标装备不能为同一件构装',
+    invalid_source_slot: '源槽位索引无效',
+    empty_source_slot: '源槽位为空，无法提取词条',
+    invalid_target_slot: '目标槽位索引无效',
+    duplicate_affix_on_target: '目标装备已存在同名词条（严禁复制与同件重复词条）',
+    conflict_group_on_target: '目标装备存在互斥词条组冲突，无法转入',
+    insufficient_transfer_tokens: '天命转印符不足（仅可通过天命赌局获取）',
+    insufficient_gold: '金币不足，无法支付本次转印费用'
+  };
+  return map[reason] || `转移条件不满足 (${reason})`;
+}
+
+// ZERO side-effect preview: NEVER mutates gold, transferTokens, or gear!
+function previewAffixTransfer(params = {}){
+  if (!game?.hero) return { ok: false, canCommit: false, reason: 'no_game' };
+  const check = validateAffixTransfer(params);
+  const src = resolveGearLocation(params.source);
+  const tgt = resolveGearLocation(params.target);
+
+  let sourceBeforeSyns = [], sourceAfterSyns = [];
+  let targetBeforeSyns = [], targetAfterSyns = [];
+  let globalBeforeSyns = evaluateEquipmentSynergies(game.hero.gear).active;
+  let globalAfterSyns = globalBeforeSyns;
+
+  if (src) sourceBeforeSyns = evaluateItemSynergies(src.inst);
+  if (tgt) targetBeforeSyns = evaluateItemSynergies(tgt.inst);
+
+  const sIdx = Math.floor(Number(params.sourceSlot));
+  const tIdx = Math.floor(Number(params.targetSlot));
+  const srcAffix = (src && Number.isFinite(sIdx) && sIdx >= 0 && sIdx < src.inst.slotsCount) ? (src.inst.affixes?.[sIdx] || null) : null;
+  const tgtAffix = (tgt && Number.isFinite(tIdx) && tIdx >= 0 && tIdx < tgt.inst.slotsCount) ? (tgt.inst.affixes?.[tIdx] || null) : null;
+  const cost = srcAffix ? getAffixTransferCost(srcAffix.id, !!tgtAffix) : { costTokens: 1, costGold: 0, isOverwrite: false };
+
+  if (src && tgt && src.inst.uid !== tgt.inst.uid && srcAffix && Number.isFinite(tIdx) && tIdx >= 0 && tIdx < tgt.inst.slotsCount) {
+    const vSrc = JSON.parse(JSON.stringify(src.inst));
+    const vTgt = JSON.parse(JSON.stringify(tgt.inst));
+    while (vSrc.affixes.length < vSrc.slotsCount) vSrc.affixes.push(null);
+    while (vTgt.affixes.length < vTgt.slotsCount) vTgt.affixes.push(null);
+    vSrc.affixes[sIdx] = null;
+    vTgt.affixes[tIdx] = { id: srcAffix.id, tier: Math.max(1, 1 + (vTgt.enhanceLv || 0)), rarity: GEAR_AFFIXES[srcAffix.id]?.rarity || 'common' };
+    sourceAfterSyns = evaluateItemSynergies(vSrc);
+    targetAfterSyns = evaluateItemSynergies(vTgt);
+
+    const vEquipped = game.hero.gear.map(g => {
+      if (g.uid === vSrc.uid) return vSrc;
+      if (g.uid === vTgt.uid) return vTgt;
+      return g;
+    });
+    globalAfterSyns = evaluateEquipmentSynergies(vEquipped).active;
+  }
+
+  const preview = {
+    ok: true,
+    canCommit: !!check.ok,
+    reason: check.ok ? null : check.reason,
+    errorText: check.ok ? '' : describeTransferError(check.reason),
+    source: src ? { uid: src.inst.uid, location: src.location, idx: src.idx, name: gearLabel(src.inst) } : null,
+    target: tgt ? { uid: tgt.inst.uid, location: tgt.location, idx: tgt.idx, name: gearLabel(tgt.inst) } : null,
+    sourceSlot: sIdx,
+    targetSlot: tIdx,
+    movingAffix: srcAffix ? { ...srcAffix, name: GEAR_AFFIXES[srcAffix.id]?.name || srcAffix.id } : null,
+    replacedAffix: tgtAffix ? { ...tgtAffix, name: GEAR_AFFIXES[tgtAffix.id]?.name || tgtAffix.id } : null,
+    isOverwrite: !!tgtAffix,
+    costTokens: cost.costTokens,
+    costGold: cost.costGold,
+    sourceBeforeSynergies: sourceBeforeSyns.map(s => ({ id: s.id, name: s.name, tier: s.tier })),
+    sourceAfterSynergies: sourceAfterSyns.map(s => ({ id: s.id, name: s.name, tier: s.tier })),
+    targetBeforeSynergies: targetBeforeSyns.map(s => ({ id: s.id, name: s.name, tier: s.tier })),
+    targetAfterSynergies: targetAfterSyns.map(s => ({ id: s.id, name: s.name, tier: s.tier })),
+    globalBeforeSynergies: globalBeforeSyns.map(s => ({ id: s.id, name: s.name, tier: s.tier })),
+    globalAfterSynergies: globalAfterSyns.map(s => ({ id: s.id, name: s.name, tier: s.tier }))
+  };
+
+  game.transferDraft = {
+    source: params.source,
+    sourceSlot: sIdx,
+    target: params.target,
+    targetSlot: tIdx,
+    preview
+  };
+  return preview;
+}
+
+// ZERO side-effect cancel: discards draft without touching any resource or gear!
+function cancelAffixTransferPreview(){
+  if (game) game.transferDraft = null;
+  return { ok: true, cancelled: true };
+}
+
+// SINGLE ATOMIC COMMIT: validates everything fresh at commit time, deducts tokens+gold, extracts source slot -> null (keeping source gear), writes target slot, recomputes synergies!
+function commitAffixTransfer(params = null){
+  if (!game?.hero) return { ok: false, reason: 'no_game' };
+  const input = params || game.transferDraft;
+  if (!input) return { ok: false, reason: 'no_transfer_params' };
+
+  const check = validateAffixTransfer(input);
+  if (!check.ok) {
+    toast(describeTransferError(check.reason), true);
+    return {
+      ok: false,
+      reason: check.reason,
+      errorText: describeTransferError(check.reason),
+      transferTokensLeft: game.transferTokens || 0,
+      goldLeft: game.gold || 0
+    };
+  }
+
+  // ATOMIC COMMIT BLOCK (all checks passed!)
+  game.transferTokens -= check.costTokens;
+  game.gold -= check.costGold;
+
+  while (check.src.inst.affixes.length < check.src.inst.slotsCount) check.src.inst.affixes.push(null);
+  while (check.tgt.inst.affixes.length < check.tgt.inst.slotsCount) check.tgt.inst.affixes.push(null);
+
+  const movedAffix = {
+    id: check.srcAffix.id,
+    tier: Math.max(1, 1 + (check.tgt.inst.enhanceLv || 0)),
+    rarity: GEAR_AFFIXES[check.srcAffix.id].rarity
+  };
+  // Source gear is PRESERVED; source slot becomes null empty slot!
+  check.src.inst.affixes[check.sourceSlot] = null;
+  check.src.inst.extractedCount = (check.src.inst.extractedCount || 0) + 1;
+  // Target slot receives the moved affix (filling empty slot or overwriting previous affix)
+  check.tgt.inst.affixes[check.targetSlot] = movedAffix;
+
+  game.transferDraft = null;
+  syncHeroMaxHp();
+  const globalSyn = recomputeEquipmentSynergies();
+  const sourceSyns = evaluateItemSynergies(check.src.inst);
+  const targetSyns = evaluateItemSynergies(check.tgt.inst);
+  if (game.stats) game.stats.affixTransfers = (game.stats.affixTransfers || 0) + 1;
+
+  AudioKit.play('merge', 1.25);
+  addRing(game.hero.x, game.hero.y, '#c68cff', 2.4);
+  addFloat(game.hero.x, game.hero.y - 0.6, `✨ 词条转印成功 · ${GEAR_AFFIXES[movedAffix.id].name}`, '#e4c4ff', true);
+  toast(`✨ 词条转移成功！已将【${GEAR_AFFIXES[movedAffix.id].name}】从【${gearLabel(check.src.inst)}】移至【${gearLabel(check.tgt.inst)}】（消耗 🔮${check.costTokens} + 💰${check.costGold}），联动已实时重算！`);
+  if (game.activeModal?.type === 'affix_transfer') renderAffixTransferModal();
+  renderAllUI(true);
+
+  return {
+    ok: true,
+    costTokens: check.costTokens,
+    costGold: check.costGold,
+    isOverwrite: check.isOverwrite,
+    sourceUid: check.src.inst.uid,
+    targetUid: check.tgt.inst.uid,
+    sourceSlot: check.sourceSlot,
+    targetSlot: check.targetSlot,
+    movedAffix,
+    replacedAffix: check.replacedAffix,
+    sourceSynergies: sourceSyns.map(s => s.id),
+    targetSynergies: targetSyns.map(s => s.id),
+    globalSynergies: globalSyn.active.map(s => s.id),
+    transferTokensLeft: game.transferTokens,
+    goldLeft: game.gold
+  };
+}
+
+/* ==================== STAGE 4 MODALS: DESTINY GAMBLE & AFFIX TRANSFER WORKBENCH ==================== */
+let _destinyBetInputVal = 120;
+let _transferUiState = { sourceUid: null, sourceSlot: 0, targetUid: null, targetSlot: 0 };
+
+function openDestinyGambleModal(){
+  if (!game) return false;
+  if (game.phase !== 'prep') {
+    toast('战斗中不可开启天命赌局，请于备战期操作！', true);
+    return false;
+  }
+  game.activeModal = { type: 'destiny_gamble' };
+  renderDestinyGambleModal();
+  return true;
+}
+
+function renderDestinyGambleModal(){
+  const cfg = getDestinyConfig();
+  const pending = getPendingDestinyOffer();
+  const box = $('modalBox');
+  const ownedExc = getOwnedDestinyEnhancements();
+  const w29Note = game.finalPrep?.active ? ` · <span style="color:#ff9090">⏳ W29 整备倒计时继续运行 (${Math.ceil(game.finalPrep.timer)}s)</span>` : '';
+
+  if (pending) {
+    box.innerHTML = `
+      <h2>🎲 天命赌局 · 开奖三选一（押注 💰${pending.bet}）</h2>
+      <p class="lead">本次天命已开奖！请从以下 <strong>3 件随机候选</strong>中择一领取（<strong>单次结账、仅领一件</strong>，未领取前不可再次发起新押注）${w29Note}。</p>
+      <div class="destiny-meta-row">
+        <span class="destiny-chip gold">💰 余额 ${game.gold}</span>
+        <span class="destiny-chip purple">🔮 转印符 ${game.transferTokens || 0}</span>
+        <span class="destiny-chip">⚙️ 锻材 ${game.materials || 0}</span>
+        <span class="destiny-chip">📦 背包 ${game.bag.length}/${getBagCapacity()}</span>
+      </div>
+      <div class="choices" id="modalChoices"></div>
+    `;
+    const grid = box.querySelector('#modalChoices');
+    pending.choices.forEach((ch, idx) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'choice-card ' + (ch.rarity || 'common');
+      card.dataset.choice = String(idx);
+      const gearChips = ch.category === 'gear' && ch.gear ? `<div style="margin-top:3px">${renderAffixChipsHtml(ch.gear)}</div>` : '';
+      const synBadge = ch.synNote ? `<span class="syn-badge hint">💡 ${ch.synNote}</span>` : '';
+      card.innerHTML = `
+        <span class="tag">${ch.tag || ch.category}</span>
+        <span class="ci">${ch.icon || '✨'}</span>
+        <span class="cn">${ch.name}</span>
+        <span class="cd">${ch.desc || ''}</span>
+        ${gearChips}
+        ${synBadge}
+      `;
+      card.addEventListener('click', () => claimDestinyReward(idx));
+      grid.append(card);
+    });
+    $('modalBackdrop').hidden = false;
+    return;
+  }
+
+  const curBet = Math.max(cfg.minBet, Math.min(Math.max(cfg.minBet, game.gold), Math.floor(Number(_destinyBetInputVal) || cfg.minBet)));
+  const band = getDestinyBetBand(curBet);
+  const t = cfg.preciousThresholds;
+  const lastEmpty = game.destiny?.lastOutcome?.outcome === 'empty_tribulation';
+
+  box.innerHTML = `
+    <h2>🎲 天命赌局 · 自由押注开奖</h2>
+    <p class="lead">自由设定押注金币，确认后<strong>单次原子扣款并立即开奖</strong>（不可无痛撤回）。空劫概率 <strong>${Math.round(cfg.emptyTribulationChance * 100)}%</strong>（空劫押注归零）；中奖按<strong>灵印 / 构装 / 丹药 / 特殊强化各 25%</strong>生成 3 件候选三选一，纯按概率无稀有度保底${w29Note}。</p>
+    <div class="destiny-meta-row">
+      <span class="destiny-chip gold">💰 当前金币 ${game.gold}</span>
+      <span class="destiny-chip purple">🔮 转印符 ${game.transferTokens || 0}</span>
+      <span class="destiny-chip">⚙️ 锻材 ${game.materials || 0}</span>
+      <span class="destiny-chip">最低押注 ${cfg.minBet}金</span>
+      <span class="destiny-chip">珍贵门槛：稀有≥${t.rare} · 转印符≥${t.transferToken} · 史诗/天命专属≥${t.destinyExclusive} · 传说≥${t.legend}</span>
+    </div>
+    ${lastEmpty ? `<div class="destiny-empty-alert">🌩️ 上次押注 💰${game.destiny.lastOutcome.bet} 触发了<strong>天命空劫</strong>，押注已归零且无候选生成。</div>` : ''}
+    <div class="destiny-bet-bar">
+      <label style="font-size:12px;font-weight:800;color:#ffe484">押注金币：</label>
+      <input type="number" class="destiny-bet-input" id="destinyBetInput" min="${cfg.minBet}" max="${Math.max(cfg.minBet, game.gold)}" step="10" value="${curBet}">
+      <div id="destinyQuickBtns" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+      <button class="btn gold" id="destinyRollBtn" type="button" ${game.gold < cfg.minBet ? 'disabled' : ''}>🎲 确认押注并开奖</button>
+    </div>
+    <div class="destiny-band-box" id="destinyBandPreview"></div>
+    <div style="font-size:11.5px;color:#b8d6d0;margin-top:4px">
+      <b>已持有天命专属强化 (${ownedExc.length})：</b>
+      ${ownedExc.length ? ownedExc.map(e => `${e.icon}${e.name}`).join(' · ') : '尚未持有（押注 ≥' + t.destinyExclusive + ' 金有几率在特殊强化类抽出）'}
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="destinyOpenTransferBtn" type="button">✨ 前往词条转移台 (🔮${game.transferTokens || 0})</button>
+      <button class="btn" id="destinyCloseBtn" type="button">返回备战</button>
+    </div>
+  `;
+
+  const updateBandPreview = val => {
+    const bVal = Math.floor(Number(val) || 0);
+    _destinyBetInputVal = bVal;
+    const info = getDestinyBetBand(bVal);
+    const pv = box.querySelector('#destinyBandPreview');
+    const rollBtn = box.querySelector('#destinyRollBtn');
+    const valid = bVal >= cfg.minBet && game.gold >= bVal;
+    if (rollBtn) rollBtn.disabled = !valid;
+    if (!pv) return;
+    if (bVal < cfg.minBet) {
+      pv.innerHTML = `<span style="color:#ff9aa8">⚠️ 低于最低押注门槛（${cfg.minBet} 金），无法开奖。</span>`;
+      return;
+    }
+    const unlocked = [
+      '凡品池',
+      info.allowRare ? '✅ 稀有池' : `🔒 稀有(需≥${t.rare}金)`,
+      info.allowTransferToken ? '✅ 🔮天命转印符(特殊强化子池)' : `🔒 转印符(需≥${t.transferToken}金)`,
+      info.allowDestinyExclusive ? '✅ 🌟史诗/天命专属强化' : `🔒 史诗/天命专属(需≥${t.destinyExclusive}金)`,
+      info.allowLegend ? '✅ 👑传说珍贵池' : `🔒 传说池(需≥${t.legend}金)`
+    ];
+    pv.innerHTML = `<b>押注 💰${bVal} 档位资格：</b>${unlocked.join(' · ')}<br><small style="opacity:0.85">四类顶层权重固定：灵印 25% / 构装 25% / 丹药 25% / 特殊强化 25%（无稀有度保底）</small>`;
+  };
+
+  const quickWrap = box.querySelector('#destinyQuickBtns');
+  for (const p of cfg.betQuickPresets) {
+    const qb = document.createElement('button');
+    qb.type = 'button';
+    qb.className = 'btn';
+    qb.style.padding = '4px 8px';
+    qb.style.fontSize = '11px';
+    qb.textContent = `${p}金`;
+    qb.disabled = game.gold < p;
+    qb.addEventListener('click', () => {
+      const inp = box.querySelector('#destinyBetInput');
+      if (inp) inp.value = String(p);
+      updateBandPreview(p);
+    });
+    quickWrap.append(qb);
+  }
+  const inp = box.querySelector('#destinyBetInput');
+  inp?.addEventListener('input', () => updateBandPreview(inp.value));
+  updateBandPreview(curBet);
+
+  box.querySelector('#destinyRollBtn')?.addEventListener('click', () => {
+    const v = Math.floor(Number(box.querySelector('#destinyBetInput')?.value || _destinyBetInputVal));
+    rollDestinyGamble(v);
+  });
+  box.querySelector('#destinyOpenTransferBtn')?.addEventListener('click', () => openAffixTransferModal());
+  box.querySelector('#destinyCloseBtn')?.addEventListener('click', () => closeModal());
+  $('modalBackdrop').hidden = false;
+}
+
+function openAffixTransferModal(){
+  if (!game) return false;
+  if (game.phase !== 'prep') {
+    toast('战斗中不可使用词条转移台，请于备战期操作！', true);
+    return false;
+  }
+  game.activeModal = { type: 'affix_transfer' };
+  renderAffixTransferModal();
+  return true;
+}
+
+function renderAffixTransferModal(){
+  const box = $('modalBox');
+  const allGear = [
+    ...game.hero.gear.map((g, idx) => ({ inst: g, location: 'equipped', idx, locTag: `已穿戴·槽${idx + 1}` })),
+    ...game.bag.map((g, idx) => ({ inst: g, location: 'bag', idx, locTag: `背包#${idx + 1}` })).filter(x => !isBagSeal(x.inst))
+  ];
+  const w29Note = game.finalPrep?.active ? ` · <span style="color:#ff9090">⏳ W29 整备倒计时继续运行 (${Math.ceil(game.finalPrep.timer)}s)</span>` : '';
+
+  if (allGear.length < 2) {
+    box.innerHTML = `
+      <h2>✨ 词条转移台</h2>
+      <p class="lead">至少需要持有 <strong>2 件构装</strong>（已穿戴或背包合计）才可进行词条提取与转入${w29Note}。</p>
+      <div class="destiny-meta-row">
+        <span class="destiny-chip purple">🔮 天命转印符 ${game.transferTokens || 0}</span>
+        <span class="destiny-chip gold">💰 金币 ${game.gold}</span>
+      </div>
+      <div class="modal-footer">
+        <button class="btn gold" id="trGoDestiny" type="button">🎲 前往天命赌局</button>
+        <button class="btn" id="trCancel" type="button">返回备战</button>
+      </div>
+    `;
+    box.querySelector('#trGoDestiny')?.addEventListener('click', () => openDestinyGambleModal());
+    box.querySelector('#trCancel')?.addEventListener('click', () => { cancelAffixTransferPreview(); closeModal(); });
+    $('modalBackdrop').hidden = false;
+    return;
+  }
+
+  // Ensure valid default selections
+  if (!allGear.some(x => x.inst.uid === _transferUiState.sourceUid)) {
+    const defSrc = allGear.find(x => (x.inst.affixes || []).some(Boolean)) || allGear[0];
+    _transferUiState.sourceUid = defSrc.inst.uid;
+    _transferUiState.sourceSlot = Math.max(0, (defSrc.inst.affixes || []).findIndex(Boolean));
+  }
+  if (!allGear.some(x => x.inst.uid === _transferUiState.targetUid) || _transferUiState.targetUid === _transferUiState.sourceUid) {
+    const defTgt = allGear.find(x => x.inst.uid !== _transferUiState.sourceUid) || allGear[0];
+    _transferUiState.targetUid = defTgt.inst.uid;
+    const emptyIdx = (defTgt.inst.affixes || []).findIndex(a => !a);
+    _transferUiState.targetSlot = emptyIdx >= 0 ? emptyIdx : 0;
+  }
+
+  const pv = previewAffixTransfer({
+    source: _transferUiState.sourceUid,
+    sourceSlot: _transferUiState.sourceSlot,
+    target: _transferUiState.targetUid,
+    targetSlot: _transferUiState.targetSlot
+  });
+
+  const fmtSyn = list => list.length ? list.map(s => `${s.name}(${s.tier === 3 ? '三联动' : '双联动'})`).join(' / ') : '无联动';
+
+  box.innerHTML = `
+    <h2>✨ 词条转移台 · 原子预览与确认</h2>
+    <p class="lead">支持<strong>已穿戴 4 槽装备与背包装备</strong>直接互转（无需卸下主力装）。提取后<strong>源装备保留、源槽变为空槽</strong>，目标可<strong>填空槽或覆盖已有词条</strong>；取消预览零副作用${w29Note}。</p>
+    <div class="destiny-meta-row">
+      <span class="destiny-chip purple">🔮 天命转印符 ${game.transferTokens || 0}</span>
+      <span class="destiny-chip gold">💰 金币 ${game.gold}</span>
+      <span class="destiny-chip">严禁同件重复词条与互斥组冲突</span>
+    </div>
+    <div class="transfer-grid">
+      <div class="transfer-col" id="trSrcCol"><h4>① 选择源装备与待提取词条槽</h4></div>
+      <div class="transfer-col" id="trTgtCol"><h4>② 选择目标装备与写入槽位（空槽/覆盖）</h4></div>
+    </div>
+    <div class="transfer-preview-box ${pv.canCommit ? '' : 'err'}">
+      ${pv.movingAffix ? `
+        <div><b>转移预览：</b>将【${pv.movingAffix.name}】从 <b>${pv.source?.name}</b>(槽${pv.sourceSlot + 1}→空槽) 移入 <b>${pv.target?.name}</b>(槽${pv.targetSlot + 1}${pv.isOverwrite ? ` · 覆盖【${pv.replacedAffix?.name}】` : ' · 填入空槽'})</div>
+        <div><b>费用：</b>🔮 ${pv.costTokens} 转印符 + 💰 ${pv.costGold} 金币</div>
+        <div><b>联动变化预测：</b>源装备 [${fmtSyn(pv.sourceBeforeSynergies)} → ${fmtSyn(pv.sourceAfterSynergies)}] · 目标装备 [${fmtSyn(pv.targetBeforeSynergies)} → ${fmtSyn(pv.targetAfterSynergies)}] · 领主全局 [<b>${fmtSyn(pv.globalBeforeSynergies)} → ${fmtSyn(pv.globalAfterSynergies)}</b>]</div>
+      ` : '<div>请选择有效的源词条槽与目标槽位。</div>'}
+      ${pv.canCommit ? '<div style="color:#72f2b4;margin-top:4px">✅ 校验通过：点击下方【确认转移】一次性原子扣费并生效！</div>' : `<div style="color:#ff9aa8;margin-top:4px">❌ ${pv.errorText}</div>`}
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="trCancelBtn" type="button">取消预览 / 返回备战</button>
+      <button class="btn gold" id="trCommitBtn" type="button" ${pv.canCommit ? '' : 'disabled'}>✨ 最终确认转移 (🔮${pv.costTokens} + 💰${pv.costGold})</button>
+    </div>
+  `;
+
+  const srcCol = box.querySelector('#trSrcCol');
+  const tgtCol = box.querySelector('#trTgtCol');
+
+  allGear.forEach(entry => {
+    const g = entry.inst;
+    const isSrcSel = g.uid === _transferUiState.sourceUid;
+    const sCard = document.createElement('div');
+    sCard.className = 'transfer-gear-card' + (isSrcSel ? ' sel' : '');
+    sCard.innerHTML = `<div class="transfer-gear-head"><span>${g.icon} ${gearLabel(g)}</span><small>${entry.locTag} · ${g.slotsCount}槽</small></div><div class="transfer-slot-row"></div>`;
+    const sRow = sCard.querySelector('.transfer-slot-row');
+    for (let i = 0; i < g.slotsCount; i++) {
+      const af = g.affixes?.[i] || null;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'transfer-slot-btn' + (isSrcSel && _transferUiState.sourceSlot === i ? ' active' : '') + (!af ? ' empty-slot' : '');
+      b.disabled = !af;
+      b.textContent = af ? `槽${i + 1}:${GEAR_AFFIXES[af.id]?.icon || ''}${GEAR_AFFIXES[af.id]?.name || af.id}` : `槽${i + 1}:[空槽]`;
+      b.addEventListener('click', () => {
+        _transferUiState.sourceUid = g.uid;
+        _transferUiState.sourceSlot = i;
+        renderAffixTransferModal();
+      });
+      sRow.append(b);
+    }
+    srcCol.append(sCard);
+
+    const isTgtSel = g.uid === _transferUiState.targetUid;
+    const tCard = document.createElement('div');
+    tCard.className = 'transfer-gear-card' + (isTgtSel ? ' sel' : '');
+    tCard.innerHTML = `<div class="transfer-gear-head"><span>${g.icon} ${gearLabel(g)}</span><small>${entry.locTag} · ${g.slotsCount}槽</small></div><div class="transfer-slot-row"></div>`;
+    const tRow = tCard.querySelector('.transfer-slot-row');
+    for (let i = 0; i < g.slotsCount; i++) {
+      const af = g.affixes?.[i] || null;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'transfer-slot-btn' + (isTgtSel && _transferUiState.targetSlot === i ? ' active' : '') + (!af ? ' empty-slot' : '');
+      b.disabled = g.uid === _transferUiState.sourceUid;
+      b.textContent = af ? `覆盖槽${i + 1}:${GEAR_AFFIXES[af.id]?.name || af.id}` : `填入空槽${i + 1}`;
+      b.addEventListener('click', () => {
+        _transferUiState.targetUid = g.uid;
+        _transferUiState.targetSlot = i;
+        renderAffixTransferModal();
+      });
+      tRow.append(b);
+    }
+    tgtCol.append(tCard);
+  });
+
+  box.querySelector('#trCancelBtn')?.addEventListener('click', () => {
+    cancelAffixTransferPreview();
+    closeModal();
+  });
+  box.querySelector('#trCommitBtn')?.addEventListener('click', () => {
+    commitAffixTransfer({
+      source: _transferUiState.sourceUid,
+      sourceSlot: _transferUiState.sourceSlot,
+      target: _transferUiState.targetUid,
+      targetSlot: _transferUiState.targetSlot
+    });
+  });
   $('modalBackdrop').hidden = false;
 }
 
@@ -10065,6 +11949,10 @@ function renderAllUI(force = false){
   if (matEl) {
     matEl.textContent = `⚙️ ${game.materials || 0} 锻材`;
   }
+  const tokEl = $('tokenPill');
+  if (tokEl) {
+    tokEl.textContent = `🔮 ${game.transferTokens || 0} 转印符`;
+  }
 
   const hpPill = $('heroHpPill');
   const hpRatio = h.hp / Math.max(1, h.maxHp);
@@ -10098,6 +11986,19 @@ function renderAllUI(force = false){
       const preSpec = game.w20State?.preselectedDirection ? W20_DIRECTIONS[game.w20State.preselectedDirection] : null;
       w20Btn.textContent = preSpec ? `⚡ W20预选：${preSpec.icon}${preSpec.name}` : '⚡ W20 方向预选';
     }
+  }
+
+  const destinyBtn = $('destinyBtn');
+  if (destinyBtn) {
+    const pendingOffer = getPendingDestinyOffer();
+    destinyBtn.disabled = isWave || ['won', 'lost'].includes(game.phase);
+    destinyBtn.textContent = pendingOffer ? '🎲 天命待领 (3选1)!' : '🎲 天命赌局';
+    destinyBtn.classList.toggle('active', !!pendingOffer);
+  }
+  const transferBtn = $('transferBtn');
+  if (transferBtn) {
+    transferBtn.disabled = isWave || ['won', 'lost'].includes(game.phase);
+    transferBtn.textContent = `✨ 词条转移台 (🔮${game.transferTokens || 0})`;
   }
 
   const rem = game.enemies.length + game.waveQueue.filter(w => !w.spawned).length;
@@ -10287,6 +12188,7 @@ function renderBattleHud(force){
 function gearListSig(list){
   return (list || []).map(g => {
     if (!g || typeof g !== 'object') return String(g || '');
+    if (isBagSeal(g)) return `seal:${g.uid}:${g.kind}:${g.star}`;
     const af = (g.affixes || []).map(a => a ? `${a.id}:${a.tier || 1}` : '_').join('+');
     return `${g.uid}:${g.enhanceLv || 0}:${g.slotsCount}:${af}`;
   }).join(',');
@@ -10307,9 +12209,10 @@ function renderLeftHud(force){
   const subSig = game.subSeals.map(x => `${x.kind}:${x.star}:${x.prog}`).join(',');
   const skSig = Object.entries(h.skills).map(([k,v]) => k + v + (h.w10Branch?.[k] || '')).join(',');
   const w20Sig = `${game.wave}:${game.w20State?.preselectedDirection || ''}:${game.w20State?.locked ? 1 : 0}:${h.breakthroughs.w20?.directionKey || ''}:${h.breakthroughs.w20?.enhancementKey || ''}`;
+  const destSig = `${game.transferTokens || 0}:${(game.rewardStash || []).length}:${getPendingDestinyOffer()?.offerId || ''}:${Object.keys(h.destinyEnhancements || {}).join(',')}`;
   const key = [
     sealSig, subSig, gearListSig(h.gear), skSig, Object.keys(h.combos).join(','),
-    Object.keys(h.perks).join(','), h.realm, h.lv, game.gold, game.materials, w20Sig
+    Object.keys(h.perks).join(','), h.realm, h.lv, game.gold, game.materials, w20Sig, destSig
   ].join('|');
   if (!force && key === lastLeftHudKey) return;
   lastLeftHudKey = key;
@@ -10439,9 +12342,17 @@ function renderLeftHud(force){
     '<div class="bh-combo">✨ ' + c.icon + ' ' + c.name + ' <b>已觉醒</b></div>'
   ).join('') || '<div class="bh-section-note">组合技 ' + Object.keys(h.combos).length + '/4 · 满足阶段节点与等级条件后觉醒</div>';
 
+  const ownedDestiny = getOwnedDestinyEnhancements();
+  const destinyHudHtml = ownedDestiny.length
+    ? '<div class="lh-sec"><div class="lh-sec-t"><span>🎲 天命专属强化</span><span>' + ownedDestiny.length + ' 项生效</span></div>' +
+      ownedDestiny.map(d => '<div class="bh-set-row">' + d.icon + ' <b>' + d.name + '</b><small>' + d.desc + '</small></div>').join('') +
+      '</div>'
+    : '';
+
   const sealSlotsUsed = (game.seal ? 1 : 0) + game.subSeals.length;
   body.innerHTML =
     w20HudHtml +
+    destinyHudHtml +
     '<div class="lh-sec"><div class="lh-sec-t"><span>✨ 灵印阵盘</span><span>' + sealSlotsUsed + ' 个已占用</span></div>' +
       sealHtml +
     '</div>' +
@@ -10456,7 +12367,7 @@ function renderLeftHud(force){
     '</div>' +
     '<div class="lh-sec"><div class="lh-sec-t"><span>⚔️ 神通与阶段突破</span><span>' + skillEntries.length + ' 项神通</span></div>' +
       '<div class="bh-skill-list">' + skillHtml + '</div>' + comboHtml +
-      '<div class="bh-build-footer"><span>节点 ' + getRealmStageLabel() + '</span><span>锻材 ⚙️' + (game.materials || 0) + '</span></div>' +
+      '<div class="bh-build-footer"><span>节点 ' + getRealmStageLabel() + '</span><span>⚙️' + (game.materials || 0) + ' · 🔮' + (game.transferTokens || 0) + ((game.rewardStash?.length || 0) ? ` · 📦暂存${game.rewardStash.length}` : '') + '</span></div>' +
     '</div>';
 
   body.querySelectorAll('[data-open-w20-preselect]').forEach(btn => {
@@ -10697,6 +12608,23 @@ function renderBag(force){
     return;
   }
   game.bag.forEach((inst, idx) => {
+    if (isBagSeal(inst)) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'bag-item ' + (inst.rarity || 'rare');
+      btn.dataset.bagIdx = String(idx);
+      btn.dataset.uid = inst.uid;
+      btn.title = `未装备灵印【${inst.name} ${inst.star}★】（安全收纳，不覆盖主灵印）\n左键尝试吸收 · 右键出售换金 · Shift+右键拆解换锻材`;
+      btn.innerHTML = `<span class="ic">${inst.icon || '✨'}</span><span class="nm">${inst.name}</span><span class="star-tag">${inst.star}★</span><span class="slot-tag">灵印</span>`;
+      btn.addEventListener('click', () => equipGearFromBag(idx));
+      btn.addEventListener('contextmenu', ev => {
+        ev.preventDefault();
+        if (ev.shiftKey) dismantleBagGear(idx);
+        else sellBagGear(idx);
+      });
+      tray.append(btn);
+      return;
+    }
     const g = isGearInstance(inst) ? inst : normalizeGearInstance(inst);
     const sellGold = getGearSellGold(g);
     const disMats = getGearDismantleMaterials(g);
@@ -10833,7 +12761,7 @@ function renderInspector(force){
   const pkSig = Object.entries(h.perks).map(([k,v])=>`${k}${v}`).join(',');
   const cbSig = Object.keys(h.combos).join(',');
   const dmgBucket = Math.floor(game.stats.dmgTotal / 120);
-  const key = ['H', h.realm, h.lv, Math.ceil(h.hp), h.maxHp, game.gold, game.materials, gearListSig(h.gear), skSig, pkSig, cbSig, gearListSig(game.bag), game.telemetry.length, dmgBucket].join('|');
+  const key = ['H', h.realm, h.lv, Math.ceil(h.hp), h.maxHp, game.gold, game.materials, game.transferTokens || 0, (game.rewardStash || []).length, gearListSig(h.gear), skSig, pkSig, cbSig, gearListSig(game.bag), game.telemetry.length, dmgBucket].join('|');
   if (!force && key === lastInspKey && !panel.hidden) return;
   lastInspKey = key;
   panel.hidden = false;
@@ -10842,8 +12770,9 @@ function renderInspector(force){
   const baseDmgPct = 100 + (h.lv - 1) * 8;
   const gearDmgPct = Math.round(hs.gm.dmgPct * 100);
   const leechCap = Math.max(10, Math.round(h.maxHp * 0.055));
+  const maxEnhLv = BALANCE.equipment?.materialEnhance?.maxEnhanceLv || 6;
   $('inspTitle').textContent = `👑 ${getRealmStageLabel()} · Lv.${h.lv}`;
-  $('inspSub').textContent = `按 [C] 开关 · 主印上限 ${getSealStarCap()}★ · 辅印 ${game.subSeals.length}/${getSubSealSlotCap()} · 锻材 ⚙️${game.materials || 0}${hs.mmActive ? ' · 🎯一法破万法!' : ''}`;
+  $('inspSub').textContent = `按 [C] 开关 · 主印上限 ${getSealStarCap()}★ · 辅印 ${game.subSeals.length}/${getSubSealSlotCap()} · 锻材 ⚙️${game.materials || 0} · 转印符 🔮${game.transferTokens || 0}${hs.mmActive ? ' · 🎯一法破万法!' : ''}`;
   $('inspStats').innerHTML = `
     <div class="stat-box">生命 / 护盾 <b>${Math.ceil(h.hp)}/${h.maxHp}</b><span class="sub">护盾 ${Math.ceil(h.shield)} · 移速 ${hs.moveSpd.toFixed(1)}</span></div>
     <div class="stat-box">伤害倍率 <b>${Math.round(hs.dmgMult * 100)}%</b><span class="sub">级${baseDmgPct}% 构+${gearDmgPct}% 节点+${Math.round((activeNode.dmgBonus||0)*100)}%</span></div>
@@ -10865,8 +12794,11 @@ function renderInspector(force){
       : '<span>+ 空槽</span><span style="font-size:9.5px">点此穿戴</span>';
     sb.addEventListener('click', () => {
       if (inst) unequipGear(s);
-      else if (game.bag.length) equipGearFromBag(0);
-      else toast('构装背包为空，可在底部商店购买或击败精英爆箱获得！', true);
+      else {
+        const firstGearIdx = game.bag.findIndex(x => !isBagSeal(x));
+        if (firstGearIdx >= 0) equipGearFromBag(firstGearIdx);
+        else toast('构装背包为空，可在底部商店购买或击败精英爆箱获得！', true);
+      }
     });
     slots.append(sb);
   }
@@ -10906,7 +12838,7 @@ function renderInspector(force){
       enhBtn.type = 'button';
       enhBtn.className = 'btn';
       enhBtn.disabled = enhCost === null || (game.materials || 0) < enhCost;
-      enhBtn.textContent = enhCost === null ? '已满强化 (+5)' : `⚙️ 锻材强化 (${enhCost}锻材 → +${inst.enhanceLv + 1})`;
+      enhBtn.textContent = enhCost === null ? `已满强化 (+${maxEnhLv})` : `⚙️ 锻材强化 (${enhCost}锻材 → +${inst.enhanceLv + 1})`;
       enhBtn.addEventListener('click', () => enhanceGear({ location: 'equipped', idx: sIdx }));
       const uneqBtn = document.createElement('button');
       uneqBtn.type = 'button';
@@ -10925,11 +12857,35 @@ function renderInspector(force){
     fxWrap.append(empty);
   }
 
-  // Bag Management: Equip/Replace, Enhance, Sell (Gold), Dismantle (Materials)
+  // Bag Management: Equip/Replace, Enhance, Sell (Gold), Dismantle (Materials) + Safe Bag Seals + Stash
   const acts = $('inspActions');
   acts.replaceChildren();
   if (game.bag.length) {
     game.bag.forEach((inst, idx) => {
+      if (isBagSeal(inst)) {
+        const spec = ARTIFACTS[inst.kind] || { cost: 22, name: inst.name || '灵印' };
+        const pts = inst.star === 3 ? 4 : inst.star === 2 ? 2 : 1;
+        const sellVal = Math.max(8, Math.round(spec.cost * pts * 0.65));
+        const disMats = Math.max(1, (inst.star || 1) * 2);
+        const card = document.createElement('div');
+        card.className = 'gear-fx-row';
+        card.style.width = '100%';
+        card.innerHTML = `<div><b>🎒 ${inst.icon || '✨'} ${inst.name} ${inst.star}★</b> [未装备灵印 · 安全收纳不覆盖主印]</div>`;
+        const rowBtns = document.createElement('div');
+        rowBtns.className = 'gear-act-row';
+        const sellBtn = document.createElement('button');
+        sellBtn.type = 'button'; sellBtn.className = 'btn';
+        sellBtn.textContent = `💰出售(+${sellVal}金)`;
+        sellBtn.addEventListener('click', () => sellBagGear(idx));
+        const disBtn = document.createElement('button');
+        disBtn.type = 'button'; disBtn.className = 'btn';
+        disBtn.textContent = `🔧拆解(+${disMats}锻材)`;
+        disBtn.addEventListener('click', () => dismantleBagGear(idx));
+        rowBtns.append(sellBtn, disBtn);
+        card.append(rowBtns);
+        acts.append(card);
+        return;
+      }
       const g = isGearInstance(inst) ? inst : normalizeGearInstance(inst);
       const stSpec = getSourceStageSpec(g.sourceStage);
       const sellVal = getGearSellGold(g);
@@ -10968,6 +12924,22 @@ function renderInspector(force){
       disBtn.addEventListener('click', () => dismantleBagGear(idx));
       rowBtns.append(eqBtn, enhBtn, sellBtn, disBtn);
       card.append(rowBtns);
+      acts.append(card);
+    });
+  }
+  if (game.rewardStash && game.rewardStash.length) {
+    game.rewardStash.forEach((entry, sIdx) => {
+      const it = entry.item;
+      const card = document.createElement('div');
+      card.className = 'gear-fx-row';
+      card.style.width = '100%';
+      card.innerHTML = `<div><b>📦 暂存箱 #${sIdx + 1} · ${it.icon || '✨'} ${it.name}</b> [背包满溢安全暂存]</div>`;
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'btn gold';
+      btn.disabled = game.bag.length >= getBagCapacity();
+      btn.textContent = game.bag.length >= getBagCapacity() ? '背包满（清理后取出）' : '取出放入背包';
+      btn.addEventListener('click', () => claimRewardStashItem(sIdx));
+      card.append(btn);
       acts.append(card);
     });
   }
@@ -11064,6 +13036,8 @@ window.addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   keys.add(k);
   if (k === 'escape') {
+    if (game.activeModal?.type === 'affix_transfer') { cancelAffixTransferPreview(); closeModal(); renderAllUI(); return; }
+    if (game.activeModal?.type === 'destiny_gamble' && !getPendingDestinyOffer()) { closeModal(); renderAllUI(); return; }
     if (game.inspTarget) { game.inspTarget = null; renderAllUI(); }
     else if (paused) { paused = false; renderAllUI(); }
     return;
@@ -11110,6 +13084,8 @@ $('w20PrepBtn')?.addEventListener('click', () => {
     openW20PreselectModal();
   }
 });
+$('destinyBtn')?.addEventListener('click', () => openDestinyGambleModal());
+$('transferBtn')?.addEventListener('click', () => openAffixTransferModal());
 $('metaBadge').addEventListener('click', () => {
   game.inspTarget = { type:'hero' }; renderAllUI(true);
 });
@@ -11134,7 +13110,7 @@ syncHudResponsiveMode();
 window.addEventListener('resize', () => { fitCamera(); syncOffsets(); syncHudResponsiveMode(); });
 
 /* ==================== DEBUG CONTRACT: BG60.loadTestPreset ==================== */
-function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', materials, gold, seed = 2026 } = {}){
+function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', materials, gold, transferTokens, seed = 2026 } = {}){
   const targetWave = clamp(Math.round(Number(wave) || 10), 1, MAIN_WAVES);
   const normTier = ['weak', 'standard', 'strong'].includes(tier) ? tier : 'standard';
   const normBuild = ['fire', 'frost'].includes(build) ? build : 'fire';
@@ -11363,7 +13339,7 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
     }
   }
 
-  // Initialize Gold and Materials budgets
+  // Initialize Gold, Materials, and Transfer Tokens budgets
   const tierEconMult = normTier === 'strong' ? 1.4 : normTier === 'weak' ? 0.65 : 1.0;
   game.gold = gold !== undefined
     ? Math.max(0, Math.round(Number(gold)))
@@ -11371,6 +13347,14 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
   game.materials = materials !== undefined
     ? Math.max(0, Math.round(Number(materials)))
     : Math.max(0, Math.round((targetWave - 1) * 1.4 * tierEconMult));
+  const defaultTokens = targetWave >= 21
+    ? (normTier === 'strong' ? 4 : normTier === 'standard' ? 2 : 1)
+    : targetWave >= 16
+      ? (normTier === 'strong' ? 2 : normTier === 'standard' ? 1 : 0)
+      : 0;
+  game.transferTokens = transferTokens !== undefined
+    ? Math.max(0, Math.round(Number(transferTokens)))
+    : defaultTokens;
 
   syncHeroMaxHp();
   const activeSynergies = recomputeEquipmentSynergies();
@@ -11390,6 +13374,7 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
     seed: runSeed,
     gold: game.gold,
     materials: game.materials,
+    transferTokens: game.transferTokens,
     w20State: { ...game.w20State },
     bossIntel: getW20BossIntel(),
     hero: {
@@ -11404,15 +13389,16 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
       w10Branch: { ...h.w10Branch },
       breakthroughs: JSON.parse(JSON.stringify(h.breakthroughs)),
       vouchers: { ...h.vouchers },
+      destinyEnhancements: { ...(h.destinyEnhancements || {}) },
       gear: JSON.parse(JSON.stringify(h.gear)),
       activeGearSynergies: activeSynergies.active.map(s => ({ id: s.id, name: s.name, tier: s.tier, chain: s.chain }))
     },
     seal: game.seal ? { kind: game.seal.kind, star: game.seal.star, route: game.seal.route || null } : null,
     subSeals: game.subSeals.map(s => ({ kind: s.kind, star: s.star })),
     unimplementedStageFeatures: {
-      stage2_equipmentCraftingAndAffixes: 'Implemented in Stage 2 (independent gear instances, 1-3 slots, duo/trio synergies, shop pricing, sell/dismantle & material enhance; Fate Transfer scheduled for Stage 4)',
+      stage2_equipmentCraftingAndAffixes: 'Implemented in Stage 2 (independent gear instances, 1-3 slots, duo/trio synergies, shop pricing, sell/dismantle & material enhance)',
       stage3_w20FullBreakthroughAndW21Elites: 'Implemented in Stage 3 (W16-W19 preselect, W19 fair W20 Boss intel, W20 lock-in/voucher/paid full-group reroll, W21 showcase, W22-W24 shared-threat escalation, W25-W28 spoiler-free draws & W28 omen)',
-      stage4_fateGambleAndTransfer: 'Pending Stage 4 (Fate Gamble, affix transfer & late-game refinement)',
+      stage4_fateGambleAndTransfer: 'Implemented in Stage 4 (Destiny Gamble with free bet/empty tribulation/4x25% category weights/precious thresholds/8 exclusive enhancements/single-checkout idempotent safe claim, Affix Transfer Workbench with zero-side-effect preview & atomic commit, and W21-W29 endgame refinement economy)',
       stage5_w29FinalPrepAndW30Boss: 'Pending Stage 5 (W29 full settlement edge cases & W30 signature phase lock)'
     }
   };
@@ -11423,11 +13409,12 @@ function exportBuildPreset(){
   const h = game.hero;
   const syn = recomputeEquipmentSynergies();
   return JSON.parse(JSON.stringify({
-    schema: 'bg60-build-preset-v3',
+    schema: 'bg60-build-preset-v4',
     seed: game.seed,
     wave: game.wave,
     gold: game.gold,
     materials: game.materials,
+    transferTokens: game.transferTokens || 0,
     shopElemBuyCounts: { ...(game.shopElemBuyCounts || {}) },
     shopElemBuyStage: game.shopElemBuyStage || getSourceStageForWave(game.wave),
     w20State: { ...(game.w20State || {}) },
@@ -11437,6 +13424,8 @@ function exportBuildPreset(){
       w25To28Rolled: { ...(game.wavePlan?.w25To28Rolled || {}) }
     },
     endgameOmen: { ...(game.endgameOmen || {}) },
+    destinyPendingOffer: getPendingDestinyOffer(),
+    rewardStash: (game.rewardStash || []).slice(),
     seal: game.seal ? { kind: game.seal.kind, elem: game.seal.elem, star: game.seal.star, prog: game.seal.prog || 0, route: game.seal.route || null } : null,
     subSeals: game.subSeals.map(s => ({ kind: s.kind, elem: s.elem, star: s.star, prog: s.prog || 0 })),
     hero: {
@@ -11449,9 +13438,11 @@ function exportBuildPreset(){
       vouchers: { ...h.vouchers },
       perks: { ...h.perks },
       combos: { ...h.combos },
+      destinyEnhancements: { ...(h.destinyEnhancements || {}) },
+      sealEssenceBonus: h.sealEssenceBonus || 0,
       gear: h.gear.map(g => normalizeGearInstance(g))
     },
-    bag: game.bag.map(g => normalizeGearInstance(g)),
+    bag: game.bag.map(g => isBagSeal(g) ? { ...g } : normalizeGearInstance(g)),
     activeGearSynergies: syn.active.map(s => s.id)
   }));
 }
@@ -11466,6 +13457,7 @@ function importBuildPreset(snapshot){
   game.phase = 'prep';
   game.gold = Math.max(0, Math.round(Number(data.gold ?? BALANCE.progression.initialGold)));
   game.materials = Math.max(0, Math.round(Number(data.materials ?? 0)));
+  game.transferTokens = Math.max(0, Math.round(Number(data.transferTokens ?? 0)));
   game.shopElemBuyCounts = { wind:0, fire:0, frost:0, thunder:0, holy:0, ...(data.shopElemBuyCounts || {}) };
   game.shopElemBuyStage = Number(data.shopElemBuyStage || getSourceStageForWave(game.wave));
   if (data.w20State) {
@@ -11489,6 +13481,10 @@ function importBuildPreset(snapshot){
   if (data.endgameOmen) {
     game.endgameOmen = { ...game.endgameOmen, ...data.endgameOmen };
   }
+  if (data.destinyPendingOffer && !data.destinyPendingOffer.claimed) {
+    game.destiny.pendingOffer = JSON.parse(JSON.stringify(data.destinyPendingOffer));
+  }
+  game.rewardStash = Array.isArray(data.rewardStash) ? JSON.parse(JSON.stringify(data.rewardStash)) : [];
 
   const h = game.hero;
   const hd = data.hero || {};
@@ -11502,8 +13498,10 @@ function importBuildPreset(snapshot){
   h.vouchers = { w10: !!hd.vouchers?.w10, w20: !!hd.vouchers?.w20 };
   h.perks = { ...(hd.perks || {}) };
   h.combos = { ...(hd.combos || {}) };
+  h.destinyEnhancements = { ...(hd.destinyEnhancements || {}) };
+  h.sealEssenceBonus = Math.max(0, Number(hd.sealEssenceBonus || 0));
   h.gear = (Array.isArray(hd.gear) ? hd.gear : []).slice(0, HERO_GEAR_SLOTS).map(g => normalizeGearInstance(g));
-  game.bag = (Array.isArray(data.bag) ? data.bag : []).map(g => normalizeGearInstance(g));
+  game.bag = (Array.isArray(data.bag) ? data.bag : []).map(g => isBagSeal(g) ? { ...g } : normalizeGearInstance(g));
 
   game.seal = data.seal ? {
     kind: data.seal.kind,
@@ -11535,6 +13533,7 @@ function importBuildPreset(snapshot){
     wave: game.wave,
     gearCount: h.gear.length,
     bagCount: game.bag.length,
+    transferTokens: game.transferTokens,
     activeGearSynergies: activeSynergies.active.map(s => s.id),
     w20Breakthrough: h.breakthroughs.w20 ? { ...h.breakthroughs.w20 } : null
   };
@@ -11573,7 +13572,7 @@ game.pendingModals.push({ type: 'starter' });
 requestAnimationFrame(loop);
 
 window.BG60 = {
-  version: '0.60.0-stage3',
+  version: '0.60.0-stage4',
   get game(){ return game; },
   get cam(){ return cam; },
   get perf(){ return { ...perfStats, enemies: game?.enemies.length || 0, projectiles: game?.projectiles.length || 0 }; },
@@ -11599,6 +13598,15 @@ window.BG60 = {
   initW20EnhancementDraft, rerollW20Enhancements, pickW20Enhancement, openW20BreakthroughModal,
   getW20ActiveState, hasW20Direction, hasW20Enhancement,
   getW22To24Theme, getW25To28Pool, rollW25To28Encounter, getWaveEncounterInfo, getEndgameOmenState,
+  // Stage 4: Destiny Gamble, Safe Claim Paths, Affix Transfer Workbench & W21-W29 Endgame Refinement
+  getBagCapacity, isBagSeal, grantGearSafely, grantSealSafely, claimRewardStashItem,
+  getEndgameRefinementConfig, getEnemyMaterialDrop, getWaveClearMaterialBonus,
+  getDestinyConfig, getDestinyBetBand, rollDestinyQuality, rollDestinyCategories,
+  isAllEquippedSealsMaxed, isSealKindCurrentlyMaxed, hasDestinyEnhancement, getOwnedDestinyEnhancements, getAvailableDestinyEnhancements,
+  rollDestinyGamble, getPendingDestinyOffer, claimDestinyReward, autoClaimPendingDestinyReward,
+  openDestinyGambleModal, renderDestinyGambleModal,
+  resolveGearLocation, getAffixTransferCost, validateAffixTransfer, previewAffixTransfer, cancelAffixTransferPreview, commitAffixTransfer,
+  openAffixTransferModal, renderAffixTransferModal,
   applyFireMark, triggerFireDetonation, applyFrostSlow, triggerFrostPulse, gainFrostShield, getHeroMaxFrostShield,
   rollPerkChoices, pickPerk, refreshCombos, hasCombo, perkLv,
   getWavePhaseMeta, buildWaveQueue, pickChestGearChoices, getTelemetryReport,
@@ -11606,6 +13614,7 @@ window.BG60 = {
   getSynergyCounts, getSealStats, getHeroStats, worldToScreen, screenToWorld,
   getGearSetCounts, getActiveGearSets, gearSetTier, getActiveDualResonances, hasDualRes, isEnemyUnstoppable, toggleLeftHud, toggleBattleHud,
   BALANCE, UNLOCK_NODES, W10_SKILL_BRANCHES, W20_DIRECTIONS, W20_ENHANCEMENTS, W20_BOSS_AUX_POOL,
+  DESTINY_ENHANCEMENTS, DESTINY_SPECIAL_BOONS, DESTINY_PILLS,
   REALMS, SHRINE_WAVES, ARTIFACTS, SUB_SEAL_RESONANCE, SEAL_SPECIALIZATIONS,
   ELEMENTS, GEARS, GEAR_SETS, GEAR_AFFIXES, GEAR_SYNERGIES, SOURCE_STAGES, DUAL_RESONANCES, HERO_SKILLS, COMBOS, PERKS, PILLS, MAIN_WAVES, W, H, MAX_ENEMIES
 };
