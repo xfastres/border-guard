@@ -536,6 +536,30 @@
   .transfer-preview-box{padding:10px 12px;border-radius:11px;background:rgba(14,28,32,0.85);border:1px solid rgba(114,242,180,0.28);font-size:12px;line-height:1.5;margin-top:8px}
   .transfer-preview-box.err{border-color:rgba(255,92,122,0.55);background:rgba(68,18,28,0.45);color:#ffd2dc}
 
+  /* Stage 6: Meta Progression, Loadout Panel & 3-Dimension Settlement Styles */
+  .meta-lock-banner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:8px 11px;border-radius:10px;font-size:12px;margin:8px 0 10px;border:1px solid rgba(114,242,180,0.4);background:rgba(20,58,48,0.45);color:#d7f9ea}
+  .meta-lock-banner.locked{border-color:rgba(255,156,102,0.5);background:rgba(82,36,24,0.45);color:#ffd9c4}
+  .meta-sec-title{margin:10px 0 6px;font-size:13px;font-weight:900;color:#ffe484;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+  .meta-grid.two{grid-template-columns:repeat(2,1fr)}
+  .meta-card{text-align:left;padding:9px 10px;border-radius:11px;border:1px solid rgba(190,224,218,0.2);background:rgba(20,36,44,0.9);color:var(--text);display:flex;flex-direction:column;gap:4px;cursor:pointer;transition:border-color .12s,background .12s,transform .1s}
+  .meta-card:hover:not(:disabled){border-color:var(--gold);transform:translateY(-1px)}
+  .meta-card.sel{border-color:#72f2b4;box-shadow:0 0 0 1px rgba(114,242,180,0.45);background:linear-gradient(180deg,rgba(24,78,66,0.7),rgba(16,34,40,0.95))}
+  .meta-card.locked-item{border-style:dashed;border-color:rgba(255,214,102,0.36);background:rgba(28,24,36,0.78)}
+  .meta-card:disabled{opacity:0.56;cursor:not-allowed;transform:none}
+  .meta-card-head{display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:12.5px;font-weight:800;color:#fff}
+  .meta-card-sub{font-size:11px;color:#bcd8d2;line-height:1.4}
+  .meta-pts-pill{padding:2px 7px;border-radius:999px;font-size:10.5px;font-weight:900;background:rgba(255,214,102,0.18);color:#ffe484;border:1px solid rgba(255,214,102,0.35)}
+  .meta-milestone-list{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:6px}
+  .meta-ms-item{padding:6px 8px;border-radius:9px;font-size:11px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);color:#c4ddd8;line-height:1.4}
+  .meta-ms-item.done{border-color:rgba(114,242,180,0.45);background:rgba(24,72,56,0.36);color:#d7fae8}
+  .settle-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:10px 0}
+  .settle-card{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)}
+  .settle-card.full{grid-column:span 2}
+  .settle-card h4{margin:0 0 5px;font-size:13px;color:#ffe38c}
+  .settle-card p{margin:0;font-size:12px;color:#c7e0db;line-height:1.5}
+  .attr-log{margin-top:6px;padding:7px 9px;border-radius:9px;background:rgba(90,22,36,0.35);border:1px solid rgba(255,112,138,0.38);font-size:11.5px;color:#ffd8df;line-height:1.48}
+
   @media (max-width:980px){
     .battle-hud,.build-hud{max-height:calc(100vh - var(--sub-bottom) - 108px)}
     .battle-hud:not(.collapsed),.build-hud:not(.collapsed){width:min(320px,calc(100vw - 20px));max-width:calc(100vw - 20px)}
@@ -543,7 +567,8 @@
     .battle-hud .lh-head,.build-hud .lh-head{font-size:11px}
   }
   @media (max-width:760px){
-    .choices,.choices.two,.intro-grid,.transfer-grid{grid-template-columns:1fr}
+    .choices,.choices.two,.intro-grid,.transfer-grid,.meta-grid,.meta-grid.two,.meta-milestone-list,.settle-grid{grid-template-columns:1fr}
+    .settle-card.full{grid-column:span 1}
     .topbar{padding:5px 8px;gap:5px}
     .brand{font-size:13.5px}
     .pill{padding:3px 7px;font-size:11px}
@@ -561,11 +586,12 @@
 
 <header class="topbar" id="topbar">
   <div class="top-left">
-    <div class="brand">⚔️ 边境守卫 <span class="ver">v0.60 · 天命转印与终局精修</span></div>
+    <div class="brand">⚔️ 边境守卫 <span class="ver">v0.60 · 30波完整试玩版</span></div>
     <span class="pill wave-prep" id="wavePill">第 1 / 30 波 · 备战</span>
     <span class="pill gold" id="goldPill">💰 55</span>
     <span class="pill" id="matPill" title="普通材料（用于常规装备优化与W20突破强化重抽）">⚙️ 0 锻材</span>
     <span class="pill" id="tokenPill" title="天命转印符（仅通过天命赌局特殊强化子池获取，用于词条转移台）">🔮 0 转印符</span>
+    <span class="pill" id="shardPill" title="局外传承碎片（仅用于局外横向解锁，不与局内金币互换）">💠 0 碎片</span>
     <span class="pill hp" id="heroHpPill">❤️ 220/220</span>
     <button class="pill realm-btn" id="heroPill" type="button" title="当前成长阶段与等级（点击查看属性与W10/W20突破详情）">
       <span id="heroLvTxt">炼气·初探 Lv.1</span>
@@ -590,6 +616,7 @@
     <button class="btn gold" id="w20PrepBtn" type="button" hidden title="W16-W20 预选第二次突破方向与查看 W19 首领情报">⚡ W20 方向预选</button>
     <button class="btn gold" id="destinyBtn" type="button" title="天命赌局：自由押注金币抽取灵印/构装/丹药/天命专属强化与转印符（备战期可用）">🎲 天命赌局</button>
     <button class="btn" id="transferBtn" type="button" title="词条转移台：消耗天命转印符与金币，在已穿戴与背包装备间转移词条（备战期可用）">✨ 词条转移台</button>
+    <button class="btn" id="metaLegacyBtn" type="button" title="局外传承配置与解锁（开局前与结算可调整；局内只读展示并锁定配置）">💠 局外传承</button>
     <button class="meta-badge" id="metaBadge" type="button" title="查看W10/W20突破与配方组合技">✨ 突破 0/2 · 组合 0/4</button>
     <button class="btn" id="heroPanelBtn" type="button">👑 属性/神通 [C]</button>
     <button class="btn" id="autoWaveBtn" type="button">自动下波：关</button>
@@ -674,9 +701,9 @@
 /* BALANCE_CONFIG_START — generated from balance/v060-baseline.json */
 const BALANCE = {
   "schemaVersion": 1,
-  "baseline": "v0.60/stage4-destiny-transfer-endgame",
+  "baseline": "v0.60/stage6-meta-release",
   "mainWaves": 30,
-  "notes": "v0.60 阶段 4（天命赌局、转印和终局精修）数值基线：新增天命赌局（自由押注、空劫、4×25% 类别权重、珍贵池门槛、天命专属强化与转印符）、词条转移台原子费用与防套利规则、W21-W29 终局精修资源倾斜与 +6 强化上限。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
+  "notes": "v0.60 完整版（阶段 1–6 收官）数值基线：覆盖 30 波受控成长曲线、W10/W20 双大型突破、独立词条双/三联动、常规经济与防套利回收、天命赌局与词条转移台、W29 实时 90 秒整备与 W30 固定血量三段首领、以及局外传承（1 主传承 + 固定 4 点/最多 3 辅助、权重倾斜重新归一化、局内防稀释池、防速死刷取碎片公式与版本化存档）。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
   "progression": {
     "initialGold": 55,
     "initialMaterials": 0,
@@ -2744,6 +2771,286 @@ const BALANCE = {
       "xp": 14,
       "gold": 8
     }
+  },
+  "metaProgression": {
+    "storageKey": "border_guard_v060_meta_v1",
+    "schemaVersion": 1,
+    "currency": {
+      "id": "legacyShards",
+      "name": "传承碎片",
+      "icon": "💠"
+    },
+    "budget": {
+      "mainSlots": 1,
+      "maxAuxCount": 3,
+      "maxAuxPoints": 4
+    },
+    "mainRewardWeightMultiplier": 1.35,
+    "activePoolControl": {
+      "targetActiveGearPoolSize": 23,
+      "targetActiveAffixPoolSize": 12
+    },
+    "mains": [
+      {
+        "id": "main_flame",
+        "name": "烈焰传承",
+        "icon": "🔥",
+        "elem": "fire",
+        "unlockedByDefault": true,
+        "unlockCost": 0,
+        "styleTag": "群怪爆燃 · 火标延长",
+        "desc": "提高火系灵印、构装与词条出现权重 ×1.35（重新归一化，其他流派仍可出现）；火标持续时间 +0.8s，不额外增加基础攻血或金币掉落。",
+        "effects": {
+          "fireMarkDurationBonus": 0.8
+        }
+      },
+      {
+        "id": "main_frost",
+        "name": "玄冰传承",
+        "icon": "❄️",
+        "elem": "frost",
+        "unlockedByDefault": true,
+        "unlockCost": 0,
+        "styleTag": "控场护盾 · 走位容错",
+        "desc": "提高冰系灵印、构装与词条出现权重 ×1.35（重新归一化，其他流派仍可出现）；减速持续 +0.6s 且寒盾消退缓冲 +0.8s，不额外增加基础攻血或金币掉落。",
+        "effects": {
+          "frostSlowDurationBonus": 0.6,
+          "frostShieldDurationBonus": 0.8
+        }
+      },
+      {
+        "id": "main_thunder",
+        "name": "惊雷传承",
+        "icon": "⚡",
+        "elem": "thunder",
+        "unlockedByDefault": true,
+        "unlockCost": 0,
+        "styleTag": "连锁电弧 · 定向打击",
+        "desc": "提高雷系灵印、构装与词条出现权重 ×1.35（重新归一化，其他流派仍可出现）；连锁闪电弹射搜索半径 +0.6 格，不额外增加基础攻血或金币掉落。",
+        "effects": {
+          "thunderChainRadiusBonus": 0.6
+        }
+      },
+      {
+        "id": "main_wind",
+        "name": "疾风传承",
+        "icon": "🌪️",
+        "elem": "wind",
+        "unlockedByDefault": false,
+        "unlockCost": 80,
+        "styleTag": "灵动拉扯 · 机动游走",
+        "desc": "提高风系灵印、构装与词条出现权重 ×1.35（重新归一化，其他流派仍可出现）；冲刺后获得 1.4s 轻盈拉扯步态且灵石吸附 +0.8 格，不增加基础攻血。",
+        "effects": {
+          "dashGlideDuration": 1.4,
+          "magnetBonus": 0.8
+        }
+      },
+      {
+        "id": "main_holy",
+        "name": "圣光传承",
+        "icon": "✨",
+        "elem": "holy",
+        "unlockedByDefault": false,
+        "unlockCost": 120,
+        "styleTag": "稳健反制 · 受击缓冲",
+        "desc": "提高圣系灵印、构装与词条出现权重 ×1.35（重新归一化，其他流派仍可出现）；受击无敌保护帧 +0.10s 且灵气回血球吸附 +0.7 格，不增加基础攻血。",
+        "effects": {
+          "invulnBonus": 0.1,
+          "healOrbMagnetBonus": 0.7
+        }
+      }
+    ],
+    "auxiliaries": [
+      {
+        "id": "aux_scout_sense",
+        "name": "灵觉洞察",
+        "icon": "🧭",
+        "costPoints": 1,
+        "unlockedByDefault": true,
+        "unlockCost": 0,
+        "desc": "1 点 · 战场与商店展示词条联动补全情报与首领机制预警提示（纯信息辅助，不增减基础属性）。"
+      },
+      {
+        "id": "aux_dash_cadence",
+        "name": "轻身步韵",
+        "icon": "💨",
+        "costPoints": 1,
+        "unlockedByDefault": true,
+        "unlockCost": 0,
+        "desc": "1 点 · 冲刺（Space）基础冷却微调 -0.35s 且冲刺无敌帧 +0.06s，改善走位躲预警手感。"
+      },
+      {
+        "id": "aux_shop_first_refresh",
+        "name": "商路先机",
+        "icon": "🏷️",
+        "costPoints": 2,
+        "unlockedByDefault": true,
+        "unlockCost": 0,
+        "desc": "2 点 · 每波备战期首次手动刷新商店免费（仅限该波第 1 次刷新，不送金币或额外货架）。"
+      },
+      {
+        "id": "aux_salvage_craft",
+        "name": "巧匠拆解",
+        "icon": "🔧",
+        "costPoints": 1,
+        "unlockedByDefault": false,
+        "unlockCost": 60,
+        "desc": "1 点 · 拆解史诗或传说多余装备时额外返还 +1 锻材，鼓励拆解精修（不改变出售价与防套利上界）。"
+      },
+      {
+        "id": "aux_telegraph_buffer",
+        "name": "御劫预判",
+        "icon": "👁️",
+        "costPoints": 2,
+        "unlockedByDefault": false,
+        "unlockCost": 90,
+        "desc": "2 点 · 首领与精英地面预警圈/震荡波额外提前 +0.20s 提示窗口（不降低敌人血量与伤害）。"
+      },
+      {
+        "id": "aux_shrine_compass",
+        "name": "妖碑寻踪",
+        "icon": "🩸",
+        "costPoints": 2,
+        "unlockedByDefault": false,
+        "unlockCost": 100,
+        "desc": "2 点 · 血煞妖碑蓄力时间减半（0.30s→0.15s），击败血煞妖王额外回复 20% 生命。"
+      },
+      {
+        "id": "aux_tactical_reserve",
+        "name": "奇门备策",
+        "icon": "🛡️",
+        "costPoints": 3,
+        "unlockedByDefault": false,
+        "unlockCost": 140,
+        "desc": "3 点 · 每波开战自动携 1 层一次性【偏折护膜】，仅抵消该波首次超 25% 最大生命重击的 35% 伤害。"
+      },
+      {
+        "id": "aux_destiny_foresight",
+        "name": "天命观星",
+        "icon": "🔮",
+        "costPoints": 3,
+        "unlockedByDefault": false,
+        "unlockCost": 160,
+        "desc": "3 点 · 天命赌局触发【空劫】时返还 25% 押注金币止损（不改变空劫率与珍贵池门槛）。"
+      }
+    ],
+    "unlockPacks": [
+      {
+        "id": "pack_gear_ember_frost",
+        "type": "gear_pack",
+        "name": "炎霜奇器谱",
+        "icon": "🏺",
+        "unlockCost": 70,
+        "items": [
+          "ember_censer",
+          "glacier_bell"
+        ],
+        "desc": "横向解锁 2 件灵品机制构装【赤焰熏炉】与【玄霜玉铃】，开局按防稀释规则等量替换非主系基础构装进入本局池。"
+      },
+      {
+        "id": "pack_affix_tactics",
+        "type": "affix_pack",
+        "name": "奇门词条录",
+        "icon": "📜",
+        "unlockCost": 95,
+        "items": [
+          "storm_conduit",
+          "aegis_pulse"
+        ],
+        "desc": "横向解锁 2 条机制词条【引雷导流】与【镇岳灵脉冲】，开局保持活跃词条池定容 12 条防稀释。"
+      },
+      {
+        "id": "pack_challenge_marks",
+        "type": "challenge",
+        "name": "边境试炼印",
+        "icon": "🏅",
+        "unlockCost": 110,
+        "items": [
+          "challenge_no_gamble",
+          "challenge_shrine_hunter"
+        ],
+        "desc": "解锁横向挑战徽记【零赌清修】与【妖碑狩猎】，记录于局内与结算荣光榜（不附带任何基础数值增益）。"
+      }
+    ],
+    "milestones": [
+      {
+        "id": "ms_reach_w5",
+        "name": "初镇边关",
+        "desc": "首次击败 W5 熔岩巨魔并进入 W6+",
+        "shardReward": 25,
+        "condition": {
+          "minClearedWave": 5
+        }
+      },
+      {
+        "id": "ms_w10_breakthrough",
+        "name": "一破化形",
+        "desc": "首次完成 W10 首次大型突破",
+        "shardReward": 45,
+        "condition": {
+          "w10Breakthrough": true
+        }
+      },
+      {
+        "id": "ms_w20_breakthrough",
+        "name": "天劫破境",
+        "desc": "首次击败 W20 天劫魔尊并获得突破凭证",
+        "shardReward": 75,
+        "condition": {
+          "w20Voucher": true
+        }
+      },
+      {
+        "id": "ms_reach_w29",
+        "name": "终局门前",
+        "desc": "首次抵达 W29 前哨与 90 秒最终整备",
+        "shardReward": 60,
+        "condition": {
+          "minWave": 29
+        }
+      },
+      {
+        "id": "ms_clear_w30",
+        "name": "深渊平定",
+        "desc": "首次击败 W30 深渊主宰通关完整 30 波",
+        "shardReward": 150,
+        "condition": {
+          "victory": true
+        }
+      },
+      {
+        "id": "ms_clear_w30_no_gamble",
+        "name": "清修破渊",
+        "desc": "全程 0 次天命赌局通关完整 30 波",
+        "shardReward": 90,
+        "condition": {
+          "victory": true,
+          "zeroGamble": true
+        }
+      }
+    ],
+    "rewardFormula": {
+      "minClearedWaveForAnyReward": 3,
+      "band1Range": [
+        3,
+        10
+      ],
+      "band1PerWave": 1.5,
+      "band2Range": [
+        11,
+        20
+      ],
+      "band2PerWave": 3.5,
+      "band3Range": [
+        21,
+        29
+      ],
+      "band3PerWave": 7,
+      "bossKillBonus": 4,
+      "w10BreakthroughBonus": 12,
+      "w20VoucherBonus": 28,
+      "w30VictoryBonus": 140
+    }
   }
 };
 /* BALANCE_CONFIG_END */
@@ -3147,9 +3454,13 @@ const GEARS = {
   titan_crown:     { key:'titan_crown',     name:'泰坦王冠', icon:'👑', rarity:'legend', elem:'holy',    set:'greed',   desc:'【传说神器】全伤害 +65%、攻速 +25%、暴击 +18%、射程 +18%！', mod:{ dmgPct:0.65, aspd:0.25, crit:0.18, rangePct:0.18 } },
   asura_blood:     { key:'asura_blood',     name:'修罗血玉', icon:'🩸', rarity:'legend', elem:'thunder', set:'blood',   desc:'【传说凶器】全伤害 +90%、暴伤 +60%，但最大生命 -20%！', mod:{ dmgPct:0.90, critDmg:0.60, hpPct:-0.20 } },
   heavy_greatsword:{ key:'heavy_greatsword',name:'乾坤重剑', icon:'🗡️', rarity:'legend', elem:'fire',    set:'flame',   desc:'【传说凶器】全伤害 +75%、范围 +35%，但攻速 -15%！', mod:{ dmgPct:0.75, rangePct:0.35, aspd:-0.15 } },
-  seal_astrolabe:  { key:'seal_astrolabe',  name:'万象星盘', icon:'🧭', rarity:'legend', elem:'frost',   set:'frost',   desc:'【传说仙器】额外弹道 +1、全伤害 +45%、攻速 +22%、范围 +25%！', mod:{ extraShot:1, dmgPct:0.45, aspd:0.22, rangePct:0.25 } }
+  seal_astrolabe:  { key:'seal_astrolabe',  name:'万象星盘', icon:'🧭', rarity:'legend', elem:'frost',   set:'frost',   desc:'【传说仙器】额外弹道 +1、全伤害 +45%、攻速 +22%、范围 +25%！', mod:{ extraShot:1, dmgPct:0.45, aspd:0.22, rangePct:0.25 } },
+  // Stage 6 Horizontal Unlock Pack [pack_gear_ember_frost] (enters active run pool via anti-dilution swap!)
+  ember_censer:    { key:'ember_censer',    name:'赤焰熏炉', icon:'🏺', rarity:'rare',   elem:'fire',    set:'flame',   unlockPack:'pack_gear_ember_frost', desc:'【传承奇器】爆炸溅射 +0.55格，移速 +8%，全伤害 +12%', mod:{ splashBonus:0.55, movePct:0.08, dmgPct:0.12 } },
+  glacier_bell:    { key:'glacier_bell',    name:'玄霜玉铃', icon:'🔔', rarity:'rare',   elem:'frost',   set:'frost',   unlockPack:'pack_gear_ember_frost', desc:'【传承奇器】攻击减速 28%，攻速 +12%，最大生命 +40', mod:{ slowOnHit:0.28, aspd:0.12, flatHp:40 } }
 };
 const GEAR_KEYS = Object.keys(GEARS);
+const BASE_GEAR_KEYS = GEAR_KEYS.filter(k => !GEARS[k].unlockPack);
 const GEAR_RARITY_LABELS = { common:'凡品', rare:'灵品', epic:'史诗', legend:'传说' };
 const GEAR_RARITY_COLORS = { common:'#72f2b4', rare:'#5cc8ff', epic:'#c68cff', legend:'#ffbe4f' };
 const GEAR_SALVAGE_GOLD = BALANCE.equipment?.recycle?.sellGoldBase || { common:10, rare:16, epic:26, legend:42 };
@@ -3236,9 +3547,21 @@ const GEAR_AFFIXES = {
     id:'fortune_mint', name:'聚财铭文', icon:'💰', elem:'holy', chain:'general', rarity:'rare', conflictGroup:null,
     desc: (t = 1) => `全伤害 +${7 + (t - 1) * 2.5}%，击杀额外 +${1 + Math.floor((t - 1) / 3)} 金币几率`,
     mod: (t = 1) => ({ dmgPct: 0.07 + (t - 1) * 0.025, bonusGoldChance: Math.min(0.6, 0.22 + (t - 1) * 0.06) })
+  },
+  // Stage 6 Horizontal Unlock Pack [pack_affix_tactics] (enters active affix pool with fixed 12-item anti-dilution cap!)
+  storm_conduit: {
+    id:'storm_conduit', name:'引雷导流', icon:'🌩️', elem:'thunder', chain:'general', rarity:'rare', conflictGroup:'proc_style', unlockPack:'pack_affix_tactics',
+    desc: (t = 1) => `【传承词条】连锁雷触发 +${12 + (t - 1) * 3}%，全伤害 +${6 + (t - 1) * 2}%【同 proc_style 互斥】`,
+    mod: (t = 1) => ({ chainProc: Math.min(0.42, 0.12 + (t - 1) * 0.03), dmgPct: 0.06 + (t - 1) * 0.02 })
+  },
+  aegis_pulse: {
+    id:'aegis_pulse', name:'镇岳灵脉冲', icon:'💠', elem:'holy', chain:'general', rarity:'rare', conflictGroup:'crit_stance', unlockPack:'pack_affix_tactics',
+    desc: (t = 1) => `【传承词条】寒盾上限 +${20 + (t - 1) * 6}，移速 +${5 + (t - 1) * 2}%，受击减伤 +${4 + (t - 1)}%【同 crit_stance 互斥】`,
+    mod: (t = 1) => ({ frostShieldCapBonus: 20 + (t - 1) * 6, movePct: 0.05 + (t - 1) * 0.02, dmgReduce: Math.min(0.18, 0.04 + (t - 1) * 0.01) })
   }
 };
 const GEAR_AFFIX_KEYS = Object.keys(GEAR_AFFIXES);
+const BASE_AFFIX_KEYS = GEAR_AFFIX_KEYS.filter(id => !GEAR_AFFIXES[id].unlockPack);
 
 const GEAR_SYNERGIES = [
   // Fire Detonation Chain: Trio strictly replaces all Fire Duos!
@@ -3301,6 +3624,705 @@ const GEAR_SYNERGIES = [
     desc:'命中已减速/冰冻的敌人时，为领主凝结短时【寒冰护盾】吸收伤害！'
   }
 ];
+
+/* ==================== STAGE 6: META PROGRESSION, VERSIONED PERSISTENCE & ANTI-FARM REWARDS ==================== */
+const _metaMemoryStore = new Map();
+let _runIdSeq = 1;
+
+function getMetaConfig(){
+  const raw = BALANCE.metaProgression || {};
+  return {
+    storageKey: raw.storageKey || 'border_guard_v060_meta_v1',
+    schemaVersion: Number(raw.schemaVersion || 1),
+    currency: raw.currency || { id: 'legacyShards', name: '传承碎片', icon: '💠' },
+    budget: {
+      mainSlots: Math.max(1, Number(raw.budget?.mainSlots ?? 1)),
+      maxAuxCount: Math.max(1, Number(raw.budget?.maxAuxCount ?? 3)),
+      maxAuxPoints: Math.max(1, Number(raw.budget?.maxAuxPoints ?? 4))
+    },
+    mainRewardWeightMultiplier: Math.max(1.0, Number(raw.mainRewardWeightMultiplier ?? 1.35)),
+    activePoolControl: {
+      targetActiveGearPoolSize: Math.max(12, Number(raw.activePoolControl?.targetActiveGearPoolSize ?? BASE_GEAR_KEYS.length)),
+      targetActiveAffixPoolSize: Math.max(8, Number(raw.activePoolControl?.targetActiveAffixPoolSize ?? BASE_AFFIX_KEYS.length))
+    },
+    mains: Array.isArray(raw.mains) ? raw.mains : [],
+    auxiliaries: Array.isArray(raw.auxiliaries) ? raw.auxiliaries : [],
+    unlockPacks: Array.isArray(raw.unlockPacks) ? raw.unlockPacks : [],
+    milestones: Array.isArray(raw.milestones) ? raw.milestones : [],
+    rewardFormula: raw.rewardFormula || {
+      minClearedWaveForAnyReward: 3,
+      band1Range: [3, 10], band1PerWave: 1.5,
+      band2Range: [11, 20], band2PerWave: 3.5,
+      band3Range: [21, 29], band3PerWave: 7.0,
+      bossKillBonus: 4, w10BreakthroughBonus: 12, w20VoucherBonus: 28, w30VictoryBonus: 140
+    }
+  };
+}
+
+function getMetaStorage(){
+  try {
+    if (window && window.localStorage && typeof window.localStorage.getItem === 'function' && typeof window.localStorage.setItem === 'function') {
+      return window.localStorage;
+    }
+  } catch (_) {}
+  try {
+    if (typeof localStorage !== 'undefined' && localStorage && typeof localStorage.getItem === 'function') {
+      return localStorage;
+    }
+  } catch (_) {}
+  return {
+    getItem: k => (_metaMemoryStore.has(k) ? _metaMemoryStore.get(k) : null),
+    setItem: (k, v) => { _metaMemoryStore.set(k, String(v)); },
+    removeItem: k => { _metaMemoryStore.delete(k); }
+  };
+}
+
+function getMetaMainSpec(id){
+  return getMetaConfig().mains.find(m => m.id === id) || null;
+}
+function getMetaAuxSpec(id){
+  return getMetaConfig().auxiliaries.find(a => a.id === id) || null;
+}
+function getMetaPackSpec(id){
+  return getMetaConfig().unlockPacks.find(p => p.id === id) || null;
+}
+
+function createDefaultMetaSave(){
+  const cfg = getMetaConfig();
+  const defaultMains = cfg.mains.filter(m => m.unlockedByDefault).map(m => m.id);
+  const defaultAux = cfg.auxiliaries.filter(a => a.unlockedByDefault).map(a => a.id);
+  // Ensure initial default loadout demonstrates 1 Main + 3 Aux = 4 pts (1+1+2=4) on a brand-new 0-unlock account!
+  const initAux = [];
+  let pts = 0;
+  for (const id of defaultAux) {
+    const sp = getMetaAuxSpec(id);
+    if (!sp) continue;
+    if (initAux.length < cfg.budget.maxAuxCount && pts + sp.costPoints <= cfg.budget.maxAuxPoints) {
+      initAux.push(id);
+      pts += sp.costPoints;
+    }
+  }
+  return {
+    schemaVersion: cfg.schemaVersion,
+    legacyShards: 0,
+    unlockedMain: defaultMains.length ? defaultMains : ['main_flame'],
+    unlockedAux: defaultAux,
+    unlockedPacks: [],
+    claimedMilestones: [],
+    loadout: {
+      main: defaultMains[0] || 'main_flame',
+      aux: initAux
+    },
+    stats: {
+      totalRuns: 0,
+      victories: 0,
+      bestWave: 0,
+      totalLegacyShardsEarned: 0,
+      noGambleVictories: 0,
+      shrinesClearedTotal: 0
+    },
+    settledRunIds: [],
+    lastSettlement: null
+  };
+}
+
+function getMetaLoadoutBudget(loadout = metaSave?.loadout){
+  const cfg = getMetaConfig();
+  const mainId = loadout?.main || null;
+  const auxList = Array.isArray(loadout?.aux) ? Array.from(new Set(loadout.aux)) : [];
+  let auxPoints = 0;
+  for (const id of auxList) {
+    const sp = getMetaAuxSpec(id);
+    if (sp) auxPoints += Math.max(0, Number(sp.costPoints || 0));
+  }
+  const mainValid = !!(mainId && getMetaMainSpec(mainId));
+  const auxCount = auxList.length;
+  let valid = true;
+  let reason = null;
+  if (!mainValid) { valid = false; reason = 'invalid_main'; }
+  else if (auxCount > cfg.budget.maxAuxCount) { valid = false; reason = 'aux_count_exceeded'; }
+  else if (auxPoints > cfg.budget.maxAuxPoints) { valid = false; reason = 'aux_points_exceeded'; }
+  return {
+    mainCount: mainValid ? 1 : 0,
+    mainSlots: cfg.budget.mainSlots,
+    auxCount,
+    maxAuxCount: cfg.budget.maxAuxCount,
+    auxPoints,
+    maxAuxPoints: cfg.budget.maxAuxPoints,
+    remainingPoints: Math.max(0, cfg.budget.maxAuxPoints - auxPoints),
+    valid,
+    reason
+  };
+}
+
+function normalizeMetaSave(raw){
+  const cfg = getMetaConfig();
+  const def = createDefaultMetaSave();
+  if (!raw || typeof raw !== 'object') return def;
+
+  const validMainIds = new Set(cfg.mains.map(m => m.id));
+  const validAuxIds = new Set(cfg.auxiliaries.map(a => a.id));
+  const validPackIds = new Set(cfg.unlockPacks.map(p => p.id));
+  const validMsIds = new Set(cfg.milestones.map(m => m.id));
+
+  const unlockedMain = Array.from(new Set([
+    ...def.unlockedMain,
+    ...(Array.isArray(raw.unlockedMain) ? raw.unlockedMain.filter(id => validMainIds.has(id)) : [])
+  ]));
+  const unlockedAux = Array.from(new Set([
+    ...def.unlockedAux,
+    ...(Array.isArray(raw.unlockedAux) ? raw.unlockedAux.filter(id => validAuxIds.has(id)) : [])
+  ]));
+  const unlockedPacks = Array.from(new Set(
+    Array.isArray(raw.unlockedPacks) ? raw.unlockedPacks.filter(id => validPackIds.has(id)) : []
+  ));
+  const claimedMilestones = Array.from(new Set(
+    Array.isArray(raw.claimedMilestones) ? raw.claimedMilestones.filter(id => validMsIds.has(id)) : []
+  ));
+
+  const mainPick = (raw.loadout?.main && unlockedMain.includes(raw.loadout.main))
+    ? raw.loadout.main
+    : unlockedMain[0];
+  const rawAux = Array.isArray(raw.loadout?.aux) ? Array.from(new Set(raw.loadout.aux)) : def.loadout.aux;
+  const cleanAux = [];
+  let pts = 0;
+  for (const id of rawAux) {
+    if (!unlockedAux.includes(id)) continue;
+    const sp = getMetaAuxSpec(id);
+    if (!sp) continue;
+    if (cleanAux.length < cfg.budget.maxAuxCount && pts + sp.costPoints <= cfg.budget.maxAuxPoints) {
+      cleanAux.push(id);
+      pts += sp.costPoints;
+    }
+  }
+
+  const settledRunIds = Array.isArray(raw.settledRunIds)
+    ? Array.from(new Set(raw.settledRunIds.map(x => String(x)).filter(Boolean))).slice(-250)
+    : [];
+
+  return {
+    schemaVersion: cfg.schemaVersion,
+    legacyShards: Math.max(0, Math.floor(Number(raw.legacyShards || 0))),
+    unlockedMain,
+    unlockedAux,
+    unlockedPacks,
+    claimedMilestones,
+    loadout: { main: mainPick, aux: cleanAux },
+    stats: {
+      totalRuns: Math.max(0, Math.floor(Number(raw.stats?.totalRuns || 0))),
+      victories: Math.max(0, Math.floor(Number(raw.stats?.victories || 0))),
+      bestWave: Math.max(0, Math.floor(Number(raw.stats?.bestWave || 0))),
+      totalLegacyShardsEarned: Math.max(0, Math.floor(Number(raw.stats?.totalLegacyShardsEarned || 0))),
+      noGambleVictories: Math.max(0, Math.floor(Number(raw.stats?.noGambleVictories || 0))),
+      shrinesClearedTotal: Math.max(0, Math.floor(Number(raw.stats?.shrinesClearedTotal || 0)))
+    },
+    settledRunIds,
+    lastSettlement: raw.lastSettlement && typeof raw.lastSettlement === 'object' ? { ...raw.lastSettlement } : null
+  };
+}
+
+let metaSave = null;
+
+function loadMetaSave(){
+  const cfg = getMetaConfig();
+  const store = getMetaStorage();
+  try {
+    const rawStr = store.getItem(cfg.storageKey);
+    if (rawStr) {
+      metaSave = normalizeMetaSave(JSON.parse(rawStr));
+      return metaSave;
+    }
+  } catch (_) {}
+  metaSave = createDefaultMetaSave();
+  return metaSave;
+}
+
+function saveMetaSave(){
+  const cfg = getMetaConfig();
+  const store = getMetaStorage();
+  if (!metaSave) metaSave = createDefaultMetaSave();
+  metaSave = normalizeMetaSave(metaSave);
+  try {
+    store.setItem(cfg.storageKey, JSON.stringify(metaSave));
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function getMetaSave(){
+  if (!metaSave) loadMetaSave();
+  return metaSave;
+}
+
+function resetMetaSave(){
+  const cfg = getMetaConfig();
+  const store = getMetaStorage();
+  try { store.removeItem(cfg.storageKey); } catch (_) {}
+  metaSave = createDefaultMetaSave();
+  saveMetaSave();
+  if (game && !isMetaLoadoutLocked()) {
+    game.metaLoadout = { main: metaSave.loadout.main, aux: metaSave.loadout.aux.slice() };
+    syncRunActivePools();
+  }
+  renderAllUI(true);
+  return { ok: true, save: JSON.parse(JSON.stringify(metaSave)) };
+}
+
+function exportMetaSave(){
+  const cur = getMetaSave();
+  return JSON.stringify(cur, null, 2);
+}
+
+function importMetaSave(jsonOrObj){
+  try {
+    const parsed = typeof jsonOrObj === 'string' ? JSON.parse(jsonOrObj) : jsonOrObj;
+    if (!parsed || typeof parsed !== 'object') return { ok: false, reason: 'invalid_payload' };
+    metaSave = normalizeMetaSave(parsed);
+    saveMetaSave();
+    if (game && !isMetaLoadoutLocked()) {
+      game.metaLoadout = { main: metaSave.loadout.main, aux: metaSave.loadout.aux.slice() };
+      syncRunActivePools();
+    }
+    renderAllUI(true);
+    return { ok: true, save: JSON.parse(JSON.stringify(metaSave)) };
+  } catch (err) {
+    return { ok: false, reason: 'parse_error', error: String(err?.message || err) };
+  }
+}
+
+function isMetaLoadoutLocked(){
+  if (!game) return false;
+  if (game.phase === 'won' || game.phase === 'lost') return false;
+  return !!game.metaRunLocked;
+}
+
+function setMetaMainLegacy(mainId){
+  if (isMetaLoadoutLocked()) {
+    toast('🔒 本局已开始，局外传承配置已锁定，禁止局内热切换！', true);
+    return { ok: false, reason: 'run_locked' };
+  }
+  const save = getMetaSave();
+  const spec = getMetaMainSpec(mainId);
+  if (!spec) return { ok: false, reason: 'unknown_main' };
+  if (!save.unlockedMain.includes(mainId)) {
+    toast(`主传承【${spec.name}】尚未解锁，请先用传承碎片解锁！`, true);
+    return { ok: false, reason: 'not_unlocked' };
+  }
+  save.loadout.main = mainId;
+  saveMetaSave();
+  if (game && !isMetaLoadoutLocked()) {
+    game.metaLoadout = { main: save.loadout.main, aux: save.loadout.aux.slice() };
+    syncRunActivePools();
+  }
+  renderAllUI(true);
+  return { ok: true, loadout: { main: save.loadout.main, aux: save.loadout.aux.slice() }, budget: getMetaLoadoutBudget(save.loadout) };
+}
+
+function toggleMetaAuxLegacy(auxId, forceState = null){
+  if (isMetaLoadoutLocked()) {
+    toast('🔒 本局已开始，局外传承配置已锁定，禁止局内热切换！', true);
+    return { ok: false, reason: 'run_locked' };
+  }
+  const save = getMetaSave();
+  const cfg = getMetaConfig();
+  const spec = getMetaAuxSpec(auxId);
+  if (!spec) return { ok: false, reason: 'unknown_aux' };
+  if (!save.unlockedAux.includes(auxId)) {
+    toast(`辅助传承【${spec.name}】尚未解锁！`, true);
+    return { ok: false, reason: 'not_unlocked' };
+  }
+  const cur = save.loadout.aux.slice();
+  const existsIdx = cur.indexOf(auxId);
+  const wantEquip = forceState !== null ? !!forceState : (existsIdx === -1);
+
+  if (!wantEquip) {
+    if (existsIdx >= 0) cur.splice(existsIdx, 1);
+  } else if (existsIdx === -1) {
+    if (cur.length >= cfg.budget.maxAuxCount) {
+      toast(`辅助传承上限固定为最多 ${cfg.budget.maxAuxCount} 个！`, true);
+      return { ok: false, reason: 'aux_count_exceeded', budget: getMetaLoadoutBudget(save.loadout) };
+    }
+    const curPts = getMetaLoadoutBudget(save.loadout).auxPoints;
+    if (curPts + spec.costPoints > cfg.budget.maxAuxPoints) {
+      toast(`辅助传承总预算固定为 ${cfg.budget.maxAuxPoints} 点（当前 ${curPts}/${cfg.budget.maxAuxPoints}，【${spec.name}】需 ${spec.costPoints} 点）！`, true);
+      return { ok: false, reason: 'aux_points_exceeded', budget: getMetaLoadoutBudget(save.loadout) };
+    }
+    cur.push(auxId);
+  }
+  save.loadout.aux = cur;
+  saveMetaSave();
+  if (game && !isMetaLoadoutLocked()) {
+    game.metaLoadout = { main: save.loadout.main, aux: save.loadout.aux.slice() };
+  }
+  renderAllUI(true);
+  return { ok: true, loadout: { main: save.loadout.main, aux: save.loadout.aux.slice() }, budget: getMetaLoadoutBudget(save.loadout) };
+}
+
+function setMetaLoadout({ main, aux } = {}){
+  if (isMetaLoadoutLocked()) {
+    return { ok: false, reason: 'run_locked' };
+  }
+  const save = getMetaSave();
+  const nextMain = main ?? save.loadout.main;
+  const nextAux = Array.isArray(aux) ? Array.from(new Set(aux)) : save.loadout.aux.slice();
+  if (!getMetaMainSpec(nextMain)) return { ok: false, reason: 'unknown_main' };
+  if (!save.unlockedMain.includes(nextMain)) return { ok: false, reason: 'not_unlocked_main' };
+  for (const id of nextAux) {
+    if (!getMetaAuxSpec(id)) return { ok: false, reason: `unknown_aux:${id}` };
+    if (!save.unlockedAux.includes(id)) return { ok: false, reason: `not_unlocked_aux:${id}` };
+  }
+  const budget = getMetaLoadoutBudget({ main: nextMain, aux: nextAux });
+  if (!budget.valid) return { ok: false, reason: budget.reason, budget };
+  save.loadout = { main: nextMain, aux: nextAux };
+  saveMetaSave();
+  if (game && !isMetaLoadoutLocked()) {
+    game.metaLoadout = { main: nextMain, aux: nextAux.slice() };
+    syncRunActivePools();
+  }
+  renderAllUI(true);
+  return { ok: true, loadout: { main: nextMain, aux: nextAux.slice() }, budget };
+}
+
+function unlockMetaItem(kind, id){
+  const save = getMetaSave();
+  let spec = null;
+  let list = null;
+  if (kind === 'main') { spec = getMetaMainSpec(id); list = save.unlockedMain; }
+  else if (kind === 'aux') { spec = getMetaAuxSpec(id); list = save.unlockedAux; }
+  else if (kind === 'pack') { spec = getMetaPackSpec(id); list = save.unlockedPacks; }
+  else return { ok: false, reason: 'invalid_kind' };
+
+  if (!spec) return { ok: false, reason: 'unknown_item' };
+  if (list.includes(id)) return { ok: false, reason: 'already_unlocked', shardsLeft: save.legacyShards };
+  const cost = Math.max(0, Math.floor(Number(spec.unlockCost || 0)));
+  if (save.legacyShards < cost) {
+    toast(`传承碎片不足！解锁【${spec.name}】需要 💠${cost}（当前 💠${save.legacyShards}）`, true);
+    return { ok: false, reason: 'insufficient_shards', need: cost, have: save.legacyShards };
+  }
+  save.legacyShards -= cost;
+  list.push(id);
+  saveMetaSave();
+  // Active pool only updates on next run (or before current run locks) — NEVER hot-swaps mid-run!
+  if (game && !isMetaLoadoutLocked()) {
+    syncRunActivePools();
+  }
+  AudioKit.play('level', 1.15);
+  toast(`💠 已解锁【${spec.name}】！${isMetaLoadoutLocked() ? '将在下一局开启时生效。' : '可在当前开局前配置中选用！'}`);
+  renderAllUI(true);
+  return { ok: true, kind, id, cost, shardsLeft: save.legacyShards, takesEffectNextRun: isMetaLoadoutLocked() };
+}
+
+function buildActiveRunPools(loadout = null, saveState = null){
+  const cfg = getMetaConfig();
+  const save = saveState || getMetaSave();
+  const activeLoadout = loadout || game?.metaLoadout || save.loadout;
+  const mainSpec = getMetaMainSpec(activeLoadout?.main);
+  const mainElem = mainSpec?.elem || null;
+
+  // 1. Active Gear Pool (anti-dilution: stays fixed at targetActiveGearPoolSize = 23!)
+  const targetGearSize = cfg.activePoolControl.targetActiveGearPoolSize;
+  const unlockedGearExtras = [];
+  for (const packId of (save.unlockedPacks || [])) {
+    const pack = getMetaPackSpec(packId);
+    if (pack?.type === 'gear_pack' && Array.isArray(pack.items)) {
+      for (const gk of pack.items) {
+        if (GEARS[gk] && !unlockedGearExtras.includes(gk)) unlockedGearExtras.push(gk);
+      }
+    }
+  }
+  let activeGearKeys = BASE_GEAR_KEYS.slice();
+  for (const extraKey of unlockedGearExtras) {
+    const extraSpec = GEARS[extraKey];
+    if (!extraSpec || activeGearKeys.includes(extraKey)) continue;
+    if (activeGearKeys.length >= targetGearSize) {
+      // Rotate out 1 non-main-element base gear of matching rarity (preferring non-synergy-critical items) to keep pool size strictly constant!
+      const dropIdx = activeGearKeys.findIndex(k =>
+        !GEARS[k].unlockPack && GEARS[k].rarity === extraSpec.rarity && GEARS[k].elem !== mainElem && k !== 'flame_fan' && k !== 'frost_mirror'
+      );
+      if (dropIdx >= 0) activeGearKeys.splice(dropIdx, 1);
+      else {
+        const fallbackIdx = activeGearKeys.findIndex(k => !GEARS[k].unlockPack && GEARS[k].elem !== mainElem && k !== 'flame_fan' && k !== 'frost_mirror');
+        if (fallbackIdx >= 0) activeGearKeys.splice(fallbackIdx, 1);
+      }
+    }
+    activeGearKeys.push(extraKey);
+  }
+
+  // 2. Active Affix Pool (anti-dilution: stays fixed at targetActiveAffixPoolSize = 12, ALWAYS keeping all 6 Fire/Frost chain affixes!)
+  const targetAffixSize = cfg.activePoolControl.targetActiveAffixPoolSize;
+  const unlockedAffixExtras = [];
+  for (const packId of (save.unlockedPacks || [])) {
+    const pack = getMetaPackSpec(packId);
+    if (pack?.type === 'affix_pack' && Array.isArray(pack.items)) {
+      for (const ak of pack.items) {
+        if (GEAR_AFFIXES[ak] && !unlockedAffixExtras.includes(ak)) unlockedAffixExtras.push(ak);
+      }
+    }
+  }
+  let activeAffixKeys = BASE_AFFIX_KEYS.slice();
+  for (const extraId of unlockedAffixExtras) {
+    const extraSpec = GEAR_AFFIXES[extraId];
+    if (!extraSpec || activeAffixKeys.includes(extraId)) continue;
+    if (activeAffixKeys.length >= targetAffixSize) {
+      const dropIdx = activeAffixKeys.findIndex(id =>
+        !GEAR_AFFIXES[id].unlockPack && GEAR_AFFIXES[id].chain === 'general' && GEAR_AFFIXES[id].elem !== mainElem
+      );
+      if (dropIdx >= 0) activeAffixKeys.splice(dropIdx, 1);
+      else {
+        const fallbackIdx = activeAffixKeys.findIndex(id => !GEAR_AFFIXES[id].unlockPack && GEAR_AFFIXES[id].chain === 'general');
+        if (fallbackIdx >= 0) activeAffixKeys.splice(fallbackIdx, 1);
+      }
+    }
+    activeAffixKeys.push(extraId);
+  }
+
+  return {
+    activeGearKeys,
+    activeAffixKeys,
+    unlockedGearExtras,
+    unlockedAffixExtras,
+    targetGearSize,
+    targetAffixSize
+  };
+}
+
+function syncRunActivePools(){
+  if (!game) return null;
+  const pools = buildActiveRunPools(game.metaLoadout, getMetaSave());
+  game.metaRunState = {
+    ...(game.metaRunState || {}),
+    activeGearKeys: pools.activeGearKeys,
+    activeAffixKeys: pools.activeAffixKeys,
+    unlockedGearExtras: pools.unlockedGearExtras,
+    unlockedAffixExtras: pools.unlockedAffixExtras,
+    freeRefreshUsedThisWave: game.metaRunState?.freeRefreshUsedThisWave || false,
+    deflectReady: game.metaRunState?.deflectReady ?? true
+  };
+  return pools;
+}
+
+function getActiveRunGearKeys(){
+  if (game?.metaRunState?.activeGearKeys?.length) return game.metaRunState.activeGearKeys;
+  return BASE_GEAR_KEYS;
+}
+
+function getActiveRunAffixKeys(){
+  if (game?.metaRunState?.activeAffixKeys?.length) return game.metaRunState.activeAffixKeys;
+  return BASE_AFFIX_KEYS;
+}
+
+function getActiveMetaLoadout(){
+  if (game?.metaLoadout) return { main: game.metaLoadout.main, aux: (game.metaLoadout.aux || []).slice() };
+  const save = getMetaSave();
+  return { main: save.loadout.main, aux: save.loadout.aux.slice() };
+}
+
+function getActiveMetaMain(){
+  const lo = getActiveMetaLoadout();
+  return getMetaMainSpec(lo.main);
+}
+
+function hasMetaAux(auxId){
+  const lo = getActiveMetaLoadout();
+  return lo.aux.includes(auxId);
+}
+
+function lockMetaLoadoutForRun(){
+  if (!game) return { ok: false, reason: 'no_game' };
+  const save = getMetaSave();
+  game.metaLoadout = { main: save.loadout.main, aux: save.loadout.aux.slice() };
+  game.metaRunLocked = true;
+  syncRunActivePools();
+  return { ok: true, locked: true, loadout: getActiveMetaLoadout() };
+}
+
+// Strict renormalized main-legacy reward weight helper (tilts matching element by x1.35 without adding drops/quality/gold)
+function getMainLegacyWeightTable(items, getElemFn){
+  const cfg = getMetaConfig();
+  const mainSpec = getActiveMetaMain();
+  const mainElem = mainSpec?.elem || null;
+  const tilt = mainElem ? cfg.mainRewardWeightMultiplier : 1.0;
+  let total = 0;
+  const entries = items.map(item => {
+    const elem = getElemFn(item);
+    const rawW = (mainElem && elem === mainElem) ? tilt : 1.0;
+    total += rawW;
+    return { item, elem, rawW };
+  });
+  return entries.map(e => ({ ...e, prob: total > 0 ? e.rawW / total : 0 }));
+}
+
+function pickWeightedByMainLegacy(items, getElemFn, rndFn = game?.rnd || Math.random){
+  if (!items || !items.length) return null;
+  const table = getMainLegacyWeightTable(items, getElemFn);
+  let r = rndFn();
+  for (const e of table) {
+    r -= e.prob;
+    if (r <= 0) return e.item;
+  }
+  return table[table.length - 1].item;
+}
+
+function generateRunId(seed){
+  const seq = _runIdSeq++;
+  return `run_${Date.now().toString(36)}_${Number(seed || 0).toString(36)}_${seq}`;
+}
+
+function calculateRunShardRewards(victory, g = game){
+  const cfg = getMetaConfig();
+  const f = cfg.rewardFormula;
+  const wave = Math.max(1, Math.floor(Number(g?.wave || 1)));
+  const clearedWaves = victory ? MAIN_WAVES : Math.max(0, wave - 1);
+  const bossKills = Math.max(0, Math.floor(Number(g?.stats?.bossKills || 0)));
+  const w10Done = !!(g?.hero?.breakthroughs?.w10);
+  const w20Done = !!(g?.hero?.vouchers?.w20 || (g?.hero?.breakthroughs?.w20 && !g?.hero?.breakthroughs?.w20?.placeholder));
+  const minWaves = Math.max(1, Number(f.minClearedWaveForAnyReward ?? 3));
+
+  // Strict anti-suicide-farming guard: dying on W1-W2 (or W3 before clearing W3 & 0 bosses killed) yields STRICTLY 0 shards!
+  const eligible = !!victory || clearedWaves >= minWaves || bossKills > 0;
+  if (!eligible) {
+    return {
+      eligible: false,
+      clearedWaves,
+      waveReached: wave,
+      band1Shards: 0,
+      band2Shards: 0,
+      band3Shards: 0,
+      bossBonus: 0,
+      w10Bonus: 0,
+      w20Bonus: 0,
+      w30VictoryBonus: 0,
+      runShards: 0,
+      reason: 'early_defeat_zero_reward'
+    };
+  }
+
+  const countInRange = (hi, range) => {
+    const lo = Number(range?.[0] ?? 1);
+    const up = Number(range?.[1] ?? lo);
+    if (hi < lo) return 0;
+    return Math.min(hi, up) - lo + 1;
+  };
+  const b1Waves = countInRange(clearedWaves, f.band1Range || [3, 10]);
+  const b2Waves = countInRange(clearedWaves, f.band2Range || [11, 20]);
+  const b3Waves = countInRange(clearedWaves, f.band3Range || [21, 29]);
+
+  const band1Shards = Math.floor(b1Waves * Number(f.band1PerWave ?? 1.5));
+  const band2Shards = Math.floor(b2Waves * Number(f.band2PerWave ?? 3.5));
+  const band3Shards = Math.floor(b3Waves * Number(f.band3PerWave ?? 7.0));
+  const bossBonus = bossKills * Math.max(0, Number(f.bossKillBonus ?? 4));
+  const w10Bonus = w10Done ? Math.max(0, Number(f.w10BreakthroughBonus ?? 12)) : 0;
+  const w20Bonus = w20Done ? Math.max(0, Number(f.w20VoucherBonus ?? 28)) : 0;
+  const w30VictoryBonus = victory ? Math.max(0, Number(f.w30VictoryBonus ?? 140)) : 0;
+  const runShards = band1Shards + band2Shards + band3Shards + bossBonus + w10Bonus + w20Bonus + w30VictoryBonus;
+
+  return {
+    eligible: true,
+    clearedWaves,
+    waveReached: wave,
+    band1Shards,
+    band2Shards,
+    band3Shards,
+    bossBonus,
+    w10Bonus,
+    w20Bonus,
+    w30VictoryBonus,
+    runShards,
+    reason: victory ? 'victory' : 'effective_progress'
+  };
+}
+
+function checkEligibleNewMilestones(victory, g = game, save = getMetaSave()){
+  const cfg = getMetaConfig();
+  const claimed = new Set(save.claimedMilestones || []);
+  const wave = Math.max(1, Math.floor(Number(g?.wave || 1)));
+  const clearedWaves = victory ? MAIN_WAVES : Math.max(0, wave - 1);
+  const w10Done = !!(g?.hero?.breakthroughs?.w10);
+  const w20Done = !!(g?.hero?.vouchers?.w20 || (g?.hero?.breakthroughs?.w20 && !g?.hero?.breakthroughs?.w20?.placeholder));
+  const destinyRolls = Math.max(0, Number(g?.stats?.destinyRolls || g?.destiny?.totalRolls || 0));
+
+  const newly = [];
+  for (const ms of cfg.milestones) {
+    if (claimed.has(ms.id)) continue;
+    const c = ms.condition || {};
+    let ok = true;
+    if (c.minWave != null && wave < c.minWave) ok = false;
+    if (c.minClearedWave != null && clearedWaves < c.minClearedWave) ok = false;
+    if (c.w10Breakthrough && !w10Done) ok = false;
+    if (c.w20Voucher && !w20Done) ok = false;
+    if (c.victory && !victory) ok = false;
+    if (c.zeroGamble && destinyRolls > 0) ok = false;
+    if (ok) newly.push(ms);
+  }
+  return newly;
+}
+
+// Strictly idempotent run settlement by runId (re-checks persistent storage so duplicate calls or page reloads NEVER double-award!)
+function settleRunMetaRewards(victory){
+  if (!game) return null;
+  const runId = game.runId || (game.runId = generateRunId(game.seed));
+  // Always sync from storage first so even a page reload replay cannot double-claim!
+  const save = loadMetaSave();
+  if (save.settledRunIds.includes(runId)) {
+    const prev = game.metaSettlement || (save.lastSettlement?.runId === runId ? save.lastSettlement : null);
+    const blocked = {
+      ...(prev || calculateRunShardRewards(victory, game)),
+      runId,
+      victory: !!victory,
+      newlyClaimedMilestones: prev?.newlyClaimedMilestones || [],
+      milestoneShards: prev?.milestoneShards || 0,
+      totalShardsGrantedThisCall: 0,
+      totalShardsGranted: prev?.totalShardsGranted ?? 0,
+      duplicateBlocked: true,
+      shardsAfter: save.legacyShards
+    };
+    game.metaSettlement = blocked;
+    return blocked;
+  }
+
+  const breakdown = calculateRunShardRewards(victory, game);
+  const newMilestones = checkEligibleNewMilestones(victory, game, save);
+  const milestoneShards = newMilestones.reduce((s, m) => s + Math.max(0, Number(m.shardReward || 0)), 0);
+  const totalGranted = breakdown.runShards + milestoneShards;
+
+  save.legacyShards += totalGranted;
+  for (const ms of newMilestones) {
+    if (!save.claimedMilestones.includes(ms.id)) save.claimedMilestones.push(ms.id);
+  }
+  save.settledRunIds.push(runId);
+  if (save.settledRunIds.length > 250) save.settledRunIds = save.settledRunIds.slice(-250);
+
+  save.stats.totalRuns++;
+  if (victory) {
+    save.stats.victories++;
+    if ((game.stats?.destinyRolls || 0) === 0) save.stats.noGambleVictories++;
+  }
+  save.stats.bestWave = Math.max(save.stats.bestWave || 0, game.wave || 1);
+  save.stats.totalLegacyShardsEarned = (save.stats.totalLegacyShardsEarned || 0) + totalGranted;
+  const shrinesThisRun = (game.telemetry || []).filter(t => t.shrineCleared).length;
+  save.stats.shrinesClearedTotal = (save.stats.shrinesClearedTotal || 0) + shrinesThisRun;
+
+  const record = {
+    ...breakdown,
+    runId,
+    victory: !!victory,
+    newlyClaimedMilestones: newMilestones.map(m => ({ id: m.id, name: m.name, desc: m.desc, shardReward: m.shardReward })),
+    milestoneShards,
+    totalShardsGranted: totalGranted,
+    totalShardsGrantedThisCall: totalGranted,
+    duplicateBlocked: false,
+    shardsAfter: save.legacyShards,
+    settledAtWave: game.wave,
+    loadoutSnapshot: getActiveMetaLoadout()
+  };
+  save.lastSettlement = record;
+  saveMetaSave();
+  game.metaSettlement = record;
+  return record;
+}
+
+loadMetaSave();
 
 let _gearUidSeq = 1;
 function nextGearUid(){
@@ -3384,11 +4406,16 @@ function rollGearAffixes(slotsCount, { elem = null, highRarityChance = 0.14, rnd
   const usedIds = new Set();
   const usedGroups = new Set();
   const wantHighRarity = rndFn() < highRarityChance;
+  const activePool = getActiveRunAffixKeys();
+  const mainSpec = getActiveMetaMain();
+  const mainElem = mainSpec?.elem || null;
+  const mainTilt = mainElem ? getMetaConfig().mainRewardWeightMultiplier : 1.0;
 
   for (let i = 0; i < count; i++) {
-    const candidates = GEAR_AFFIX_KEYS.filter(id => {
+    const candidates = activePool.filter(id => {
       if (usedIds.has(id)) return false;
       const sp = GEAR_AFFIXES[id];
+      if (!sp) return false;
       if (sp.conflictGroup && usedGroups.has(sp.conflictGroup)) return false;
       return true;
     });
@@ -3401,6 +4428,7 @@ function rollGearAffixes(slotsCount, { elem = null, highRarityChance = 0.14, rnd
         : sp.rarity === 'rare' ? (wantHighRarity ? 2.2 : 1.5)
         : 2.0;
       if (elem && sp.elem === elem) wt *= 2.4;
+      if (mainElem && sp.elem === mainElem) wt *= mainTilt;
       totalWeight += wt;
       return { id, wt };
     });
@@ -4510,6 +5538,51 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
     curWaveTel: null,
     endSummary: null,
 
+    // Stage 6: Unique Run ID, Locked Meta Loadout Snapshot, Real Damage Attribution Log & Effective Run Metrics
+    runId: generateRunId(seed),
+    metaLoadout: (() => {
+      const sv = getMetaSave();
+      return { main: sv.loadout.main, aux: sv.loadout.aux.slice() };
+    })(),
+    metaRunLocked: false,
+    metaRunState: {
+      activeGearKeys: BASE_GEAR_KEYS.slice(),
+      activeAffixKeys: BASE_AFFIX_KEYS.slice(),
+      unlockedGearExtras: [],
+      unlockedAffixExtras: [],
+      freeRefreshUsedThisWave: false,
+      deflectReady: true,
+      deflectTriggers: 0,
+      freeRefreshUses: 0
+    },
+    metaSettlement: null,
+    combatLog: {
+      hits: [],
+      fatalSource: null,
+      lowestHpPct: 100,
+      totalHitsTaken: 0,
+      totalHpLost: 0,
+      totalShieldAbsorbed: 0,
+      bySource: {}
+    },
+    runMetrics: {
+      normalCombatSec: 0,
+      bossCombatSec: 0,
+      prepSec: 0,
+      w29FinalPrepSec: 0,
+      harvestSec: 0,
+      totalEffectiveSec: 0,
+      goldEarned: BALANCE.progression.initialGold,
+      goldSpent: 0,
+      materialsEarned: BALANCE.progression.initialMaterials || 0,
+      materialsSpent: 0,
+      transferTokensEarned: BALANCE.progression.initialTransferTokens || 0,
+      transferTokensSpent: 0,
+      _lastGold: BALANCE.progression.initialGold,
+      _lastMaterials: BALANCE.progression.initialMaterials || 0,
+      _lastTokens: BALANCE.progression.initialTransferTokens || 0
+    },
+
     stats: {
       kills: 0, elites: 0, merges: 0, dmgTotal: 0,
       bossKills: 0, breakthroughsCompleted: 0,
@@ -4525,8 +5598,34 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
   return g;
 }
 
-function startNewRun(seed = Math.floor(Math.random() * 1e9), showStarter = true){
+function syncRunResourceAccounting(){
+  if (!game?.runMetrics) return;
+  const rm = game.runMetrics;
+  const gNow = Math.max(0, Number(game.gold || 0));
+  const mNow = Math.max(0, Number(game.materials || 0));
+  const tNow = Math.max(0, Number(game.transferTokens || 0));
+  const dg = gNow - rm._lastGold;
+  if (dg > 0) rm.goldEarned += dg;
+  else if (dg < 0) rm.goldSpent += -dg;
+  rm._lastGold = gNow;
+
+  const dm = mNow - rm._lastMaterials;
+  if (dm > 0) rm.materialsEarned += dm;
+  else if (dm < 0) rm.materialsSpent += -dm;
+  rm._lastMaterials = mNow;
+
+  const dt = tNow - rm._lastTokens;
+  if (dt > 0) rm.transferTokensEarned += dt;
+  else if (dt < 0) rm.transferTokensSpent += -dt;
+  rm._lastTokens = tNow;
+}
+
+function startNewRun(seed = Math.floor(Math.random() * 1e9), showStarter = true, opts = {}){
   game = makeGame(seed);
+  syncRunActivePools();
+  if (!opts?.preRunSetup) {
+    game.metaRunLocked = true;
+  }
   recomputeEquipmentSynergies();
   paused = false;
   lastShopKey = lastSynKey = lastBagKey = lastInspKey = lastArtKey = lastSkillKey = lastLeftHudKey = lastBattleHudKey = '';
@@ -4634,7 +5733,8 @@ function applyFireMark(e, arg2 = 1, arg3 = 'w10', arg4 = 4.5){
   const isObj = arg2 && typeof arg2 === 'object';
   const stacks = isObj ? (arg2.stacks ?? 1) : Number(arg2 || 1);
   const source = isObj ? (arg2.source ?? 'w10') : (arg3 || 'w10');
-  const duration = isObj ? (arg2.duration ?? 4.5) : Number(arg4 || 4.5);
+  const mainFlameBonus = getActiveMetaMain()?.id === 'main_flame' ? Number(getActiveMetaMain()?.effects?.fireMarkDurationBonus || 0.8) : 0;
+  const duration = (isObj ? (arg2.duration ?? 4.5) : Number(arg4 || 4.5)) + mainFlameBonus;
   e.fireMarkT = Math.max(e.fireMarkT || 0, duration);
   e.fireMarkStacks = Math.min(3, (e.fireMarkStacks || 0) + Math.max(1, stacks));
   e.fireMarkSource = source;
@@ -4903,7 +6003,8 @@ function applyFrostSlow(e, arg2 = 0.50, arg3 = 3.0, arg4 = 'w10'){
   if (isEnemyUnstoppable(e)) return false;
   const isObj = arg2 && typeof arg2 === 'object';
   const slow = isObj ? (arg2.slow ?? 0.50) : Number(arg2 || 0.50);
-  const duration = isObj ? (arg2.duration ?? 3.0) : Number(arg3 || 3.0);
+  const mainFrostBonus = getActiveMetaMain()?.id === 'main_frost' ? Number(getActiveMetaMain()?.effects?.frostSlowDurationBonus || 0.6) : 0;
+  const duration = (isObj ? (arg2.duration ?? 3.0) : Number(arg3 || 3.0)) + mainFrostBonus;
   const source = isObj ? (arg2.source ?? 'w10') : (arg4 || 'w10');
   e.slow = Math.max(e.slow || 0, slow);
   e.slowT = Math.max(e.slowT || 0, duration);
@@ -5070,7 +6171,8 @@ function gainFrostShield(amount, arg2 = 5.0, arg3 = 90){
   if (!game?.hero || amount <= 0) return 0;
   const h = game.hero;
   const isObj = arg2 && typeof arg2 === 'object';
-  const duration = isObj ? (arg2.duration ?? 5.0) : Number(arg2 || 5.0);
+  const mainFrostShieldBonus = getActiveMetaMain()?.id === 'main_frost' ? Number(getActiveMetaMain()?.effects?.frostShieldDurationBonus || 0.8) : 0;
+  const duration = (isObj ? (arg2.duration ?? 5.0) : Number(arg2 || 5.0)) + mainFrostShieldBonus;
   const reqMax = isObj ? (arg2.maxShield ?? 90) : Number(arg3 || 90);
   const noFullShieldPulse = isObj ? !!arg2.noFullShieldPulse : false;
   const maxShield = Math.max(getHeroMaxFrostShield(90), reqMax);
@@ -5329,7 +6431,8 @@ function getHeroStats(){
 
   const moveSpd = (BALANCE.progression.heroBaseMove + berkLv * BALANCE.progression.heroMovePerBerserkLv)
     * (1 + gm.movePct + shieldAffixMove + greedMove + wfDualMove + destinyFrostMove + (windGaleLv === 2 ? 0.30 : windGaleLv === 1 ? 0.20 : 0) + (perkLv('ult_engine') >= 1 && h.ultTimer > 0 ? 0.30 : 0));
-  const magnet = 2.9 + berkLv * 0.85 + gm.rangePct * 2.0;
+  const windMetaMagnet = getActiveMetaMain()?.id === 'main_wind' ? Number(getActiveMetaMain()?.effects?.magnetBonus || 0.8) : 0;
+  const magnet = 2.9 + berkLv * 0.85 + gm.rangePct * 2.0 + windMetaMagnet;
   const lifesteal = gm.lifesteal + berkLv * 2 + bloodLeech;
 
   return { aspd, dmgMult, skillDmgMult, crit, critDmg, magnet, rangeMult, skillRangeMult, skillCdMult, moveSpd, lifesteal, mmActive, gm };
@@ -5412,9 +6515,10 @@ function pickShopGearBaseKey(wave = game?.wave || 1, rndFn = game?.rnd || Math.r
   else if (wave <= 20) rarity = r < 0.08 ? 'legend' : r < 0.42 ? 'epic' : r < 0.85 ? 'rare' : 'common';
   else rarity = r < 0.22 ? 'legend' : r < 0.65 ? 'epic' : 'rare';
 
-  const pool = GEAR_KEYS.filter(k => GEARS[k].rarity === rarity);
-  const list = pool.length ? pool : GEAR_KEYS;
-  return list[Math.floor(rndFn() * list.length)];
+  const activePool = getActiveRunGearKeys();
+  const pool = activePool.filter(k => GEARS[k]?.rarity === rarity);
+  const list = pool.length ? pool : activePool;
+  return pickWeightedByMainLegacy(list, k => GEARS[k]?.elem || null, rndFn) || list[0];
 }
 
 // Recycle value depends STRICTLY on inst.rarity and inst.sourceStage (NEVER slotsCount or current wave!)
@@ -5443,7 +6547,9 @@ function getGearDismantleMaterials(inst){
   const rarity = typeof inst === 'object' ? (inst.rarity || GEARS[gearBase(inst)]?.rarity || 'common') : (GEARS[gearBase(inst)]?.rarity || 'common');
   const sourceStage = typeof inst === 'object' ? (inst.sourceStage || 1) : 1;
   const stageSpec = getSourceStageSpec(sourceStage);
-  return Math.max(1, Math.round((baseMap[rarity] || 1) * (stageSpec.dismantleMult || 1)));
+  const baseMats = Math.max(1, Math.round((baseMap[rarity] || 1) * (stageSpec.dismantleMult || 1)));
+  const craftBonus = (hasMetaAux('aux_salvage_craft') && (rarity === 'epic' || rarity === 'legend')) ? 1 : 0;
+  return baseMats + craftBonus;
 }
 
 function getGearEnhanceCost(inst){
@@ -5589,14 +6695,21 @@ function renderShopConfirmModal(){
 function rollShop(free = false){
   if (!free && isFinalPrepActionLocked()) return false;
   if (!free) {
-    const freeProc = perkLv('gold_power') >= 2 && game.rnd() < 0.25;
-    if (!freeProc) {
-      if (game.gold < game.rerollCost) { toast(`需要 ${game.rerollCost} 金币才能刷新商店！`, true); return false; }
-      game.gold -= game.rerollCost;
-      game.rerollCost += BALANCE.economy.rerollIncrement;
-      AudioKit.play('coin', 0.9);
+    const canMetaFreeRefresh = hasMetaAux('aux_shop_first_refresh') && game.metaRunState && !game.metaRunState.freeRefreshUsedThisWave;
+    if (canMetaFreeRefresh) {
+      game.metaRunState.freeRefreshUsedThisWave = true;
+      game.metaRunState.freeRefreshUses = (game.metaRunState.freeRefreshUses || 0) + 1;
+      toast('🏷️ 辅助传承【商路先机】触发：本波首次商店刷新免费！');
     } else {
-      toast('💰 点石成金精通触发：本次刷新免费！');
+      const freeProc = perkLv('gold_power') >= 2 && game.rnd() < 0.25;
+      if (!freeProc) {
+        if (game.gold < game.rerollCost) { toast(`需要 ${game.rerollCost} 金币才能刷新商店！`, true); return false; }
+        game.gold -= game.rerollCost;
+        game.rerollCost += BALANCE.economy.rerollIncrement;
+        AudioKit.play('coin', 0.9);
+      } else {
+        toast('💰 点石成金精通触发：本次刷新免费！');
+      }
     }
   }
   const tier = getShopTier();
@@ -5606,7 +6719,7 @@ function rollShop(free = false){
   game.shop = [];
 
   const pushSealOffer = () => {
-    const kind = ARTIFACT_KEYS[Math.floor(game.rnd() * ARTIFACT_KEYS.length)];
+    const kind = pickWeightedByMainLegacy(ARTIFACT_KEYS, k => ARTIFACTS[k]?.elem || null, game.rnd) || ARTIFACT_KEYS[0];
     const spec = ARTIFACTS[kind];
     let star = 1;
     const r = game.rnd();
@@ -6488,6 +7601,8 @@ function startWave(opts = {}){
   const meta = getWavePhaseMeta(game.wave);
   const w29DurMult = (game.wave === 29 && BALANCE.wave?.w29Outpost?.durationMult) ? BALANCE.wave.w29Outpost.durationMult : 1;
   const duration = Math.min(BALANCE.wave.durationCap, BALANCE.wave.durationBase + game.wave * BALANCE.wave.durationPerWave) * w29DurMult;
+  if (!game.metaRunLocked) lockMetaLoadoutForRun();
+  if (game.metaRunState) game.metaRunState.deflectReady = true;
   game.phase = 'wave';
   game.subPhase = null;
   game.waveClock = 0;
@@ -7169,6 +8284,8 @@ function dealDamage(e, rawDmg, opts = {}){
 }
 
 function onEnemyKilled(e, opts){
+  if (!e || e._killed) return;
+  e._killed = true;
   game.stats.kills++;
   if (e.boss) game.stats.bossKills = (game.stats.bossKills || 0) + 1;
   if (opts.tower) opts.tower.kills = (opts.tower.kills || 0) + 1;
@@ -7254,7 +8371,10 @@ function onEnemyKilled(e, opts){
 
   // Bomber enemy (煞灵毒虫) death bomb -> poison puddle!
   if (e.bomber) {
-    game.zones.push({ kind:'poisonBomb', x:e.x, y:e.y, r:1.55, t:0.75, max:0.75, dmg: Math.round(e.dmg * 1.35) });
+    game.zones.push({
+      kind:'poisonBomb', x:e.x, y:e.y, r:1.55, t:0.75, max:0.75, dmg: Math.round(e.dmg * 1.35),
+      sourceMeta: { attackerName: e.name || '煞毒自爆虫', attackerKind: e.kind, skillName: '亡语剧毒自爆', isBoss: false, isBossCore: false, isBossAux: false }
+    });
   }
 
   // Fire Tier-4 Corpse Explosion + Fire Nova perk (焚天余烬) + Fire Sub-Seal burn explosion
@@ -7308,6 +8428,11 @@ function onEnemyKilled(e, opts){
     const shrineMats = getEnemyMaterialDrop(e, game.wave);
     game.gold += 25;
     game.materials = (game.materials || 0) + shrineMats;
+    if (hasMetaAux('aux_shrine_compass') && game.hero) {
+      const healAmt = Math.round(game.hero.maxHp * 0.20);
+      game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + healAmt);
+      addFloat(game.hero.x, game.hero.y - 0.65, `🩸 妖碑寻踪 +${healAmt}血`, '#72f2b4', true);
+    }
     game.chests.push({ x: e.x, y: e.y, legend: game.wave >= 12, shrineTier: true, bob: 0 });
     addRing(e.x, e.y, '#ff4d6d', 2.8);
     showBanner('🩸 血煞妖王已伏诛！', `掉落章节血碑宝箱 + 25 金币 + ${shrineMats} 锻材！`, 'good');
@@ -7344,9 +8469,10 @@ function fireChainLightning(startEnemy, dmg, maxTargets, opts = {}){
   const pts = [{ x: opts.ox ?? startEnemy.x, y: opts.oy ?? startEnemy.y }, { x: startEnemy.x, y: startEnemy.y }];
   dealDamage(cur, dmg, { ...opts, col:'#d8a6ff', noChainProc:true, isThunder:true });
 
+  const thunderMetaRadius = getActiveMetaMain()?.id === 'main_thunder' ? Number(getActiveMetaMain()?.effects?.thunderChainRadiusBonus || 0.6) : 0;
   let curDmg = dmg;
   for (let i = 1; i < totalTargets; i++) {
-    let best = null, bestD = 2.8;
+    let best = null, bestD = 2.8 + thunderMetaRadius;
     for (const e of game.enemies) {
       if (e.hp <= 0 || visited.has(e.id)) continue;
       const d = dist(cur, e);
@@ -7443,7 +8569,8 @@ function castHeroDash(){
   const dashDist = 3.8;
   h.x = clamp(h.x + dx * dashDist, 1.2, W - 1.2);
   h.y = clamp(h.y + dy * dashDist, 1.2, H - 1.2);
-  h.invuln = 0.6;
+  const dashCadenceAux = hasMetaAux('aux_dash_cadence');
+  h.invuln = 0.6 + (dashCadenceAux ? 0.06 : 0);
   h.shield = Math.max(h.shield, 35);
   h.shieldTimer = Math.max(h.shieldTimer || 0, 3.5);
   const wgLv = perkLv('wind_gale');
@@ -7461,7 +8588,11 @@ function castHeroDash(){
     recordDestinyProc('destiny_phantom_stride');
   }
   if (wgLv > 0) h.dashBuffT = 2.0;
-  h.dashCd = Math.max(1.0, (4.2 * cdFactor) / (1 + Math.max(0, hs.gm.aspd) * 0.6));
+  if (getActiveMetaMain()?.id === 'main_wind') {
+    h.dashBuffT = Math.max(h.dashBuffT || 0, Number(getActiveMetaMain()?.effects?.dashGlideDuration || 1.4));
+  }
+  const baseDashCd = Math.max(2.6, 4.2 - (dashCadenceAux ? 0.35 : 0));
+  h.dashCd = Math.max(1.0, (baseDashCd * cdFactor) / (1 + Math.max(0, hs.gm.aspd) * 0.6));
 
   const w20FireDash = hasW20Enhancement('w20_fire_dash_detonator');
   for (let s = 0; s < 3; s++) {
@@ -8474,7 +9605,15 @@ function updateProjectilesAndZones(dt){
         p.done = true;
         // Dodgeable enemy shot: hits Hero only if still within impact radius <= 0.65
         if (dist(game.hero, { x: p.tx, y: p.ty }) <= 0.65) {
-          damageHero(p.dmg);
+          damageHero(p.dmg, p.sourceMeta || {
+            attackerName: p.w30Aux ? '深渊主宰' : p.w20Aux ? '天劫魔尊' : '远程敌军',
+            attackerKind: p.w30Aux ? 'boss6' : p.w20Aux ? 'boss4' : 'mage',
+            skillName: p.w30Aux === 'eclipse_seekers' ? '星蚀追踪弹 (W30随机辅助)' : p.w20Aux === 'chase_barrage' ? '周期追击弹幕 (W20随机辅助)' : '敌方弹幕',
+            isBoss: !!(p.w30Aux || p.w20Aux),
+            isBossCore: false,
+            isBossAux: !!(p.w30Aux || p.w20Aux),
+            auxKey: p.w30Aux || p.w20Aux || null
+          });
         } else {
           addRing(p.tx, p.ty, 'rgba(255,102,196,0.5)', 0.45);
         }
@@ -8644,27 +9783,52 @@ function updateProjectilesAndZones(dt){
       addRing(z.x, z.y, '#ff4d42', z.r);
       game.shake = Math.max(game.shake, 8);
       AudioKit.play('boss', 1.2);
-      if (dist(game.hero, z) <= z.r) damageHero(z.dmg || 34);
+      const slamMeta = z.sourceMeta || {
+        attackerName: z.w20Aux ? '天劫魔尊' : '强敌重击',
+        attackerKind: z.w20Aux ? 'boss4' : 'boss',
+        skillName: z.w20Aux === 'charged_shockwave' ? '蓄力震荡波 (W20随机辅助)' : '裂地重击',
+        isBoss: true, isBossCore: !z.w20Aux, isBossAux: !!z.w20Aux, auxKey: z.w20Aux || null
+      };
+      if (dist(game.hero, z) <= z.r) damageHero(z.dmg || 34, slamMeta);
       if (z.leaveLava) {
-        game.zones.push({ kind:'enemyLava', x:z.x, y:z.y, r:z.r * 0.8, t:2.2, max:2.2, tick:0.55, dmg: Math.round((z.dmg || 24) * 0.35) });
+        game.zones.push({
+          kind:'enemyLava', x:z.x, y:z.y, r:z.r * 0.8, t:2.2, max:2.2, tick:0.55, dmg: Math.round((z.dmg || 24) * 0.35),
+          sourceMeta: { attackerName: slamMeta.attackerName, attackerKind: slamMeta.attackerKind, skillName: '灼地焦土(持续)', isBoss: slamMeta.isBoss, isBossCore: slamMeta.isBossCore, isBossAux: slamMeta.isBossAux }
+        });
       }
     } else if (z.kind === 'poisonBomb' && z.t <= 0) {
       z.done = true;
       addRing(z.x, z.y, '#52ff9a', z.r);
-      if (dist(game.hero, z) <= z.r) damageHero(z.dmg || 10);
-      game.zones.push({ kind:'poisonPool', x:z.x, y:z.y, r:z.r * 0.9, t:2.8, max:2.8, tick:0.65, dmg: Math.max(4, Math.round((z.dmg || 10) * 0.45)) });
+      const pbMeta = z.sourceMeta || { attackerName: '煞毒自爆虫', attackerKind: 'bomber', skillName: '剧毒自爆', isBoss: false, isBossCore: false, isBossAux: false };
+      if (dist(game.hero, z) <= z.r) damageHero(z.dmg || 10, pbMeta);
+      game.zones.push({
+        kind:'poisonPool', x:z.x, y:z.y, r:z.r * 0.9, t:2.8, max:2.8, tick:0.65, dmg: Math.max(4, Math.round((z.dmg || 10) * 0.45)),
+        sourceMeta: { attackerName: pbMeta.attackerName, attackerKind: 'bomber', skillName: '残留毒池(持续)', isBoss: false, isBossCore: false, isBossAux: false }
+      });
     } else if (z.kind === 'poisonPool' || z.kind === 'enemyLava') {
       z.tick -= dt;
       if (z.tick <= 0) {
         z.tick = z.kind === 'enemyLava' ? 0.55 : 0.65;
-        if (dist(game.hero, z) <= z.r) damageHero(z.dmg);
+        if (dist(game.hero, z) <= z.r) {
+          damageHero(z.dmg, z.sourceMeta || {
+            attackerName: z.kind === 'enemyLava' ? '火焰领域' : '煞毒虫',
+            attackerKind: z.kind,
+            skillName: z.kind === 'enemyLava' ? '灼地焦土(持续)' : '残留毒池(持续)',
+            isBoss: false, isBossCore: false, isBossAux: false
+          });
+        }
       }
     } else if (z.kind === 'bossWave' || z.kind === 'w30RiftRing') {
       const prog = 1 - clamp(z.t / z.max, 0, 1);
       const curR = z.r * prog;
       if (!z.hitHero && Math.abs(dist(game.hero, z) - curR) <= 0.55) {
         z.hitHero = true;
-        damageHero(z.dmg || 36);
+        damageHero(z.dmg || 36, z.sourceMeta || {
+          attackerName: z.kind === 'w30RiftRing' ? '深渊主宰' : z.w20Aux ? '天劫魔尊' : '首领震波',
+          attackerKind: z.kind === 'w30RiftRing' ? 'boss6' : 'boss',
+          skillName: z.w30Aux === 'rift_rings' ? '裂空震荡环 (W30随机辅助)' : z.w20Aux === 'oppression_ring' ? '领域压迫环 (W20随机辅助)' : '首领扩散震波',
+          isBoss: true, isBossCore: !(z.w30Aux || z.w20Aux), isBossAux: !!(z.w30Aux || z.w20Aux), auxKey: z.w30Aux || z.w20Aux || null
+        });
       }
     } else if (z.kind === 'w30SigTelegraph') {
       // Pure telegraph + safe zone marker; deals no damage until shockwave phase
@@ -8674,7 +9838,11 @@ function updateProjectilesAndZones(dt){
       const inSafeZone = dist(game.hero, { x: z.safeX, y: z.safeY }) <= (z.safeR || 2.8);
       if (!z.hitHero && !inSafeZone && Math.abs(dist(game.hero, z) - curR) <= 0.85) {
         z.hitHero = true;
-        damageHero(z.dmg || 68);
+        damageHero(z.dmg || 68, z.sourceMeta || {
+          attackerName: '深渊主宰', attackerKind: 'boss6',
+          skillName: '终焉裂空冲击波 (W30核心招牌)',
+          isBoss: true, isBossCore: true, isBossAux: false
+        });
       }
     }
   }
@@ -8773,7 +9941,8 @@ function updateEnemies(dt){
               kind:'enemyShot', sx:e.x, sy:e.y, x:e.x, y:e.y,
               tx: clamp(e.x + Math.cos(ang) * 5.2, 0.8, W - 0.8),
               ty: clamp(e.y + Math.sin(ang) * 5.2, 0.8, H - 0.8),
-              t:0, dur: 0.72, dmg: Math.round(e.dmg * 0.75)
+              t:0, dur: 0.72, dmg: Math.round(e.dmg * 0.75),
+              sourceMeta: { attackerName: e.name || '精英怪', attackerKind: e.kind, skillName: '精英环状弹幕', isBoss: false, isBossCore: false, isBossAux: false }
             });
           }
           addRing(e.x, e.y, '#d86cff', 1.6);
@@ -8806,10 +9975,12 @@ function updateEnemies(dt){
           }
         }
         if (dHero <= 7.5) {
+          const teleBuf = hasMetaAux('aux_telegraph_buffer') ? 0.20 : 0;
           game.zones.push({
             kind:'bossSlam', leaveLava:true,
             x: clamp(h.x, 1.2, W - 1.2), y: clamp(h.y, 1.2, H - 1.2),
-            r: 1.55, t: 1.05, max: 1.05, dmg: Math.round(e.dmg * 1.65)
+            r: 1.55, t: 1.05 + teleBuf, max: 1.05 + teleBuf, dmg: Math.round(e.dmg * 1.65),
+            sourceMeta: { attackerName: e.name || '妖火祭司', attackerKind: e.kind, skillName: '妖火天降点名', isBoss: false, isBossCore: false, isBossAux: false }
           });
           addFloat(e.x, e.y - 0.6, '🔥妖火点名!', '#ff9f43', true);
         }
@@ -9010,6 +10181,7 @@ function updateEnemies(dt){
       if (e.bossTimer <= 0) {
         e.bossTimer = e.frenzied ? 4.5 : 6.0;
         const scale = Math.pow(BALANCE.wave.normalHpGrowth || 1.115, game.wave - 1);
+        const teleBuf = hasMetaAux('aux_telegraph_buffer') ? 0.20 : 0;
         if (e.kind === 'boss1') {
           // 熔岩巨魔 (W5): Charge + 2 lava slam zones + summon 2 bombers
           const len = Math.max(0.01, dHero);
@@ -9019,7 +10191,11 @@ function updateEnemies(dt){
           for (let k = 0; k < 2; k++) {
             const ang = game.rnd() * Math.PI * 2;
             const dOff = k === 0 ? 0 : 2.1;
-            game.zones.push({ kind:'bossSlam', leaveLava:true, x: clamp(h.x + Math.cos(ang)*dOff, 1, W-1), y: clamp(h.y + Math.sin(ang)*dOff, 1, H-1), r: 1.9, t: 1.4, max: 1.4, dmg: 30 });
+            game.zones.push({
+              kind:'bossSlam', leaveLava:true, x: clamp(h.x + Math.cos(ang)*dOff, 1, W-1), y: clamp(h.y + Math.sin(ang)*dOff, 1, H-1),
+              r: 1.9, t: 1.4 + teleBuf, max: 1.4 + teleBuf, dmg: 30,
+              sourceMeta: { attackerName: e.name, attackerKind: e.kind, skillName: '熔岩裂地重击 (W5核心)', isBoss: true, isBossCore: true, isBossAux: false }
+            });
           }
           addFloat(e.x, e.y - 0.7, '🔥 熔岩冲撞！', '#ff8c70', true);
           for (let k = 0; k < 2; k++) {
@@ -9034,10 +10210,14 @@ function updateEnemies(dt){
               kind:'enemyShot', sx:e.x, sy:e.y, x:e.x, y:e.y,
               tx: clamp(e.x + Math.cos(ang) * 7.2, 0.8, W-0.8),
               ty: clamp(e.y + Math.sin(ang) * 7.2, 0.8, H-0.8),
-              t:0, dur: 0.88, dmg: 26
+              t:0, dur: 0.88, dmg: 26,
+              sourceMeta: { attackerName: e.name, attackerKind: e.kind, skillName: '死灵环状弹幕 (W10核心)', isBoss: true, isBossCore: true, isBossAux: false }
             });
           }
-          game.zones.push({ kind:'bossSlam', x: h.x, y: h.y, r: 2.1, t: 1.4, max: 1.4, dmg: 34 });
+          game.zones.push({
+            kind:'bossSlam', x: h.x, y: h.y, r: 2.1, t: 1.4 + teleBuf, max: 1.4 + teleBuf, dmg: 34,
+            sourceMeta: { attackerName: e.name, attackerKind: e.kind, skillName: '死灵裂地重击 (W10核心)', isBoss: true, isBossCore: true, isBossAux: false }
+          });
           addFloat(e.x, e.y - 0.7, '💀 死灵弹幕阵！', '#d284ff', true);
           for (let k = 0; k < 4; k++) {
             if (game.enemies.length >= MAX_ENEMIES) break;
@@ -9046,8 +10226,14 @@ function updateEnemies(dt){
           }
         } else if (e.kind === 'boss3') {
           // 毁灭泰坦 (W15): Leap Slam + Expanding Shockwave Ring + 2 Brutes
-          game.zones.push({ kind:'bossSlam', x: h.x, y: h.y, r: 2.7, t: 1.4, max: 1.4, dmg: 44 });
-          game.zones.push({ kind:'bossWave', x: e.x, y: e.y, r: 5.8, t: 1.15, max: 1.15, dmg: 36, hitHero: false });
+          game.zones.push({
+            kind:'bossSlam', x: h.x, y: h.y, r: 2.7, t: 1.4 + teleBuf, max: 1.4 + teleBuf, dmg: 44,
+            sourceMeta: { attackerName: e.name, attackerKind: e.kind, skillName: '泰坦重踏 (W15核心)', isBoss: true, isBossCore: true, isBossAux: false }
+          });
+          game.zones.push({
+            kind:'bossWave', x: e.x, y: e.y, r: 5.8, t: 1.15 + teleBuf, max: 1.15 + teleBuf, dmg: 36, hitHero: false,
+            sourceMeta: { attackerName: e.name, attackerKind: e.kind, skillName: '泰坦裂地震波 (W15核心)', isBoss: true, isBossCore: true, isBossAux: false }
+          });
           addFloat(e.x, e.y - 0.7, '💥 泰坦裂地波！', '#ff5247', true);
           for (let k = 0; k < 2; k++) {
             if (game.enemies.length >= MAX_ENEMIES) break;
@@ -9058,7 +10244,11 @@ function updateEnemies(dt){
           for (let k = 0; k < 3; k++) {
             const ang = (Math.PI * 2 * k) / 3 + game.rnd() * 0.6;
             const distOff = k === 0 ? 0 : 2.3;
-            game.zones.push({ kind:'bossSlam', x: clamp(h.x + Math.cos(ang)*distOff, 1, W-1), y: clamp(h.y + Math.sin(ang)*distOff, 1, H-1), r: 2.0, t: 1.2, max: 1.2, dmg: 46 });
+            game.zones.push({
+              kind:'bossSlam', x: clamp(h.x + Math.cos(ang)*distOff, 1, W-1), y: clamp(h.y + Math.sin(ang)*distOff, 1, H-1),
+              r: 2.0, t: 1.2 + teleBuf, max: 1.2 + teleBuf, dmg: 46,
+              sourceMeta: { attackerName: e.name, attackerKind: e.kind, skillName: '天劫三重雷域 (W20固定核心)', isBoss: true, isBossCore: true, isBossAux: false }
+            });
           }
           const baseAng = Math.atan2(h.y - e.y, h.x - e.x);
           for (let k = 0; k < 6; k++) {
@@ -9067,7 +10257,8 @@ function updateEnemies(dt){
               kind:'enemyShot', sx:e.x, sy:e.y, x:e.x, y:e.y,
               tx: clamp(e.x + Math.cos(a) * 8.0, 0.8, W-0.8),
               ty: clamp(e.y + Math.sin(a) * 8.0, 0.8, H-0.8),
-              t:0, dur: 0.78, dmg: 32
+              t:0, dur: 0.78, dmg: 32,
+              sourceMeta: { attackerName: e.name, attackerKind: e.kind, skillName: '天劫扇形紫电弹幕 (W20固定核心)', isBoss: true, isBossCore: true, isBossAux: false }
             });
           }
           addFloat(e.x, e.y - 0.7, '⚡ 天劫重雷降临！', '#ff70a8', true);
@@ -9077,14 +10268,18 @@ function updateEnemies(dt){
           }
         } else if (e.kind === 'boss5') {
           // 玄冥妖皇 (W25): Expanding frost-fire shockwave + 8 aimed shots + 2 Shamans
-          game.zones.push({ kind:'bossWave', x: e.x, y: e.y, r: 6.4, t: 1.15, max: 1.15, dmg: 44, hitHero: false });
+          game.zones.push({
+            kind:'bossWave', x: e.x, y: e.y, r: 6.4, t: 1.15 + teleBuf, max: 1.15 + teleBuf, dmg: 44, hitHero: false,
+            sourceMeta: { attackerName: e.name, attackerKind: e.kind, skillName: '玄冥寒潮震波 (W25核心)', isBoss: true, isBossCore: true, isBossAux: false }
+          });
           for (let k = 0; k < 8; k++) {
             const ang = (Math.PI * 2 * k) / 8 + game.waveClock;
             pushProjectile({
               kind:'enemyShot', sx:e.x, sy:e.y, x:e.x, y:e.y,
               tx: clamp(e.x + Math.cos(ang) * 8.2, 0.8, W-0.8),
               ty: clamp(e.y + Math.sin(ang) * 8.2, 0.8, H-0.8),
-              t:0, dur: 0.80, dmg: 36
+              t:0, dur: 0.80, dmg: 36,
+              sourceMeta: { attackerName: e.name, attackerKind: e.kind, skillName: '玄冥寒炎齐射 (W25核心)', isBoss: true, isBossCore: true, isBossAux: false }
             });
           }
           addFloat(e.x, e.y - 0.7, '❄️ 玄冥寒潮领域！', '#6ef0ff', true);
@@ -9105,19 +10300,24 @@ function updateEnemies(dt){
           for (let k = 0; k < slamCount; k++) {
             const ang = (Math.PI * 2 * k) / slamCount + game.rnd() * 0.5;
             const distOff = k === 0 ? 0 : 2.6;
+            const dur = (e.finalPhaseEntered ? 1.18 : 1.28) + teleBuf;
             game.zones.push({
               kind: 'bossSlam',
               leaveLava: !!e.finalPhaseEntered,
               x: clamp(h.x + Math.cos(ang) * distOff, 1.2, W - 1.2),
               y: clamp(h.y + Math.sin(ang) * distOff, 1.2, H - 1.2),
               r: e.finalPhaseEntered ? 2.15 : 1.95,
-              t: e.finalPhaseEntered ? 1.18 : 1.28,
-              max: e.finalPhaseEntered ? 1.18 : 1.28,
-              dmg: e.finalPhaseEntered ? 44 : 36
+              t: dur,
+              max: dur,
+              dmg: e.finalPhaseEntered ? 44 : 36,
+              sourceMeta: { attackerName: e.name, attackerKind: e.kind, skillName: e.finalPhaseEntered ? '终末裂界重击 (W30核心)' : '深渊裂界重击 (W30核心)', isBoss: true, isBossCore: true, isBossAux: false }
             });
           }
           if (e.finalPhaseEntered) {
-            game.zones.push({ kind: 'w30RiftRing', x: e.x, y: e.y, r: 7.5, t: 1.25, max: 1.25, dmg: 38, hitHero: false });
+            game.zones.push({
+              kind: 'w30RiftRing', x: e.x, y: e.y, r: 7.5, t: 1.25 + teleBuf, max: 1.25 + teleBuf, dmg: 38, hitHero: false,
+              sourceMeta: { attackerName: e.name, attackerKind: e.kind, skillName: '终末扩散震荡波 (W30核心)', isBoss: true, isBossCore: true, isBossAux: false }
+            });
           }
           const baseAng = Math.atan2(h.y - e.y, h.x - e.x);
           for (let k = 0; k < orbCount; k++) {
@@ -9126,7 +10326,8 @@ function updateEnemies(dt){
               kind: 'enemyShot', sx: e.x, sy: e.y, x: e.x, y: e.y,
               tx: clamp(e.x + Math.cos(a) * 8.6, 0.8, W - 0.8),
               ty: clamp(e.y + Math.sin(a) * 8.6, 0.8, H - 0.8),
-              t: 0, dur: 0.86, dmg: e.finalPhaseEntered ? 34 : 28
+              t: 0, dur: 0.86, dmg: e.finalPhaseEntered ? 34 : 28,
+              sourceMeta: { attackerName: e.name, attackerKind: e.kind, skillName: e.finalPhaseEntered ? '终末深渊弹幕 (W30核心)' : '深渊齐射弹幕 (W30核心)', isBoss: true, isBossCore: true, isBossAux: false }
             });
           }
           addFloat(e.x, e.y - 0.75, e.finalPhaseEntered ? '👑 终末组合·深渊裂界！' : '👑 深渊主宰·裂界轰击！', '#ff80b5', true);
@@ -9153,7 +10354,14 @@ function updateEnemies(dt){
         e.cd = 0.85;
         h.armorBreakT = 2.5;
         addFloat(h.x, h.y - 0.65, '💔 破甲重创!', '#ff6b57', true);
-        damageHero(Math.round(e.dmg * (e.aiState === 'charge' ? 1.50 : 1.25)));
+        damageHero(Math.round(e.dmg * (e.aiState === 'charge' ? 1.50 : 1.25)), {
+          attackerName: e.name || e.kind,
+          attackerKind: e.kind,
+          skillName: e.aiState === 'charge' ? '霸体冲锋破甲' : '飞扑突袭破甲',
+          isBoss: !!e.boss,
+          isBossCore: !!e.boss,
+          isBossAux: false
+        });
       }
       if (e.aiTimer <= 0) e.aiState = 'chase';
       continue;
@@ -9189,7 +10397,8 @@ function updateEnemies(dt){
           const ty = clamp(e.y + Math.sin(a) * Math.min(dHero + 0.6, e.range), 0.8, H - 0.8);
           pushProjectile({
             kind:'enemyShot', sx:e.x, sy:e.y, x:e.x, y:e.y, tx, ty,
-            t:0, dur: Math.max(0.42, dHero / 7.5), dmg: e.dmg
+            t:0, dur: Math.max(0.42, dHero / 7.5), dmg: e.dmg,
+            sourceMeta: { attackerName: e.name || '暗影法师', attackerKind: e.kind, skillName: '奥术弹幕', isBoss: false, isBossCore: false, isBossAux: false }
           });
         }
       }
@@ -9200,7 +10409,15 @@ function updateEnemies(dt){
     if (dHero <= hitDist) {
       if (e.cd <= 0) {
         e.cd = 0.95;
-        damageHero(e.dmg);
+        damageHero(e.dmg, {
+          attackerName: e.name || e.kind,
+          attackerKind: e.kind,
+          skillName: e.kind === 'void_guard' ? '暗潮近卫突刺 (W30随机辅助)' : e.boss ? '首领近身重击' : '近身撞击',
+          isBoss: !!e.boss,
+          isBossCore: !!e.boss,
+          isBossAux: e.kind === 'void_guard',
+          auxKey: e.kind === 'void_guard' ? 'void_guards' : null
+        });
       }
       continue;
     }
@@ -9275,7 +10492,8 @@ function updatePickups(dt){
       orb.life -= dt;
       orb.bob = (orb.bob || 0) + dt * 5.0;
       const d = dist(orb, h);
-      if (d <= 2.8) {
+      const holyOrbBonus = getActiveMetaMain()?.id === 'main_holy' ? Number(getActiveMetaMain()?.effects?.healOrbMagnetBonus || 0.7) : 0;
+      if (d <= 2.8 + holyOrbBonus) {
         const pullSpd = 10.5;
         if (d <= 0.95) {
           orb.done = true;
@@ -9329,10 +10547,42 @@ function gainHeroXp(amt){
   }
 }
 
-function damageHero(amt){
+function getRecentThreatSummary(windowSec = 5.0){
+  const log = game?.combatLog;
+  if (!log || !log.hits.length) {
+    return { windowSec, hitCount: 0, totalHpLost: 0, topThreats: [], fatalSource: log?.fatalSource || null };
+  }
+  const latestRunClock = log.hits[log.hits.length - 1].runClock ?? 0;
+  const cutoff = Math.max(0, latestRunClock - windowSec);
+  const recent = log.hits.filter(h => (h.runClock ?? 0) >= cutoff);
+  const agg = new Map();
+  let totalHpLost = 0;
+  for (const h of recent) {
+    totalHpLost += h.hpLost;
+    const key = `${h.attackerName}｜${h.skillName}`;
+    const cur = agg.get(key) || {
+      attackerName: h.attackerName,
+      skillName: h.skillName,
+      isBossCore: h.isBossCore,
+      isBossAux: h.isBossAux,
+      hits: 0,
+      totalHpLost: 0,
+      maxSingleHit: 0
+    };
+    cur.hits++;
+    cur.totalHpLost += h.hpLost;
+    cur.maxSingleHit = Math.max(cur.maxSingleHit, h.hpLost);
+    agg.set(key, cur);
+  }
+  const topThreats = Array.from(agg.values()).sort((a, b) => (b.totalHpLost - a.totalHpLost) || (b.hits - a.hits));
+  return { windowSec, hitCount: recent.length, totalHpLost, topThreats, fatalSource: log.fatalSource || null };
+}
+
+function damageHero(amt, sourceMeta = null){
   const h = game.hero;
   if (h.invuln > 0 || !['prep','wave'].includes(game.phase)) return;
-  h.invuln = 0.28;
+  const holyInvulnBonus = getActiveMetaMain()?.id === 'main_holy' ? Number(getActiveMetaMain()?.effects?.invulnBonus || 0.10) : 0;
+  h.invuln = 0.28 + holyInvulnBonus;
   let rem = amt;
   const gm = aggregateGear(h.gear);
   if ((h.armorBreakT || 0) > 0) rem = Math.round(rem * 1.25);
@@ -9340,6 +10590,16 @@ function damageHero(amt){
   if (gearSetTier('blood') >= 3 && h.hp <= h.maxHp * 0.5) rem = Math.max(1, Math.round(rem * 0.78));
   if (gm.dmgReduce > 0) rem = Math.max(1, Math.round(rem * (1 - gm.dmgReduce)));
   if (hasDestinyEnhancement('destiny_aegis_bulwark')) rem = Math.max(1, Math.round(rem * 0.90));
+  // Stage 6 Aux Legacy [aux_tactical_reserve] (3 pts): once per wave deflect membrane reduces a >25% maxHp heavy hit by 35%
+  let deflected = false;
+  if (hasMetaAux('aux_tactical_reserve') && game.metaRunState?.deflectReady && rem >= Math.round(h.maxHp * 0.25)) {
+    game.metaRunState.deflectReady = false;
+    game.metaRunState.deflectTriggers = (game.metaRunState.deflectTriggers || 0) + 1;
+    rem = Math.max(1, Math.round(rem * 0.65));
+    deflected = true;
+    addRing(h.x, h.y, '#8ef4ff', 1.9);
+    addFloat(h.x, h.y - 0.72, '🛡️ 奇门偏折 -35%!', '#8ef4ff', true);
+  }
   const hadFrostShield = h.shield > 0 && h.frostShieldActive;
   const gearSyn = getActiveGearAffixSynergies();
   if (hadFrostShield && (gearSyn.hasFrostTrio || hasW20Direction('frost_bastion_counter'))) {
@@ -9351,7 +10611,12 @@ function damageHero(amt){
   } else if (hadFrostShield && h.w10Branch?.nova === 'nv_prism_lance') {
     triggerFrostPulse(2.8, 36, 0.9, 'w10');
   }
-  if (h.shield > 0) { const a = Math.min(h.shield, rem); h.shield -= a; rem -= a; }
+  let shieldAbsorbed = 0;
+  if (h.shield > 0) {
+    shieldAbsorbed = Math.min(h.shield, rem);
+    h.shield -= shieldAbsorbed;
+    rem -= shieldAbsorbed;
+  }
   if (hadFrostShield && h.shield <= 0) {
     h.frostShieldActive = false;
     if (gearSetTier('frost') >= 3 || h.w10Branch?.nova === 'nv_glacial_bastion') {
@@ -9371,6 +10636,51 @@ function damageHero(amt){
     }
   }
   $('hpVignette')?.classList.toggle('danger', h.hp > 0 && h.hp < h.maxHp * 0.35);
+
+  // Stage 6: Real combat hit & fatal attribution log (NEVER fabricates entries)
+  const meta = sourceMeta && typeof sourceMeta === 'object' ? sourceMeta : {};
+  const hpPctAfter = Math.round(h.hp * 100 / Math.max(1, h.maxHp));
+  const hitEntry = {
+    wave: game.wave,
+    waveClock: Number((game.waveClock || 0).toFixed(2)),
+    runClock: Number((game.runMetrics?.totalEffectiveSec || game.waveClock || 0).toFixed(2)),
+    attackerName: meta.attackerName || '战场敌人',
+    attackerKind: meta.attackerKind || 'unknown',
+    skillName: meta.skillName || '攻击命中',
+    isBoss: !!meta.isBoss,
+    isBossCore: !!meta.isBossCore,
+    isBossAux: !!meta.isBossAux,
+    auxKey: meta.auxKey || null,
+    rawAmt: Math.round(amt),
+    shieldAbsorbed: Math.round(shieldAbsorbed),
+    hpLost: Math.round(rem),
+    hpAfter: Math.round(h.hp),
+    hpPctAfter,
+    deflected,
+    fatal: false
+  };
+  if (game.combatLog) {
+    game.combatLog.hits.push(hitEntry);
+    if (game.combatLog.hits.length > 160) game.combatLog.hits.shift();
+    game.combatLog.lowestHpPct = Math.min(game.combatLog.lowestHpPct, hpPctAfter);
+    game.combatLog.totalHitsTaken++;
+    game.combatLog.totalHpLost += hitEntry.hpLost;
+    game.combatLog.totalShieldAbsorbed += hitEntry.shieldAbsorbed;
+    const skey = `${hitEntry.attackerName}｜${hitEntry.skillName}`;
+    const prev = game.combatLog.bySource[skey] || {
+      attackerName: hitEntry.attackerName,
+      skillName: hitEntry.skillName,
+      isBossCore: hitEntry.isBossCore,
+      isBossAux: hitEntry.isBossAux,
+      hits: 0,
+      totalHpLost: 0,
+      maxSingleHit: 0
+    };
+    prev.hits++;
+    prev.totalHpLost += hitEntry.hpLost;
+    prev.maxSingleHit = Math.max(prev.maxSingleHit, hitEntry.hpLost);
+    game.combatLog.bySource[skey] = prev;
+  }
 
   // Body Thorns perk (金刚反震): reactive shockwave + shield on hit
   const btLv = perkLv('body_thorns');
@@ -9406,6 +10716,8 @@ function damageHero(amt){
       AudioKit.play('level', 1.2);
       return;
     }
+    hitEntry.fatal = true;
+    if (game.combatLog) game.combatLog.fatalSource = hitEntry;
     finishGame(false);
   }
 }
@@ -9680,6 +10992,11 @@ function completeWaveClear(){
   game.subPhase = null;
   game.rerollCost = BALANCE.economy.rerollStart;
   if (game.wavePlan) game.wavePlan.currentEncounter = null;
+  if (game.metaRunState) {
+    game.metaRunState.freeRefreshUsedThisWave = false;
+    game.metaRunState.deflectReady = true;
+  }
+  syncRunResourceAccounting();
 
   // Stage progression & Major Breakthrough triggers (W5->W6, W10, W15->W16 preselect, W18->W19 intel, W20 breakthrough, W28 omen+W30 intel, W29->W30 final prep)
   if (clearedWave === 5) {
@@ -9797,6 +11114,7 @@ function completeWaveClear(){
 
 function finishGame(victory){
   if (game.curWaveTel) finalizeCurrentTelemetry();
+  syncRunResourceAccounting();
   if (game.w30Battle && game.w30Battle.active) {
     const boss = game.enemies.find(e => e.kind === 'boss6');
     const hpPct = victory ? 0 : (boss ? Math.round(clamp(boss.hp, 0, boss.maxHp) * 100 / Math.max(1, boss.maxHp)) : 0);
@@ -9819,6 +11137,8 @@ function finishGame(victory){
   game.shrine = null;
   game.speed = 1;
   $('hpVignette')?.classList.remove('danger');
+  // Stage 6: Idempotent per-runId settlement of legacy shards & one-time milestones
+  settleRunMetaRewards(!!victory);
   showEndModal(victory);
   renderAllUI(true);
 }
@@ -9828,6 +11148,9 @@ function tick(dt){
   if (!game || !['prep','wave','harvest'].includes(game.phase)) return;
   if (paused) return;
 
+  syncRunResourceAccounting();
+  const realDt = dt / Math.max(1, game.speed || 1);
+
   // In prep phase, check auto-wave decision pause and W29 90s real-time final prep countdown
   if (game.phase === 'prep') {
     if (game.finalPrep && game.finalPrep.active) {
@@ -9835,8 +11158,11 @@ function tick(dt){
       syncW29FinalPrepStart();
       // Phase B: Once started, 90s counts down strictly in REAL elapsed time (unaffected by game.speed=2 AND NEVER paused by ANY prep panel/modal!)
       if (game.finalPrep.started && !game.finalPrep.locked) {
-        const realDt = dt / Math.max(1, game.speed || 1);
         game.finalPrep.timer = Math.max(0, game.finalPrep.timer - realDt);
+        if (game.runMetrics) {
+          game.runMetrics.w29FinalPrepSec += realDt;
+          game.runMetrics.totalEffectiveSec += realDt;
+        }
         if (game.finalPrep.timer <= 0) {
           resolveW29FinalPrepTimeout();
           return;
@@ -9860,6 +11186,21 @@ function tick(dt){
   }
 
   if (game.activeModal) return;
+
+  if (game.runMetrics) {
+    if (game.phase === 'prep' && !game.finalPrep?.active) {
+      game.runMetrics.prepSec += realDt;
+      game.runMetrics.totalEffectiveSec += realDt;
+    } else if (game.phase === 'harvest') {
+      game.runMetrics.harvestSec += dt;
+      game.runMetrics.totalEffectiveSec += dt;
+    } else if (game.phase === 'wave') {
+      const isBossWave = game.wave % (BALANCE.wave?.bossPeriod || 5) === 0;
+      if (isBossWave) game.runMetrics.bossCombatSec += dt;
+      else game.runMetrics.normalCombatSec += dt;
+      game.runMetrics.totalEffectiveSec += dt;
+    }
+  }
 
   updateVfx(dt);
   updateHero(dt);
@@ -9913,9 +11254,10 @@ function tick(dt){
   // Optional Black-Myth-style Blood Shrine activation!
   if (game.shrine && !game.shrine.active && !game.shrine.cleared) {
     const s = game.shrine;
+    const shrineNeed = hasMetaAux('aux_shrine_compass') ? 0.15 : 0.30;
     if (dist(game.hero, s) <= s.r + 0.15) {
       s.charge += dt;
-      if (s.charge >= 0.30) {
+      if (s.charge >= shrineNeed) {
         s.active = true;
         if (game.curWaveTel) game.curWaveTel.shrineTried = true;
         const scale = Math.pow(BALANCE.wave.normalHpGrowth || 1.115, game.wave - 1);
@@ -9982,7 +11324,7 @@ function updateVfx(dt){
   game.floats = game.floats.filter(f => f.t > 0);
 }
 
-/* ==================== MODALS (STARTER, LEVEL-UP, W10 BREAKTHROUGH, CHEST, PERK, INTRO, END) ==================== */
+/* ==================== MODALS (STARTER, LEVEL-UP, W10 BREAKTHROUGH, CHEST, PERK, INTRO, META, END) ==================== */
 function queueModal(m){
   game.pendingModals.push(m);
   if (game.autoWave && game.phase === 'prep') {
@@ -10020,6 +11362,7 @@ function openNextModal(){
   else if (m.type === 'affix_transfer') renderAffixTransferModal();
   else if (m.type === 'shop_confirm') renderShopConfirmModal();
   else if (m.type === 'w30_early_confirm') renderW30EarlyConfirmModal();
+  else if (m.type === 'meta_legacy') renderMetaLegacyModal(m);
 }
 
 function closeModal(){
@@ -10135,6 +11478,7 @@ function renderLevelUpModal(){
 
 function pickHeroSkill(key){
   if (!HERO_SKILLS[key]) return false;
+  if (game && !game.metaRunLocked) lockMetaLoadoutForRun();
   game.hero.skills[key] = (game.hero.skills[key] || 0) + 1;
   AudioKit.play('merge', 1.1);
   toast(`领主习得【${HERO_SKILLS[key].name} Lv.${game.hero.skills[key]}】！`);
@@ -10875,17 +12219,18 @@ function pickPerk(key){
 }
 
 function pickChestGearChoices(legendBias = false, shrineTier = false){
+  const activePool = getActiveRunGearKeys();
   const byRarity = {
-    common: GEAR_KEYS.filter(k => GEARS[k].rarity === 'common').map(k => GEARS[k]),
-    rare:   GEAR_KEYS.filter(k => GEARS[k].rarity === 'rare').map(k => GEARS[k]),
-    epic:   GEAR_KEYS.filter(k => GEARS[k].rarity === 'epic').map(k => GEARS[k]),
-    legend: GEAR_KEYS.filter(k => GEARS[k].rarity === 'legend').map(k => GEARS[k])
+    common: activePool.filter(k => GEARS[k]?.rarity === 'common').map(k => GEARS[k]),
+    rare:   activePool.filter(k => GEARS[k]?.rarity === 'rare').map(k => GEARS[k]),
+    epic:   activePool.filter(k => GEARS[k]?.rarity === 'epic').map(k => GEARS[k]),
+    legend: activePool.filter(k => GEARS[k]?.rarity === 'legend').map(k => GEARS[k])
   };
   const specs = [];
   const takeRarity = r => {
     const pool = byRarity[r].filter(g => !specs.includes(g));
     if (!pool.length) return null;
-    const g = pool[Math.floor(game.rnd() * pool.length)];
+    const g = pickWeightedByMainLegacy(pool, item => item?.elem || null, game.rnd) || pool[0];
     specs.push(g);
     return g;
   };
@@ -11010,41 +12355,212 @@ function pickGearReward(itemOrKey){
   return inst;
 }
 
+function formatDurationMMSS(sec){
+  const s = Math.max(0, Math.round(Number(sec || 0)));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}分${String(r).padStart(2, '0')}秒`;
+}
+
+function openMetaLegacyModal(opts = {}){
+  if (!game) return { ok: false, reason: 'no_game' };
+  const context = opts.context || ((game.phase === 'won' || game.phase === 'lost') ? 'settlement' : (isMetaLoadoutLocked() ? 'in_run' : 'pre_run'));
+  game.activeModal = { type: 'meta_legacy', context, returnTo: opts.returnTo || null };
+  renderMetaLegacyModal(game.activeModal);
+  return { ok: true, locked: isMetaLoadoutLocked(), context };
+}
+
+function renderMetaLegacyModal(modalState = {}){
+  const cfg = getMetaConfig();
+  const save = getMetaSave();
+  const locked = isMetaLoadoutLocked();
+  const activeLoadout = locked ? getActiveMetaLoadout() : save.loadout;
+  const budget = getMetaLoadoutBudget(activeLoadout);
+  const pools = buildActiveRunPools(activeLoadout, save);
+  const box = $('modalBox');
+
+  const mainCardsHtml = cfg.mains.map(m => {
+    const unlocked = save.unlockedMain.includes(m.id);
+    const selected = activeLoadout.main === m.id;
+    const cls = `meta-card ${selected ? 'sel' : ''} ${!unlocked ? 'locked-item' : ''}`;
+    const btnState = unlocked
+      ? (locked ? 'disabled' : '')
+      : (save.legacyShards < m.unlockCost ? 'disabled' : '');
+    const badge = selected ? '✅ 已装备' : unlocked ? (locked ? '🔒 局内锁定' : '点击装备') : `💠 ${m.unlockCost} 解锁`;
+    return `
+      <button type="button" class="${cls}" data-meta-action="${unlocked ? 'equip_main' : 'unlock_main'}" data-meta-id="${m.id}" ${btnState}>
+        <div class="meta-card-head"><span>${m.icon} ${m.name}</span><span class="meta-pts-pill">${badge}</span></div>
+        <div class="meta-card-sub" style="color:#9ef2cf">${m.styleTag}</div>
+        <div class="meta-card-sub">${m.desc}</div>
+      </button>
+    `;
+  }).join('');
+
+  const auxCardsHtml = cfg.auxiliaries.map(a => {
+    const unlocked = save.unlockedAux.includes(a.id);
+    const selected = activeLoadout.aux.includes(a.id);
+    const wouldExceedCount = !selected && budget.auxCount >= budget.maxAuxCount;
+    const wouldExceedPts = !selected && (budget.auxPoints + a.costPoints > budget.maxAuxPoints);
+    const cls = `meta-card ${selected ? 'sel' : ''} ${!unlocked ? 'locked-item' : ''}`;
+    let disabled = false;
+    if (unlocked) {
+      if (locked || (!selected && (wouldExceedCount || wouldExceedPts))) disabled = true;
+    } else if (save.legacyShards < a.unlockCost) {
+      disabled = true;
+    }
+    const badge = selected ? `✅ ${a.costPoints}点` : unlocked ? `${a.costPoints}点${wouldExceedPts ? '·超预算' : wouldExceedCount ? '·满3槽' : ''}` : `💠 ${a.unlockCost} 解锁`;
+    return `
+      <button type="button" class="${cls}" data-meta-action="${unlocked ? 'toggle_aux' : 'unlock_aux'}" data-meta-id="${a.id}" ${disabled ? 'disabled' : ''}>
+        <div class="meta-card-head"><span>${a.icon} ${a.name}</span><span class="meta-pts-pill">${badge}</span></div>
+        <div class="meta-card-sub">${a.desc}</div>
+      </button>
+    `;
+  }).join('');
+
+  const packCardsHtml = cfg.unlockPacks.map(p => {
+    const unlocked = save.unlockedPacks.includes(p.id);
+    const disabled = unlocked || save.legacyShards < p.unlockCost;
+    return `
+      <button type="button" class="meta-card ${unlocked ? 'sel' : 'locked-item'}" data-meta-action="unlock_pack" data-meta-id="${p.id}" ${disabled ? 'disabled' : ''}>
+        <div class="meta-card-head"><span>${p.icon} ${p.name}</span><span class="meta-pts-pill">${unlocked ? '✅ 已解锁' : `💠 ${p.unlockCost} 解锁`}</span></div>
+        <div class="meta-card-sub">${p.desc}</div>
+      </button>
+    `;
+  }).join('');
+
+  const msHtml = cfg.milestones.map(ms => {
+    const done = save.claimedMilestones.includes(ms.id);
+    return `<div class="meta-ms-item ${done ? 'done' : ''}"><b>${done ? '✅' : '⬜'} ${ms.name}</b>（💠 +${ms.shardReward}）<br>${ms.desc}</div>`;
+  }).join('');
+
+  const isSettlement = modalState.context === 'settlement' || game.phase === 'won' || game.phase === 'lost';
+  const isPreRun = modalState.context === 'pre_run' || modalState.returnTo === 'intro';
+
+  box.innerHTML = `
+    <h2>💠 局外传承配置与横向解锁</h2>
+    <p class="lead">每局锁定 <strong>1 个主传承</strong> + <strong>最多 ${budget.maxAuxCount} 个辅助传承（总预算固定 ${budget.maxAuxPoints} 点，全解锁容量永不增加）</strong>。主传承仅提高本系奖励出现权重 ×${cfg.mainRewardWeightMultiplier}（严格重新归一化），<strong>绝不堆叠永久攻血暴击</strong>！</p>
+    <div class="meta-lock-banner ${locked ? 'locked' : ''}">
+      <div>${locked ? '🔒 <strong>本局已锁定（只读展示）</strong>：局内禁止热切换传承配置；新解锁内容将在重开新局后生效。' : '🔓 <strong>开局前配置就绪</strong>：自由选择主传承、勾选辅助传承与消费传承碎片解锁新内容。'}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="meta-pts-pill">💠 碎片：${save.legacyShards}</span>
+        <span class="meta-pts-pill">主传承：${budget.mainCount}/1</span>
+        <span class="meta-pts-pill">辅助：${budget.auxCount}/${budget.maxAuxCount}（${budget.auxPoints}/${budget.maxAuxPoints} 点）</span>
+        <span class="meta-pts-pill">防稀释定容：装备 ${pools.activeGearKeys.length} / 词条 ${pools.activeAffixKeys.length}</span>
+      </div>
+    </div>
+
+    <div class="meta-sec-title"><span>1. 主传承（5 选 1 · 免费 3 + 可解锁 2）</span><span style="font-size:11px;color:#a8cdc6">最高波次 W${save.stats.bestWave || 0} · 通关 ${save.stats.victories || 0} / 总场次 ${save.stats.totalRuns || 0}</span></div>
+    <div class="meta-grid">${mainCardsHtml}</div>
+
+    <div class="meta-sec-title"><span>2. 辅助传承（最多 ${budget.maxAuxCount} 个 · 固定 ${budget.maxAuxPoints} 点预算）</span><span style="font-size:11px;color:#a8cdc6">0 解锁即达 1+1+2=4 三辅助满配</span></div>
+    <div class="meta-grid two">${auxCardsHtml}</div>
+
+    <div class="meta-sec-title"><span>3. 横向扩展包（装备 / 词条 / 挑战）</span><span style="font-size:11px;color:#a8cdc6">解锁后保持活跃池定容，绝不稀释联动概率</span></div>
+    <div class="meta-grid">${packCardsHtml}</div>
+
+    <div class="meta-sec-title"><span>4. 一次性里程碑进度（${save.claimedMilestones.length}/${cfg.milestones.length}）</span><span style="font-size:11px;color:#a8cdc6">存档键：${cfg.storageKey} (v${cfg.schemaVersion})</span></div>
+    <div class="meta-milestone-list">${msHtml}</div>
+
+    <div class="modal-footer">
+      <button class="btn" id="metaExportBtn" type="button" title="复制本地存档 JSON 备份">💾 备份存档</button>
+      ${isSettlement ? `<button class="btn" id="metaBackEndBtn" type="button">返回结算摘要</button><button class="btn gold" id="metaStartNewBtn" type="button" style="padding:8px 16px">🔁 保存并开启新局</button>`
+        : isPreRun ? `<button class="btn gold" id="metaConfirmPreBtn" type="button" style="padding:8px 18px">⚔️ 锁定配置 · 踏入秘境！</button>`
+        : `<button class="btn" id="metaCloseBtn" type="button">关闭</button>`}
+    </div>
+  `;
+
+  box.querySelectorAll('[data-meta-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const act = btn.dataset.metaAction;
+      const id = btn.dataset.metaId;
+      if (act === 'equip_main') setMetaMainLegacy(id);
+      else if (act === 'toggle_aux') toggleMetaAuxLegacy(id);
+      else if (act === 'unlock_main') unlockMetaItem('main', id);
+      else if (act === 'unlock_aux') unlockMetaItem('aux', id);
+      else if (act === 'unlock_pack') unlockMetaItem('pack', id);
+      renderMetaLegacyModal(modalState);
+    });
+  });
+
+  box.querySelector('#metaExportBtn')?.addEventListener('click', () => {
+    const json = exportMetaSave();
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(json).then(() => toast('💾 局外传承存档 JSON 已复制到剪贴板！')).catch(() => toast('💾 存档已就绪（可通过 BG60.exportMetaSave() 获取）'));
+    } else {
+      toast('💾 存档已导出（可在控制台调用 BG60.exportMetaSave() 查看）');
+    }
+  });
+  box.querySelector('#metaBackEndBtn')?.addEventListener('click', () => showEndModal(game.phase === 'won'));
+  box.querySelector('#metaStartNewBtn')?.addEventListener('click', () => startNewRun());
+  box.querySelector('#metaConfirmPreBtn')?.addEventListener('click', () => {
+    AudioKit.unlock();
+    lockMetaLoadoutForRun();
+    rollShop(true);
+    closeModal();
+  });
+  box.querySelector('#metaCloseBtn')?.addEventListener('click', () => closeModal());
+  $('modalBackdrop').hidden = false;
+}
+
 function showIntroModal(){
   game.activeModal = { type:'intro' };
+  const save = getMetaSave();
+  const mainSpec = getMetaMainSpec(save.loadout.main);
+  const auxSpecs = (save.loadout.aux || []).map(id => getMetaAuxSpec(id)).filter(Boolean);
+  const budget = getMetaLoadoutBudget(save.loadout);
   const box = $('modalBox');
   box.innerHTML = `
-    <h2>⚔️ 边境守卫 v0.60 · 30 波秘境 × 独立词条联动</h2>
-    <p class="lead">64×48 修仙秘境自由游走！迎战 <strong>W1–W30 三阶段成长曲线</strong>与 6 大首领，打造<strong>独立槽位随机词条构装</strong>并激活双/三词条实战联动！</p>
+    <h2>⚔️ 边境守卫 v0.60 · 30 波完整试玩版</h2>
+    <p class="lead">64×48 修仙秘境自由游走！从 <strong>W1</strong> 迎战 6 大首领与 <strong>W10 / W20 双大型突破</strong>，激活双/三词条实战联动，完成 <strong>W29 实时 90 秒整备</strong>并决战 <strong>W30 深渊主宰</strong>！</p>
+    <div class="meta-lock-banner" style="margin-bottom:10px">
+      <div>💠 当前局外传承：<strong>${mainSpec ? `${mainSpec.icon}${mainSpec.name}` : '未选'}</strong> · 辅助（${budget.auxCount}/3 · ${budget.auxPoints}/4点）：<strong>${auxSpecs.map(a => `${a.icon}${a.name}`).join(' / ') || '无'}</strong></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span class="meta-pts-pill">💠 ${save.legacyShards} 碎片</span>
+        <button class="btn" id="introMetaBtn" type="button" style="padding:4px 10px;font-size:12px">⚙️ 局外传承与解锁</button>
+      </div>
+    </div>
     <div class="intro-grid">
       <div class="intro-box">
-        <h4>🔥❄️ 双词条 / 完整三词条实战联动</h4>
-        <p>每件构装独立随机 <strong>1/2/3 槽词条</strong>（不再同名合星覆盖）！凑齐火系引爆或冰系护体 2/3 词条可触发<strong>群体传递引爆 / 孤立聚焦引爆</strong>与<strong>寒冰护盾受击/冲刺/满盾冰环反制</strong>！</p>
+        <h4>🔥❄️ 跨阶段双/三词条实战联动</h4>
+        <p>构装独立随机 <strong>1/2/3 槽词条</strong>，与 W10 分支和 W20 突破共享火标/减速状态；完整三联动替代原双联动，呈现群体连爆、孤立聚焦与持盾主动冰环！</p>
       </div>
       <div class="intro-box">
-        <h4>🏪 商店构装 · 出售 / 拆解 / 锻材强化</h4>
-        <p>商店上架随机词条装备（按阶段+同系递增且有封顶）。多余装备可<strong>出售换金</strong>或<strong>拆解得锻材</strong>（严格按自身品质与来源阶段计算，与槽位数独立）；消耗锻材提升基础属性与已有词条档位！</p>
+        <h4>🏪 常规经济 · 天命赌局 · 词条转移台</h4>
+        <p>多余装备自主<strong>出售换金</strong>或<strong>拆解得锻材</strong>（按品质与来源阶段计算）；常规商店稳健精修即可通关，也可参与天命赌局搏取转印符与天命专属强化！</p>
       </div>
       <div class="intro-box">
-        <h4>⚡ W10 突破与 3★ 主灵印专精路线</h4>
-        <p>击败 W10 首领指定主力神通三选一改变形态，与装备词条共用火标/减速状态；主灵印升至 <strong>3★</strong> 可在<strong>免费进阶 vs 35金机制专精</strong>间取舍！</p>
+        <h4>⏳ W29 90秒实时整备 & W30 三段决战</h4>
+        <p>W29 战后先结清波末奖励，再开启 <strong>90 秒实时终局整备</strong>（倍速不变）；W30 深渊主宰 80% 血线强制招牌锁血冲击波，末段打空即胜！</p>
       </div>
       <div class="intro-box">
-        <h4>📦 装备管理与联动提示 · [C] 面板</h4>
-        <p>左侧构筑总览与按 <strong>[C]</strong> 打开的属性面板实时展示<strong>当前已激活联动</strong>以及<strong>差哪条词条可升级为完整三联动</strong>！</p>
+        <h4>💠 固定预算局外传承与防刷结算</h4>
+        <p>开局锁定 <strong>1 主传承 + 最多 3 辅助（固定 4 点）</strong>，主传承权重倾斜 ×1.35 并保持活跃池定容防稀释；三维结算提供真实伤害归因与单局防重复发奖。</p>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn gold" id="introGo" type="button" style="padding:9px 22px;font-size:14px">踏入秘境 · 选本命神通！</button>
+      <button class="btn" id="introMetaBtnFoot" type="button" style="padding:9px 14px;font-size:13px">⚙️ 配置局外传承</button>
+      <button class="btn gold" id="introGo" type="button" style="padding:9px 22px;font-size:14px">⚔️ 锁定传承 · 踏入秘境！</button>
     </div>
   `;
-  box.querySelector('#introGo').addEventListener('click', () => { AudioKit.unlock(); closeModal(); });
+  const openMetaFromIntro = () => openMetaLegacyModal({ context: 'pre_run', returnTo: 'intro' });
+  box.querySelector('#introMetaBtn')?.addEventListener('click', openMetaFromIntro);
+  box.querySelector('#introMetaBtnFoot')?.addEventListener('click', openMetaFromIntro);
+  box.querySelector('#introGo')?.addEventListener('click', () => {
+    AudioKit.unlock();
+    if (!game.metaRunLocked) {
+      lockMetaLoadoutForRun();
+      rollShop(true);
+    }
+    closeModal();
+  });
   $('modalBackdrop').hidden = false;
 }
 
 function showEndModal(victory){
   game.activeModal = { type:'end', victory: !!victory };
   const rep = getTelemetryReport();
+  const settle = game.metaSettlement || settleRunMetaRewards(!!victory);
+  const rm = game.runMetrics || {};
   const recentRows = rep.waves.slice(-8).map(w =>
     `<tr><td>W${w.wave} (${w.phaseTag})</td><td>${w.duration}s</td><td style="color:${w.minHpPct<35?'#ff7b6b':'#7ce896'}">${w.minHpPct}%</td><td>${w.hitsTaken}</td><td>${w.dps}</td><td>${w.shrineCleared?'✅':w.shrineTried?'❌':'—'}</td></tr>`
   ).join('');
@@ -11065,22 +12581,55 @@ function showEndModal(victory){
   const w30Line = w30B
     ? `<br>W30 深渊主宰：用时 <b>${Number(w30B.elapsedSeconds || 0).toFixed(1)}s</b> · 辅助 <b>${w30B.auxName || '—'}</b> · 招牌锁血 <b>${w30B.signatureTriggered ? '已完整经历' : '未触发'}</b>`
     : '';
+
+  const lo = getActiveMetaLoadout();
+  const mainSpec = getMetaMainSpec(lo.main);
+  const auxSpecs = (lo.aux || []).map(id => getMetaAuxSpec(id)).filter(Boolean);
+  const budget = getMetaLoadoutBudget(lo);
+  const lowestHp = Math.min(rep.summary.lowestHpPct ?? 100, game.combatLog?.lowestHpPct ?? 100);
+  const threat = getRecentThreatSummary(5.0);
+  const fatal = game.combatLog?.fatalSource || null;
+  const fatalHtml = fatal
+    ? `<b>致命一击：</b>${fatal.attackerName} · <b>${fatal.skillName}</b>${fatal.isBossCore ? '【首领核心】' : fatal.isBossAux ? '【首领随机辅助】' : ''}（扣血 <b>-${fatal.hpLost}</b>${fatal.shieldAbsorbed > 0 ? `，盾抵 ${fatal.shieldAbsorbed}` : ''}，W${fatal.wave} ${fatal.waveClock}s）`
+    : (victory ? '<b>存活通关：</b>未触发致命伤。' : '<b>致命记录：</b>无有效受击记录（非受击结束）。');
+  const recentThreatHtml = threat.topThreats.length
+    ? threat.topThreats.slice(0, 3).map(t => `${t.attackerName}·${t.skillName}(${t.hits}次/-${t.totalHpLost}血)`).join('；')
+    : '近 5 秒无受击记录';
+
+  const shardDetailText = settle?.eligible
+    ? `波段推进 +${(settle.band1Shards || 0) + (settle.band2Shards || 0) + (settle.band3Shards || 0)}（W3-10:${settle.band1Shards} / W11-20:${settle.band2Shards} / W21-29:${settle.band3Shards}）· 首领 +${settle.bossBonus} · 突破 +${(settle.w10Bonus || 0) + (settle.w20Bonus || 0)}${settle.w30VictoryBonus ? ` · W30通关大奖 +${settle.w30VictoryBonus}` : ''}`
+    : '未通过 W3 且未击败首领：防速死刷取规则生效，本局传承碎片收益为 0（有效推进后即可获得长期成长）';
+  const newMsList = (settle?.newlyClaimedMilestones || []).map(m => `${m.name}(+💠${m.shardReward})`).join('、') || '无新增';
+  const dupGuardText = settle?.duplicateBlocked
+    ? '🛡️ 防重放已拦截（本 runId 奖励此前已发放，本次 +0）'
+    : `✅ 单局首结已入账（runId: ${game.runId}）`;
+
   const box = $('modalBox');
   box.innerHTML = `
     <h2>${victory ? `🏆 30 波秘境守卫大成！你斩杀了第 ${MAIN_WAVES} 波深渊主宰！` : `💀 道消身陨 · 止步第 ${game.wave} / ${MAIN_WAVES} 波（${getRealmStageLabel()}）`}</h2>
-    <p class="lead">${victory ? '你已完成全部 30 波边境守卫与阶段突破考验！以下为本局三维度结算摘要：' : '本局已在当前波次立即结算。复盘下方三维度表现与波次体检数据，调整词条联动与灵印共鸣再来一局！'}</p>
-    <div class="intro-grid" style="margin:10px 0">
-      <div class="intro-box">
-        <h4>① 通关结果</h4>
-        <p>结算状态：<b style="color:${victory?'#7ce896':'#ff7b6b'}">${victory ? '30 波通关胜利' : `第 ${game.wave} 波战败结算`}</b><br>到达波次：<b>W${game.wave} / W${MAIN_WAVES}</b> · 节点：<b>${getRealmStageLabel()}</b>${w30Line}</p>
+    <p class="lead">${victory ? '你已完成全部 30 波边境守卫与终局决战！以下为本局三维度真实结算报告：' : '本局已在当前波次立即结算。以下为三维度真实战况归因与长期成长结算：'}</p>
+    <div class="settle-grid">
+      <div class="settle-card">
+        <h4>① 通关结果与传承快照</h4>
+        <p>结算状态：<b style="color:${victory?'#7ce896':'#ff7b6b'}">${victory ? '30 波通关胜利' : `第 ${game.wave} 波战败结算`}</b><br>
+        到达波次：<b>W${game.wave} / W${MAIN_WAVES}</b> · 节点：<b>${getRealmStageLabel()}</b><br>
+        总有效时长：<b>${formatDurationMMSS(rm.totalEffectiveSec)}</b>（普通战 ${Math.round(rm.normalCombatSec||0)}s / 首领战 ${Math.round(rm.bossCombatSec||0)}s / 整备 ${Math.round((rm.prepSec||0)+(rm.w29FinalPrepSec||0))}s）${w30Line}<br>
+        锁定传承：<b>${mainSpec ? `${mainSpec.icon}${mainSpec.name}` : '无'}</b> · 辅助(${budget.auxPoints}/4点)：<b>${auxSpecs.map(a => a.name).join(' / ') || '无'}</b></p>
       </div>
-      <div class="intro-box">
-        <h4>② 本局表现</h4>
-        <p>总击杀：<b>${game.stats.kills}</b>（首领 <b>${game.stats.bossKills || 0}</b> / 精英 <b>${game.stats.elites}</b>）<br>总输出：<b>${game.stats.dmgTotal.toLocaleString()}</b> · 最低血线：<b>${rep.summary.lowestHpPct}%</b><br>W10 突破：<b>${w10Info}</b><br>装备联动：<b>${synNames}</b></p>
+      <div class="settle-card">
+        <h4>② 本局表现与真实受击归因</h4>
+        <p>击杀：<b>${game.stats.kills}</b>（首领 <b>${game.stats.bossKills || 0}</b> / 精英 <b>${game.stats.elites}</b>） · 总输出：<b>${game.stats.dmgTotal.toLocaleString()}</b><br>
+        最低血线：<b>${lowestHp}%</b> · 受击总计：<b>${game.combatLog?.totalHitsTaken || 0}</b> 次（失血 ${game.combatLog?.totalHpLost || 0} / 护盾吸收 ${game.combatLog?.totalShieldAbsorbed || 0}）<br>
+        W10：<b>${w10Info}</b> · W20：<b>${w20Info}</b><br>
+        装备联动：<b>${synNames}</b>（火标${game.stats.fireMarksApplied||0}/引爆${game.stats.fireDetonations||0}/传递${game.stats.fireChainTransfers||0} · 冰缓${game.stats.frostSlowsApplied||0}/冰盾+${game.stats.frostShieldGained||0}/冰环${(game.stats.frostHitPulses||0)+(game.stats.frostDashPulses||0)+(game.stats.frostFullShieldPulses||0)}）<br>
+        资源收支：金币 +${rm.goldEarned||0}/-${rm.goldSpent||0}(余${game.gold}) · 锻材 +${rm.materialsEarned||0}/-${rm.materialsSpent||0}(余${game.materials||0}) · 转印符 +${rm.transferTokensEarned||0}/-${rm.transferTokensSpent||0}(余${game.transferTokens||0}) · 赌局 ${game.stats.destinyRolls||0}次</p>
+        <div class="attr-log">${fatalHtml}<br><b>近 5 秒真实威胁：</b>${recentThreatHtml}</div>
       </div>
-      <div class="intro-box" style="grid-column:span 2">
-        <h4>③ 长期成长与资源结算（阶段 4–6 局外传承接入预览）</h4>
-        <p>剩余金币：<b>💰 ${game.gold}</b> · 累计锻材：<b>⚙️ ${game.materials || 0}</b> · 天命转印符：<b>🔮 ${game.transferTokens || 0}</b> · W20：<b>${w20Info}</b><br>天命赌局：<b>${game.stats.destinyRolls || 0}</b> 次（空劫 <b>${game.stats.destinyEmptyTribulations || 0}</b> / 领奖 <b>${game.stats.destinyClaims || 0}</b>） · 词条转移：<b>${game.stats.affixTransfers || 0}</b> 次 · 天命专属强化：<b>${getOwnedDestinyEnhancements().map(e => e.name).join('、') || '无'}</b><br>实战联动统计：火标 <b>${game.stats.fireMarksApplied || 0}</b> / 引爆 <b>${game.stats.fireDetonations || 0}</b>（传递 <b>${game.stats.fireChainTransfers || 0}</b> / 孤立聚焦 <b>${game.stats.fireFocusedDetonations || 0}</b> / 聚焰牵引 <b>${game.stats.w20FirePulls || 0}</b>） · 冰缓 <b>${game.stats.frostSlowsApplied || 0}</b> / 冰盾 <b>+${game.stats.frostShieldGained || 0}</b>（受击冰环 <b>${game.stats.frostHitPulses || 0}</b> / 冲刺冰环 <b>${game.stats.frostDashPulses || 0}</b> / 满盾冰环 <b>${game.stats.frostFullShieldPulses || 0}</b>） · W20/天命触发 <b>${game.stats.w20BaseProcs || 0}/${game.stats.w20EnhancementProcs || 0}/${game.stats.destinyEnhancementProcs || 0}</b></p>
+      <div class="settle-card full">
+        <h4>③ 长期成长与资源结算 · 传承碎片与里程碑</h4>
+        <p>本局实发传承碎片：<b style="color:#72f2b4;font-size:14px">💠 +${settle?.totalShardsGranted ?? 0}</b>（当前余额：<b>💠 ${getMetaSave().legacyShards}</b>） · ${dupGuardText}<br>
+        收益明细：${shardDetailText}<br>
+        新增一次性里程碑：<b>${newMsList}</b>（累计已完成 ${getMetaSave().claimedMilestones.length}/${getMetaConfig().milestones.length}）</p>
       </div>
     </div>
     ${recentRows ? `
@@ -11092,10 +12641,12 @@ function showEndModal(victory){
       </table>
     </div>` : ''}
     <div class="modal-footer">
-      <button class="btn gold" id="restartGo" type="button" style="padding:9px 18px;font-size:14px">🔄 再来一局</button>
+      <button class="btn" id="endMetaBtn" type="button" style="padding:9px 15px;font-size:13px">⚙️ 局外传承配置（💠${getMetaSave().legacyShards}）</button>
+      <button class="btn gold" id="restartGo" type="button" style="padding:9px 18px;font-size:14px">🔁 快速重开</button>
     </div>
   `;
-  box.querySelector('#restartGo').addEventListener('click', () => startNewRun());
+  box.querySelector('#endMetaBtn')?.addEventListener('click', () => openMetaLegacyModal({ context: 'settlement', returnTo: 'end' }));
+  box.querySelector('#restartGo')?.addEventListener('click', () => startNewRun());
   $('modalBackdrop').hidden = false;
 }
 
@@ -11533,15 +13084,21 @@ function rollDestinyGamble(betAmount, opts = {}){
   if (isEmpty) {
     game.destiny.emptyTribulations++;
     game.destiny.pendingOffer = null;
-    game.destiny.lastOutcome = { outcome: 'empty_tribulation', bet, wave: game.wave };
-    game.destiny.history.push({ outcome: 'empty_tribulation', bet, wave: game.wave });
+    const stopLossRefund = hasMetaAux('aux_destiny_foresight') ? Math.floor(bet * 0.25) : 0;
+    if (stopLossRefund > 0) game.gold += stopLossRefund;
+    game.destiny.lastOutcome = { outcome: 'empty_tribulation', bet, stopLossRefund, wave: game.wave };
+    game.destiny.history.push({ outcome: 'empty_tribulation', bet, stopLossRefund, wave: game.wave });
     if (game.stats) game.stats.destinyEmptyTribulations = (game.stats.destinyEmptyTribulations || 0) + 1;
     AudioKit.play('hit', 0.9);
     flashScreen('fail');
-    if (!opts.silent) toast(`🌩️ 触发天命空劫！本次押注 💰${bet} 归零，无候选奖励。`, true);
+    if (!opts.silent) {
+      toast(stopLossRefund > 0
+        ? `🌩️ 触发天命空劫！天命观星返还止损 💰${stopLossRefund}，无候选奖励。`
+        : `🌩️ 触发天命空劫！本次押注 💰${bet} 归零，无候选奖励。`, true);
+    }
     if (game.activeModal?.type === 'destiny_gamble') renderDestinyGambleModal();
     renderAllUI(true);
-    return { ok: true, outcome: 'empty_tribulation', bet, goldLeft: game.gold, pendingOffer: null };
+    return { ok: true, outcome: 'empty_tribulation', bet, stopLossRefund, goldLeft: game.gold, pendingOffer: null };
   }
 
   // WIN: Generate 3 random candidates with strict 4x25% category weights and pure probability quality (NO rarity pity!)
@@ -13091,6 +14648,10 @@ function renderAllUI(force = false){
   if (tokEl) {
     tokEl.textContent = `🔮 ${game.transferTokens || 0} 转印符`;
   }
+  const shardEl = $('shardPill');
+  if (shardEl) {
+    shardEl.textContent = `💠 ${getMetaSave().legacyShards || 0} 碎片`;
+  }
 
   const hpPill = $('heroHpPill');
   const hpRatio = h.hp / Math.max(1, h.maxHp);
@@ -13137,6 +14698,12 @@ function renderAllUI(force = false){
   if (transferBtn) {
     transferBtn.disabled = isWave || ['won', 'lost'].includes(game.phase);
     transferBtn.textContent = `✨ 词条转移台 (🔮${game.transferTokens || 0})`;
+  }
+  const metaBtn = $('metaLegacyBtn');
+  if (metaBtn) {
+    const mainSpec = getActiveMetaMain();
+    const budget = getMetaLoadoutBudget(getActiveMetaLoadout());
+    metaBtn.textContent = `${isMetaLoadoutLocked() ? '🔒' : '⚙️'} ${mainSpec ? mainSpec.icon + mainSpec.name : '传承'} (${budget.auxPoints}/4)`;
   }
 
   const rem = game.enemies.length + game.waveQueue.filter(w => !w.spawned).length;
@@ -13187,8 +14754,9 @@ function renderAllUI(force = false){
       : (game.chests.length ? `📦 地面${game.chests.length}箱` : game.wave % 5 === 0 ? '⚠️ 首领波' : `${meta.tag}`);
   }
 
-  $('rerollBtn').disabled = game.gold < game.rerollCost;
-  $('rerollCost').textContent = `${game.rerollCost} 金币`;
+  const freeMetaRefreshReady = hasMetaAux('aux_shop_first_refresh') && game.metaRunState && !game.metaRunState.freeRefreshUsedThisWave;
+  $('rerollBtn').disabled = !freeMetaRefreshReady && game.gold < game.rerollCost;
+  $('rerollCost').textContent = freeMetaRefreshReady ? '免费(商路先机)' : `${game.rerollCost} 金币`;
 
   renderSealStrip(force);
   renderSkillStrip(force);
@@ -14258,6 +15826,7 @@ $('w20PrepBtn')?.addEventListener('click', () => {
 });
 $('destinyBtn')?.addEventListener('click', () => openDestinyGambleModal());
 $('transferBtn')?.addEventListener('click', () => openAffixTransferModal());
+$('metaLegacyBtn')?.addEventListener('click', () => openMetaLegacyModal());
 $('metaBadge').addEventListener('click', () => {
   game.inspTarget = { type:'hero' }; renderAllUI(true);
 });
@@ -14741,14 +16310,15 @@ function loop(ts){
 }
 
 /* ==================== BOOT & QA EXPORT (window.BG60) ==================== */
-startNewRun(2026, false);
+startNewRun(2026, false, { preRunSetup: true });
 showIntroModal();
 // Queue starter active skill selection right after closing intro!
 game.pendingModals.push({ type: 'starter' });
 requestAnimationFrame(loop);
 
 window.BG60 = {
-  version: '0.60.0-stage5',
+  version: '0.60.0-stage6',
+  releaseTag: 'v0.60-complete',
   get game(){ return game; },
   get cam(){ return cam; },
   get perf(){ return { ...perfStats, enemies: game?.enemies.length || 0, projectiles: game?.projectiles.length || 0 }; },
@@ -14788,6 +16358,17 @@ window.BG60 = {
   startW30Early, resolveW29FinalPrepTimeout,
   openShopPurchaseConfirm, confirmShopPurchase, cancelShopPurchaseConfirm,
   isW30BossIntelRevealed, getW30BossIntel, getW30BattleState, spawnHealOrb,
+  // Stage 6: Meta Progression, Fixed 4-Pt Budget, Anti-Dilution Pools, Versioned Persistence, Anti-Farm Rewards & Real Attribution
+  getMetaConfig, getMetaMainSpec, getMetaAuxSpec, getMetaPackSpec,
+  createDefaultMetaSave, normalizeMetaSave, loadMetaSave, saveMetaSave, getMetaSave,
+  resetMetaSave, exportMetaSave, importMetaSave,
+  getMetaLoadoutBudget, isMetaLoadoutLocked, setMetaMainLegacy, toggleMetaAuxLegacy, setMetaLoadout, unlockMetaItem,
+  lockMetaLoadoutForRun, getActiveMetaLoadout, getActiveMetaMain, hasMetaAux,
+  buildActiveRunPools, syncRunActivePools, getActiveRunGearKeys, getActiveRunAffixKeys,
+  getMainLegacyWeightTable, pickWeightedByMainLegacy, pickShopGearBaseKey,
+  calculateRunShardRewards, checkEligibleNewMilestones, settleRunMetaRewards,
+  getRecentThreatSummary, syncRunResourceAccounting,
+  openMetaLegacyModal, renderMetaLegacyModal, showIntroModal, showEndModal,
   applyFireMark, triggerFireDetonation, applyFrostSlow, triggerFrostPulse, gainFrostShield, getHeroMaxFrostShield,
   rollPerkChoices, pickPerk, refreshCombos, hasCombo, perkLv,
   getWavePhaseMeta, buildWaveQueue, pickChestGearChoices, getTelemetryReport,
@@ -14797,7 +16378,7 @@ window.BG60 = {
   BALANCE, UNLOCK_NODES, W10_SKILL_BRANCHES, W20_DIRECTIONS, W20_ENHANCEMENTS, W20_BOSS_AUX_POOL, W30_BOSS_AUX_POOL,
   DESTINY_ENHANCEMENTS, DESTINY_SPECIAL_BOONS, DESTINY_PILLS,
   REALMS, SHRINE_WAVES, ARTIFACTS, SUB_SEAL_RESONANCE, SEAL_SPECIALIZATIONS,
-  ELEMENTS, GEARS, GEAR_SETS, GEAR_AFFIXES, GEAR_SYNERGIES, SOURCE_STAGES, DUAL_RESONANCES, HERO_SKILLS, COMBOS, PERKS, PILLS, MAIN_WAVES, W, H, MAX_ENEMIES
+  ELEMENTS, GEARS, BASE_GEAR_KEYS, GEAR_SETS, GEAR_AFFIXES, BASE_AFFIX_KEYS, GEAR_SYNERGIES, SOURCE_STAGES, DUAL_RESONANCES, HERO_SKILLS, COMBOS, PERKS, PILLS, MAIN_WAVES, W, H, MAX_ENEMIES
 };
 window.BG52 = window.BG60;
 })();

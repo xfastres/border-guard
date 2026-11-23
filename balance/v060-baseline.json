@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "baseline": "v0.60/stage4-destiny-transfer-endgame",
+  "baseline": "v0.60/stage6-meta-release",
   "mainWaves": 30,
-  "notes": "v0.60 阶段 4（天命赌局、转印和终局精修）数值基线：新增天命赌局（自由押注、空劫、4×25% 类别权重、珍贵池门槛、天命专属强化与转印符）、词条转移台原子费用与防套利规则、W21-W29 终局精修资源倾斜与 +6 强化上限。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
+  "notes": "v0.60 完整版（阶段 1–6 收官）数值基线：覆盖 30 波受控成长曲线、W10/W20 双大型突破、独立词条双/三联动、常规经济与防套利回收、天命赌局与词条转移台、W29 实时 90 秒整备与 W30 固定血量三段首领、以及局外传承（1 主传承 + 固定 4 点/最多 3 辅助、权重倾斜重新归一化、局内防稀释池、防速死刷取碎片公式与版本化存档）。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
   "progression": {
     "initialGold": 55,
     "initialMaterials": 0,
@@ -1373,6 +1373,286 @@
       "dmg": 26,
       "xp": 14,
       "gold": 8
+    }
+  },
+  "metaProgression": {
+    "storageKey": "border_guard_v060_meta_v1",
+    "schemaVersion": 1,
+    "currency": {
+      "id": "legacyShards",
+      "name": "传承碎片",
+      "icon": "💠"
+    },
+    "budget": {
+      "mainSlots": 1,
+      "maxAuxCount": 3,
+      "maxAuxPoints": 4
+    },
+    "mainRewardWeightMultiplier": 1.35,
+    "activePoolControl": {
+      "targetActiveGearPoolSize": 23,
+      "targetActiveAffixPoolSize": 12
+    },
+    "mains": [
+      {
+        "id": "main_flame",
+        "name": "烈焰传承",
+        "icon": "🔥",
+        "elem": "fire",
+        "unlockedByDefault": true,
+        "unlockCost": 0,
+        "styleTag": "群怪爆燃 · 火标延长",
+        "desc": "提高火系灵印、构装与词条出现权重 ×1.35（重新归一化，其他流派仍可出现）；火标持续时间 +0.8s，不额外增加基础攻血或金币掉落。",
+        "effects": {
+          "fireMarkDurationBonus": 0.8
+        }
+      },
+      {
+        "id": "main_frost",
+        "name": "玄冰传承",
+        "icon": "❄️",
+        "elem": "frost",
+        "unlockedByDefault": true,
+        "unlockCost": 0,
+        "styleTag": "控场护盾 · 走位容错",
+        "desc": "提高冰系灵印、构装与词条出现权重 ×1.35（重新归一化，其他流派仍可出现）；减速持续 +0.6s 且寒盾消退缓冲 +0.8s，不额外增加基础攻血或金币掉落。",
+        "effects": {
+          "frostSlowDurationBonus": 0.6,
+          "frostShieldDurationBonus": 0.8
+        }
+      },
+      {
+        "id": "main_thunder",
+        "name": "惊雷传承",
+        "icon": "⚡",
+        "elem": "thunder",
+        "unlockedByDefault": true,
+        "unlockCost": 0,
+        "styleTag": "连锁电弧 · 定向打击",
+        "desc": "提高雷系灵印、构装与词条出现权重 ×1.35（重新归一化，其他流派仍可出现）；连锁闪电弹射搜索半径 +0.6 格，不额外增加基础攻血或金币掉落。",
+        "effects": {
+          "thunderChainRadiusBonus": 0.6
+        }
+      },
+      {
+        "id": "main_wind",
+        "name": "疾风传承",
+        "icon": "🌪️",
+        "elem": "wind",
+        "unlockedByDefault": false,
+        "unlockCost": 80,
+        "styleTag": "灵动拉扯 · 机动游走",
+        "desc": "提高风系灵印、构装与词条出现权重 ×1.35（重新归一化，其他流派仍可出现）；冲刺后获得 1.4s 轻盈拉扯步态且灵石吸附 +0.8 格，不增加基础攻血。",
+        "effects": {
+          "dashGlideDuration": 1.4,
+          "magnetBonus": 0.8
+        }
+      },
+      {
+        "id": "main_holy",
+        "name": "圣光传承",
+        "icon": "✨",
+        "elem": "holy",
+        "unlockedByDefault": false,
+        "unlockCost": 120,
+        "styleTag": "稳健反制 · 受击缓冲",
+        "desc": "提高圣系灵印、构装与词条出现权重 ×1.35（重新归一化，其他流派仍可出现）；受击无敌保护帧 +0.10s 且灵气回血球吸附 +0.7 格，不增加基础攻血。",
+        "effects": {
+          "invulnBonus": 0.1,
+          "healOrbMagnetBonus": 0.7
+        }
+      }
+    ],
+    "auxiliaries": [
+      {
+        "id": "aux_scout_sense",
+        "name": "灵觉洞察",
+        "icon": "🧭",
+        "costPoints": 1,
+        "unlockedByDefault": true,
+        "unlockCost": 0,
+        "desc": "1 点 · 战场与商店展示词条联动补全情报与首领机制预警提示（纯信息辅助，不增减基础属性）。"
+      },
+      {
+        "id": "aux_dash_cadence",
+        "name": "轻身步韵",
+        "icon": "💨",
+        "costPoints": 1,
+        "unlockedByDefault": true,
+        "unlockCost": 0,
+        "desc": "1 点 · 冲刺（Space）基础冷却微调 -0.35s 且冲刺无敌帧 +0.06s，改善走位躲预警手感。"
+      },
+      {
+        "id": "aux_shop_first_refresh",
+        "name": "商路先机",
+        "icon": "🏷️",
+        "costPoints": 2,
+        "unlockedByDefault": true,
+        "unlockCost": 0,
+        "desc": "2 点 · 每波备战期首次手动刷新商店免费（仅限该波第 1 次刷新，不送金币或额外货架）。"
+      },
+      {
+        "id": "aux_salvage_craft",
+        "name": "巧匠拆解",
+        "icon": "🔧",
+        "costPoints": 1,
+        "unlockedByDefault": false,
+        "unlockCost": 60,
+        "desc": "1 点 · 拆解史诗或传说多余装备时额外返还 +1 锻材，鼓励拆解精修（不改变出售价与防套利上界）。"
+      },
+      {
+        "id": "aux_telegraph_buffer",
+        "name": "御劫预判",
+        "icon": "👁️",
+        "costPoints": 2,
+        "unlockedByDefault": false,
+        "unlockCost": 90,
+        "desc": "2 点 · 首领与精英地面预警圈/震荡波额外提前 +0.20s 提示窗口（不降低敌人血量与伤害）。"
+      },
+      {
+        "id": "aux_shrine_compass",
+        "name": "妖碑寻踪",
+        "icon": "🩸",
+        "costPoints": 2,
+        "unlockedByDefault": false,
+        "unlockCost": 100,
+        "desc": "2 点 · 血煞妖碑蓄力时间减半（0.30s→0.15s），击败血煞妖王额外回复 20% 生命。"
+      },
+      {
+        "id": "aux_tactical_reserve",
+        "name": "奇门备策",
+        "icon": "🛡️",
+        "costPoints": 3,
+        "unlockedByDefault": false,
+        "unlockCost": 140,
+        "desc": "3 点 · 每波开战自动携 1 层一次性【偏折护膜】，仅抵消该波首次超 25% 最大生命重击的 35% 伤害。"
+      },
+      {
+        "id": "aux_destiny_foresight",
+        "name": "天命观星",
+        "icon": "🔮",
+        "costPoints": 3,
+        "unlockedByDefault": false,
+        "unlockCost": 160,
+        "desc": "3 点 · 天命赌局触发【空劫】时返还 25% 押注金币止损（不改变空劫率与珍贵池门槛）。"
+      }
+    ],
+    "unlockPacks": [
+      {
+        "id": "pack_gear_ember_frost",
+        "type": "gear_pack",
+        "name": "炎霜奇器谱",
+        "icon": "🏺",
+        "unlockCost": 70,
+        "items": [
+          "ember_censer",
+          "glacier_bell"
+        ],
+        "desc": "横向解锁 2 件灵品机制构装【赤焰熏炉】与【玄霜玉铃】，开局按防稀释规则等量替换非主系基础构装进入本局池。"
+      },
+      {
+        "id": "pack_affix_tactics",
+        "type": "affix_pack",
+        "name": "奇门词条录",
+        "icon": "📜",
+        "unlockCost": 95,
+        "items": [
+          "storm_conduit",
+          "aegis_pulse"
+        ],
+        "desc": "横向解锁 2 条机制词条【引雷导流】与【镇岳灵脉冲】，开局保持活跃词条池定容 12 条防稀释。"
+      },
+      {
+        "id": "pack_challenge_marks",
+        "type": "challenge",
+        "name": "边境试炼印",
+        "icon": "🏅",
+        "unlockCost": 110,
+        "items": [
+          "challenge_no_gamble",
+          "challenge_shrine_hunter"
+        ],
+        "desc": "解锁横向挑战徽记【零赌清修】与【妖碑狩猎】，记录于局内与结算荣光榜（不附带任何基础数值增益）。"
+      }
+    ],
+    "milestones": [
+      {
+        "id": "ms_reach_w5",
+        "name": "初镇边关",
+        "desc": "首次击败 W5 熔岩巨魔并进入 W6+",
+        "shardReward": 25,
+        "condition": {
+          "minClearedWave": 5
+        }
+      },
+      {
+        "id": "ms_w10_breakthrough",
+        "name": "一破化形",
+        "desc": "首次完成 W10 首次大型突破",
+        "shardReward": 45,
+        "condition": {
+          "w10Breakthrough": true
+        }
+      },
+      {
+        "id": "ms_w20_breakthrough",
+        "name": "天劫破境",
+        "desc": "首次击败 W20 天劫魔尊并获得突破凭证",
+        "shardReward": 75,
+        "condition": {
+          "w20Voucher": true
+        }
+      },
+      {
+        "id": "ms_reach_w29",
+        "name": "终局门前",
+        "desc": "首次抵达 W29 前哨与 90 秒最终整备",
+        "shardReward": 60,
+        "condition": {
+          "minWave": 29
+        }
+      },
+      {
+        "id": "ms_clear_w30",
+        "name": "深渊平定",
+        "desc": "首次击败 W30 深渊主宰通关完整 30 波",
+        "shardReward": 150,
+        "condition": {
+          "victory": true
+        }
+      },
+      {
+        "id": "ms_clear_w30_no_gamble",
+        "name": "清修破渊",
+        "desc": "全程 0 次天命赌局通关完整 30 波",
+        "shardReward": 90,
+        "condition": {
+          "victory": true,
+          "zeroGamble": true
+        }
+      }
+    ],
+    "rewardFormula": {
+      "minClearedWaveForAnyReward": 3,
+      "band1Range": [
+        3,
+        10
+      ],
+      "band1PerWave": 1.5,
+      "band2Range": [
+        11,
+        20
+      ],
+      "band2PerWave": 3.5,
+      "band3Range": [
+        21,
+        29
+      ],
+      "band3PerWave": 7.0,
+      "bossKillBonus": 4,
+      "w10BreakthroughBonus": 12,
+      "w20VoucherBonus": 28,
+      "w30VictoryBonus": 140
     }
   }
 }

@@ -536,3 +536,96 @@ window.BG60.getW30BossIntel();
 window.BG60.startWave();
 window.BG60.getW30BattleState();
 ```
+
+---
+
+## 阶段 6 · 局外传承、存档与整版验收（已完成 · v0.60 整版收官）
+
+### 1. 分支、基线与变更文件
+- **工作分支**：`feat/v060-30wave`
+- **接手基线提交**：`74645ba`（阶段 5 交付提交）
+- **未改动基线核对**：`Border-Guard-v0.52.html` 与 `balance/v052-baseline.json` 保持完全未动，v0.52 全部三套测试（`v052-balance-lab` 7/7、`v052-survivor-cultivation` 81/81、`v052-ui-c-hybrid` 5/5）100% 通过。
+- **阶段 6 变更文件清单**：
+  - `balance/v060-baseline.json`：更新基线标识为 `v0.60/stage6-meta-release`；新增完整 `metaProgression` 配置块（`storageKey: "border_guard_v060_meta_v1"`、`schemaVersion: 1`、固定预算 `1 主传承 + 最多 3 辅助 / 固定 4 点`、`mainRewardWeightMultiplier: 1.35`、`activePoolControl` 定容防稀释 `23 装备 / 12 词条`、5 个主传承、8 个辅助传承、3 个横向扩展包、6 个一次性里程碑与防速死刷取 `rewardFormula`）。
+  - `Border-Guard-v0.60.html`：同步内嵌 `BALANCE`；落地局外传承与版本化本地持久化存档系统（兼容浏览器 `localStorage` 与 Node 无头内存回退，支持 `exportMetaSave`/`importMetaSave`/`resetMetaSave`）、单页【💠 局外传承配置与横向解锁】面板（开局前与结算可自由配置与解锁，开局后立即锁定为只读展示禁止热切换）、主传承权重倾斜 `×1.35`（严格重新归一化，不额外赠予掉落数量/品质/金币）、定容活跃装备/词条池防稀释（新增 2 件横向奇器与 2 条横向词条）、真实受击与致命伤归因日志（`game.combatLog` + `damageHero(amt, sourceMeta)` 覆盖全部 Boss 核心/随机辅助/精英/小怪攻击点）、有效时长与资源收支统计（`game.runMetrics`）、完整三维度结算弹窗与防重放发奖（`settledRunIds` 跨调用/跨刷新严格幂等）、修复完整 30 波实测暴露的 `onEnemyKilled` 重入重复结算隐患（`e._killed` 幂等锁，使全 30 波首领击杀严格等于 6）；升级 `window.BG60` 至 `version: '0.60.0-stage6'` / `releaseTag: 'v0.60-complete'`。
+  - `tests/v060-stage6.test.cjs`：阶段 6 自动化验收测试套件（5 大场景全覆盖：固定预算与防稀释、存档与防重放/防速死公式、真实归因与多结局干净重开、自然 W1→W30 零赌局完整通关实测、真实无头 Chrome 桌面 1440×900 与窄屏 390×844 冒烟）。
+  - `docs/v0.60-review/30-wave-development-progress.md`：追加阶段 6 与整版交付汇总。
+
+---
+
+### 2. 阶段 6 核心规则落地摘要
+
+1. **局外传承配置系统（严格遵守 `D-08` 与 `R30-02`）**：
+   - **主传承（5 选 1，开局锁定）**：默认免费开放 3 个（`main_flame` 烈焰传承、`main_frost` 玄冰传承、`main_thunder` 惊雷传承），可解锁 2 个（`main_wind` 疾风传承 80 碎片、`main_holy` 圣光传承 120 碎片）。主传承将对应元素在商店装备、灵印、宝箱与词条中的出现权重倾斜 `×1.35` 并严格重新归一化（实测 `main_frost` vs `main_flame` 3000 次抽样显著倾斜且非本系仍正常出现），绝不增加基础攻血暴击、掉落件数或金币。
+   - **辅助传承（最多 3 个，总预算固定 4 点，全解锁容量永不增加）**：初始 0 解锁免费池即含 2 种 1 点（`aux_scout_sense` 灵觉洞察、`aux_dash_cadence` 轻身步韵）+ 1 种 2 点（`aux_shop_first_refresh` 商路先机），**0 解锁账号开局即真实可达 `1 + 1 + 2 = 4`（满 3 辅助）**；另设 5 种可解锁横向机制辅助（`aux_salvage_craft` 1 点、`aux_telegraph_buffer` 2 点、`aux_shrine_compass` 2 点、`aux_tactical_reserve` 3 点、`aux_destiny_foresight` 3 点）。0 解锁与全解锁账号在同关卡下的基础血量、攻击倍率、暴击率与 W30 Boss 血量完全一致。
+   - **横向扩展包与局内防稀释**：支持以传承碎片解锁【炎霜奇器谱】（2 件机制构装）、【奇门词条录】（2 条机制词条）与【边境试炼印】（挑战徽记）；开局时等量轮换非主系基础件，始终保持活跃装备池定容 `23` 件、活跃词条池定容 `12` 条（6 条火/冰核心联动词条永不轮出），避免解锁越多越难凑联动。
+
+2. **版本化存档、防重复领奖与防速死刷取公式**：
+   - 存档键 `border_guard_v060_meta_v1`（`schemaVersion: 1`），记录 `legacyShards`、各解锁集、`claimedMilestones`、`loadout`、`stats` 与 `settledRunIds`；每局分配唯一 `runId`，无论重复调用 `finishGame()` 还是刷新页面重放，均强制重读持久化存档拦截重复发奖（`duplicateBlocked: true`，追加发奖严格为 `0`）。
+   - **防速死刷取公式实测**：
+     | 节点场景 | 结算波次 | 有效推进 | 单局碎片 | 估算单位时间收益 |
+     | --- | :---: | :---: | ---: | ---: |
+     | W1–W3 速死（未通 W3 且 0 首领） | W1–W3 | 否 | **0** | **0.0 / min** |
+     | W10 战败（1 首领） | W10 | 是 | **14** | 2.3 / min |
+     | W20 战败（3 首领 + W10 突破） | W20 | 是 | **67** | 4.5 / min |
+     | W30 战败（5 首领 + W10/W20 突破） | W30 | 是 | **170** | 6.3 / min |
+     | **W30 完整通关（6 首领 + 通关大奖）** | **W30 胜利** | **是** | **314** | **10.5 / min** |
+
+3. **真实受击与致命伤归因 + 三维度结算**：
+   - 全量敌人投射物、Boss 核心技能、W20/W30 随机辅助机制、毒爆/焦土/近战与霸体冲锋均携带真实 `sourceMeta` 写入 `game.combatLog`；三维度结算弹窗真实呈现 ① 通关结果（含普通战/首领战/整备分段时长与传承快照）、② 本局表现（含致命一击与近 5 秒真实威胁归因、联动统计、金币/锻材/转印符收支）、③ 长期成长与资源结算（实发碎片明细、新增一次性里程碑、防重放状态、局外传承配置入口与快速重开按钮）。
+
+---
+
+### 3. 全量实测命令、自然 30 波试玩数据与浏览器冒烟结果
+
+执行全量回归命令（全部 100% 通过）：
+```bash
+node scripts/sync-balance.cjs --check
+node --test tests/v052-balance-lab.test.cjs
+node tests/v052-survivor-cultivation.test.cjs
+node tests/v052-ui-c-hybrid.test.cjs
+node --test tests/v060-stage1.test.cjs tests/v060-stage2.test.cjs tests/v060-stage3.test.cjs tests/v060-stage4.test.cjs tests/v060-stage5.test.cjs tests/v060-stage6.test.cjs
+```
+- `sync-balance.cjs --check`：v0.52 与 v0.60 内嵌 `BALANCE` 均 `PASS`
+- `v052-balance-lab`：`7/7 pass` · `v052-survivor-cultivation`：`81/81 pass` · `v052-ui-c-hybrid`：`5/5 pass`
+- `v060-stage1..stage6`：`30/30 pass`（全仓库总计 **123/123 pass, 0 fail**）
+
+#### 3.1 自然 W1 → W30 零赌局常规路线完整局实测（种子 `6060`，0 解锁初始传承 `main_flame + 1+1+2=4`，0 次天命赌局）
+- **结果**：**W30 通关胜利**（严格 `destinyRolls = 0`，`bossKills = 6`，达成一次性里程碑【清修破渊】）
+- **构筑终态**：领主 `Lv.30` · 主印 `火印 5★ (专精)` · W10 分支 + W20 方向/强化完整生效 · 激活 `fire_detonate_trio`（完整火系三联动：火标 `1763` / 引爆 `1266` / 传递 `1` / 孤立聚焦 `80`）
+- **实测时长分解（自动化无阅读停顿 vs 桌面真人节奏对照）**：
+  - 自动化实测：`总有效时长 19.06 分钟 (1143s)` = 普通波战斗 `552s (9.2m)` + 首领波战斗 `139s (2.3m，其中 W30 成型三联动 25.0s)` + 波间整备 `372s (6.2m)` + W29 终局整备 `45s` + 灵气收菜 `35s`。
+  - 对照 25–35 分钟真人完整局目标（推演结合实测）：真人玩家在波间浏览装备词条、联动提示、W10/W20 选卡、商店与 W29 90s 整备约额外耗时 `6–10 分钟`，叠加标准构筑 W30 Boss 实测 `3–5 分钟`（火标准 `3m02s` / 冰标准 `4m52s`），自然真人完整 30 波通关落在 **26–33 分钟**区间，符合 **25–35 分钟**目标。
+- **生存与资源收支**：最低血线 `97%`（受击 `66` 次、扣血 `33`、护盾吸收 `591`）；金币 `+9144 / -7896 (余 1248)`、普通锻材 `+457 / -32 (余 425)`、天命转印符 `0 / 0`；单局实发传承碎片 `+759`（单局 `314` + 首次里程碑 `445`）。
+
+#### 3.2 真实无头 Chrome 离线冒烟实测
+- 浏览器命令：`/usr/bin/google-chrome --headless=new --no-sandbox --disable-gpu --window-size=W,H --virtual-time-budget=2000 --dump-dom file:///.../Border-Guard-v0.60.html`
+- **桌面 `1440×900`**：零语法/运行报错，`#gameCanvas`、`#shardPill`、`#metaLegacyBtn`、开局引导与 `#introMetaBtn`（默认烈焰传承）全部正确渲染。
+- **窄屏 `390×844`**：零语法/运行报错，双侧 HUD 自动折叠为 `battle-hud collapsed` 与 `left-hud build-hud collapsed`，核心操作区与弹窗保持可用。
+
+---
+
+### 4. 整版交付汇总、已知限制与待 Astres 试玩微调清单
+
+- **正式离线试玩入口**：直接用桌面浏览器打开仓库根目录 `Border-Guard-v0.60.html`（零构建、零后端、离线可用；控制台提供 `window.BG60` 调试契约，`version: '0.60.0-stage6'`, `releaseTag: 'v0.60-complete'`）。
+- **常用自然试玩与复查命令**：
+  ```js
+  // 1. 局外传承面板与存档备份/重置
+  window.BG60.openMetaLegacyModal();
+  window.BG60.exportMetaSave();
+  window.BG60.resetMetaSave();
+
+  // 2. 完整 30 波自然开局（从 W1 起步）
+  window.BG60.startNewRun(2026, true);
+
+  // 3. 三档构筑复查 W20 / W29 / W30
+  window.BG60.loadTestPreset({ wave: 20, tier: 'standard', build: 'fire',  seed: 5050 });
+  window.BG60.loadTestPreset({ wave: 29, tier: 'standard', build: 'frost', seed: 5050 });
+  window.BG60.loadTestPreset({ wave: 30, tier: 'standard', build: 'fire',  seed: 5050 });
+  ```
+- **已知限制与建议 Astres 自然试玩后微调的项**：
+  1. **自然高配局后期经验等级与 W30 血量衔接**：自动化全清路线从 W1 打到 W30 自然达到 `Lv.30` 且商店高频率拆装使后期构筑强度高于 `loadTestPreset` 的标准 `Lv.24` 档，导致顶配自然局在 W30 可短于 1 分钟击杀 Boss（标准 `Lv.24` 档稳定在 `3m02s–4m52s`）；建议 Astres 亲自自然打一局后，结合真实手感决定是否小幅收敛 W18+ 经验曲线或微调 W30 Boss 血量。
+  2. **后期大量拆解商店装产生的锻材富余**：常规 0 赌局路线通过购买并拆解多余商店装可获得数百锻材（主因 4 槽满 `+6` 仅需 `164` 锻材）；可在下轮评审决定是否限制单波商店装备购买次数或新增后期锻材精修出口。
+  3. **局外传承初版数值与解锁定价**：当前主传承权重 `×1.35`、5 主 8 辅 3 扩展包的碎片定价（`60–160`）与里程碑额度属首版可配置参数（全在 `balance/v060-baseline.json` 的 `metaProgression` 区块），可根据实际 3–5 局节奏继续微调。
+  4. **窄屏触控操作**：已在 `390×844` 验证无报错且侧边栏自动折叠，但完整操作与词条对比体验仍以桌面鼠键为优先交付基准。
+
