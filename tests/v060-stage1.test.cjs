@@ -376,8 +376,12 @@ test('4. BG60.loadTestPreset across W10/W11/W20/W21/W29/W30 (weak/standard/stron
           assert.equal(res.hero.subCap, 2);
         } else if (wave >= 21) {
           assert.equal(res.hero.breakthroughs.w10?.completed, true);
-          assert.equal(res.hero.breakthroughs.w20?.completed, true, `W${wave} preset must include W20 breakthrough placeholder`);
-          assert.equal(res.hero.breakthroughs.w20?.placeholder, true);
+          assert.equal(res.hero.breakthroughs.w20?.completed, true, `W${wave} preset must include completed W20 breakthrough`);
+          assert.ok(
+            res.hero.breakthroughs.w20?.placeholder === true ||
+            (res.hero.breakthroughs.w20?.placeholder === false && res.hero.breakthroughs.w20?.directionKey && res.hero.breakthroughs.w20?.enhancementKey),
+            'W20 breakthrough must be either Stage 1 placeholder or Stage 3 real direction + enhancement'
+          );
           assert.equal(res.hero.sealCap, 5);
           assert.equal(res.hero.subCap, 2);
         }

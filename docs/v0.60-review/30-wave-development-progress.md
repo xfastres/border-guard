@@ -241,3 +241,138 @@ const presetSnap = window.BG60.exportBuildPreset();
 window.BG60.importBuildPreset(presetSnap);
 ```
 
+---
+
+## 阶段 3 · W16–W28 贯通（已完成）
+
+### 1. 分支、基线与变更文件
+- **工作分支**：`feat/v060-30wave`
+- **接手基线提交**：`6269558`（阶段 2 交付提交）
+- **未改动基线核对**：`Border-Guard-v0.52.html` 与 `balance/v052-baseline.json` 保持完全未动，`node --test tests/v052-balance-lab.test.cjs` 100% 通过。
+- **阶段 3 变更文件清单**：
+  - `balance/v060-baseline.json`：更新基线标识为 `v0.60/stage3-w16-w28-flow`；新增 `w20Breakthrough` 完整配置块（`preselectOpenWave: 16`、`bossIntelRevealWave: 19`、`groupSize: 2`、`rerollBaseCost: 4`、`rerollStep: 2`、`minPoolBuffer: 2`、`baseEffects`、`bossCore`、4 条公平可反制辅助机制 `bossAuxPool`）、`enemies.totem`（可击碎护盾图腾）、`wave.w21ShowcaseMix`、`wave.w22To24Themes`（3 套共享主威胁递进主题）、`wave.w25To28Pools`（W25–W28 每波 3 套独立候选敌群池）与 `wave.w28Omen`（终局预兆）。
+  - `Border-Guard-v0.60.html`：落地 W16–W19 第二次突破方向预选面板与 UI 生效边界提示、W19 揭晓 W20 首领固定核心+随机公平辅助机制与实战执行、W20 开战锁定/失败即结算/胜利凭证保底与基础效果即时生效、W20 战后强化选卡与付费整组重抽（0 相邻重复 + $\ge 2K+2$ 容量红线防扣保护）、18 张带可观察战斗行为变化的 W20 强化卡（与 W10 分支和阶段 2 装备词条共享战斗状态钩子）、W21 强势释放、W22–W24 同主威胁组合递进、W25–W28 无战前剧透独立敌群抽取、W28 三段终局预兆演出、升级 `BG60.loadTestPreset`（W21+ 替换为真实 W20 数据，清除阶段 1 占位）与阶段 3 调试 API（`BG60.version = '0.60.0-stage3'`）。
+  - `tests/v060-stage3.test.cjs`：阶段 3 自动化验收测试套件（5 大场景全覆盖）。
+  - `tests/v060-stage1.test.cjs`：同步更新第 4 项用例中对 W21+ 预设 `breakthroughs.w20` 的断言，兼容阶段 3 真实 W20 数据（`placeholder: false`）。
+  - `docs/v0.60-review/30-wave-development-progress.md`：追加本阶段完整交接文档。
+- **试玩入口**：离线直接打开 `Border-Guard-v0.60.html`（控制台暴露 `window.BG60`）。
+
+---
+
+### 2. 已实现规则（阶段 3 全部要求落地）
+
+1. **W16–W19 方向预选与 W19 首领情报**：
+   - **W16 备战期开放预选**：顶栏/底栏开放【W20 突破预选】入口，提供 3 套带明确基础行为变化的方向：
+     - `fire_chain_surge`（【聚焰连爆】）：火标引爆时牵引周围敌人并保底获得 1 次邻近连爆传递；无邻近目标时转为孤立聚焦补爆。
+     - `frost_bastion_counter`（【凛冬反制】）：寒冰护盾上限 +35，持盾期间周期释放寒霜光环，且解锁“持盾受击”与“持盾冲刺（不受击走位）”双路径主动冰环反制。
+     - `breaker_momentum`（【破阵蓄势】）：冲刺后强化下一次神通/普攻，迸发环形破阵震波并附带易伤与减速。
+   - **W16–W19 自由切换 + 无提前生效**：预选弹窗与 HUD 明确标注“**击败 W20 首领拿到突破凭证后，已锁定方向的基础效果才会生效**”；战前调整不会激活任何战斗效果。
+   - **W19 揭晓 W20 Boss 情报**：进入 W19 备战期立即公布 `boss4`（天劫魔尊）的固定核心机制（天劫震击 + 天火领域）与本局随机抽取的公平辅助机制（从 4 套公平池抽取：`oppression_ring` 领域压迫环、`shield_totem` 召唤可击碎护盾图腾、`chase_barrage` 周期追击弹幕、`charged_shockwave` 蓄力十字震荡波；**严禁**按命中频次反伤、永久禁近战或元素免疫，全部具备可读预警与走位/转火窗口，并在 W20 实战中完整执行）。
+
+2. **W20 锁方向开战、失败即结算、凭证保底与付费整组重抽**：
+   - **开战锁定**：点击开始 W20 时，若尚未选定预选方向则弹出方向选择确认框阻止开战；选定后开战立即锁定 `w20State.locked = true`，W20 战斗中方向基础效果仍未生效（按未完成第二次突破标定）。
+   - **失败即结算**：W20 战败立即进入 `phase = 'lost'` 结算弹窗，无第二次挑战机会。
+   - **胜利凭证保底 + 基础效果立即生效**：击败 W20 首领 100% 授予 `hero.vouchers.w20 = true`，**即便 `game.materials === 0` 也当场生效已锁定方向的基础行为效果**（`baseEffectActive = true`），并自动挂起 `pendingBreakthrough = 'w20'`（自动开波暂停保护同步生效）弹出战后强化选卡。
+   - **付费整组重抽与容量红线**：
+     - 参数全部外置在 `balance/v060-baseline.json` 的 `w20Breakthrough`：`groupSize (K) = 2`、`rerollBaseCost = 4`、`rerollStep = 2`（费用序列 `4 → 6 → 8 → 10 → 12 ...`，按钮实时标明下一次价格）。
+     - **零材料玩家**：可直接免费从首组 K 张卡中任选 1 张进入 W21。
+     - **相邻 0 重复 & 有效候选池 $\ge 2K+2$ 红线**：每个锁定方向在排除不适用/已拥有/互斥卡后均拥有 **8 张有效候选卡**（5 张方向专属 + 3 张相容共用，严格 $\ge 2K+2 = 6$），确保连续重抽自然覆盖多种组合而不来回机械切换；若未来误配导致有效池 $< 2K+2$，代码拒绝扣材料并完整保留当前候选与余额。
+
+3. **W21 强势释放、W22–W24 同主威胁递进、W25–W28 无剧透独立抽取与 W28 终局预兆**：
+   - **W21 强势释放**：专用 `w21ShowcaseMix` 队列与中段血量窗口，让火系挂标→牵引连爆与冰系减速→叠盾→主动冰环在进场即刻直观呈现，所有 W10/装备/W20 状态跨波连续保留。
+   - **W22–W24 同主威胁组合递进**：按本局种子从 3 套主题（`mobile_rush` 高机动突进压迫 / `flame_siege` 持续火圈与重甲推进 / `arcane_crossfire` 远程齐射与法阵封锁）抽取一套，W22→W23→W24 共享同一 `primaryThreat`，通过敌人搭配组合逐波加压（`pressureLevel: 1 → 2 → 3`，逐步用高压组合替换炮灰史莱姆）。
+   - **W25–W28 独立抽取且严禁战前剧透**：W25–W28 每波各自配置 3 套风格不同的敌群池，仅在 `startWave()` 开战时独立抽取并揭晓（允许相邻波次重复 `primaryThreat`；W25 同时保留 `boss5` 玄冥妖皇）；备战期 HUD、顶栏与按钮严禁出现任何未开战普通敌群名称剧透。
+   - **W28 终局预兆**：W28 开战横幅、中段风暴节点与通关进入 W29 备战期三处触发明确的终局预兆演出与 HUD 徽记，衔接阶段 4 的 W29 终局情报与 90 秒最终整备。
+
+---
+
+### 3. 实测命令与定量对照数据（全部 100% 实测通过）
+
+执行全量回归命令：
+```bash
+node scripts/sync-balance.cjs --check
+node --test tests/v052-balance-lab.test.cjs
+node --test tests/v060-stage1.test.cjs
+node --test tests/v060-stage2.test.cjs
+node --test tests/v060-stage3.test.cjs
+```
+结果摘要：
+- `sync-balance.cjs --check`：v0.52 与 v0.60 内嵌 `BALANCE` 均 `PASS`
+- `tests/v052-balance-lab.test.cjs`：`7/7 pass`
+- `tests/v060-stage1.test.cjs`：`5/5 pass`
+- `tests/v060-stage2.test.cjs`：`5/5 pass`
+- `tests/v060-stage3.test.cjs`：`5/5 pass`
+
+#### 3.1 两套构筑“W10 → 常见 1–2 槽装备 → W20”跨阶段战斗行为对照实测（种子 `2026`，仅携带 2 槽常见双联动装备，不含 3 槽三联动与灵印干扰）
+
+- **火系链路**：W10【烙印穿云 (`fw_brand_pierce`)】挂火标 → 2 槽常见装备【离火羽扇 (`fire_brand + fire_burst`)】双联动单次引爆 → W20 零材料基础效果【聚焰连爆】解锁牵引聚怪 + 1 次连爆传递（孤立目标转聚焦补爆） → W20 强化卡【超新星连爆 (`w20_fire_supernova_chain`)】追加 +2 次传递并在传递点留下灼地熔岩 / 【孤焰裁决 (`w20_fire_isolated_exec`)】在孤立 Boss 处附加 3.5s 易伤与双倍聚焦爆发：
+
+  | 波次与遭遇 | 阶段配置 | 总伤害 | 引爆次数 | 群体传递 | 孤立聚焦 | 聚怪牵引 | 熔岩残阵 | 易伤(s) |
+  | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+  | W21 群怪(4带标兽人) | W20 突破前 | 1211 | 1 | 0 | 0 | 0 | 0 | 0 |
+  | W21 群怪(4带标兽人) | W20 零材料基础效果 | 2363 | 2 | **1** | 0 | **1** | 0 | 0 |
+  | W21 群怪(4带标兽人) | W20 +【超新星连爆】 | 3821 | 4 | **3** | 0 | **1** | **3** | 0 |
+  | W23 群怪(4带标兽人) | W20 突破前 → 基础 → 超新星 | 1241 → 2423 → 3917 | 1 → 2 → 4 | 0 → 1 → 3 | 0 | 0 → 1 → 1 | 0 → 0 → 3 | 0 |
+  | W26 群怪(4带标兽人) | W20 突破前 → 基础 → 超新星 | 1343 → 2594 → 4369 | 1 → 2 → 4 | 0 → 1 → 3 | 0 | 0 → 1 → 1 | 0 → 0 → 3 | 0 |
+  | W21 孤立首领(`boss4`) | W20 突破前 | 445 | 1 | 0 | 0 | 0 | 0 | 0 |
+  | W21 孤立首领(`boss4`) | W20 零材料基础效果 | 674 | 1 | 0 | **1** | 0 | 0 | 0 |
+  | W21 孤立首领(`boss4`) | W20 +【孤焰裁决】 | 1336 | 1 | 0 | **1** | 0 | 0 | **3.5** |
+
+- **冰系链路**：W10【凛冬寒涡 (`nv_seeking_vortex`)】持续施加减速 → 2 槽常见装备【寒冰护镜 (`frost_chill + frost_ward`)】命中减速敌凝结寒冰护盾 → W20 零材料基础效果【凛冬反制】提升护盾上限并直接解锁“持盾冲刺（无受击主动走位）”与“持盾受击”双路径冰环 → W20 强化卡【极寒闪环 (`w20_frost_dash_ring`)】将主动冲刺冰环冷却压至 `0.75s` 并在落点留冰径 / 【盈盾星爆 (`w20_frost_overflow_nova`)】在满盾刷新时（无需受击）迸发主动冰环并齐射 6 枚追踪冰枪：
+
+  | 波次(W21 / W24 / W27 一致复现) | 盾上限 | 主动冲刺冰环 | 受击冰环 | 满盾刷新冰环 | 冲刺冰环 CD | 落点冰径 | 满盾齐射冰枪 |
+  | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+  | W20 突破前（2 槽双联动） | 128 | 0 | 0 | 0 | — | 0 | 0 |
+  | W20 零材料基础效果【凛冬反制】 | **163** | **1** | **1** | 0 | 1.50s | 0 | 0 |
+  | W20 +【极寒闪环】 | **163** | **1** | **1** | 0 | **0.75s** | **1** | 0 |
+  | W20 +【盈盾星爆】 | **163** | **1** | **1** | **1** | 1.50s | 0 | **6** |
+
+#### 3.2 W20 有效池容量、付费重抽序列与 W22–W28 敌群抽样实测
+- **有效候选池容量**（初始未选卡状态，`K = 2`，红线 $2K+2 = 6$）：`fire_chain_surge` = **8 张**、`frost_bastion_counter` = **8 张**、`breaker_momentum` = **8 张**（全部满足 $\ge 6$）。
+- **连续付费整组重抽实测**（种子 `202603`，初始锻材 `60`，火系方向）：
+  - 首组（0 锻材，余 60）：`[w20_fire_isolated_exec, w20_shared_tactical_surge]`
+  - 第 1 次重抽（付 4，余 56）：`[w20_shared_boss_breaker, w20_fire_supernova_chain]`（与首组 0 重复）
+  - 第 2 次重抽（付 6，余 50）：`[w20_fire_dash_detonator, w20_fire_mark_vortex]`（与第 1 组 0 重复）
+  - 第 3 次重抽（付 8，余 42）：`[w20_fire_ember_barrage, w20_shared_boss_breaker]`（与第 2 组 0 重复）
+  - 第 4 次重抽（付 10，余 32）：`[w20_fire_dash_detonator, w20_fire_mark_vortex]`（与第 3 组 0 重复）
+  - 第 5 次重抽（付 12，余 20）：`[w20_shared_elemental_echo, w20_fire_isolated_exec]`（与第 4 组 0 重复）
+  - 6 组中共出现 **5 套** 互不相同的双卡组合，无相邻重复与机械双组来回切换。
+- **W22–W24 同主威胁递进实测**（种子 `202604`）：共享 `flame_siege`（持续火圈与重甲推进）→ W22 `初阶试探 · 重甲前推+祭司火圈`（压力 1）→ W23 `组合升压 · 重甲火圈+毒爆双重封地`（压力 2）→ W24 `高压合围 · 重甲双祭司+影狼侧袭`（压力 3）。
+- **W25–W28 多种子独立抽取实测**（备战期 UI 0 剧透，开战后揭晓）：
+  - 种子 `9037`：W25 `影狼狂潮突袭群(mobile_rush)` → W26 `炽地重甲合围阵(flame_siege)` → W27 `妖火祭坛封锁群(flame_siege)`（相邻允许同威胁）→ W28 `终局前锋·疾影破阵群(mobile_rush)`
+  - 种子 `9074`：W25 `影狼狂潮突袭群(mobile_rush)` → W26 `煞毒自爆突进群(mobile_rush)` → W27 `游猎弹幕绞杀群(arcane_crossfire)` → W28 `终局前锋·裂隙弹幕群(arcane_crossfire)`
+  - 种子 `9111`：W25 `星穹弹幕齐射群(arcane_crossfire)` → W26 `双排巫师火力网(arcane_crossfire)` → W27 `妖火祭坛封锁群(flame_siege)` → W28 `终局前锋·裂隙弹幕群(arcane_crossfire)`
+
+#### 3.3 W16 → W28 连续贯通通关后（W29 备战起点）真实状态快照（种子 `202605`，初始 300 金 / 14 锻材，W20 重抽 1 次消耗 4 锻材）
+- **火系贯通终态（W29 备战）**：`lv: 13`、`gold: 1392`、`materials: 10`、`w10: fw_brand_pierce`、`w20: fire_chain_surge + w20_fire_isolated_exec`（`vouchers.w20 = true`）、W20 Boss 辅助 `charged_shockwave`、W28 终局预兆已完结（`omenClear = true`）、装备 `[离火羽扇(S2/+1/2槽:fire_brand+fire_burst), 熔核魔石(S2/+0/1槽:fury_crit), 狂暴战斧(S2/+0/1槽:vamp_siphon)]`（已激活 `fire_detonate_duo`）。
+- **冰系贯通终态（W29 备战）**：`lv: 13`、`gold: 1392`、`materials: 10`、`w10: nv_seeking_vortex`、`w20: frost_bastion_counter + w20_frost_overflow_nova`（`vouchers.w20 = true`）、W20 Boss 辅助 `charged_shockwave`、W28 终局预兆已完结（`omenClear = true`）、装备 `[寒冰护镜(S2/+1/2槽:frost_chill+frost_ward), 极寒宝珠(S2/+0/1槽:iron_bastion), 引灵玉佩(S2/+0/1槽:wind_tempest)]`（已激活 `frost_aegis_duo`）。
+
+---
+
+### 4. 下一阶段（阶段 4 · W29–W30 终局整备、天命转印与终局首领）起手入口与可复制 `BG60` 调用
+
+#### 4.1 阶段 4 可直接复用的阶段 3 接口与字段
+- **W20 完整突破状态与凭证**：`game.hero.vouchers.w20`、`game.hero.breakthroughs.w20`（含真实 `directionKey` / `enhancementKey` / `baseEffectActive` / `placeholder: false`）、`BG60.getW20ActiveState()`、`BG60.hasW20Direction(dirKey)`、`BG60.hasW20Enhancement(enhKey)`。
+- **W28 终局预兆与 W29 90 秒整备钩子**：`BG60.getEndgameOmenState()`、`game.finalPrep`（`active / timer / duration`）、`game.bossIntel`（可直接扩展 W29 揭晓 W30 `boss6` 固定核心 + 公平随机辅助机制）。
+- **W16–W28 完整调试接口**：`BG60.selectW20PreselectDirection`、`BG60.getW20BossIntel`、`BG60.rerollW20Enhancements`、`BG60.pickW20Enhancement`、`BG60.getWaveEncounterInfo`、`BG60.getW22To24Theme`、`BG60.getW25To28Pool`。
+
+#### 4.2 阶段 4 可直接复制的 `BG60` 调试命令
+```js
+// 1. W19 备战（已开放 W20 方向预选并已公布 W20 Boss 固定+随机辅助机制）
+window.BG60.loadTestPreset({ wave: 19, tier: 'standard', build: 'fire',  materials: 16, gold: 340, seed: 2026 });
+
+// 2. W20 战前（未完成 W20 突破、预选待锁定，验证 0 材料凭证保底与付费整组重抽）
+window.BG60.loadTestPreset({ wave: 20, tier: 'standard', build: 'fire',  materials: 0,  gold: 380, seed: 2026 });
+window.BG60.loadTestPreset({ wave: 20, tier: 'strong',   build: 'frost', materials: 36, gold: 460, seed: 2026 });
+
+// 3. W21 / W25 / W28（已装配真实 W20 锁定方向 + W20 强化卡，可直接试玩 W21 强势体验、W25-28 独立抽取与 W28 终局预兆）
+window.BG60.loadTestPreset({ wave: 21, tier: 'standard', build: 'fire',  materials: 18, gold: 420, seed: 2026 });
+window.BG60.loadTestPreset({ wave: 28, tier: 'standard', build: 'frost', materials: 26, gold: 620, seed: 2026 });
+
+// 4. W29 / W30 阶段 4 起手入口（真实 W10 + 阶段 2 装备 + 真实 W20 突破，携带终局整备资金与锻材）
+window.BG60.loadTestPreset({ wave: 29, tier: 'standard', build: 'fire',  materials: 28, gold: 760, seed: 2026 });
+window.BG60.loadTestPreset({ wave: 29, tier: 'strong',   build: 'frost', materials: 42, gold: 980, seed: 2026 });
+window.BG60.loadTestPreset({ wave: 30, tier: 'standard', build: 'fire',  materials: 30, gold: 800, seed: 2026 });
+```
+
+

@@ -486,6 +486,7 @@
   .modal h2{margin:0 0 6px;font-size:21px;font-weight:900;color:#ffe694}
   .modal .lead{margin:0 0 14px;font-size:13px;color:#c3dbd6;line-height:1.55}
   .choices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 4px}
+  .choices.two{grid-template-columns:repeat(2,1fr)}
   .choice-card{
     text-align:left;padding:13px 12px;border-radius:14px;cursor:pointer;
     border:1px solid rgba(190,224,218,0.24);background:rgba(24,42,52,0.92);color:var(--text);
@@ -493,6 +494,12 @@
   }
   .choice-card:hover{transform:translateY(-3px);border-color:var(--gold);background:rgba(40,68,82,0.98)}
   .choice-card.legend{border-color:#ffbe4f;background:linear-gradient(180deg,rgba(112,68,18,0.55),rgba(34,26,18,0.92))}
+  .choice-card.w20-selected{border-color:#72f2b4;box-shadow:0 0 0 2px rgba(114,242,180,0.38);background:linear-gradient(180deg,rgba(24,78,66,0.72),rgba(18,38,44,0.95))}
+  .intel-box{padding:10px 12px;border-radius:12px;background:rgba(120,24,46,0.34);border:1px solid rgba(255,112,150,0.45);margin:8px 0;font-size:12px;line-height:1.5;color:#ffdce6}
+  .intel-box b{color:#ffe48a}
+  .w20-notice{padding:8px 11px;border-radius:10px;background:rgba(255,214,102,0.12);border:1px solid rgba(255,214,102,0.42);color:#ffefc0;font-size:12px;margin:8px 0;line-height:1.45}
+  .reroll-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(182,218,214,0.2);margin-top:12px}
+  .omen-badge{padding:6px 8px;border-radius:8px;background:rgba(95,22,42,0.48);border:1px solid rgba(255,102,138,0.55);color:#ffd0dc;font-size:11px;line-height:1.4;margin-top:6px}
   .choice-card .tag{
     align-self:flex-start;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:900;
     background:rgba(255,214,102,0.18);color:#ffe58f;
@@ -513,7 +520,7 @@
     .battle-hud .lh-head,.build-hud .lh-head{font-size:11px}
   }
   @media (max-width:760px){
-    .choices,.intro-grid{grid-template-columns:1fr}
+    .choices,.choices.two,.intro-grid{grid-template-columns:1fr}
     .topbar{padding:5px 8px;gap:5px}
     .brand{font-size:13.5px}
     .pill{padding:3px 7px;font-size:11px}
@@ -531,7 +538,7 @@
 
 <header class="topbar" id="topbar">
   <div class="top-left">
-    <div class="brand">⚔️ 边境守卫 <span class="ver">v0.60 · 装备词条与联动</span></div>
+    <div class="brand">⚔️ 边境守卫 <span class="ver">v0.60 · W16–W28 贯通</span></div>
     <span class="pill wave-prep" id="wavePill">第 1 / 30 波 · 备战</span>
     <span class="pill gold" id="goldPill">💰 55</span>
     <span class="pill" id="matPill" title="普通材料（用于常规装备优化与W20突破强化重抽）">⚙️ 0 锻材</span>
@@ -556,6 +563,7 @@
   <div class="syn-strip" id="sealStrip"></div>
   <div class="sub-actions">
     <div class="skill-strip" id="skillStrip" title="已学领主神通（点击展开属性与伤害构成）"></div>
+    <button class="btn gold" id="w20PrepBtn" type="button" hidden title="W16-W20 预选第二次突破方向与查看 W19 首领情报">⚡ W20 方向预选</button>
     <button class="meta-badge" id="metaBadge" type="button" title="查看W10/W20突破与配方组合技">✨ 突破 0/2 · 组合 0/4</button>
     <button class="btn" id="heroPanelBtn" type="button">👑 属性/神通 [C]</button>
     <button class="btn" id="autoWaveBtn" type="button">自动下波：关</button>
@@ -640,9 +648,9 @@
 /* BALANCE_CONFIG_START — generated from balance/v060-baseline.json */
 const BALANCE = {
   "schemaVersion": 1,
-  "baseline": "v0.60/stage2-gear-affixes-economy",
+  "baseline": "v0.60/stage3-w16-w28-flow",
   "mainWaves": 30,
-  "notes": "v0.60 阶段 2（装备词条、联动和普通经济）数值基线：独立装备实例、1/2/3槽独立概率、来源阶段与品质回收、商店按阶段+同系递增与封顶、普通材料强化及3★灵印专精路线。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
+  "notes": "v0.60 阶段 3（W16-W28 贯通）数值基线：新增 W16-W19 方向预选、W19 首领情报与公平随机辅助机制池、W20 二破基础效果与付费整组重抽（K=2, 4/6/8...）、W22-W24 同源威胁组合递进、W25-W28 独立无剧透敌群抽取与 W28 终局预兆。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
   "progression": {
     "initialGold": 55,
     "initialMaterials": 0,
@@ -1414,6 +1422,972 @@ const BALANCE = {
           ]
         ]
       }
+    ],
+    "w21ShowcaseMix": {
+      "normal": [
+        [
+          "slime",
+          0.22
+        ],
+        [
+          "wolf",
+          0.48
+        ],
+        [
+          "brute",
+          0.78
+        ],
+        [
+          "mage",
+          0.92
+        ],
+        [
+          "shaman",
+          1
+        ]
+      ],
+      "heavy": [
+        [
+          "wolf",
+          0.25
+        ],
+        [
+          "brute",
+          0.72
+        ],
+        [
+          "mage",
+          0.88
+        ],
+        [
+          "shaman",
+          1
+        ]
+      ]
+    },
+    "w22To24Themes": {
+      "mobile_rush": {
+        "key": "mobile_rush",
+        "name": "高机动突进压迫",
+        "primaryThreat": "mobile_rush",
+        "threatLabel": "高速突进与霸体撕裂防线",
+        "counterHint": "预留冲刺位移，优先用减速/聚怪打断合围并先清侧翼影狼与妖火祭司",
+        "waves": {
+          "22": {
+            "comboLabel": "初阶试探 · 影狼斥候+远程掩护",
+            "pressureLevel": 1,
+            "packBonus": 0,
+            "mobMultAdj": 0.98,
+            "normal": [
+              [
+                "wolf",
+                0.52
+              ],
+              [
+                "slime",
+                0.76
+              ],
+              [
+                "mage",
+                0.94
+              ],
+              [
+                "brute",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "wolf",
+                0.5
+              ],
+              [
+                "mage",
+                0.8
+              ],
+              [
+                "brute",
+                1
+              ]
+            ]
+          },
+          "23": {
+            "comboLabel": "组合升压 · 双突进冲锋+毒虫封路",
+            "pressureLevel": 2,
+            "packBonus": 1,
+            "mobMultAdj": 1.02,
+            "normal": [
+              [
+                "wolf",
+                0.42
+              ],
+              [
+                "brute",
+                0.72
+              ],
+              [
+                "bomber",
+                0.9
+              ],
+              [
+                "mage",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "wolf",
+                0.36
+              ],
+              [
+                "brute",
+                0.78
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ]
+          },
+          "24": {
+            "comboLabel": "高压合围 · 狂暴双突进+祭司点名",
+            "pressureLevel": 3,
+            "packBonus": 2,
+            "mobMultAdj": 1.05,
+            "normal": [
+              [
+                "wolf",
+                0.36
+              ],
+              [
+                "brute",
+                0.68
+              ],
+              [
+                "shaman",
+                0.86
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "wolf",
+                0.3
+              ],
+              [
+                "brute",
+                0.66
+              ],
+              [
+                "shaman",
+                0.88
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ]
+          }
+        }
+      },
+      "flame_siege": {
+        "key": "flame_siege",
+        "name": "持续火圈与重甲推进",
+        "primaryThreat": "flame_siege",
+        "threatLabel": "持续地形封锁与重甲压境",
+        "counterHint": "保持弧线拉扯避免被火圈和毒池逼入死角，及时点杀后排祭司",
+        "waves": {
+          "22": {
+            "comboLabel": "初阶试探 · 重甲前推+祭司火圈",
+            "pressureLevel": 1,
+            "packBonus": 0,
+            "mobMultAdj": 0.98,
+            "normal": [
+              [
+                "brute",
+                0.44
+              ],
+              [
+                "shaman",
+                0.68
+              ],
+              [
+                "slime",
+                0.9
+              ],
+              [
+                "mage",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "brute",
+                0.6
+              ],
+              [
+                "shaman",
+                0.88
+              ],
+              [
+                "mage",
+                1
+              ]
+            ]
+          },
+          "23": {
+            "comboLabel": "组合升压 · 重甲火圈+毒爆双重封地",
+            "pressureLevel": 2,
+            "packBonus": 1,
+            "mobMultAdj": 1.02,
+            "normal": [
+              [
+                "brute",
+                0.38
+              ],
+              [
+                "shaman",
+                0.62
+              ],
+              [
+                "bomber",
+                0.86
+              ],
+              [
+                "mage",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "brute",
+                0.5
+              ],
+              [
+                "shaman",
+                0.76
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ]
+          },
+          "24": {
+            "comboLabel": "高压合围 · 重甲双祭司+影狼侧袭",
+            "pressureLevel": 3,
+            "packBonus": 2,
+            "mobMultAdj": 1.05,
+            "normal": [
+              [
+                "brute",
+                0.34
+              ],
+              [
+                "shaman",
+                0.6
+              ],
+              [
+                "bomber",
+                0.8
+              ],
+              [
+                "wolf",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "brute",
+                0.44
+              ],
+              [
+                "shaman",
+                0.72
+              ],
+              [
+                "bomber",
+                0.86
+              ],
+              [
+                "wolf",
+                1
+              ]
+            ]
+          }
+        }
+      },
+      "arcane_crossfire": {
+        "key": "arcane_crossfire",
+        "name": "远程火力网与控场合围",
+        "primaryThreat": "arcane_crossfire",
+        "threatLabel": "扇形弹幕交叉火力与阵型分割",
+        "counterHint": "斜向切入外圈清理法师与祭司，利用护盾或冲刺穿过弹幕缝隙",
+        "waves": {
+          "22": {
+            "comboLabel": "初阶试探 · 扇形法阵+盾墙掩护",
+            "pressureLevel": 1,
+            "packBonus": 0,
+            "mobMultAdj": 0.98,
+            "normal": [
+              [
+                "mage",
+                0.46
+              ],
+              [
+                "slime",
+                0.74
+              ],
+              [
+                "brute",
+                0.92
+              ],
+              [
+                "wolf",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "mage",
+                0.52
+              ],
+              [
+                "brute",
+                0.86
+              ],
+              [
+                "wolf",
+                1
+              ]
+            ]
+          },
+          "23": {
+            "comboLabel": "组合升压 · 法师祭司联动+重甲护阵",
+            "pressureLevel": 2,
+            "packBonus": 1,
+            "mobMultAdj": 1.02,
+            "normal": [
+              [
+                "mage",
+                0.42
+              ],
+              [
+                "shaman",
+                0.68
+              ],
+              [
+                "brute",
+                0.88
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "mage",
+                0.44
+              ],
+              [
+                "shaman",
+                0.74
+              ],
+              [
+                "brute",
+                1
+              ]
+            ]
+          },
+          "24": {
+            "comboLabel": "高压合围 · 交叉弹幕+影狼毒爆逼位",
+            "pressureLevel": 3,
+            "packBonus": 2,
+            "mobMultAdj": 1.05,
+            "normal": [
+              [
+                "mage",
+                0.36
+              ],
+              [
+                "shaman",
+                0.62
+              ],
+              [
+                "wolf",
+                0.84
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "mage",
+                0.38
+              ],
+              [
+                "shaman",
+                0.66
+              ],
+              [
+                "wolf",
+                0.86
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "w25To28Pools": {
+      "25": [
+        {
+          "id": "w25_rush_vanguard",
+          "name": "影狼狂潮突袭群",
+          "primaryThreat": "mobile_rush",
+          "mobMultAdj": 1,
+          "hpMultAdj": 1,
+          "normal": [
+            [
+              "wolf",
+              0.44
+            ],
+            [
+              "brute",
+              0.72
+            ],
+            [
+              "mage",
+              0.88
+            ],
+            [
+              "shaman",
+              1
+            ]
+          ],
+          "heavy": [
+            [
+              "wolf",
+              0.4
+            ],
+            [
+              "brute",
+              0.78
+            ],
+            [
+              "shaman",
+              1
+            ]
+          ]
+        },
+        {
+          "id": "w25_siege_phalanx",
+          "name": "玄甲祭司推进阵",
+          "primaryThreat": "flame_siege",
+          "mobMultAdj": 0.96,
+          "hpMultAdj": 1.04,
+          "normal": [
+            [
+              "brute",
+              0.42
+            ],
+            [
+              "shaman",
+              0.7
+            ],
+            [
+              "bomber",
+              0.88
+            ],
+            [
+              "mage",
+              1
+            ]
+          ],
+          "heavy": [
+            [
+              "brute",
+              0.54
+            ],
+            [
+              "shaman",
+              0.82
+            ],
+            [
+              "bomber",
+              1
+            ]
+          ]
+        },
+        {
+          "id": "w25_arcane_volley",
+          "name": "星穹弹幕齐射群",
+          "primaryThreat": "arcane_crossfire",
+          "mobMultAdj": 1.02,
+          "hpMultAdj": 0.98,
+          "normal": [
+            [
+              "mage",
+              0.46
+            ],
+            [
+              "shaman",
+              0.7
+            ],
+            [
+              "wolf",
+              0.88
+            ],
+            [
+              "brute",
+              1
+            ]
+          ],
+          "heavy": [
+            [
+              "mage",
+              0.5
+            ],
+            [
+              "shaman",
+              0.76
+            ],
+            [
+              "brute",
+              1
+            ]
+          ]
+        }
+      ],
+      "26": [
+        {
+          "id": "w26_plague_stampede",
+          "name": "煞毒自爆突进群",
+          "primaryThreat": "mobile_rush",
+          "mobMultAdj": 1.02,
+          "hpMultAdj": 0.99,
+          "normal": [
+            [
+              "wolf",
+              0.38
+            ],
+            [
+              "bomber",
+              0.7
+            ],
+            [
+              "brute",
+              0.88
+            ],
+            [
+              "shaman",
+              1
+            ]
+          ],
+          "heavy": [
+            [
+              "wolf",
+              0.34
+            ],
+            [
+              "bomber",
+              0.66
+            ],
+            [
+              "brute",
+              1
+            ]
+          ]
+        },
+        {
+          "id": "w26_magma_wall",
+          "name": "炽地重甲合围阵",
+          "primaryThreat": "flame_siege",
+          "mobMultAdj": 0.96,
+          "hpMultAdj": 1.04,
+          "normal": [
+            [
+              "brute",
+              0.44
+            ],
+            [
+              "shaman",
+              0.72
+            ],
+            [
+              "mage",
+              0.88
+            ],
+            [
+              "bomber",
+              1
+            ]
+          ],
+          "heavy": [
+            [
+              "brute",
+              0.52
+            ],
+            [
+              "shaman",
+              0.84
+            ],
+            [
+              "bomber",
+              1
+            ]
+          ]
+        },
+        {
+          "id": "w26_crossfire_web",
+          "name": "双排巫师火力网",
+          "primaryThreat": "arcane_crossfire",
+          "mobMultAdj": 1,
+          "hpMultAdj": 1,
+          "normal": [
+            [
+              "mage",
+              0.44
+            ],
+            [
+              "shaman",
+              0.68
+            ],
+            [
+              "bomber",
+              0.86
+            ],
+            [
+              "wolf",
+              1
+            ]
+          ],
+          "heavy": [
+            [
+              "mage",
+              0.48
+            ],
+            [
+              "shaman",
+              0.76
+            ],
+            [
+              "wolf",
+              1
+            ]
+          ]
+        }
+      ],
+      "27": [
+        {
+          "id": "w27_feral_charge",
+          "name": "双霸体破阵突袭群",
+          "primaryThreat": "mobile_rush",
+          "mobMultAdj": 1,
+          "hpMultAdj": 1.01,
+          "normal": [
+            [
+              "wolf",
+              0.36
+            ],
+            [
+              "brute",
+              0.72
+            ],
+            [
+              "bomber",
+              0.86
+            ],
+            [
+              "shaman",
+              1
+            ]
+          ],
+          "heavy": [
+            [
+              "wolf",
+              0.32
+            ],
+            [
+              "brute",
+              0.76
+            ],
+            [
+              "shaman",
+              1
+            ]
+          ]
+        },
+        {
+          "id": "w27_ritual_pyre",
+          "name": "妖火祭坛封锁群",
+          "primaryThreat": "flame_siege",
+          "mobMultAdj": 0.97,
+          "hpMultAdj": 1.03,
+          "normal": [
+            [
+              "shaman",
+              0.36
+            ],
+            [
+              "brute",
+              0.68
+            ],
+            [
+              "bomber",
+              0.88
+            ],
+            [
+              "mage",
+              1
+            ]
+          ],
+          "heavy": [
+            [
+              "shaman",
+              0.42
+            ],
+            [
+              "brute",
+              0.78
+            ],
+            [
+              "bomber",
+              1
+            ]
+          ]
+        },
+        {
+          "id": "w27_barrage_hunters",
+          "name": "游猎弹幕绞杀群",
+          "primaryThreat": "arcane_crossfire",
+          "mobMultAdj": 1.02,
+          "hpMultAdj": 0.99,
+          "normal": [
+            [
+              "mage",
+              0.42
+            ],
+            [
+              "wolf",
+              0.68
+            ],
+            [
+              "shaman",
+              0.86
+            ],
+            [
+              "brute",
+              1
+            ]
+          ],
+          "heavy": [
+            [
+              "mage",
+              0.46
+            ],
+            [
+              "wolf",
+              0.72
+            ],
+            [
+              "shaman",
+              1
+            ]
+          ]
+        }
+      ],
+      "28": [
+        {
+          "id": "w28_abyss_vanguard_rush",
+          "name": "终局前锋·疾影破阵群",
+          "primaryThreat": "mobile_rush",
+          "mobMultAdj": 1.01,
+          "hpMultAdj": 1,
+          "normal": [
+            [
+              "wolf",
+              0.38
+            ],
+            [
+              "brute",
+              0.7
+            ],
+            [
+              "shaman",
+              0.86
+            ],
+            [
+              "bomber",
+              1
+            ]
+          ],
+          "heavy": [
+            [
+              "wolf",
+              0.34
+            ],
+            [
+              "brute",
+              0.72
+            ],
+            [
+              "shaman",
+              1
+            ]
+          ]
+        },
+        {
+          "id": "w28_abyss_siege_choir",
+          "name": "终局前锋·焦土铁壁群",
+          "primaryThreat": "flame_siege",
+          "mobMultAdj": 0.97,
+          "hpMultAdj": 1.04,
+          "normal": [
+            [
+              "brute",
+              0.4
+            ],
+            [
+              "shaman",
+              0.68
+            ],
+            [
+              "bomber",
+              0.88
+            ],
+            [
+              "mage",
+              1
+            ]
+          ],
+          "heavy": [
+            [
+              "brute",
+              0.48
+            ],
+            [
+              "shaman",
+              0.8
+            ],
+            [
+              "bomber",
+              1
+            ]
+          ]
+        },
+        {
+          "id": "w28_abyss_star_barrage",
+          "name": "终局前锋·裂隙弹幕群",
+          "primaryThreat": "arcane_crossfire",
+          "mobMultAdj": 1,
+          "hpMultAdj": 1,
+          "normal": [
+            [
+              "mage",
+              0.4
+            ],
+            [
+              "shaman",
+              0.66
+            ],
+            [
+              "wolf",
+              0.84
+            ],
+            [
+              "brute",
+              1
+            ]
+          ],
+          "heavy": [
+            [
+              "mage",
+              0.44
+            ],
+            [
+              "shaman",
+              0.72
+            ],
+            [
+              "brute",
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    "w28Omen": {
+      "startTitle": "🌑 第 28 波 · 终局预兆降临！",
+      "startSub": "深渊裂隙正在撕开边境天穹！W29 将公布 W30 终焉魔帝情报并进入最终整备，请检验成型构筑！",
+      "midTitle": "🌑 终局阴云压境 · 深渊低语回响！",
+      "midSub": "终局危机迫近！稳住阵脚，筹备 W29 前哨决战与 90 秒最终整备！",
+      "clearTitle": "🌑 终局预兆已现 · W29 前哨与终局情报即将揭晓！",
+      "clearSub": "距离 W30 终焉魔帝仅余最后两波：下一波将迎来紧凑强敌，战后开启 90 秒独立最终整备！"
+    }
+  },
+  "w20Breakthrough": {
+    "preselectOpenWave": 16,
+    "bossIntelRevealWave": 19,
+    "groupSize": 2,
+    "rerollBaseCost": 4,
+    "rerollStep": 2,
+    "minPoolBuffer": 2,
+    "baseEffects": {
+      "firePullRadius": 3.4,
+      "firePullStrength": 0.75,
+      "fireBaseExtraChains": 1,
+      "fireBaseFocusRatio": 0.42,
+      "fireTrioBonusFocusCap": 1.15,
+      "frostBaseShieldCapBonus": 35,
+      "frostBaseAuraInterval": 1.6,
+      "frostBasePulseRadius": 3.05,
+      "frostBasePulseDmg": 46,
+      "frostBaseTrioActiveCdReduction": 0.35,
+      "frostBaseTrioPulseShieldRefund": 10,
+      "breakerDashRadius": 2.9,
+      "breakerDashDmgMult": 1.45,
+      "breakerDashCdFactor": 0.8,
+      "breakerDashShieldOnSlow": 22
+    },
+    "bossCore": {
+      "name": "天劫三重雷域 + 扇形紫电弹幕",
+      "desc": "周期在领主周边落下 3 处带 1.2s 红圈预警的雷域重击，并向领主方向倾泻 6 枚扇形紫电弹幕。"
+    },
+    "bossAuxPool": [
+      {
+        "key": "oppression_ring",
+        "name": "领域压迫环",
+        "desc": "周期释放带清晰红圈预警的扩散压迫光环，命中造成重击；可借走位穿隙或冲刺无敌帧越环躲避。",
+        "fairnessNote": "有明确预警与位移窗口，不反伤、不封流派"
+      },
+      {
+        "key": "shield_totem",
+        "name": "召唤护盾图腾",
+        "desc": "周期在场地中召唤 1 座可被集火摧毁的【护盾图腾】为首领周期补盾；击碎图腾会直接炸破首领护盾并施加 3 秒易伤！",
+        "fairnessNote": "鼓励转火交互，近战/远程与全元素均可正常击破"
+      },
+      {
+        "key": "chase_barrage",
+        "name": "周期追击弹幕",
+        "desc": "短暂蓄力预警后向领主方向连发两波间隔清晰的紫电追击弹幕，横向移动即可稳定规避。",
+        "fairnessNote": "弹道速度可控、有横移与冲刺躲避窗口"
+      },
+      {
+        "key": "charged_shockwave",
+        "name": "蓄力震荡波",
+        "desc": "原地蓄力 1.3s（清晰红圈读条）后释放高伤十字裂地预警阵，走出预警区或冲刺即可规避。",
+        "fairnessNote": "长前摇可读预警，留足走位应对时间"
+      }
     ]
   },
   "enemies": {
@@ -1507,6 +2481,13 @@ const BALANCE = {
       "dmg": 62,
       "xp": 240,
       "gold": 200
+    },
+    "totem": {
+      "hp": 920,
+      "spd": 0.01,
+      "dmg": 0,
+      "xp": 10,
+      "gold": 6
     }
   }
 };
@@ -2531,6 +3512,231 @@ const ELITE_AFFIXES = [
   { key:'vortex', name:'引力', col:'#a46bff' }
 ];
 
+/* ==================== STAGE 3: W20 SECOND MAJOR BREAKTHROUGH (DIRECTIONS, ENHANCEMENTS & BOSS AUX POOL) ==================== */
+const W20_BOSS_AUX_POOL = (BALANCE.w20Breakthrough?.bossAuxPool || []).slice();
+
+const W20_DIRECTIONS = {
+  fire_chain_surge: {
+    key: 'fire_chain_surge',
+    name: '聚焰连爆',
+    icon: '🔥',
+    elem: 'fire',
+    tag: '火系 · 聚怪牵引 / 余烬传导',
+    synergyNote: '与 W10 火标分支 + 1-2 槽火系词条装备共用火标与引爆链路',
+    baseDesc: '每次触发【火标引爆】时先将周围 3.4 格非首领敌人向中心聚拢并补挂火标；即使仅有 1-2 槽普通火装也能获得 +1 次基础传递引爆（孤立精英/首领则转为 42% 衰减聚焦爆轰），三词条装传递上限再 +1！'
+  },
+  frost_bastion_counter: {
+    key: 'frost_bastion_counter',
+    name: '凛冬反制',
+    icon: '❄️',
+    elem: 'frost',
+    tag: '冰系 · 冰盾蓄压 / 主动与受击冰环',
+    synergyNote: '与 W10 冰缓分支 + 1-2 槽冰系词条装备共用减速与寒冰护盾链路',
+    baseDesc: '寒冰护盾上限 +35，持盾期间每 1.6s 散发寒潮维持减速；即使仅有 1-2 槽普通冰装，持盾受击或主动冲刺（Space）即可释放【凛冬反制冰环】，三词条装主动冷却再减 0.35s 且冰环命中返还 +10 护盾！'
+  },
+  breaker_momentum: {
+    key: 'breaker_momentum',
+    name: '破阵蓄势',
+    icon: '⚡',
+    elem: 'thunder',
+    tag: '通玄机动 · 冲刺破阵 / 跨系引动',
+    synergyNote: '兼容任意流派，冲刺落点直接引动火标引爆或对减速目标凝结寒冰护盾',
+    baseDesc: '冲刺冷却缩短 20%，每次冲刺落地释放 2.9 格【破阵震荡波】造成范围伤害并施加 3 秒易伤，同步引爆范围内已有火标或对减速目标凝结 +22 寒冰护盾！'
+  }
+};
+const W20_DIRECTION_KEYS = Object.keys(W20_DIRECTIONS);
+
+// Each locked direction has 5 exclusive cards + 3 compatible shared cards = 8 valid candidates (strictly >= 2K+2 = 6 for K=2, even >= 8 for K=3)
+const W20_ENHANCEMENTS = {
+  // ---- Fire Chain Surge (5 exclusive) ----
+  w20_fire_supernova_chain: {
+    key: 'w20_fire_supernova_chain',
+    name: '炽链裂变',
+    icon: '🌋',
+    tag: '聚焰连爆 · 传递质变',
+    behaviorTag: '传递 +2 次 + 落点留熔岩叠标',
+    directions: ['fire_chain_surge'],
+    shared: false,
+    desc: '火标引爆最大传递次数再 +2、传递半径 +0.9 格，且每次传递引爆在落点留下 2.6 秒熔岩火池持续叠挂火标。'
+  },
+  w20_fire_isolated_exec: {
+    key: 'w20_fire_isolated_exec',
+    name: '孤星焚核',
+    icon: '💥',
+    tag: '聚焰连爆 · 单体破甲',
+    behaviorTag: '孤立目标双段破甲聚焦炎爆',
+    directions: ['fire_chain_surge'],
+    shared: false,
+    desc: '当引爆周围无可传递目标（孤立精英/首领）时，聚焦引爆升级为双段破甲炎爆（聚焦上限提至 145% 并施加 3.5 秒易伤）。'
+  },
+  w20_fire_dash_detonator: {
+    key: 'w20_fire_dash_detonator',
+    name: '焰径引信',
+    icon: '☄️',
+    tag: '聚焰连爆 · 主动走位引爆',
+    behaviorTag: '冲刺挂 2 层火标 + 落点瞬爆',
+    directions: ['fire_chain_surge'],
+    shared: false,
+    desc: '烈焰冲刺沿途对敌人直接施加 2 层火标，并在冲刺落点立即引爆 3.2 格内所有带火标目标。'
+  },
+  w20_fire_mark_vortex: {
+    key: 'w20_fire_mark_vortex',
+    name: '聚焰焚涡',
+    icon: '🌪️',
+    tag: '聚焰连爆 · 持续聚怪',
+    behaviorTag: '引爆生成 2.2s 聚焰旋涡持续聚怪叠标',
+    directions: ['fire_chain_surge'],
+    shared: false,
+    desc: '每次火标引爆后在爆点生成 2.2 秒【聚焰焚涡】，持续向中心牵引周围敌人并自动补充火标。'
+  },
+  w20_fire_ember_barrage: {
+    key: 'w20_fire_ember_barrage',
+    name: '余烬齐射',
+    icon: '🎇',
+    tag: '聚焰连爆 · 弹幕扩散',
+    behaviorTag: '引爆发射 4 枚寻敌余烬弹续标',
+    directions: ['fire_chain_surge'],
+    shared: false,
+    desc: '每次火标引爆时向外齐射 4 枚余烬火弹，命中敌人造成灼烧并立即补挂 1 层火标衔接下次连爆。'
+  },
+
+  // ---- Frost Bastion Counter (5 exclusive) ----
+  w20_frost_dash_ring: {
+    key: 'w20_frost_dash_ring',
+    name: '踏霜主动环',
+    icon: '❄️',
+    tag: '凛冬反制 · 走位主动放环',
+    behaviorTag: '主动冰环 CD→0.75s + 落点霜阵 +24 盾',
+    directions: ['frost_bastion_counter'],
+    shared: false,
+    desc: '持盾冲刺触发的主动冰环冷却大幅缩至 0.75 秒，落点留下 2.8 秒霜冻法阵并立即补充 +24 寒冰护盾，走位避伤也能高频反制！'
+  },
+  w20_frost_overflow_nova: {
+    key: 'w20_frost_overflow_nova',
+    name: '满盾超载震',
+    icon: '💠',
+    tag: '凛冬反制 · 满盾主动爆发',
+    behaviorTag: '满盾刷新放环 + 6 冰棱齐射 + 溢盾转伤',
+    directions: ['frost_bastion_counter'],
+    shared: false,
+    desc: '护盾达到上限或刷新满盾时（无需三词条装）即可触发超载冰环，追加 6 枚穿透冰棱并将溢出护盾转化为额外爆发伤害。'
+  },
+  w20_frost_aegis_thorns: {
+    key: 'w20_frost_aegis_thorns',
+    name: '寒甲反噬',
+    icon: '🛡️',
+    tag: '凛冬反制 · 护盾反击',
+    behaviorTag: '受击冰环 +35% 范围 + 3 穿透冰矛 +14 返盾',
+    directions: ['frost_bastion_counter'],
+    shared: false,
+    desc: '寒冰护盾受击触发的反制冰环半径 +35%、冻结 +0.5 秒，同时齐射 3 根穿透冰矛并返还 +14 寒冰护盾。'
+  },
+  w20_frost_shatter_echo: {
+    key: 'w20_frost_shatter_echo',
+    name: '碎冰共振',
+    icon: '🧊',
+    tag: '凛冬反制 · 群体共振',
+    behaviorTag: '冰环命中减速敌触发二次碎冰溅射',
+    directions: ['frost_bastion_counter'],
+    shared: false,
+    desc: '反制冰环命中已减速/冰冻敌人时引发二次【碎冰共振】范围溅射，并刷新 65% 深度减速。'
+  },
+  w20_frost_pillar_ward: {
+    key: 'w20_frost_pillar_ward',
+    name: '玄冰护阵',
+    icon: '🏛️',
+    tag: '凛冬反制 · 控场回盾循环',
+    behaviorTag: '每累计 40 盾展开 3.2s 玄冰法阵持续回盾',
+    directions: ['frost_bastion_counter'],
+    shared: false,
+    desc: '每累计获得 40 点寒冰护盾，自动在脚下展开 3.2 秒【玄冰护阵】减速群敌并持续补盾，游走也能稳步叠满护盾。'
+  },
+
+  // ---- Breaker Momentum (5 exclusive) ----
+  w20_brk_aftershock_dash: {
+    key: 'w20_brk_aftershock_dash',
+    name: '破阵二段震',
+    icon: '⚡',
+    tag: '破阵蓄势 · 延迟二段震荡',
+    behaviorTag: '0.45s 后触发 3.8 格牵引二段余震',
+    directions: ['breaker_momentum'],
+    shared: false,
+    desc: '冲刺破阵震荡波落地 0.45 秒后在原处引爆 3.8 格二段余震，向中心牵引非首领敌人并再次结算破甲伤害。'
+  },
+  w20_brk_state_resonance: {
+    key: 'w20_brk_state_resonance',
+    name: '万象共鸣破',
+    icon: '🌀',
+    tag: '破阵蓄势 · 双态挂标引动',
+    behaviorTag: '破阵同时施加火标+减速并立即结算双联动',
+    directions: ['breaker_momentum'],
+    shared: false,
+    desc: '破阵震荡波直接给范围内敌人同时施加【火标】与【寒霜减速】，随后立即触发火标引爆并凝结寒冰护盾。'
+  },
+  w20_brk_elite_hunter: {
+    key: 'w20_brk_elite_hunter',
+    name: '破甲斩首令',
+    icon: '🎯',
+    tag: '破阵蓄势 · 高危斩首',
+    behaviorTag: '破阵命中精英/首领降天雷重劈并减冲刺 CD 1s',
+    directions: ['breaker_momentum'],
+    shared: false,
+    desc: '破阵震荡波命中精英/首领或易伤目标时，额外降下一道破甲天雷重劈，并立即缩短 1.0 秒冲刺冷却。'
+  },
+  w20_brk_tempest_step: {
+    key: 'w20_brk_tempest_step',
+    name: '御风疾步',
+    icon: '💨',
+    tag: '破阵蓄势 · 频闪循环',
+    behaviorTag: '引爆/冰环缩冲刺 CD 0.35s + 冲刺后齐射剑气',
+    directions: ['breaker_momentum'],
+    shared: false,
+    desc: '每次触发火标引爆或冰环反制缩短冲刺冷却 0.35 秒，冲刺落地额外向最近敌人齐射 3 道穿透风刃。'
+  },
+  w20_brk_vanguard_aegis: {
+    key: 'w20_brk_vanguard_aegis',
+    name: '陷阵罡盾',
+    icon: '🔰',
+    tag: '破阵蓄势 · 护盾扩张',
+    behaviorTag: '破阵按命中数凝结罡盾，持盾时震荡波范围 +30%',
+    directions: ['breaker_momentum'],
+    shared: false,
+    desc: '破阵震荡波每命中 1 名敌人立即凝结 +12 寒冰罡盾；持盾状态下破阵震荡波范围扩大 30% 并释放微型寒环。'
+  },
+
+  // ---- Compatible Shared Enhancements (3 cards across all directions) ----
+  w20_shared_tactical_surge: {
+    key: 'w20_shared_tactical_surge',
+    name: '迅捷身法·战技连携',
+    icon: '⚡',
+    tag: '通用机制 · 冲刺连携',
+    behaviorTag: '冲刺 CD -25%，冲刺后首击必挂火标+减速并触发联动',
+    directions: ['fire_chain_surge', 'frost_bastion_counter', 'breaker_momentum'],
+    shared: true,
+    desc: '冲刺冷却降低 25%；冲刺后 2.5 秒内的下一次领主命中必同时施加【火标 + 减速】，并立即触发对应引爆或寒冰护盾！'
+  },
+  w20_shared_boss_breaker: {
+    key: 'w20_shared_boss_breaker',
+    name: '孤影破壁',
+    icon: '⚔️',
+    tag: '通用机制 · 孤立强敌特化',
+    behaviorTag: '孤立精英/首领吃引爆/冰环/破阵追加破甲真伤',
+    directions: ['fire_chain_surge', 'frost_bastion_counter', 'breaker_momentum'],
+    shared: true,
+    desc: '当精英/首领周围 3.2 格内无其他敌人时，对其触发的火标引爆、冰环反制或破阵震荡额外追加破甲重击（3.5 秒易伤 + 额外爆发）。'
+  },
+  w20_shared_elemental_echo: {
+    key: 'w20_shared_elemental_echo',
+    name: '灵韵回响',
+    icon: '✨',
+    tag: '通用机制 · 周期全向回响',
+    behaviorTag: '每 3 次引爆或 2 次冰环/破阵释放全向灵韵波',
+    directions: ['fire_chain_surge', 'frost_bastion_counter', 'breaker_momentum'],
+    shared: true,
+    desc: '每累计触发 3 次火标引爆或 2 次冰环/破阵，自动在领主周围释放 3.6 格【灵韵回响波】，同时挂火标、减速并回复 +18 寒冰护盾。'
+  }
+};
+
 const ENEMY_SPECS = {
   slime:  { name:'荒野哥布林', ...BALANCE.enemies.slime, r:0.22, col:'#67cf5e', rim:'#2b6b28' },
   wolf:   { name:'疾风魔狼',   ...BALANCE.enemies.wolf, r:0.22, col:'#e89645', rim:'#784010', leaper:true },
@@ -2539,12 +3745,13 @@ const ENEMY_SPECS = {
   shaman: { name:'妖火祭司',   ...BALANCE.enemies.shaman, r:0.26, col:'#ff9f43', rim:'#6e2c00', shaman:true, range:4.8 },
   brute:  { name:'铁甲兽人',   ...BALANCE.enemies.brute, r:0.29, col:'#7e94a8', rim:'#2d3c4a', charger:true },
   elite:  { name:'紫炎统领(精英)', ...BALANCE.enemies.elite, r:0.36, col:'#b966ff', rim:'#fff0a8', elite:true },
+  totem:  { name:'天劫护盾图腾', ...(BALANCE.enemies.totem || { hp: 920, spd: 0.01, dmg: 0, xp: 10, gold: 6 }), r:0.42, col:'#6ce2ff', rim:'#ffe678', totem:true },
   boss1:  { name:'熔岩巨魔(W5首领)', ...BALANCE.enemies.boss1, r:0.52, col:'#ff5638', rim:'#ffe074', boss:true },
   boss2:  { name:'暗影死灵王(W10一破首领)',...BALANCE.enemies.boss2, r:0.54, col:'#a855ff', rim:'#ffe074', boss:true },
   boss3:  { name:'毁灭泰坦(W15首领)', ...BALANCE.enemies.boss3, r:0.60, col:'#ff334b', rim:'#fff3a0', boss:true },
   boss4:  { name:'天劫魔尊(W20二破首领)',...BALANCE.enemies.boss4, r:0.62, col:'#ff2e7a', rim:'#ffe678', boss:true },
-  boss5:  { name:'裂界魔君(W25首领·阶段1临时)',...(BALANCE.enemies.boss5 || BALANCE.enemies.boss4), r:0.64, col:'#d84cff', rim:'#ffe678', boss:true, tempStage1:true },
-  boss6:  { name:'终焉魔帝(W30终局Boss·阶段1临时)',...(BALANCE.enemies.boss6 || BALANCE.enemies.boss4), r:0.68, col:'#ff1e42', rim:'#fff09c', boss:true, tempStage1:true }
+  boss5:  { name:'玄冥妖皇(W25首领)',...(BALANCE.enemies.boss5 || BALANCE.enemies.boss4), r:0.64, col:'#d84cff', rim:'#ffe678', boss:true },
+  boss6:  { name:'终焉魔帝(W30终局Boss·阶段5深化)',...(BALANCE.enemies.boss6 || BALANCE.enemies.boss4), r:0.68, col:'#ff1e42', rim:'#fff09c', boss:true, tempStage1:true }
 };
 
 /* ==================== AUDIO ENGINE ==================== */
@@ -2721,8 +3928,12 @@ function hasPendingDecision(){
 function makeGame(seed = Math.floor(Math.random() * 1e9)){
   const rnd = mulberry32(seed);
   TERRAIN_PROPS = buildTerrainProps(seed);
-  const w20AuxPool = ['烈焰领域压制', '魔影精英护卫', '雷罡反震护盾', '裂空追猎重击'];
+  const w20AuxEntry = W20_BOSS_AUX_POOL.length
+    ? W20_BOSS_AUX_POOL[Math.floor(rnd() * W20_BOSS_AUX_POOL.length)]
+    : { key: 'oppression_ring', name: '领域压迫环', desc: '周期释放带预警的压迫光环。', fairnessNote: '有清晰预警与走位窗口' };
   const w30AuxPool = ['虚空雷暴潮汐', '镜像弹幕矩阵', '深渊引力坍缩', '血月蚀魂领域'];
+  const w22Themes = Object.keys(BALANCE.wave?.w22To24Themes || {});
+  const w22ThemeKey = w22Themes.length ? w22Themes[Math.floor(rnd() * w22Themes.length)] : 'mobile_rush';
   const g = {
     seed, rnd,
     phase: 'prep', // 'prep' | 'wave' | 'harvest' | 'won' | 'lost'
@@ -2746,6 +3957,13 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
     xpCombo: 0, xpComboTimer: 0,
 
     pendingBreakthrough: null, // null | 'w10' | 'w20'
+    w20State: {
+      preselectedDirection: null,
+      lockedDirection: null,
+      locked: false,
+      lockedAtWave: null
+    },
+    w20Draft: null,
     finalPrep: {
       active: false,
       waitingWaveRewards: false,
@@ -2754,11 +3972,28 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
       w30IntelShown: false
     },
     bossIntel: {
-      w20Core: '天劫三重雷域 + 环形紫电弹幕',
-      w20Aux: w20AuxPool[Math.floor(rnd() * w20AuxPool.length)],
+      w20Core: BALANCE.w20Breakthrough?.bossCore?.name || '天劫三重雷域 + 扇形紫电弹幕',
+      w20CoreDesc: BALANCE.w20Breakthrough?.bossCore?.desc || '周期落下 3 处带 1.2s 预警雷域并齐射 6 枚扇形紫电弹幕。',
+      w20AuxKey: w20AuxEntry.key,
+      w20Aux: w20AuxEntry.name,
+      w20AuxDesc: w20AuxEntry.desc,
+      w20AuxFairness: w20AuxEntry.fairnessNote || '公平可读预警机制',
+      w20Revealed: false,
       w30Core: '终焉招牌锁血大招 + 中末段复合压制',
       w30Aux: w30AuxPool[Math.floor(rnd() * w30AuxPool.length)],
-      tempStage1: true
+      tempStage1: false
+    },
+    wavePlan: {
+      w22To24ThemeKey: w22ThemeKey,
+      w25To28Rolled: {},
+      currentEncounter: null
+    },
+    endgameOmen: {
+      triggered: false,
+      wave: 28,
+      midWaveTriggered: false,
+      clearTriggered: false,
+      label: ''
     },
 
     // Selection & modes
@@ -2787,6 +4022,7 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
       swordRainHits: 0, ultKillCounter: 0,
       wanjianTimer: 2.4, frostDomainTick: 0.4, swordSetTimer: 1.2, bloodKills: 0,
       w10AuraTimer: 0.55, w10SecondaryTimer: 0.85,
+      w20FrostAuraTimer: 1.6, w20ShieldPillarAccum: 0, w20EchoFireCnt: 0, w20EchoFrostCnt: 0, w20TacticalReadyT: 0, w20AftershockQueue: [],
       leechUsed: 0, leechTimer: 0,
       gear: [], // up to 4 independent gear instances
       activeGearSynergies: null,
@@ -2806,7 +4042,9 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
         frostSlowsApplied: 0,
         frostShieldGained: 0,
         frostPulsesTriggered: 0,
-        w10BranchProcs: 0
+        w10BranchProcs: 0,
+        w20BaseProcs: 0,
+        w20EnhancementProcs: 0
       },
       combos: {},
       perks: {},
@@ -2841,6 +4079,8 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
       fireMarksApplied: 0, fireDetonations: 0, frostSlowsApplied: 0, frostShieldGained: 0,
       gearFireDuoProcs: 0, gearFireTrioProcs: 0, fireChainTransfers: 0, fireFocusedDetonations: 0,
       gearFrostDuoProcs: 0, gearFrostTrioProcs: 0, frostHitPulses: 0, frostDashPulses: 0, frostFullShieldPulses: 0,
+      w20BaseProcs: 0, w20EnhancementProcs: 0, w20FirePulls: 0, w20FrostCounterProcs: 0, w20BreakerSlams: 0,
+      w20BossAuxTriggers: 0, w20TotemsDestroyed: 0,
       skillDmg: { blades:0, firewave:0, thunder:0, nova:0, stomp:0, berserk:0, dash:0, spirit:0, combo:0, perk:0 }
     }
   };
@@ -2865,6 +4105,74 @@ function startNewRun(seed = Math.floor(Math.random() * 1e9), showStarter = true)
 
 /* ==================== CROSS-STAGE COMBAT STATE HOOKS (W10 / GEAR / W20 SHARED) ==================== */
 let _inFireChainTransfer = false;
+
+function getW20ActiveState(){
+  const w20 = game?.hero?.breakthroughs?.w20;
+  if (!w20 || !w20.completed || w20.placeholder) {
+    return { active: false, baseEffectActive: false, directionKey: null, enhancementKey: null, voucher: !!game?.hero?.vouchers?.w20 };
+  }
+  const baseActive = w20.baseEffectActive !== false && !!game?.hero?.vouchers?.w20;
+  return {
+    active: baseActive,
+    baseEffectActive: baseActive,
+    directionKey: baseActive ? (w20.directionKey || null) : null,
+    enhancementKey: baseActive ? (w20.enhancementKey || null) : null,
+    voucher: !!game?.hero?.vouchers?.w20
+  };
+}
+
+function hasW20Direction(dirKey){
+  const st = getW20ActiveState();
+  return st.baseEffectActive && st.directionKey === dirKey;
+}
+
+function hasW20Enhancement(enhKey){
+  const st = getW20ActiveState();
+  return st.baseEffectActive && st.enhancementKey === enhKey;
+}
+
+function recordW20Proc(kind = 'base'){
+  if (!game) return;
+  if (kind === 'base') {
+    if (game.stats) game.stats.w20BaseProcs = (game.stats.w20BaseProcs || 0) + 1;
+    if (game.hero?.combatStateStats) game.hero.combatStateStats.w20BaseProcs = (game.hero.combatStateStats.w20BaseProcs || 0) + 1;
+  } else {
+    if (game.stats) game.stats.w20EnhancementProcs = (game.stats.w20EnhancementProcs || 0) + 1;
+    if (game.hero?.combatStateStats) game.hero.combatStateStats.w20EnhancementProcs = (game.hero.combatStateStats.w20EnhancementProcs || 0) + 1;
+  }
+}
+
+function isIsolatedHighValueTarget(e, radius = 3.2){
+  if (!e || !game || !(e.boss || e.elite)) return false;
+  for (const o of game.enemies) {
+    if (o.id !== e.id && o.hp > 0 && dist(o, e) <= radius) return false;
+  }
+  return true;
+}
+
+function triggerW20ElementalEcho(){
+  if (!game?.hero || !hasW20Enhancement('w20_shared_elemental_echo')) return 0;
+  const h = game.hero;
+  const hs = getHeroStats();
+  const rad = 3.6;
+  recordW20Proc('enhancement');
+  addRing(h.x, h.y, '#ffe688', rad);
+  addFloat(h.x, h.y - 0.8, '✨ 灵韵回响波!', '#ffe896', true);
+  AudioKit.play('holy', 1.15);
+  let hit = 0;
+  for (const o of game.enemies) {
+    if (o.hp > 0 && dist(o, h) <= rad + o.r) {
+      hit++;
+      applyFireMark(o, 1, 'w20_shared_elemental_echo', 4.5);
+      applyFrostSlow(o, 0.50, 3.0, 'w20_shared_elemental_echo');
+      dealDamage(o, Math.round(44 * hs.skillDmgMult), {
+        fromHero: false, skillKey: 'perk', col: '#ffe688', noFireDetonate: true, noFrostShieldProc: true
+      });
+    }
+  }
+  gainFrostShield(18, { duration: 4.5, source: 'w20_shared_elemental_echo', noFullShieldPulse: true });
+  return hit;
+}
 
 function applyFireMark(e, arg2 = 1, arg3 = 'w10', arg4 = 4.5){
   if (!e || e.hp <= 0) return false;
@@ -2896,7 +4204,15 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
   const consumeMark = isObj ? !!arg3.consumeMark : false;
   const skillKey = isObj ? (arg3.skillKey || 'firewave') : (arg4 || 'firewave');
   const skipTrioChain = isObj ? !!arg3.skipTrioChain : false;
-  const allowTrioChain = !skipTrioChain && !_inFireChainTransfer && getActiveGearAffixSynergies().hasFireTrio;
+
+  const hasFireTrio = !skipTrioChain && getActiveGearAffixSynergies().hasFireTrio;
+  const w20FireBase = hasW20Direction('fire_chain_surge');
+  const w20Supernova = hasW20Enhancement('w20_fire_supernova_chain');
+  const w20IsoExec = hasW20Enhancement('w20_fire_isolated_exec');
+  const w20Vortex = hasW20Enhancement('w20_fire_mark_vortex');
+  const w20EmberBarrage = hasW20Enhancement('w20_fire_ember_barrage');
+  const w20BossBreaker = hasW20Enhancement('w20_shared_boss_breaker');
+  const allowChainTransfer = !_inFireChainTransfer && (hasFireTrio || w20FireBase);
 
   e.fireDetonateCd = 0.22;
   const stacks = Math.max(1, e.fireMarkStacks || 1);
@@ -2914,8 +4230,36 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
     game.hero.combatStateStats.fireDetonations++;
     game.hero.combatStateStats.w10BranchProcs++;
   }
-  addRing(e.x, e.y, allowTrioChain ? '#ff4724' : '#ff5e2b', radius);
-  addFloat(e.x, e.y - 0.55, allowTrioChain ? '🔥连环引爆!' : '🔥火标引爆!', '#ff9852', true);
+
+  // Stage 3 W20 Base Direction [fire_chain_surge]: Pull nearby non-boss enemies inward & splash fire mark before blast!
+  if (w20FireBase && !_inFireChainTransfer) {
+    const be = BALANCE.w20Breakthrough?.baseEffects || {};
+    const pullRad = be.firePullRadius || 3.4;
+    const pullStr = be.firePullStrength || 0.75;
+    let pulledAny = false;
+    for (const o of game.enemies) {
+      if (o.id === e.id || o.hp <= 0) continue;
+      const d = dist(o, e);
+      if (d <= pullRad && d > 0.35) {
+        if (!o.boss && !isEnemyUnstoppable(o)) {
+          const step = Math.min(pullStr, d - 0.3);
+          o.x = clamp(o.x + (e.x - o.x) / d * step, 0.8, W - 0.8);
+          o.y = clamp(o.y + (e.y - o.y) / d * step, 0.8, H - 0.8);
+          pulledAny = true;
+        }
+        if ((o.fireMarkT || 0) <= 0) {
+          applyFireMark(o, 1, 'w20_fire_pull', 4.5);
+        }
+      }
+    }
+    recordW20Proc('base');
+    if (pulledAny && game.stats) {
+      game.stats.w20FirePulls = (game.stats.w20FirePulls || 0) + 1;
+    }
+  }
+
+  addRing(e.x, e.y, allowChainTransfer ? '#ff4724' : '#ff5e2b', radius);
+  addFloat(e.x, e.y - 0.55, w20FireBase ? '🔥聚焰连爆!' : (hasFireTrio ? '🔥连环引爆!' : '🔥火标引爆!'), '#ff9852', true);
   AudioKit.play('fire', 1.15);
 
   let totalDealt = 0;
@@ -2929,17 +4273,22 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
     }
   }
 
-  // Stage 2 Fire Complete Trio Synergy: limited chain transfer to nearby marked enemies,
-  // OR capped decaying focused detonation on isolated elite/Boss when no other marked target exists!
-  if (allowTrioChain) {
+  // Stage 2 Fire Trio + Stage 3 W20 [fire_chain_surge] chain transfer & isolated Boss/Elite focused detonation
+  if (allowChainTransfer) {
     _inFireChainTransfer = true;
     try {
       const sc = BALANCE.equipment?.synergyCombat || {};
-      const maxChains = Math.max(1, sc.fireTrioMaxChains || 2);
-      const chainRange = sc.fireTrioChainRange || 3.2;
+      const be = BALANCE.w20Breakthrough?.baseEffects || {};
+      const trioChains = hasFireTrio ? Math.max(1, sc.fireTrioMaxChains || 2) : 0;
+      const w20BaseChains = w20FireBase ? (be.fireBaseExtraChains || 1) : 0;
+      const w20EnhChains = w20Supernova ? 2 : 0;
+      const maxChains = Math.max(1, trioChains + w20BaseChains + w20EnhChains);
+      const chainRange = (sc.fireTrioChainRange || 3.2) + (w20Supernova ? 0.9 : 0);
       const chainDecay = sc.fireTrioChainDecay || 0.78;
       const focusMults = Array.isArray(sc.fireTrioFocusMults) ? sc.fireTrioFocusMults : [0.55, 0.35];
-      const maxFocusRatio = sc.fireTrioFocusMaxTotalRatio || 0.90;
+      let maxFocusRatio = hasFireTrio ? (sc.fireTrioFocusMaxTotalRatio || 0.90) : (be.fireBaseFocusRatio || 0.42);
+      if (hasFireTrio && w20FireBase) maxFocusRatio = Math.max(maxFocusRatio, be.fireTrioBonusFocusCap || 1.15);
+      if (w20IsoExec) maxFocusRatio = Math.max(maxFocusRatio, 1.45);
 
       const visited = new Set([e.id]);
       let curSource = e;
@@ -2978,6 +4327,14 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
             });
           }
         }
+        if (w20Supernova) {
+          recordW20Proc('enhancement');
+          game.zones.push({
+            kind: 'lava', w10Branch: 'w20_supernova', w20Source: 'w20_fire_supernova_chain',
+            x: nextTgt.x, y: nextTgt.y, r: 1.55, t: 2.6, max: 2.6, tick: 0.45,
+            dps: Math.max(18, Math.round(hopDmg * 0.35))
+          });
+        }
         curSource = nextTgt;
       }
 
@@ -2986,23 +4343,79 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
       if (remChains > 0 && e.hp > 0) {
         let ratioSum = 0;
         for (let k = 0; k < remChains; k++) {
-          ratioSum += focusMults[k] ?? 0.25;
+          ratioSum += focusMults[k] ?? 0.32;
         }
+        if (w20IsoExec) ratioSum += 0.55;
         const cappedRatio = Math.min(maxFocusRatio, ratioSum);
         const focusDmg = Math.max(8, Math.round(detDmg * cappedRatio));
         addRing(e.x, e.y, '#ffe066', Math.max(1.1, radius * 0.65));
-        addFloat(e.x, e.y - 0.85, `💥聚焦引爆×${remChains}!`, '#ffe066', true);
+        addFloat(e.x, e.y - 0.85, w20IsoExec ? `💥孤星焚核×${remChains}!` : `💥聚焦引爆×${remChains}!`, '#ffe066', true);
         if (game.stats) {
           game.stats.fireFocusedDetonations = (game.stats.fireFocusedDetonations || 0) + 1;
+        }
+        if (w20IsoExec) {
+          recordW20Proc('enhancement');
+          e.vulnT = Math.max(e.vulnT || 0, 3.5);
         }
         totalDealt += dealDamage(e, focusDmg, {
           fromHero: false, skillKey, isFireExp: true,
           noFireDetonate: true, critChance: hs.crit, critDmg: hs.critDmg,
           col: '#ffd85c', burn: 18
         });
+        if (w20IsoExec && e.hp > 0) {
+          totalDealt += dealDamage(e, Math.max(10, Math.round(focusDmg * 0.48)), {
+            fromHero: false, skillKey, isFireExp: true,
+            noFireDetonate: true, critChance: hs.crit, critDmg: hs.critDmg,
+            col: '#fff08c', burn: 20
+          });
+        }
       }
     } finally {
       _inFireChainTransfer = false;
+    }
+  }
+
+  // W20 Fire/Shared Enhancements post-detonation behaviors
+  if (!_inFireChainTransfer) {
+    if (w20Vortex) {
+      recordW20Proc('enhancement');
+      game.zones.push({
+        kind: 'fireVortex', w20Source: 'w20_fire_mark_vortex',
+        x: e.x, y: e.y, r: 2.8, t: 2.2, max: 2.2, tick: 0.45,
+        dps: Math.max(16, Math.round(detDmg * 0.28))
+      });
+    }
+    if (w20EmberBarrage) {
+      recordW20Proc('enhancement');
+      for (let i = 0; i < 4; i++) {
+        const ang = (Math.PI * 2 * i) / 4 + game.waveClock;
+        pushProjectile({
+          kind: 'arrow', w20Source: 'w20_fire_ember_barrage', x: e.x, y: e.y,
+          vx: Math.cos(ang) * 12.5, vy: Math.sin(ang) * 12.5,
+          life: 0.45, r: 0.34, pierce: 2, hitSet: new Set([e.id]),
+          dmg: Math.max(12, Math.round(detDmg * 0.42)), splash: 0,
+          opts: { fromHero: false, skillKey, isFireExp: true, noFireDetonate: true, col: '#ff9f4d', burn: 14, applyFireMarkOnHit: true }
+        });
+      }
+    }
+    if (w20BossBreaker && e.hp > 0 && isIsolatedHighValueTarget(e, 3.2)) {
+      recordW20Proc('enhancement');
+      e.vulnT = Math.max(e.vulnT || 0, 3.5);
+      addFloat(e.x, e.y - 1.0, '⚔️孤影破壁!', '#ffe680', true);
+      totalDealt += dealDamage(e, Math.max(16, Math.round(detDmg * 0.45)), {
+        fromHero: false, skillKey: 'perk', noFireDetonate: true, col: '#ffe680'
+      });
+    }
+    if (hasW20Enhancement('w20_brk_tempest_step') && game.hero) {
+      recordW20Proc('enhancement');
+      game.hero.dashCd = Math.max(0, (game.hero.dashCd || 0) - 0.35);
+    }
+    if (hasW20Enhancement('w20_shared_elemental_echo') && game.hero) {
+      game.hero.w20EchoFireCnt = (game.hero.w20EchoFireCnt || 0) + 1;
+      if (game.hero.w20EchoFireCnt >= 3) {
+        game.hero.w20EchoFireCnt = 0;
+        triggerW20ElementalEcho();
+      }
     }
   }
   return totalDealt;
@@ -3029,21 +4442,49 @@ function getHeroMaxFrostShield(baseCap = 90){
   const gm = aggregateGear(game?.hero?.gear || []);
   const syn = getActiveGearAffixSynergies();
   const sc = BALANCE.equipment?.synergyCombat || {};
+  const be = BALANCE.w20Breakthrough?.baseEffects || {};
   const synBase = syn.hasFrostTrio ? (sc.frostTrioShieldCap || 115) : syn.hasFrostDuo ? (sc.frostDuoShieldCap || 95) : baseCap;
-  return Math.max(baseCap, synBase) + (gm.frostShieldCapBonus || 0);
+  const w20Bonus = hasW20Direction('frost_bastion_counter') ? (be.frostBaseShieldCapBonus || 35) : 0;
+  return Math.max(baseCap, synBase) + (gm.frostShieldCapBonus || 0) + w20Bonus;
 }
 
-function triggerFrostPulse(radius = 2.8, rawDmg = 36, freezeDur = 0.9, source = 'w10'){
+function triggerFrostPulse(radius = 2.8, rawDmg = 36, freezeDur = 0.9, source = 'w10', extraOpts = {}){
   if (!game?.hero) return 0;
   const h = game.hero;
+  const syn = getActiveGearAffixSynergies();
+  const be = BALANCE.w20Breakthrough?.baseEffects || {};
+  const w20FrostBase = hasW20Direction('frost_bastion_counter');
+  const w20DashRing = hasW20Enhancement('w20_frost_dash_ring');
+  const w20AegisThorns = hasW20Enhancement('w20_frost_aegis_thorns');
+  const w20ShatterEcho = hasW20Enhancement('w20_frost_shatter_echo');
+  const w20Overflow = hasW20Enhancement('w20_frost_overflow_nova');
+
   const isActiveTrigger = source === 'dash_shield' || source === 'full_shield_refresh';
   if (isActiveTrigger) {
     if ((h.frostActivePulseCd || 0) > 0) return 0;
-    h.frostActivePulseCd = BALANCE.equipment?.synergyCombat?.frostTrioActivePulseCd || 1.5;
+    let cd = BALANCE.equipment?.synergyCombat?.frostTrioActivePulseCd || 1.5;
+    if (w20FrostBase && syn.hasFrostTrio) cd = Math.max(0.75, cd - (be.frostBaseTrioActiveCdReduction || 0.35));
+    if (w20DashRing && source === 'dash_shield') cd = Math.min(cd, 0.75);
+    h.frostActivePulseCd = cd;
   } else {
     if ((h.frostPulseCd || 0) > 0) return 0;
     h.frostPulseCd = 0.55;
   }
+
+  let effRadius = radius;
+  let effDmg = rawDmg + (extraOpts.overflowBonusDmg || 0);
+  let effFreeze = freezeDur;
+  if (w20FrostBase) {
+    recordW20Proc('base');
+    if (game.stats) game.stats.w20FrostCounterProcs = (game.stats.w20FrostCounterProcs || 0) + 1;
+    if (syn.hasFrostTrio) effRadius *= 1.22;
+  }
+  if (w20AegisThorns && source === 'shield_hit') {
+    recordW20Proc('enhancement');
+    effRadius *= 1.35;
+    effFreeze += 0.5;
+  }
+
   if (h.combatStateStats) {
     h.combatStateStats.frostPulsesTriggered++;
     h.combatStateStats.w10BranchProcs++;
@@ -3053,22 +4494,84 @@ function triggerFrostPulse(radius = 2.8, rawDmg = 36, freezeDur = 0.9, source = 
     else if (source === 'dash_shield') game.stats.frostDashPulses = (game.stats.frostDashPulses || 0) + 1;
     else if (source === 'full_shield_refresh') game.stats.frostFullShieldPulses = (game.stats.frostFullShieldPulses || 0) + 1;
   }
-  const floatText = source === 'dash_shield' ? '❄️冲刺冰环!'
-    : source === 'full_shield_refresh' ? '❄️满盾冰环!'
-    : '❄️冰环反制!';
-  addRing(h.x, h.y, isActiveTrigger ? '#aef8ff' : '#8ef4ff', radius);
+  const floatText = source === 'dash_shield' ? (w20DashRing ? '❄️踏霜主动环!' : '❄️冲刺冰环!')
+    : source === 'full_shield_refresh' ? (w20Overflow ? '💠满盾超载震!' : '❄️满盾冰环!')
+    : (w20AegisThorns ? '🛡️寒甲反噬!' : '❄️冰环反制!');
+  addRing(h.x, h.y, isActiveTrigger ? '#aef8ff' : '#8ef4ff', effRadius);
   addFloat(h.x, h.y - 0.65, floatText, '#a4f8ff', true);
   AudioKit.play('frost', isActiveTrigger ? 1.25 : 1.15);
   const hs = getHeroStats();
   let hitCnt = 0;
   for (const o of game.enemies) {
-    if (o.hp > 0 && dist(o, h) <= radius + o.r) {
+    if (o.hp > 0 && dist(o, h) <= effRadius + o.r) {
       hitCnt++;
-      applyFrostSlow(o, 0.55, 3.0, 'frost_pulse');
-      if (!o.boss && !isEnemyUnstoppable(o)) o.freezeT = Math.max(o.freezeT || 0, freezeDur);
-      dealDamage(o, Math.round(rawDmg * hs.skillDmgMult), {
+      const wasSlowed = (o.slowT || 0) > 0 || (o.freezeT || 0) > 0;
+      applyFrostSlow(o, w20ShatterEcho ? 0.65 : 0.55, 3.0, 'frost_pulse');
+      if (!o.boss && !isEnemyUnstoppable(o)) o.freezeT = Math.max(o.freezeT || 0, effFreeze);
+      dealDamage(o, Math.round(effDmg * hs.skillDmgMult), {
         fromHero: false, skillKey: 'nova', col: '#9cf6ff', noFrostShieldProc: true
       });
+      if (w20ShatterEcho && wasSlowed && o.hp > 0) {
+        recordW20Proc('enhancement');
+        addRing(o.x, o.y, '#c4f8ff', 1.6);
+        for (const nb of game.enemies) {
+          if (nb.hp > 0 && dist(nb, o) <= 1.6 + nb.r) {
+            applyFrostSlow(nb, 0.65, 3.2, 'w20_frost_shatter_echo');
+            dealDamage(nb, Math.max(12, Math.round(effDmg * 0.55 * hs.skillDmgMult)), {
+              fromHero: false, skillKey: 'nova', col: '#c4f8ff', noFrostShieldProc: true
+            });
+          }
+        }
+      }
+      if (hasW20Enhancement('w20_shared_boss_breaker') && o.hp > 0 && isIsolatedHighValueTarget(o, 3.2)) {
+        recordW20Proc('enhancement');
+        o.vulnT = Math.max(o.vulnT || 0, 3.5);
+        dealDamage(o, Math.max(16, Math.round(effDmg * 0.55 * hs.skillDmgMult)), {
+          fromHero: false, skillKey: 'perk', col: '#ffe680', noFrostShieldProc: true
+        });
+      }
+    }
+  }
+  if (w20FrostBase && syn.hasFrostTrio && hitCnt > 0) {
+    gainFrostShield(be.frostBaseTrioPulseShieldRefund || 10, { duration: 4.5, noFullShieldPulse: true, source: 'w20_frost_refund' });
+  }
+  if (w20AegisThorns && source === 'shield_hit') {
+    gainFrostShield(14, { duration: 4.5, noFullShieldPulse: true, source: 'w20_frost_aegis_thorns' });
+    const tgt = game.enemies.find(o => o.hp > 0);
+    const baseAng = tgt ? Math.atan2(tgt.y - h.y, tgt.x - h.x) : 0;
+    for (let i = -1; i <= 1; i++) {
+      const a = baseAng + i * 0.24;
+      pushProjectile({
+        kind: 'arrow', w20Source: 'w20_frost_aegis_thorns', x: h.x, y: h.y,
+        vx: Math.cos(a) * 14.5, vy: Math.sin(a) * 14.5,
+        life: 0.45, r: 0.34, pierce: 3, hitSet: new Set(),
+        dmg: Math.round(effDmg * 0.85 * hs.skillDmgMult), splash: 0,
+        opts: { fromHero: false, skillKey: 'nova', col: '#aef8ff', slow: 0.55, slowDur: 2.8, noFrostShieldProc: true }
+      });
+    }
+  }
+  if (w20Overflow && source === 'full_shield_refresh') {
+    recordW20Proc('enhancement');
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI * 2 * i) / 6;
+      pushProjectile({
+        kind: 'arrow', w20Source: 'w20_frost_overflow_nova', x: h.x, y: h.y,
+        vx: Math.cos(a) * 13.8, vy: Math.sin(a) * 13.8,
+        life: 0.42, r: 0.34, pierce: 3, hitSet: new Set(),
+        dmg: Math.round(effDmg * 0.72 * hs.skillDmgMult), splash: 0,
+        opts: { fromHero: false, skillKey: 'nova', col: '#b8fbff', slow: 0.55, slowDur: 2.8, noFrostShieldProc: true }
+      });
+    }
+  }
+  if (hasW20Enhancement('w20_brk_tempest_step')) {
+    recordW20Proc('enhancement');
+    h.dashCd = Math.max(0, (h.dashCd || 0) - 0.35);
+  }
+  if (hasW20Enhancement('w20_shared_elemental_echo')) {
+    h.w20EchoFrostCnt = (h.w20EchoFrostCnt || 0) + 1;
+    if (h.w20EchoFrostCnt >= 2) {
+      h.w20EchoFrostCnt = 0;
+      triggerW20ElementalEcho();
     }
   }
   return hitCnt;
@@ -3084,6 +4587,7 @@ function gainFrostShield(amount, arg2 = 5.0, arg3 = 90){
   const maxShield = Math.max(getHeroMaxFrostShield(90), reqMax);
   const gain = Math.round(amount);
   const prev = h.shield || 0;
+  const overflow = Math.max(0, prev + gain - maxShield);
   const wasFullOrOverflow = prev >= maxShield * 0.92 || (prev + gain >= maxShield);
   h.shield = Math.min(maxShield, prev + gain);
   h.shieldTimer = Math.max(h.shieldTimer || 0, duration);
@@ -3093,10 +4597,24 @@ function gainFrostShield(amount, arg2 = 5.0, arg3 = 90){
     h.combatStateStats.frostShieldGained += gain;
     h.combatStateStats.w10BranchProcs++;
   }
-  // Stage 2 Frost Trio active trigger: full-shield refresh triggers a cooldown-capped Frost Pulse even when dodging hits!
-  if (!noFullShieldPulse && wasFullOrOverflow && getActiveGearAffixSynergies().hasFrostTrio && (h.frostActivePulseCd || 0) <= 0) {
+  // Stage 3 W20 Enhancement [w20_frost_pillar_ward]: every 40 cumulative frost shield drops a 3.2s frost ward zone
+  if (hasW20Enhancement('w20_frost_pillar_ward') && arg2?.source !== 'w20_frost_pillar_ward') {
+    h.w20ShieldPillarAccum = (h.w20ShieldPillarAccum || 0) + gain;
+    if (h.w20ShieldPillarAccum >= 40) {
+      h.w20ShieldPillarAccum -= 40;
+      recordW20Proc('enhancement');
+      game.zones.push({
+        kind: 'frostTrail', w20Source: 'w20_frost_pillar_ward', x: h.x, y: h.y, r: 2.35,
+        t: 3.2, max: 3.2, tick: 0.6, dps: 22
+      });
+    }
+  }
+  // Stage 2 Frost Trio OR Stage 3 W20 [w20_frost_overflow_nova]: full-shield refresh triggers active Frost Pulse!
+  const allowFullPulse = !noFullShieldPulse && (getActiveGearAffixSynergies().hasFrostTrio || hasW20Enhancement('w20_frost_overflow_nova'));
+  if (allowFullPulse && wasFullOrOverflow && (h.frostActivePulseCd || 0) <= 0) {
     const sc = BALANCE.equipment?.synergyCombat || {};
-    triggerFrostPulse(sc.frostTrioActivePulseRadius || 3.25, sc.frostTrioActivePulseDmg || 46, 0.95, 'full_shield_refresh');
+    const overflowBonusDmg = hasW20Enhancement('w20_frost_overflow_nova') ? Math.round(overflow * 1.4) : 0;
+    triggerFrostPulse(sc.frostTrioActivePulseRadius || 3.25, sc.frostTrioActivePulseDmg || 46, 0.95, 'full_shield_refresh', { overflowBonusDmg });
   }
   return h.shield - prev;
 }
@@ -3864,7 +5382,90 @@ function getWavePhaseMeta(w){
   };
 }
 
-function buildWaveQueue(w){
+function getW22To24Theme(themeKey = null){
+  const themes = BALANCE.wave?.w22To24Themes || {};
+  const key = themeKey || game?.wavePlan?.w22To24ThemeKey || 'mobile_rush';
+  return themes[key] || themes.mobile_rush || Object.values(themes)[0] || null;
+}
+
+function getW25To28Pool(w){
+  const pools = BALANCE.wave?.w25To28Pools || {};
+  return (pools[String(w)] || []).slice();
+}
+
+function rollW25To28Encounter(w, commitToGame = true){
+  const pool = getW25To28Pool(w);
+  if (!pool.length) return null;
+  const pick = pool[Math.floor(game.rnd() * pool.length)];
+  const enc = {
+    wave: w,
+    type: 'w25_28_random',
+    id: pick.id,
+    name: pick.name,
+    primaryThreat: pick.primaryThreat,
+    mobMultAdj: pick.mobMultAdj ?? 1,
+    hpMultAdj: pick.hpMultAdj ?? 1,
+    normal: pick.normal,
+    heavy: pick.heavy
+  };
+  if (commitToGame && game?.wavePlan) {
+    game.wavePlan.w25To28Rolled[String(w)] = enc;
+    game.wavePlan.currentEncounter = enc;
+  }
+  return enc;
+}
+
+function getWaveEncounterInfo(w = game?.wave){
+  if (!game) return null;
+  const waveNum = Number(w || game.wave || 1);
+  if (waveNum >= 22 && waveNum <= 24) {
+    const theme = getW22To24Theme();
+    const wSpec = theme?.waves?.[String(waveNum)] || null;
+    if (!theme || !wSpec) return null;
+    return {
+      wave: waveNum,
+      type: 'w22_24_shared_threat',
+      revealed: true,
+      themeKey: theme.key,
+      themeName: theme.name,
+      primaryThreat: theme.primaryThreat,
+      threatLabel: theme.threatLabel,
+      counterHint: theme.counterHint,
+      comboLabel: wSpec.comboLabel,
+      pressureLevel: wSpec.pressureLevel
+    };
+  }
+  if (waveNum >= 25 && waveNum <= 28) {
+    // STRICTLY NO pre-wave spoilers during prep phase!
+    const isCurrentPrep = waveNum === game.wave && game.phase === 'prep';
+    const rolled = game.wavePlan?.w25To28Rolled?.[String(waveNum)] || null;
+    if (isCurrentPrep || !rolled) {
+      return {
+        wave: waveNum,
+        type: 'w25_28_random',
+        revealed: false,
+        id: null,
+        name: '开战后揭晓',
+        primaryThreat: null
+      };
+    }
+    return {
+      wave: waveNum,
+      type: 'w25_28_random',
+      revealed: true,
+      id: rolled.id,
+      name: rolled.name,
+      primaryThreat: rolled.primaryThreat
+    };
+  }
+  return null;
+}
+
+function getEndgameOmenState(){
+  return game?.endgameOmen ? { ...game.endgameOmen } : { triggered: false, wave: 28, midWaveTriggered: false, clearTriggered: false, label: '' };
+}
+
+function buildWaveQueue(w, customEncounter = null){
   const q = [];
   const meta = getWavePhaseMeta(w);
   const bw = BALANCE.wave;
@@ -3872,16 +5473,43 @@ function buildWaveQueue(w){
     ? Math.pow(bw.lateHpGrowthSecond, w - (bw.lateHpGrowthSecondStart - 1))
     : w >= bw.lateHpGrowthStart
       ? Math.pow(bw.lateHpGrowthFirst, w - (bw.lateHpGrowthStart - 1)) : 1;
-  const scale = Math.pow(bw.normalHpGrowth, w - 1) * meta.hpMult * lateScale;
+
+  // Stage 3 Wave-specific encounter mixes (W21 showcase, W22-24 shared-threat escalation, W25-28 independent draws)
+  let encounterSpec = customEncounter;
+  let packBonus = 0;
+  let mobMultAdj = 1;
+  let hpMultAdj = 1;
+  let activeMix = bw.mobMix.find(m => w <= m.to) || bw.mobMix[bw.mobMix.length - 1];
+
+  if (w === 21 && bw.w21ShowcaseMix) {
+    activeMix = bw.w21ShowcaseMix;
+    packBonus = 1;
+  } else if (w >= 22 && w <= 24) {
+    const theme = getW22To24Theme();
+    const wSpec = theme?.waves?.[String(w)];
+    if (wSpec) {
+      activeMix = wSpec;
+      packBonus = wSpec.packBonus || 0;
+      mobMultAdj = wSpec.mobMultAdj ?? 1;
+    }
+  } else if (w >= 25 && w <= 28) {
+    if (!encounterSpec) encounterSpec = rollW25To28Encounter(w, false);
+    if (encounterSpec) {
+      activeMix = encounterSpec;
+      mobMultAdj = encounterSpec.mobMultAdj ?? 1;
+      hpMultAdj = encounterSpec.hpMultAdj ?? 1;
+    }
+  }
+
+  const scale = Math.pow(bw.normalHpGrowth, w - 1) * meta.hpMult * lateScale * hpMultAdj;
   const sides = w <= 2 ? ['west','east','north'] : ['west','east','north','south'];
   const baseMobs = Math.min(bw.mobsBaseCap, Math.round(bw.mobsBase + w * bw.mobsPerWave));
-  const totalMobs = Math.min(bw.mobsFinalCap, Math.round(baseMobs * meta.mobMult));
+  const totalMobs = Math.min(bw.mobsFinalCap, Math.round(baseMobs * meta.mobMult * mobMultAdj));
   const duration = Math.min(bw.durationCap, bw.durationBase + w * bw.durationPerWave);
 
-  const mix = bw.mobMix.find(m => w <= m.to) || bw.mobMix[bw.mobMix.length - 1];
   const pickMobKind = (forceHeavy = false) => {
     const r = game.rnd();
-    const distribution = forceHeavy && mix.heavy ? mix.heavy : mix.normal;
+    const distribution = forceHeavy && activeMix.heavy ? activeMix.heavy : activeMix.normal;
     for (const [kind, upper] of distribution) if (r < upper) return kind;
     return distribution[distribution.length - 1][0];
   };
@@ -3894,9 +5522,10 @@ function buildWaveQueue(w){
   const s3Count = Math.max(0, totalMobs - s1Count - s2Count);
 
   const pushPacks = (count, tStart, tEnd, packSz, heavy) => {
+    const effPack = Math.max(1, packSz + packBonus);
     for (let i = 0; i < count; ) {
-      const pack = Math.min(packSz, count - i);
-      const frac = count <= packSz ? 0.5 : i / count;
+      const pack = Math.min(effPack, count - i);
+      const frac = count <= effPack ? 0.5 : i / count;
       const t = tStart + frac * (tEnd - tStart) + game.rnd() * stage.spawnJitter;
       const side = sides[Math.floor(game.rnd() * sides.length)];
       for (let k = 0; k < pack; k++) {
@@ -3916,11 +5545,11 @@ function buildWaveQueue(w){
   // Elites from Wave 2 onward: 1 elite W2-11, 2 elites W12-21, 3 elites W22+
   if (w >= bw.eliteFirstWave) {
     const eliteCount = (bw.eliteCountLateWave && w >= bw.eliteCountLateWave)
-      ? bw.eliteCountLate
+      ? (bw.eliteCountEndgame || bw.eliteCountLate)
       : (w >= bw.eliteCountIncreasedWave ? (bw.eliteCountMid || bw.eliteCountLate) : bw.eliteCountEarly);
     for (let e = 0; e < eliteCount; e++) {
       q.push({
-        at: duration * (0.24 + e * 0.28),
+        at: duration * (0.24 + e * 0.24),
         side: sides[e % sides.length],
         kind: 'elite', scale: Math.pow(bw.eliteHpGrowth, w - bw.eliteFirstWave), spawned: false
       });
@@ -3953,6 +5582,18 @@ function startWave(){
     renderAllUI();
     return false;
   }
+
+  // Stage 3: W20 start requires a confirmed preselected direction and locks it immediately!
+  if (game.wave === 20 && !game.hero.breakthroughs.w20) {
+    if (!game.w20State?.preselectedDirection) {
+      openW20PreselectModal({ requireConfirmStart: true });
+      toast('请先选定并锁定 W20 第二次突破方向后再迎战天劫魔尊！', true);
+      renderAllUI(true);
+      return false;
+    }
+    lockW20DirectionForBattle();
+  }
+
   if (game.finalPrep && game.finalPrep.active) {
     game.finalPrep.active = false;
     game.subPhase = null;
@@ -3965,7 +5606,21 @@ function startWave(){
   game.stormWarnAt = duration * 0.44;
   game.stormWarned = false;
   game.eliteChestDropped = false;
-  game.waveQueue = buildWaveQueue(game.wave);
+
+  // Stage 3: Reveal W20 Boss intel on W19+; roll W25-W28 encounter ONLY at wave start (zero prep spoilers!)
+  if (game.wave >= (BALANCE.w20Breakthrough?.bossIntelRevealWave || 19)) {
+    game.bossIntel.w20Revealed = true;
+  }
+  let rolledEncounter = null;
+  if (game.wave >= 25 && game.wave <= 28) {
+    rolledEncounter = rollW25To28Encounter(game.wave, true);
+  } else if (game.wave >= 22 && game.wave <= 24) {
+    game.wavePlan.currentEncounter = getWaveEncounterInfo(game.wave);
+  } else {
+    game.wavePlan.currentEncounter = null;
+  }
+
+  game.waveQueue = buildWaveQueue(game.wave, rolledEncounter);
   game.autoWaveTimer = 0;
   game.autoWavePausedForDecision = false;
 
@@ -3986,22 +5641,54 @@ function startWave(){
   const h = game.hero;
   game.curWaveTel = {
     wave: game.wave, phaseTag: meta.tag, kind: meta.kind,
+    encounterId: rolledEncounter?.id || game.wavePlan.currentEncounter?.themeKey || null,
     duration: 0, minHpPct: Math.round(h.hp * 100 / Math.max(1, h.maxHp)),
     dmgTaken: 0, hitsTaken: 0, moveDist: 0, dashCount: 0, ultCount: 0,
     shrineTried: false, shrineCleared: false, ehpTotal: 0,
     dmgDealtStart: game.stats.dmgTotal, goldStart: game.gold
   };
 
+  // Stage 3: W28 Endgame Omen trigger at wave start
   const isBoss = game.wave % 5 === 0;
-  AudioKit.play(isBoss ? 'boss' : 'merge', isBoss ? 1 : 0.85);
-  showBanner(
-    isBoss ? `⚠️ 第 ${game.wave} / ${MAIN_WAVES} 波 [${meta.tag}] · 首领降临！`
-           : `第 ${game.wave} / ${MAIN_WAVES} 波 · ${meta.tag}`,
-    isBoss ? (game.wave === 10 ? '击败首领后触发【W10 首次大型突破】！' : game.wave === 20 ? '击败首领后晋升 W21+ 决战段！' : game.wave === 30 ? '终局决战！击败深渊主宰即可完成 30 波守卫！' : '高能首领战！注意走位躲避破阵重击，斩首必爆高阶宝箱！')
-           : (game.shrine ? '本章【🩸血煞妖碑】已现身远端！试炼赢金币、锻材与高阶构装宝箱！' : '注意走位切入外圈弓巫并避开重击破阵！'),
-    isBoss ? 'boss' : (meta.kind === 'relief' ? 'good' : '')
-  );
-  renderAllUI();
+  if (game.wave === 28) {
+    const om = BALANCE.wave?.w28Omen || {};
+    game.endgameOmen = {
+      triggered: true,
+      wave: 28,
+      midWaveTriggered: false,
+      clearTriggered: false,
+      label: om.startTitle || '🌑 第 28 波 · 终局预兆降临！',
+      encounterName: rolledEncounter?.name || ''
+    };
+    AudioKit.play('boss', 0.92);
+    flashScreen('fail');
+    showBanner(
+      om.startTitle || '🌑 第 28 波 · 终局预兆降临！',
+      `${rolledEncounter ? `【${rolledEncounter.name}】来袭 · ` : ''}${om.startSub || 'W29 将公布 W30 情报并进入 90 秒最终整备！'}`,
+      'boss'
+    );
+  } else {
+    AudioKit.play(isBoss ? 'boss' : 'merge', isBoss ? 1 : 0.85);
+    const lockedDir = game.w20State?.lockedDirection ? W20_DIRECTIONS[game.w20State.lockedDirection] : null;
+    const w22Info = (game.wave >= 22 && game.wave <= 24) ? getWaveEncounterInfo(game.wave) : null;
+    const subMsg = isBoss
+      ? (game.wave === 10 ? '击败首领后触发【W10 首次大型突破】！'
+        : game.wave === 20 ? `已锁定二破方向【${lockedDir?.name || '未定'}】！击败天劫魔尊（辅助：${game.bossIntel.w20Aux}）当场激活基础效果！`
+        : game.wave === 25 ? `玄冥妖皇携【${rolledEncounter?.name || '成型敌群'}】降临！注意走位躲避寒潮与弹幕！`
+        : game.wave === 30 ? '终局决战！击败深渊主宰即可完成 30 波守卫！'
+        : '高能首领战！注意走位躲避破阵重击，斩首必爆高阶宝箱！')
+      : game.wave === 21 ? '⚡ 第二次大型突破已生效！畅快体验聚焰连爆 / 凛冬反制 / 破阵蓄势与已有装备的实战联动！'
+      : w22Info ? `同源威胁【${w22Info.themeName}】· ${w22Info.comboLabel}（${w22Info.counterHint}）`
+      : rolledEncounter ? `本波独立抽中敌群【${rolledEncounter.name}】！检验成型构筑！`
+      : (game.shrine ? '本章【🩸血煞妖碑】已现身远端！试炼赢金币、锻材与高阶构装宝箱！' : '注意走位切入外圈弓巫并避开重击破阵！');
+    showBanner(
+      isBoss ? `⚠️ 第 ${game.wave} / ${MAIN_WAVES} 波 [${meta.tag}] · 首领降临！`
+             : `第 ${game.wave} / ${MAIN_WAVES} 波 · ${meta.tag}`,
+      subMsg,
+      isBoss ? 'boss' : (meta.kind === 'relief' ? 'good' : '')
+    );
+  }
+  renderAllUI(true);
   return true;
 }
 
@@ -4057,11 +5744,12 @@ function spawnEnemy(kind, side, scale = 1, customPos = null){
     col: sp.col, rim: sp.rim,
     ranged: !!sp.ranged, range: sp.range || 0,
     leaper: !!sp.leaper, charger: !!sp.charger, bomber: !!sp.bomber, shaman: !!sp.shaman,
+    totem: !!sp.totem, totemTimer: 2.2, totemBossId: null,
     elite: !!sp.elite, boss: !!sp.boss,
     affixes: affixCnt > 0 ? pickEliteAffixes(affixCnt) : [],
     cd: 0.4, slow: 0, slowT: 0, freezeT: 0, burnDps: 0, burnT: 0, vulnT: 0, frenzyT: 0,
     fireMarkT: 0, fireMarkStacks: 0, fireMarkSource: null, fireDetonateCd: 0,
-    flash: 0, bossTimer: 5.0, bossPhase: 0, frenzied: false,
+    flash: 0, bossTimer: 5.0, bossAuxTimer: 3.6, bossChaseQueue: 0, bossChaseCd: 0, bossPhase: 0, frenzied: false,
     aiState: 'chase', aiTimer: 0, aiCd: 2.0 + game.rnd() * 1.4, aiVx: 0, aiVy: 0,
     affixTimer: 2.4 + game.rnd() * 1.2, shamanTimer: 2.2, unstopFloatCd: 0
   };
@@ -4222,6 +5910,22 @@ function dealDamage(e, rawDmg, opts = {}){
     e.burnT = Math.max(e.burnT, 3.0);
   }
 
+  if (opts.applyFireMarkOnHit && e.hp > 0) {
+    applyFireMark(e, 1, 'w20_fire_ember_barrage', 4.5);
+  }
+  if (opts.fromHero && e.hp > 0 && (game.hero.w20TacticalReadyT || 0) > 0 && hasW20Enhancement('w20_shared_tactical_surge')) {
+    game.hero.w20TacticalReadyT = 0;
+    recordW20Proc('enhancement');
+    applyFireMark(e, 1, 'w20_shared_tactical_surge', 4.8);
+    applyFrostSlow(e, 0.50, 3.0, 'w20_shared_tactical_surge');
+    addFloat(e.x, e.y - 0.75, '⚡战技连携!', '#ffe680', true);
+    if (hasW20Direction('fire_chain_surge') || gearSyn.hasFireDuo || gearSyn.hasFireTrio) {
+      triggerFireDetonation(e, 1.15, { radius: 1.9, skillKey: opts.skillKey || 'firewave' });
+    } else {
+      gainFrostShield(20, { duration: 4.5, source: 'w20_shared_tactical_surge' });
+    }
+  }
+
   // Stage 2: Independent Fire Brand affix + Fire Detonation Duo / Complete Trio Synergy
   // Trio STRICTLY replaces Duo (never triggers both on the same hit!)
   if (!opts.noFireDetonate && opts.skillKey !== 'perk' && (opts.fromHero || opts.tower || isFireHit)) {
@@ -4270,7 +5974,7 @@ function dealDamage(e, rawDmg, opts = {}){
           duration: 4.5,
           maxShield: sc.frostDuoShieldCap || 95,
           source: 'gear_frost_duo',
-          noFullShieldPulse: true
+          noFullShieldPulse: !hasW20Enhancement('w20_frost_overflow_nova')
         });
       }
     }
@@ -4352,6 +6056,21 @@ function onEnemyKilled(e, opts){
 
   if (gm.burnKillHeal > 0 && (e.burnT > 0 || e.fireMarkT > 0)) {
     applyHeroLifesteal(gm.burnKillHeal);
+  }
+
+  // Stage 3: W20 Boss Shield Totem destroyed -> shatter Boss shield & apply 3s vulnerability!
+  if (e.totem) {
+    if (game.stats) game.stats.w20TotemsDestroyed = (game.stats.w20TotemsDestroyed || 0) + 1;
+    const ownerBoss = game.enemies.find(o => o.hp > 0 && (o.id === e.totemBossId || o.kind === 'boss4'));
+    addRing(e.x, e.y, '#7cf2ff', 2.4);
+    if (ownerBoss) {
+      ownerBoss.shield = 0;
+      ownerBoss.vulnT = Math.max(ownerBoss.vulnT || 0, 3.0);
+      addRing(ownerBoss.x, ownerBoss.y, '#ffe678', 2.6);
+      addFloat(ownerBoss.x, ownerBoss.y - 0.85, '💥 图腾击碎 · 首领破盾易伤!', '#ffe678', true);
+    }
+    AudioKit.play('crit', 1.2);
+    return;
   }
 
   // Material drops for v0.60 equipment & crafting loop
@@ -4489,6 +6208,65 @@ function fireChainLightning(startEnemy, dmg, maxTargets, opts = {}){
 }
 
 /* ==================== HERO SKILLS (SMART TARGETING + SPIRIT SWORD + COMBOS) ==================== */
+function executeBreakerShockwave(cx, cy, radius, dmgMult, isAftershock = false){
+  const hs = getHeroStats();
+  const baseDmg = Math.round(46 * hs.skillDmgMult * dmgMult);
+  addRing(cx, cy, isAftershock ? '#ffe478' : '#d89eff', radius);
+  addFloat(cx, cy - 0.75, isAftershock ? '⚡破阵二段震!' : '⚡破阵蓄势!', '#e6b8ff', true);
+  let hitCnt = 0;
+  let hitSlowed = false;
+  let hitEliteOrBoss = false;
+  const stateRes = hasW20Enhancement('w20_brk_state_resonance');
+  const eliteHunt = hasW20Enhancement('w20_brk_elite_hunter');
+  for (const e of game.enemies) {
+    if (e.hp <= 0 || dist(e, { x: cx, y: cy }) > radius + e.r) continue;
+    hitCnt++;
+    if (isAftershock && !e.boss && !isEnemyUnstoppable(e)) {
+      const d = dist(e, { x: cx, y: cy });
+      if (d > 0.4) {
+        e.x = clamp(e.x + (cx - e.x) / d * 0.85, 0.8, W - 0.8);
+        e.y = clamp(e.y + (cy - e.y) / d * 0.85, 0.8, H - 0.8);
+      }
+    }
+    e.vulnT = Math.max(e.vulnT || 0, 3.0);
+    if (stateRes) {
+      applyFireMark(e, 1, 'w20_brk_state_resonance', 4.5);
+      applyFrostSlow(e, 0.55, 3.0, 'w20_brk_state_resonance');
+    }
+    if ((e.slowT || 0) > 0 || (e.freezeT || 0) > 0) hitSlowed = true;
+    if (e.boss || e.elite) hitEliteOrBoss = true;
+    dealDamage(e, baseDmg, {
+      fromHero: true, skillKey: 'dash', isThunder: true, critChance: hs.crit, critDmg: hs.critDmg,
+      col: '#dfb3ff', lifesteal: hs.lifesteal, noFireDetonate: true, noFrostShieldProc: true
+    });
+    if (e.hp > 0 && (e.fireMarkT || 0) > 0) {
+      triggerFireDetonation(e, 1.10, { radius: 1.85, skillKey: 'dash' });
+    }
+    if (eliteHunt && e.hp > 0 && (e.boss || e.elite || e.vulnT > 0)) {
+      recordW20Proc('enhancement');
+      fireChainLightning(e, Math.round(baseDmg * 0.9), 2, { ox: e.x, oy: e.y - 3.0, skillKey: 'dash', noChainProc: true });
+    }
+    if (hasW20Enhancement('w20_shared_boss_breaker') && e.hp > 0 && isIsolatedHighValueTarget(e, 3.2)) {
+      recordW20Proc('enhancement');
+      e.vulnT = Math.max(e.vulnT || 0, 3.5);
+      dealDamage(e, Math.round(baseDmg * 0.65), { fromHero: false, skillKey: 'perk', col: '#ffe680', noFireDetonate: true });
+    }
+  }
+  const be = BALANCE.w20Breakthrough?.baseEffects || {};
+  if (hitSlowed || stateRes) {
+    gainFrostShield(be.breakerDashShieldOnSlow || 22, { duration: 4.5, source: 'w20_breaker_dash' });
+  }
+  if (hasW20Enhancement('w20_brk_vanguard_aegis') && hitCnt > 0) {
+    recordW20Proc('enhancement');
+    gainFrostShield(hitCnt * 12, { duration: 4.8, source: 'w20_brk_vanguard_aegis' });
+  }
+  if (eliteHunt && hitEliteOrBoss && game.hero) {
+    game.hero.dashCd = Math.max(0, (game.hero.dashCd || 0) - 1.0);
+  }
+  if (stateRes) recordW20Proc('enhancement');
+  return hitCnt;
+}
+
 function castHeroDash(){
   if (paused || game.activeModal) return false;
   const h = game.hero;
@@ -4513,25 +6291,88 @@ function castHeroDash(){
   h.shield = Math.max(h.shield, 35);
   h.shieldTimer = Math.max(h.shieldTimer || 0, 3.5);
   const wgLv = perkLv('wind_gale');
-  const cdFactor = wgLv >= 2 ? 0.55 : wgLv === 1 ? 0.75 : 1.0;
+  const be = BALANCE.w20Breakthrough?.baseEffects || {};
+  let cdFactor = wgLv >= 2 ? 0.55 : wgLv === 1 ? 0.75 : 1.0;
+  if (hasW20Direction('breaker_momentum')) cdFactor *= (be.breakerDashCdFactor || 0.80);
+  if (hasW20Enhancement('w20_shared_tactical_surge')) {
+    cdFactor *= 0.75;
+    h.w20TacticalReadyT = 2.5;
+  }
   if (wgLv > 0) h.dashBuffT = 2.0;
-  h.dashCd = Math.max(1.4, (4.2 * cdFactor) / (1 + Math.max(0, hs.gm.aspd) * 0.6));
+  h.dashCd = Math.max(1.0, (4.2 * cdFactor) / (1 + Math.max(0, hs.gm.aspd) * 0.6));
 
+  const w20FireDash = hasW20Enhancement('w20_fire_dash_detonator');
   for (let s = 0; s < 3; s++) {
     const px = ox + (h.x - ox) * (s / 2);
     const py = oy + (h.y - oy) * (s / 2);
     addRing(px, py, '#ff7b47', 1.45);
     for (const e of game.enemies) {
       if (e.hp > 0 && dist(e, {x:px,y:py}) <= 1.55) {
+        if (w20FireDash) applyFireMark(e, 2, 'w20_fire_dash_detonator', 5.0);
         dealDamage(e, Math.round(32 * hs.dmgMult), { fromHero:true, skillKey:'dash', critChance:hs.crit, critDmg:hs.critDmg, col:'#ff8e52', burn:12, lifesteal:hs.lifesteal });
       }
     }
   }
-  // Stage 2 Frost Complete Trio active trigger (Review-approved plan L98):
-  // When dodging actively with Frost Shield up, dashing unleashes a cooldown-capped Frost Pulse at landing!
-  if (hadFrostShieldBeforeDash && getActiveGearAffixSynergies().hasFrostTrio && (h.frostActivePulseCd || 0) <= 0) {
+  // Stage 3 W20 [w20_fire_dash_detonator]: detonate all marked enemies within 3.2 tiles of dash landing
+  if (w20FireDash) {
+    let detonatedAny = false;
+    for (const e of game.enemies) {
+      if (e.hp > 0 && (e.fireMarkT || 0) > 0 && dist(e, h) <= 3.2 + e.r) {
+        triggerFireDetonation(e, 1.15, { radius: 2.0, skillKey: 'dash' });
+        detonatedAny = true;
+      }
+    }
+    if (detonatedAny) recordW20Proc('enhancement');
+  }
+  // Stage 2 Frost Trio OR Stage 3 W20 Base [frost_bastion_counter]: active dash frost pulse when holding Frost Shield!
+  const allowDashFrostPulse = hadFrostShieldBeforeDash && (getActiveGearAffixSynergies().hasFrostTrio || hasW20Direction('frost_bastion_counter'));
+  if (allowDashFrostPulse && (h.frostActivePulseCd || 0) <= 0) {
     const sc = BALANCE.equipment?.synergyCombat || {};
-    triggerFrostPulse(sc.frostTrioActivePulseRadius || 3.25, sc.frostTrioActivePulseDmg || 46, 1.0, 'dash_shield');
+    const pulseRad = hasW20Direction('frost_bastion_counter') ? Math.max(sc.frostTrioActivePulseRadius || 3.25, be.frostBasePulseRadius || 3.05) : (sc.frostTrioActivePulseRadius || 3.25);
+    const pulseDmg = hasW20Direction('frost_bastion_counter') ? Math.max(sc.frostTrioActivePulseDmg || 46, be.frostBasePulseDmg || 46) : (sc.frostTrioActivePulseDmg || 46);
+    triggerFrostPulse(pulseRad, pulseDmg, 1.0, 'dash_shield');
+    if (hasW20Enhancement('w20_frost_dash_ring')) {
+      recordW20Proc('enhancement');
+      gainFrostShield(24, { duration: 5.0, source: 'w20_frost_dash_ring', noFullShieldPulse: true });
+      game.zones.push({
+        kind: 'frostTrail', w20Source: 'w20_frost_dash_ring', x: h.x, y: h.y, r: 2.25,
+        t: 2.8, max: 2.8, tick: 0.45, dps: Math.round(32 * hs.skillDmgMult)
+      });
+    }
+  }
+  // Stage 3 W20 Base [breaker_momentum]: landing shockwave that shreds armor & triggers fire/frost state hooks!
+  if (hasW20Direction('breaker_momentum')) {
+    recordW20Proc('base');
+    if (game.stats) game.stats.w20BreakerSlams = (game.stats.w20BreakerSlams || 0) + 1;
+    const vanguardBoost = (hasW20Enhancement('w20_brk_vanguard_aegis') && h.shield > 0) ? 1.30 : 1.0;
+    const brkRad = (be.breakerDashRadius || 2.9) * vanguardBoost;
+    executeBreakerShockwave(h.x, h.y, brkRad, be.breakerDashDmgMult || 1.45, false);
+    if (hasW20Enhancement('w20_brk_aftershock_dash')) {
+      recordW20Proc('enhancement');
+      h.w20AftershockQueue = h.w20AftershockQueue || [];
+      h.w20AftershockQueue.push({ x: h.x, y: h.y, t: 0.45, r: 3.8, dmgMult: 1.25 });
+    }
+    if (hasW20Enhancement('w20_brk_tempest_step')) {
+      recordW20Proc('enhancement');
+      const baseAng = Math.atan2(dy, dx);
+      for (let i = -1; i <= 1; i++) {
+        const a = baseAng + i * 0.22;
+        pushProjectile({
+          kind: 'arrow', w20Source: 'w20_brk_tempest_step', x: h.x, y: h.y,
+          vx: Math.cos(a) * 16.5, vy: Math.sin(a) * 16.5,
+          life: 0.45, r: 0.34, pierce: 3, hitSet: new Set(),
+          dmg: Math.round(38 * hs.skillDmgMult), splash: 0,
+          opts: { fromHero: true, skillKey: 'dash', isWind: true, critChance: hs.crit, critDmg: hs.critDmg, col: '#9effdc' }
+        });
+      }
+    }
+    if (hasW20Enhancement('w20_shared_elemental_echo')) {
+      h.w20EchoFrostCnt = (h.w20EchoFrostCnt || 0) + 1;
+      if (h.w20EchoFrostCnt >= 2) {
+        h.w20EchoFrostCnt = 0;
+        triggerW20ElementalEcho();
+      }
+    }
   }
   // Sword Echo (剑影分身): dash unleashes 1 or 4 piercing sword waves!
   const seLv = perkLv('sword_echo');
@@ -4613,6 +6454,7 @@ function updateHero(dt){
   h.frostPulseCd = Math.max(0, (h.frostPulseCd || 0) - dt);
   h.frostActivePulseCd = Math.max(0, (h.frostActivePulseCd || 0) - dt);
   h.gearFrostShieldCd = Math.max(0, (h.gearFrostShieldCd || 0) - dt);
+  h.w20TacticalReadyT = Math.max(0, (h.w20TacticalReadyT || 0) - dt);
   h.invuln = Math.max(0, h.invuln - dt);
   h.armorBreakT = Math.max(0, (h.armorBreakT || 0) - dt);
   h.leechTimer = (h.leechTimer || 0) + dt;
@@ -4620,6 +6462,33 @@ function updateHero(dt){
   if (h.shieldTimer > 0) {
     h.shieldTimer = Math.max(0, h.shieldTimer - dt);
     if (h.shieldTimer === 0) { h.shield = 0; h.frostShieldActive = false; }
+  }
+  // Process W20 delayed Breaker Aftershocks
+  if (h.w20AftershockQueue?.length) {
+    for (const q of h.w20AftershockQueue) {
+      q.t -= dt;
+      if (q.t <= 0) executeBreakerShockwave(q.x, q.y, q.r, q.dmgMult, true);
+    }
+    h.w20AftershockQueue = h.w20AftershockQueue.filter(q => q.t > 0);
+  }
+  // Stage 3 W20 Base [frost_bastion_counter]: while Frost Shield is up, periodic subtle chill aura sustains slows!
+  if (game.phase === 'wave' && hasW20Direction('frost_bastion_counter') && h.shield > 0 && h.frostShieldActive) {
+    const be = BALANCE.w20Breakthrough?.baseEffects || {};
+    h.w20FrostAuraTimer = (h.w20FrostAuraTimer ?? (be.frostBaseAuraInterval || 1.6)) - dt;
+    if (h.w20FrostAuraTimer <= 0) {
+      h.w20FrostAuraTimer = be.frostBaseAuraInterval || 1.6;
+      let chilled = false;
+      for (const e of game.enemies) {
+        if (e.hp > 0 && dist(h, e) <= 3.4 + e.r) {
+          applyFrostSlow(e, 0.45, 2.6, 'w20_frost_aura');
+          chilled = true;
+        }
+      }
+      if (chilled) {
+        recordW20Proc('base');
+        addRing(h.x, h.y, 'rgba(142,244,255,0.65)', 3.4);
+      }
+    }
   }
 
   if (pointerDown && pointerScreen) {
@@ -5522,16 +7391,21 @@ function updateProjectilesAndZones(dt){
 
   for (const z of game.zones) {
     z.t -= dt;
-    if (z.kind === 'lava') {
+    if (z.kind === 'lava' || z.kind === 'fireVortex') {
       z.tick -= dt;
       if (z.tick <= 0) {
         z.tick = 0.45;
         for (const e of game.enemies) {
           if (e.hp > 0 && dist(e, z) <= z.r + e.r) {
-            dealDamage(e, Math.round(z.dps * 0.45), { tower:z.tower, skillKey: z.w10Branch ? 'firewave' : undefined, col:'#ff884d' });
-            if (z.w10Branch && e.hp > 0) {
-              applyFireMark(e, 1, z.w10Branch, 4.5);
-              if (e.fireMarkStacks >= 2) triggerFireDetonation(e, 1.10, 1.75, 'firewave');
+            if (z.kind === 'fireVortex' && !e.boss && !isEnemyUnstoppable(e)) {
+              const d = Math.max(0.25, dist(e, z));
+              e.x = clamp(e.x + (z.x - e.x) / d * 0.42, 0.8, W - 0.8);
+              e.y = clamp(e.y + (z.y - e.y) / d * 0.42, 0.8, H - 0.8);
+            }
+            dealDamage(e, Math.round(z.dps * 0.45), { tower:z.tower, skillKey: (z.w10Branch || z.w20Source) ? 'firewave' : undefined, col:'#ff884d' });
+            if ((z.w10Branch || z.kind === 'fireVortex') && e.hp > 0) {
+              applyFireMark(e, 1, z.w20Source || z.w10Branch || 'fireVortex', 4.5);
+              if (e.fireMarkStacks >= 2 && z.w10Branch) triggerFireDetonation(e, 1.10, 1.75, 'firewave');
             }
           }
         }
@@ -5553,7 +7427,7 @@ function updateProjectilesAndZones(dt){
             dealDamage(e, Math.max(6, Math.round((z.dps || 18) * 0.45)), { skillKey:'nova', col:'#8cf0ff', slow:0.60, slowDur:2.4 });
           }
         }
-        if (hitAny) gainFrostShield(6, 4.0, 90);
+        if (hitAny || z.w20Source === 'w20_frost_pillar_ward') gainFrostShield(z.w20Source === 'w20_frost_pillar_ward' ? 10 : 6, { duration: 4.2, source: z.w20Source || 'frost_zone' });
       }
     } else if (z.kind === 'thunderField') {
       z.tick -= dt;
@@ -5624,6 +7498,21 @@ function updateEnemies(dt){
       if (e.hp <= 0) { onEnemyKilled(e, {}); continue; }
     }
     if (e.freezeT > 0 && !isEnemyUnstoppable(e)) { e.freezeT = Math.max(0, e.freezeT - dt); continue; }
+
+    // Stage 3: W20 Boss Shield Totem stays stationary and periodically shields boss4 until destroyed by player
+    if (e.totem) {
+      e.totemTimer = (e.totemTimer ?? 2.4) - dt;
+      if (e.totemTimer <= 0) {
+        e.totemTimer = 2.4;
+        const ownerBoss = game.enemies.find(o => o.hp > 0 && (o.id === e.totemBossId || o.kind === 'boss4'));
+        if (ownerBoss) {
+          ownerBoss.shield = Math.min(Math.round(ownerBoss.maxHp * 0.14), (ownerBoss.shield || 0) + 160);
+          addRing(e.x, e.y, '#6ce2ff', 1.4);
+          game.bolts.push({ pts: [{ x: e.x, y: e.y }, { x: ownerBoss.x, y: ownerBoss.y }], t: 0.25, max: 0.25, col: '#6ce2ff' });
+        }
+      }
+      continue;
+    }
 
     const dHero = dist(e, h);
 
@@ -5697,6 +7586,65 @@ function updateEnemies(dt){
         addRing(e.x, e.y, '#ff4f42', 3.6);
         addFloat(e.x, e.y - 0.8, '🔥 首领半血狂暴！', '#ff4f42', true);
       }
+      // Stage 3: W20 Boss (boss4) fair rolled auxiliary mechanic execution
+      if (e.kind === 'boss4') {
+        if ((e.bossChaseQueue || 0) > 0) {
+          e.bossChaseCd = Math.max(0, (e.bossChaseCd || 0) - dt);
+          if (e.bossChaseCd <= 0) {
+            e.bossChaseQueue--;
+            e.bossChaseCd = 0.65;
+            const cAng = Math.atan2(h.y - e.y, h.x - e.x);
+            for (let k = -1; k <= 2; k++) {
+              const a = cAng + (k - 0.5) * 0.20;
+              pushProjectile({
+                kind: 'enemyShot', w20Aux: 'chase_barrage', sx: e.x, sy: e.y, x: e.x, y: e.y,
+                tx: clamp(e.x + Math.cos(a) * 8.4, 0.8, W - 0.8),
+                ty: clamp(e.y + Math.sin(a) * 8.4, 0.8, H - 0.8),
+                t: 0, dur: 0.84, dmg: 28
+              });
+            }
+          }
+        }
+        e.bossAuxTimer = (e.bossAuxTimer ?? 3.6) - dt;
+        if (e.bossAuxTimer <= 0) {
+          e.bossAuxTimer = e.frenzied ? 5.2 : 6.6;
+          const auxKey = game.bossIntel?.w20AuxKey || 'oppression_ring';
+          if (game.stats) game.stats.w20BossAuxTriggers = (game.stats.w20BossAuxTriggers || 0) + 1;
+          if (auxKey === 'oppression_ring') {
+            game.zones.push({ kind: 'bossWave', w20Aux: 'oppression_ring', x: e.x, y: e.y, r: 6.2, t: 1.25, max: 1.25, dmg: 38, hitHero: false });
+            addFloat(e.x, e.y - 0.9, '🔴 辅助机制·领域压迫环！', '#ff6e9c', true);
+          } else if (auxKey === 'shield_totem') {
+            const hasTotem = game.enemies.some(o => o.hp > 0 && o.totem);
+            if (!hasTotem && game.enemies.length < MAX_ENEMIES) {
+              const ang = game.rnd() * Math.PI * 2;
+              const tx = clamp(e.x + Math.cos(ang) * 3.0, 1.4, W - 1.4);
+              const ty = clamp(e.y + Math.sin(ang) * 3.0, 1.4, H - 1.4);
+              const tot = spawnEnemy('totem', 'west', 1, { x: tx, y: ty });
+              tot.totemBossId = e.id;
+              addRing(tx, ty, '#6ce2ff', 2.0);
+              addFloat(tx, ty - 0.65, '🛡️ 护盾图腾降临（可击碎）!', '#8ef4ff', true);
+            } else {
+              e.shield = Math.min(Math.round(e.maxHp * 0.14), (e.shield || 0) + 140);
+            }
+          } else if (auxKey === 'chase_barrage') {
+            e.bossChaseQueue = 2;
+            e.bossChaseCd = 0.01;
+            addRing(e.x, e.y, '#d47cff', 2.2);
+            addFloat(e.x, e.y - 0.9, '🟣 辅助机制·追击弹幕！', '#dfb0ff', true);
+          } else if (auxKey === 'charged_shockwave') {
+            const dirs = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
+            for (const a of dirs) {
+              game.zones.push({
+                kind: 'bossSlam', w20Aux: 'charged_shockwave',
+                x: clamp(h.x + Math.cos(a) * 2.1, 1, W - 1),
+                y: clamp(h.y + Math.sin(a) * 2.1, 1, H - 1),
+                r: 1.85, t: 1.30, max: 1.30, dmg: 42
+              });
+            }
+            addFloat(e.x, e.y - 0.9, '💥 辅助机制·蓄力震荡波！', '#ff9852', true);
+          }
+        }
+      }
       e.bossTimer -= dt;
       if (e.bossTimer <= 0) {
         e.bossTimer = e.frenzied ? 4.5 : 6.0;
@@ -5745,7 +7693,7 @@ function updateEnemies(dt){
             spawnEnemy('brute', 'west', scale, { x: clamp(e.x + (game.rnd()-0.5)*1.8, 0.8, W-0.8), y: clamp(e.y + (game.rnd()-0.5)*1.8, 0.8, H-0.8) });
           }
         } else if (e.kind === 'boss4') {
-          // 天劫魔尊 (W20): 3 telegraphed thunder slam zones + 6 lightning orbs + 2 Brutes
+          // 天劫魔尊 (W20): Fixed Core = 3 telegraphed thunder slam zones + 6 lightning orbs + 2 Brutes
           for (let k = 0; k < 3; k++) {
             const ang = (Math.PI * 2 * k) / 3 + game.rnd() * 0.6;
             const distOff = k === 0 ? 0 : 2.3;
@@ -5986,9 +7934,12 @@ function damageHero(amt){
   if (gm.dmgReduce > 0) rem = Math.max(1, Math.round(rem * (1 - gm.dmgReduce)));
   const hadFrostShield = h.shield > 0 && h.frostShieldActive;
   const gearSyn = getActiveGearAffixSynergies();
-  if (hadFrostShield && gearSyn.hasFrostTrio) {
+  if (hadFrostShield && (gearSyn.hasFrostTrio || hasW20Direction('frost_bastion_counter'))) {
     const sc = BALANCE.equipment?.synergyCombat || {};
-    triggerFrostPulse(sc.frostTrioHitPulseRadius || 3.1, sc.frostTrioHitPulseDmg || 44, 1.0, 'shield_hit');
+    const be = BALANCE.w20Breakthrough?.baseEffects || {};
+    const pRad = hasW20Direction('frost_bastion_counter') ? Math.max(sc.frostTrioHitPulseRadius || 3.1, be.frostBasePulseRadius || 3.05) : (sc.frostTrioHitPulseRadius || 3.1);
+    const pDmg = hasW20Direction('frost_bastion_counter') ? Math.max(sc.frostTrioHitPulseDmg || 44, be.frostBasePulseDmg || 46) : (sc.frostTrioHitPulseDmg || 44);
+    triggerFrostPulse(pRad, pDmg, 1.0, 'shield_hit');
   } else if (hadFrostShield && h.w10Branch?.nova === 'nv_prism_lance') {
     triggerFrostPulse(2.8, 36, 0.9, 'w10');
   }
@@ -6133,8 +8084,9 @@ function completeWaveClear(){
   game.phase = 'prep';
   game.subPhase = null;
   game.rerollCost = BALANCE.economy.rerollStart;
+  if (game.wavePlan) game.wavePlan.currentEncounter = null;
 
-  // Stage progression & Major Breakthrough triggers (W5->W6 node, W10 breakthrough, W15->W16 node, W20 breakthrough, W29->W30 final prep)
+  // Stage progression & Major Breakthrough triggers (W5->W6, W10, W15->W16 preselect, W18->W19 intel, W20 breakthrough, W28 omen, W29->W30 final prep)
   if (clearedWave === 5) {
     game.shopTierBonus = Math.max(game.shopTierBonus, 1);
   } else if (clearedWave === 10) {
@@ -6142,7 +8094,6 @@ function completeWaveClear(){
     game.shopTierBonus = Math.max(game.shopTierBonus, 2);
     if (!game.hero.breakthroughs.w10) {
       game.pendingBreakthrough = 'w10';
-      // Auto-collect any unpicked ground chests from W10 Boss so player doesn't miss them
       if (game.chests.length) {
         for (const c of game.chests) queueModal({ type:'chest', legend: c.legend, shrineTier: !!c.shrineTier });
         game.chests = [];
@@ -6151,21 +8102,57 @@ function completeWaveClear(){
     }
   } else if (clearedWave === 15) {
     game.shopTierBonus = Math.max(game.shopTierBonus, 3);
+  } else if (clearedWave === 18) {
+    // W19 prep: reveal W20 Boss fixed core + rolled fair auxiliary mechanic!
+    game.bossIntel.w20Revealed = true;
   } else if (clearedWave === 20) {
+    // W20 Victory: 100% guaranteed Boss Voucher + IMMEDIATE activation of locked direction's base effect (even at 0 materials!)
     game.hero.vouchers.w20 = true;
     game.shopTierBonus = Math.max(game.shopTierBonus, 4);
-    if (!game.hero.breakthroughs.w20) {
+    const dirKey = game.w20State?.lockedDirection || game.w20State?.preselectedDirection || getRecommendedW20Direction();
+    const dirSpec = W20_DIRECTIONS[dirKey] || W20_DIRECTIONS.fire_chain_surge;
+    if (game.w20State) {
+      game.w20State.preselectedDirection = dirSpec.key;
+      game.w20State.lockedDirection = dirSpec.key;
+      game.w20State.locked = true;
+      game.w20State.lockedAtWave = 20;
+    }
+    if (!game.hero.breakthroughs.w20 || game.hero.breakthroughs.w20.placeholder) {
       game.hero.breakthroughs.w20 = {
         wave: 20,
         completed: true,
-        placeholder: true,
-        stage: 'stage1_placeholder',
-        directionKey: 'pending_stage3',
-        enhancementKey: 'pending_stage3',
-        note: 'Stage 1 placeholder: W20 second major breakthrough node unlocked (full direction + enhancement UI scheduled for Stage 3)'
+        placeholder: false,
+        directionKey: dirSpec.key,
+        directionName: dirSpec.name,
+        directionIcon: dirSpec.icon,
+        baseEffectActive: true,
+        baseEffectDesc: dirSpec.baseDesc,
+        enhancementKey: null,
+        enhancementName: null,
+        enhancementDesc: null,
+        rerollCount: 0
       };
+      game.hero.baseMaxHp += 60;
+      syncHeroMaxHp();
+      game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + 100);
       game.stats.breakthroughsCompleted = (game.stats.breakthroughsCompleted || 0) + 1;
+      // Auto-collect any unpicked ground chests from W20 Boss
+      if (game.chests.length) {
+        for (const c of game.chests) queueModal({ type:'chest', legend: c.legend, shrineTier: !!c.shrineTier });
+        game.chests = [];
+      }
+      initW20EnhancementDraft(dirSpec.key);
+      game.pendingBreakthrough = 'w20';
+      queueModal({ type: 'w20_breakthrough' });
     }
+  } else if (clearedWave === 28) {
+    const om = BALANCE.wave?.w28Omen || {};
+    game.endgameOmen = {
+      ...(game.endgameOmen || { wave: 28 }),
+      triggered: true,
+      clearTriggered: true,
+      label: om.clearTitle || '🌑 终局预兆已现 · W29 前哨与终局情报即将揭晓！'
+    };
   } else if (clearedWave === 29) {
     enterW29FinalPrep(BALANCE.wave.w29FinalPrepSeconds || 90);
   }
@@ -6178,8 +8165,16 @@ function completeWaveClear(){
   const intNote = interest ? ` + 利息 ${interest}` : '';
   if (clearedWave === 10) {
     showBanner('⚡ 第 10 波首领伏诛 · 触发【W10 首次大型突破】！', '指定一个已学主力神通并从 3 个随机形态分支中择一突破！主印上限将升至 4★、解锁第 2 辅印槽！', 'good');
+  } else if (clearedWave === 15) {
+    showBanner('⚡ 第 16 波备战 · 开放【W20 二破方向预选】！', 'W16–W19 随时可在顶栏/构筑总览预选与调整突破方向（击败 W20 首领拿到凭证后基础效果才会生效）！', 'good');
+  } else if (clearedWave === 18) {
+    showBanner(`🔎 W19 首领情报揭晓 · 天劫魔尊（辅助：${game.bossIntel.w20Aux}）`, `核心：${game.bossIntel.w20Core} · 辅助：${game.bossIntel.w20AuxDesc}`, 'boss');
   } else if (clearedWave === 20) {
-    showBanner('⚡ 第 20 波天劫魔尊伏诛 · 晋升 W21+ 决战段！', `当前境界节点：${getRealmStageLabel()}（主印上限 ${getSealStarCap()}★ · 辅印 ${getSubSealSlotCap()} 槽）`, 'good');
+    const w20 = game.hero.breakthroughs.w20;
+    showBanner(`⚡ 天劫魔尊伏诛 · 【${w20?.directionName || '二破'}】基础效果已当场生效！`, '已获得 W20 突破凭证（零材料同样 100% 生效）！请从战后强化的候选卡中择一或消耗锻材整组重抽！', 'good');
+  } else if (clearedWave === 28) {
+    const om = BALANCE.wave?.w28Omen || {};
+    showBanner(om.clearTitle || '🌑 终局预兆已现 · W29 前哨即将开启！', om.clearSub || 'W29 将公布 W30 终焉魔帝情报并在战后开启 90 秒独立最终整备！', 'boss');
   } else if (clearedWave !== 29) {
     showBanner(`✅ 第 ${clearedWave} / ${MAIN_WAVES} 波通关！`, `赏金 +${clearBonus}${intNote} 金 · 回血 +${BALANCE.progression.waveClearHeal}${chestNote}`, 'good');
   }
@@ -6280,11 +8275,18 @@ function tick(dt){
   game.waveClock += dt;
   if (game.curWaveTel) game.curWaveTel.duration = Number(game.waveClock.toFixed(1));
 
-  // Arknights-style storm warning cue right before Stage 3 dense surge!
+  // Arknights-style storm warning cue right before Stage 3 dense surge (and W28 Mid-Wave Endgame Omen!)
   if (!game.stormWarned && game.waveClock >= game.stormWarnAt) {
     game.stormWarned = true;
     AudioKit.play('boss', 0.85);
-    showBanner('⚠️ 暴风雨将至 · 大波敌军即将合围！', '调整站位与冲刺冷却，迎战波内峰值怪潮！', 'boss');
+    if (game.wave === 28) {
+      const om = BALANCE.wave?.w28Omen || {};
+      if (game.endgameOmen) game.endgameOmen.midWaveTriggered = true;
+      flashScreen('fail');
+      showBanner(om.midTitle || '🌑 终局阴云压境 · 深渊低语回响！', om.midSub || '终局危机迫近！稳住阵脚准备迎接 W29 与 W30 终局决战！', 'boss');
+    } else {
+      showBanner('⚠️ 暴风雨将至 · 大波敌军即将合围！', '调整站位与冲刺冷却，迎战波内峰值怪潮！', 'boss');
+    }
   }
 
   // Optional Black-Myth-style Blood Shrine activation!
@@ -6370,10 +8372,15 @@ function queueModal(m){
 
 function openNextModal(){
   if (!game.pendingModals.length) {
-    // If W10 breakthrough is still pending and no modal is left in queue, ensure the breakthrough modal opens
+    // If W10 or W20 breakthrough is still pending and no modal is left in queue, ensure the breakthrough modal opens
     if (game && game.pendingBreakthrough === 'w10' && !game.hero.breakthroughs.w10) {
       game.activeModal = { type: 'w10_breakthrough', step: game.w10Draft?.skillKey ? 'pick_branch' : 'pick_skill' };
       renderW10BreakthroughModal();
+      return;
+    }
+    if (game && game.pendingBreakthrough === 'w20' && game.w20Draft) {
+      game.activeModal = { type: 'w20_breakthrough' };
+      renderW20BreakthroughModal();
       return;
     }
     closeModal();
@@ -6384,6 +8391,8 @@ function openNextModal(){
   if (m.type === 'starter') renderStarterModal();
   else if (m.type === 'levelup') renderLevelUpModal();
   else if (m.type === 'w10_breakthrough') renderW10BreakthroughModal();
+  else if (m.type === 'w20_preselect') renderW20PreselectModal(m);
+  else if (m.type === 'w20_breakthrough') renderW20BreakthroughModal();
   else if (m.type === 'chest') renderChestModal(!!m.legend, !!m.shrineTier);
   else if (m.type === 'perk') renderPerkModal(m.quality || 'ren');
 }
@@ -6396,6 +8405,9 @@ function closeModal(){
   } else if (game && game.pendingBreakthrough === 'w10' && !game.hero.breakthroughs.w10) {
     game.activeModal = { type: 'w10_breakthrough', step: game.w10Draft?.skillKey ? 'pick_branch' : 'pick_skill' };
     renderW10BreakthroughModal();
+  } else if (game && game.pendingBreakthrough === 'w20' && game.w20Draft) {
+    game.activeModal = { type: 'w20_breakthrough' };
+    renderW20BreakthroughModal();
   }
 }
 
@@ -6658,6 +8670,420 @@ function renderW10BreakthroughModal(){
     game.w10Draft = null;
     renderW10BreakthroughModal();
   });
+  $('modalBackdrop').hidden = false;
+}
+
+/* ==================== STAGE 3: W16-W19 PRESELECT, W19 BOSS INTEL & W20 BREAKTHROUGH + PAID REROLL ==================== */
+function isW20PreselectOpen(){
+  if (!game) return false;
+  const openWave = BALANCE.w20Breakthrough?.preselectOpenWave || 16;
+  return game.wave >= openWave && game.wave <= 20 && !game.w20State?.locked && !game.hero?.breakthroughs?.w20;
+}
+
+function isW20BossIntelRevealed(){
+  if (!game) return false;
+  const revealWave = BALANCE.w20Breakthrough?.bossIntelRevealWave || 19;
+  return game.wave >= revealWave || !!game.bossIntel?.w20Revealed;
+}
+
+function getW20BossIntel(){
+  if (!game?.bossIntel) return null;
+  const revealed = isW20BossIntelRevealed();
+  if (!revealed) {
+    return {
+      revealed: false,
+      revealWave: BALANCE.w20Breakthrough?.bossIntelRevealWave || 19,
+      wave: 20,
+      bossName: '天劫魔尊',
+      coreName: null,
+      coreDesc: '第 19 波备战时揭晓 W20 首领固定核心机制与本局随机辅助机制',
+      auxKey: null,
+      auxName: null,
+      auxDesc: null,
+      auxFairness: null
+    };
+  }
+  return {
+    revealed: true,
+    revealWave: BALANCE.w20Breakthrough?.bossIntelRevealWave || 19,
+    wave: 20,
+    bossName: '天劫魔尊',
+    coreName: game.bossIntel.w20Core,
+    coreDesc: game.bossIntel.w20CoreDesc,
+    auxKey: game.bossIntel.w20AuxKey,
+    auxName: game.bossIntel.w20Aux,
+    auxDesc: game.bossIntel.w20AuxDesc,
+    auxFairness: game.bossIntel.w20AuxFairness
+  };
+}
+
+function getRecommendedW20Direction(){
+  if (!game?.hero) return 'fire_chain_surge';
+  const syn = getActiveGearAffixSynergies();
+  if (syn.hasFrostTrio || syn.hasFrostDuo || (game.hero.skills?.nova || 0) > (game.hero.skills?.firewave || 0)) {
+    return 'frost_bastion_counter';
+  }
+  if (syn.hasFireTrio || syn.hasFireDuo || (game.hero.skills?.firewave || 0) > 0) {
+    return 'fire_chain_surge';
+  }
+  return 'breaker_momentum';
+}
+
+function selectW20PreselectDirection(directionKey){
+  if (!game) return { ok: false, reason: 'no_game' };
+  const openWave = BALANCE.w20Breakthrough?.preselectOpenWave || 16;
+  if (game.wave < openWave) {
+    return { ok: false, reason: 'not_unlocked_yet', openWave };
+  }
+  if (game.w20State?.locked || game.hero?.breakthroughs?.w20) {
+    return { ok: false, reason: 'direction_locked', lockedDirection: game.w20State?.lockedDirection || game.hero?.breakthroughs?.w20?.directionKey };
+  }
+  const spec = W20_DIRECTIONS[directionKey];
+  if (!spec) {
+    return { ok: false, reason: 'invalid_direction', validKeys: W20_DIRECTION_KEYS };
+  }
+  game.w20State.preselectedDirection = spec.key;
+  AudioKit.play('coin', 1.15);
+  toast(`已预选 W20 突破方向【${spec.icon} ${spec.name}】（击败 W20 首领拿到突破凭证后才会生效）`);
+  if (game.activeModal?.type === 'w20_preselect') {
+    renderW20PreselectModal(game.activeModal);
+  }
+  renderAllUI(true);
+  return {
+    ok: true,
+    preselectedDirection: spec.key,
+    directionName: spec.name,
+    locked: false,
+    baseEffectActive: false
+  };
+}
+
+function lockW20DirectionForBattle(){
+  if (!game) return { ok: false, reason: 'no_game' };
+  const dirKey = game.w20State?.preselectedDirection || getRecommendedW20Direction();
+  if (!W20_DIRECTIONS[dirKey]) return { ok: false, reason: 'invalid_direction' };
+  game.w20State.preselectedDirection = dirKey;
+  game.w20State.lockedDirection = dirKey;
+  game.w20State.locked = true;
+  game.w20State.lockedAtWave = game.wave;
+  return {
+    ok: true,
+    lockedDirection: dirKey,
+    directionName: W20_DIRECTIONS[dirKey].name,
+    baseEffectActive: false // Still NOT active until defeating W20 Boss!
+  };
+}
+
+function openW20PreselectModal(opts = {}){
+  if (!game) return false;
+  if (!isW20PreselectOpen()) {
+    toast('W20 二破方向预选在 W16–W20 开战前开放！', true);
+    return false;
+  }
+  // Highlight recommended direction visually if player hasn't clicked any yet (without silently locking)
+  game.activeModal = { type: 'w20_preselect', requireConfirmStart: !!opts.requireConfirmStart };
+  renderW20PreselectModal(game.activeModal);
+  return true;
+}
+
+function renderW20PreselectModal(modalState = {}){
+  if (!game) return;
+  const box = $('modalBox');
+  const curPick = game.w20State?.preselectedDirection || null;
+  const recKey = getRecommendedW20Direction();
+  const intel = getW20BossIntel();
+  const requireStart = !!modalState.requireConfirmStart;
+
+  const intelHtml = intel?.revealed
+    ? `<div class="intel-box">
+        <div><b>🔎 W19 首领情报 · 第 20 波【${intel.bossName}】</b></div>
+        <div>• <b>固定核心机制</b>：${intel.coreName} —— ${intel.coreDesc}</div>
+        <div>• <b>本局随机辅助机制</b>：<b style="color:#ff9ec4">${intel.auxName}</b> —— ${intel.auxDesc}</div>
+        <div style="font-size:11px;opacity:.85;margin-top:2px">✅ 公平性保障：${intel.auxFairness}</div>
+      </div>`
+    : `<div class="intel-box" style="background:rgba(40,60,72,0.38);border-color:rgba(140,210,220,0.35);color:#cbe4e0">
+        <b>🔎 首领情报提示</b>：第 19 波备战时将提前揭晓 W20 首领【天劫魔尊】的固定核心机制与本局随机辅助机制。
+      </div>`;
+
+  box.innerHTML = `
+    <h2>⚡ W20 第二次大型突破 · 方向预选（第 ${game.wave} 波备战）</h2>
+    <div class="w20-notice">
+      🔒 <b>生效时点说明：</b>W16–W19 期间可随时根据当前装备与词条自由调整预选方向；<b>击败 W20 首领拿到突破凭证后，已锁定方向的基础效果才会生效</b>（开战 W20 前均仅使用已有战力，零材料同样 100% 生效基础效果）！
+    </div>
+    ${intelHtml}
+    <div class="choices" id="modalChoices"></div>
+    <div class="modal-footer">
+      ${requireStart
+        ? `<button class="btn" id="w20CancelBtn" type="button">返回备战</button>
+           <button class="btn gold" id="w20LockStartBtn" type="button" ${curPick ? '' : 'disabled'}>🔒 锁定【${curPick ? W20_DIRECTIONS[curPick].name : '请先选方向'}】并迎战 W20</button>`
+        : `<button class="btn gold" id="w20DoneBtn" type="button">保存预选并返回备战</button>`}
+    </div>
+  `;
+
+  const grid = box.querySelector('#modalChoices');
+  for (const key of W20_DIRECTION_KEYS) {
+    const d = W20_DIRECTIONS[key];
+    const isSel = curPick === key;
+    const isRec = !curPick && recKey === key;
+    const poolCnt = getValidW20EnhancementPool(key).length;
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'choice-card' + (isSel ? ' w20-selected' : '');
+    card.dataset.w20Dir = key;
+    card.innerHTML = `
+      <span class="tag">${d.tag}</span>
+      ${isSel ? '<span class="up-tag">✅ 当前预选方向</span>' : isRec ? '<span class="up-tag">💡 契合当前构筑</span>' : ''}
+      <span class="ci">${d.icon}</span>
+      <span class="cn">${d.name}</span>
+      <span class="cd">${d.baseDesc}</span>
+      <span class="cd" style="color:#9bf2d0;font-size:11px;margin-top:2px">🔗 ${d.synergyNote}（战后强化池 ${poolCnt} 张）</span>
+    `;
+    card.addEventListener('click', () => {
+      selectW20PreselectDirection(key);
+    });
+    grid.append(card);
+  }
+
+  box.querySelector('#w20DoneBtn')?.addEventListener('click', () => closeModal());
+  box.querySelector('#w20CancelBtn')?.addEventListener('click', () => closeModal());
+  box.querySelector('#w20LockStartBtn')?.addEventListener('click', () => {
+    if (!game.w20State?.preselectedDirection) {
+      selectW20PreselectDirection(recKey);
+    }
+    closeModal();
+    startWave();
+  });
+  $('modalBackdrop').hidden = false;
+}
+
+function getValidW20EnhancementPool(directionKey, ownedKeys = []){
+  if (!directionKey || !W20_DIRECTIONS[directionKey]) return [];
+  const ownedSet = new Set(ownedKeys || []);
+  if (game?.hero?.breakthroughs?.w20?.enhancementKey) {
+    ownedSet.add(game.hero.breakthroughs.w20.enhancementKey);
+  }
+  const ownedMutex = new Set();
+  for (const ok of ownedSet) {
+    const sp = W20_ENHANCEMENTS[ok];
+    if (sp?.mutex) ownedMutex.add(sp.mutex);
+  }
+  return Object.values(W20_ENHANCEMENTS).filter(c => {
+    if (!c || !Array.isArray(c.directions) || !c.directions.includes(directionKey)) return false;
+    if (ownedSet.has(c.key)) return false;
+    if (c.mutex && ownedMutex.has(c.mutex)) return false;
+    if (typeof c.applicable === 'function' && !c.applicable(game?.hero)) return false;
+    return true;
+  });
+}
+
+function getW20RerollCost(rerollCount = null){
+  const cfg = BALANCE.w20Breakthrough || {};
+  const base = Number.isFinite(Number(cfg.rerollBaseCost)) ? Number(cfg.rerollBaseCost) : 4;
+  const step = Number.isFinite(Number(cfg.rerollStep)) ? Number(cfg.rerollStep) : 2;
+  const cnt = rerollCount !== null && rerollCount !== undefined ? Number(rerollCount) : (game?.w20Draft?.rerollCount || 0);
+  return base + Math.max(0, cnt) * step;
+}
+
+function drawW20CandidateGroup(directionKey, excludeKeys = [], groupSize = null){
+  const cfg = BALANCE.w20Breakthrough || {};
+  const K = Math.max(1, Number(groupSize || cfg.groupSize || 2));
+  const minRequired = 2 * K + (cfg.minPoolBuffer ?? 2);
+  const validPool = getValidW20EnhancementPool(directionKey);
+  if (validPool.length < minRequired) {
+    return { ok: false, reason: 'insufficient_pool', required: minRequired, available: validPool.length, cards: [] };
+  }
+  const exSet = new Set(excludeKeys || []);
+  const eligible = validPool.filter(c => !exSet.has(c.key));
+  if (eligible.length < K) {
+    return { ok: false, reason: 'insufficient_pool', required: minRequired, available: eligible.length, cards: [] };
+  }
+  const poolCopy = eligible.slice();
+  const picked = [];
+  while (picked.length < K && poolCopy.length) {
+    const idx = Math.floor((game?.rnd ? game.rnd() : Math.random()) * poolCopy.length);
+    picked.push(poolCopy.splice(idx, 1)[0]);
+  }
+  return { ok: true, cards: picked, validPoolSize: validPool.length, requiredMinPool: minRequired };
+}
+
+function initW20EnhancementDraft(directionKey = null){
+  if (!game) return { ok: false, reason: 'no_game' };
+  const dirKey = directionKey || game.hero?.breakthroughs?.w20?.directionKey || game.w20State?.lockedDirection || 'fire_chain_surge';
+  const cfg = BALANCE.w20Breakthrough || {};
+  const K = Math.max(1, Number(cfg.groupSize || 2));
+  const draw = drawW20CandidateGroup(dirKey, [], K);
+  if (!draw.ok) {
+    // Fallback without blocking base effect if config was deliberately shrunk in a test
+    const rawPool = getValidW20EnhancementPool(dirKey).slice(0, K);
+    game.w20Draft = {
+      directionKey: dirKey,
+      groupSize: K,
+      rerollCount: 0,
+      nextRerollCost: getW20RerollCost(0),
+      candidates: rawPool.map(c => c.key),
+      history: [rawPool.map(c => c.key)],
+      prevCandidates: [],
+      poolUnderCapacity: true
+    };
+    return { ok: false, reason: draw.reason, required: draw.required, available: draw.available, draft: game.w20Draft };
+  }
+  const ids = draw.cards.map(c => c.key);
+  game.w20Draft = {
+    directionKey: dirKey,
+    groupSize: K,
+    rerollCount: 0,
+    nextRerollCost: getW20RerollCost(0),
+    candidates: ids,
+    history: [ids.slice()],
+    prevCandidates: [],
+    poolUnderCapacity: false
+  };
+  return { ok: true, draft: game.w20Draft, candidates: draw.cards, validPoolSize: draw.validPoolSize };
+}
+
+function rerollW20Enhancements(){
+  if (!game || !game.w20Draft) return { ok: false, reason: 'no_active_draft' };
+  const draft = game.w20Draft;
+  const K = draft.groupSize || (BALANCE.w20Breakthrough?.groupSize || 2);
+  const cost = getW20RerollCost(draft.rerollCount);
+
+  // Strict 2K+2 capacity redline check BEFORE deducting any materials!
+  const draw = drawW20CandidateGroup(draft.directionKey, draft.candidates, K);
+  if (!draw.ok) {
+    toast(`候选池容量不足（需至少 ${draw.required} 张，当前 ${draw.available} 张），已保留当前候选与锻材余额！`, true);
+    return {
+      ok: false,
+      reason: 'insufficient_pool',
+      required: draw.required,
+      available: draw.available,
+      materialsLeft: game.materials,
+      candidates: draft.candidates.slice()
+    };
+  }
+
+  if ((game.materials || 0) < cost) {
+    toast(`锻材不足！本次整组重抽需 ${cost} 锻材（当前 ⚙️ ${game.materials || 0}）`, true);
+    return {
+      ok: false,
+      reason: 'insufficient_materials',
+      cost,
+      materialsLeft: game.materials || 0,
+      candidates: draft.candidates.slice()
+    };
+  }
+
+  const prevIds = draft.candidates.slice();
+  const nextIds = draw.cards.map(c => c.key);
+  game.materials -= cost;
+  draft.prevCandidates = prevIds;
+  draft.candidates = nextIds;
+  draft.rerollCount += 1;
+  draft.nextRerollCost = getW20RerollCost(draft.rerollCount);
+  draft.history.push(nextIds.slice());
+
+  AudioKit.play('merge', 1.15);
+  toast(`🎲 已消耗 ${cost} 锻材整组重抽！下次重抽需 ${draft.nextRerollCost} 锻材（剩余 ⚙️ ${game.materials}）`);
+  if (game.activeModal?.type === 'w20_breakthrough') {
+    renderW20BreakthroughModal();
+  }
+  renderAllUI(true);
+  return {
+    ok: true,
+    costPaid: cost,
+    materialsLeft: game.materials,
+    rerollCount: draft.rerollCount,
+    nextRerollCost: draft.nextRerollCost,
+    prevCandidates: prevIds,
+    candidates: draw.cards
+  };
+}
+
+function pickW20Enhancement(enhKey){
+  if (!game || !game.w20Draft) return { ok: false, reason: 'no_active_draft' };
+  const draft = game.w20Draft;
+  const spec = W20_ENHANCEMENTS[enhKey];
+  if (!spec || !draft.candidates.includes(enhKey)) {
+    return { ok: false, reason: 'invalid_enhancement_choice', candidates: draft.candidates.slice() };
+  }
+  const w20 = game.hero.breakthroughs.w20;
+  if (!w20) return { ok: false, reason: 'w20_not_unlocked' };
+  w20.enhancementKey = spec.key;
+  w20.enhancementName = spec.name;
+  w20.enhancementIcon = spec.icon;
+  w20.enhancementDesc = spec.desc;
+  w20.enhancementBehaviorTag = spec.behaviorTag;
+  w20.rerollCount = draft.rerollCount;
+
+  game.pendingBreakthrough = null;
+  game.w20Draft = null;
+  flashScreen('gold');
+  AudioKit.play('level', 1.3);
+  addRing(game.hero.x, game.hero.y, '#ffd666', 4.5);
+  showBanner(
+    `⚡ W20 突破强化完成 · 【${w20.directionName} × ${spec.name}】！`,
+    `即将进入第 21 波强势体验！${spec.behaviorTag}`,
+    'good'
+  );
+  if (game.activeModal?.type === 'w20_breakthrough') {
+    closeModal();
+  }
+  renderAllUI(true);
+  return { ok: true, breakthrough: { ...w20 } };
+}
+
+function openW20BreakthroughModal(){
+  if (!game || !game.w20Draft) return false;
+  game.activeModal = { type: 'w20_breakthrough' };
+  renderW20BreakthroughModal();
+  return true;
+}
+
+function renderW20BreakthroughModal(){
+  if (!game || !game.w20Draft) return;
+  const draft = game.w20Draft;
+  const dir = W20_DIRECTIONS[draft.directionKey];
+  const cards = draft.candidates.map(k => W20_ENHANCEMENTS[k]).filter(Boolean);
+  const nextCost = getW20RerollCost(draft.rerollCount);
+  const mats = game.materials || 0;
+  const canReroll = mats >= nextCost;
+  const validPoolSize = getValidW20EnhancementPool(draft.directionKey).length;
+  const minPool = 2 * (draft.groupSize || 2) + (BALANCE.w20Breakthrough?.minPoolBuffer ?? 2);
+  const box = $('modalBox');
+
+  box.innerHTML = `
+    <h2>⚡ W20 第二次大型突破 · 战后强化选择</h2>
+    <div class="w20-notice">
+      ✅ <b>突破凭证保底生效：</b>已斩杀天劫魔尊并激活【${dir.icon} ${dir.name}】基础效果 —— ${dir.baseDesc}（即使普通材料为 0 亦已 100% 生效！）
+    </div>
+    <p class="lead">请从下方 <strong>${cards.length} 张机制强化卡</strong>中免费择一进入 W21；或消耗普通材料（⚙️ 当前 <strong>${mats}</strong> 锻材）<strong>整组重抽</strong>（相邻两组严格 0 重复，当前方向有效池 ${validPoolSize} 张 / 下限 ${minPool} 张）。</p>
+    <div class="choices ${cards.length === 2 ? 'two' : ''}" id="modalChoices"></div>
+    <div class="reroll-bar">
+      <div style="font-size:12px;color:#cde4df">
+        ⚙️ 剩余锻材：<b>${mats}</b> · 已重抽 <b>${draft.rerollCount}</b> 次 · 下次整组重抽价格：<b style="color:#ffe27a">${nextCost} 锻材</b>
+      </div>
+      <button class="btn gold" id="w20RerollBtn" type="button" ${canReroll ? '' : 'disabled'}>
+        🎲 付费整组重抽（消耗 ${nextCost} 锻材）
+      </button>
+    </div>
+  `;
+
+  const grid = box.querySelector('#modalChoices');
+  for (const c of cards) {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'choice-card legend';
+    card.dataset.w20Enh = c.key;
+    card.innerHTML = `
+      <span class="tag">${c.tag}${c.shared ? ' · 通用相容' : ''}</span>
+      <span class="up-tag">⚡ ${c.behaviorTag}</span>
+      <span class="ci">${c.icon}</span>
+      <span class="cn">${c.name}</span>
+      <span class="cd">${c.desc}</span>
+    `;
+    card.addEventListener('click', () => pickW20Enhancement(c.key));
+    grid.append(card);
+  }
+  box.querySelector('#w20RerollBtn')?.addEventListener('click', () => rerollW20Enhancements());
   $('modalBackdrop').hidden = false;
 }
 
@@ -6943,8 +9369,11 @@ function showEndModal(victory){
   const w10Info = game.hero.breakthroughs.w10
     ? `${game.hero.breakthroughs.w10.skillName} · ${game.hero.breakthroughs.w10.branchName}`
     : '未完成';
-  const w20Info = game.hero.breakthroughs.w20
-    ? (game.hero.breakthroughs.w20.placeholder ? '已达成 W20 突破节点（阶段 3 开放完整分支）' : `${game.hero.breakthroughs.w20.directionKey}`)
+  const w20 = game.hero.breakthroughs.w20;
+  const w20Info = w20
+    ? (w20.placeholder
+      ? '已达成 W20 突破节点'
+      : `${w20.directionIcon || '⚡'}${w20.directionName || w20.directionKey}${w20.enhancementName ? ` × ${w20.enhancementName}` : '（基础效果生效）'}`)
     : '未达成';
   const activeGearSyn = getActiveGearAffixSynergies();
   const synNames = activeGearSyn.active.length
@@ -6965,7 +9394,7 @@ function showEndModal(victory){
       </div>
       <div class="intro-box" style="grid-column:span 2">
         <h4>③ 长期成长与资源结算（阶段 4–6 局外传承接入预览）</h4>
-        <p>剩余金币：<b>💰 ${game.gold}</b> · 累计锻材：<b>⚙️ ${game.materials || 0}</b> · W20：<b>${w20Info}</b><br>实战联动统计：火标 <b>${game.stats.fireMarksApplied || 0}</b> / 引爆 <b>${game.stats.fireDetonations || 0}</b>（传递 <b>${game.stats.fireChainTransfers || 0}</b> / 孤立聚焦 <b>${game.stats.fireFocusedDetonations || 0}</b>） · 冰缓 <b>${game.stats.frostSlowsApplied || 0}</b> / 冰盾 <b>+${game.stats.frostShieldGained || 0}</b>（受击冰环 <b>${game.stats.frostHitPulses || 0}</b> / 冲刺冰环 <b>${game.stats.frostDashPulses || 0}</b> / 满盾冰环 <b>${game.stats.frostFullShieldPulses || 0}</b>）</p>
+        <p>剩余金币：<b>💰 ${game.gold}</b> · 累计锻材：<b>⚙️ ${game.materials || 0}</b> · W20：<b>${w20Info}</b><br>实战联动统计：火标 <b>${game.stats.fireMarksApplied || 0}</b> / 引爆 <b>${game.stats.fireDetonations || 0}</b>（传递 <b>${game.stats.fireChainTransfers || 0}</b> / 孤立聚焦 <b>${game.stats.fireFocusedDetonations || 0}</b> / 聚焰牵引 <b>${game.stats.w20FirePulls || 0}</b>） · 冰缓 <b>${game.stats.frostSlowsApplied || 0}</b> / 冰盾 <b>+${game.stats.frostShieldGained || 0}</b>（受击冰环 <b>${game.stats.frostHitPulses || 0}</b> / 冲刺冰环 <b>${game.stats.frostDashPulses || 0}</b> / 满盾冰环 <b>${game.stats.frostFullShieldPulses || 0}</b>） · W20 基础/强化触发 <b>${game.stats.w20BaseProcs || 0} / ${game.stats.w20EnhancementProcs || 0}</b></p>
       </div>
     </div>
     ${recentRows ? `
@@ -7450,9 +9879,15 @@ function drawZones(){
 
   for (const z of game.zones) {
     const zx = z.x * CELL, zy = z.y * CELL, zr = z.r * CELL;
-    if (z.kind === 'lava') {
+    if (z.kind === 'lava' || z.kind === 'fireVortex') {
       ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,95,35,${0.25 * (z.t / z.max)})`; ctx.fill();
+      ctx.fillStyle = z.kind === 'fireVortex'
+        ? `rgba(255,120,40,${0.26 * (z.t / z.max)})`
+        : `rgba(255,95,35,${0.25 * (z.t / z.max)})`;
+      ctx.fill();
+      if (z.kind === 'fireVortex') {
+        ctx.strokeStyle = 'rgba(255,190,85,0.65)'; ctx.lineWidth = 2; ctx.stroke();
+      }
     } else if (z.kind === 'frostVortex' || z.kind === 'frostTrail') {
       ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(108,226,255,${0.22 * (z.t / z.max)})`; ctx.fill();
@@ -7642,10 +10077,27 @@ function renderAllUI(force = false){
     rp.className = 'pill realm-btn trib-ready';
     $('heroLvTxt').textContent = `⚡ 待完成 W10 大型突破（点击打开）`;
     $('xpFill').style.width = `100%`;
+  } else if (game.pendingBreakthrough === 'w20' && game.w20Draft) {
+    rp.className = 'pill realm-btn trib-ready';
+    $('heroLvTxt').textContent = `⚡ 待选 W20 战后强化（点击打开）`;
+    $('xpFill').style.width = `100%`;
   } else {
     rp.className = 'pill realm-btn';
     $('heroLvTxt').textContent = `${getRealmStageLabel()} Lv.${h.lv}`;
     $('xpFill').style.width = `${clamp((h.xp / Math.max(1, h.xpNext)) * 100, 0, 100)}%`;
+  }
+
+  const w20Btn = $('w20PrepBtn');
+  if (w20Btn) {
+    const showPre = isW20PreselectOpen();
+    const showDraft = game.pendingBreakthrough === 'w20' && !!game.w20Draft;
+    w20Btn.hidden = !(showPre || showDraft);
+    if (showDraft) {
+      w20Btn.textContent = `⚡ 选 W20 强化（⚙️${game.materials || 0}）`;
+    } else if (showPre) {
+      const preSpec = game.w20State?.preselectedDirection ? W20_DIRECTIONS[game.w20State.preselectedDirection] : null;
+      w20Btn.textContent = preSpec ? `⚡ W20预选：${preSpec.icon}${preSpec.name}` : '⚡ W20 方向预选';
+    }
   }
 
   const rem = game.enemies.length + game.waveQueue.filter(w => !w.spawned).length;
@@ -7666,7 +10118,8 @@ function renderAllUI(force = false){
   const comboCnt = Object.keys(h.combos).length;
   const btCnt = (h.breakthroughs.w10 ? 1 : 0) + (h.breakthroughs.w20 ? 1 : 0);
   const w10Tag = h.breakthroughs.w10 ? ` · W10:${h.breakthroughs.w10.branchName}` : '';
-  $('metaBadge').textContent = `✨ 突破 ${btCnt}/2${w10Tag} · 组合 ${comboCnt}/4`;
+  const w20Tag = h.breakthroughs.w20?.directionName ? ` · W20:${h.breakthroughs.w20.directionName}` : '';
+  $('metaBadge').textContent = `✨ 突破 ${btCnt}/2${w10Tag}${w20Tag} · 组合 ${comboCnt}/4`;
 
   const dc = $('dashCd');
   if (h.dashCd > 0) { dc.hidden = false; dc.textContent = `${h.dashCd.toFixed(1)}s`; } else dc.hidden = true;
@@ -7761,14 +10214,48 @@ function renderBattleHud(force){
           ? '普通敌潮 · ' + alive.length + ' 只在场'
           : (game.wave % 5 === 0 ? '⚠️ 下一场是首领波' : '暂未发现高危单位');
   const threatClass = bosses > 0 ? 'danger' : (elites > 0 ? 'elite' : '');
+
+  // Stage 3 Wave Intel / Encounter Info (NO pre-wave spoilers for W25-W28 regular enemies!)
+  const w20Intel = (game.wave === 19 || game.wave === 20) ? getW20BossIntel() : null;
+  const encInfo = getWaveEncounterInfo(game.wave);
+  const omen = getEndgameOmenState();
+
   const key = [
     game.wave, game.phase, game.finalPrep?.active ? Math.ceil(game.finalPrep.timer) : 0,
     remaining, alive.length, queued, bosses, elites,
     Math.ceil(h.hp), h.maxHp, Math.ceil(h.shield), game.stats.kills,
-    game.stats.elites, Math.floor(game.stats.dmgTotal / 50)
+    game.stats.elites, Math.floor(game.stats.dmgTotal / 50),
+    w20Intel?.revealed ? w20Intel.auxKey : '',
+    encInfo ? `${encInfo.type}:${encInfo.revealed}:${encInfo.id || encInfo.themeKey || ''}` : '',
+    omen.triggered ? `${omen.midWaveTriggered}:${omen.clearTriggered}` : ''
   ].join('|');
   if (!force && key === lastBattleHudKey) return;
   lastBattleHudKey = key;
+
+  let stage3IntelHtml = '';
+  if (w20Intel?.revealed) {
+    stage3IntelHtml +=
+      '<div class="lh-sec"><div class="lh-sec-t"><span>🔎 W20 首领情报</span><span>天劫魔尊</span></div>' +
+        '<div class="bh-meta-line" style="color:#ffdce6"><b>核心：</b>' + w20Intel.coreName + '</div>' +
+        '<div class="bh-meta-line" style="color:#ff9ec4"><b>辅助：</b>' + w20Intel.auxName + '</div>' +
+        '<div class="bh-meta-line">' + w20Intel.auxDesc + '</div>' +
+      '</div>';
+  }
+  if (encInfo && encInfo.type === 'w22_24_shared_threat') {
+    stage3IntelHtml +=
+      '<div class="lh-sec"><div class="lh-sec-t"><span>🔥 W22–W24 同源威胁</span><span>强度 ' + encInfo.pressureLevel + '/3</span></div>' +
+        '<div class="bh-meta-line" style="color:#ffe48a"><b>主题：</b>' + encInfo.themeName + '</div>' +
+        '<div class="bh-meta-line">' + encInfo.comboLabel + '</div>' +
+      '</div>';
+  } else if (encInfo && encInfo.type === 'w25_28_random') {
+    stage3IntelHtml +=
+      '<div class="lh-sec"><div class="lh-sec-t"><span>🎲 W25–W28 独立敌群</span><span>' + (encInfo.revealed ? '已揭晓' : '未揭晓') + '</span></div>' +
+        '<div class="bh-meta-line">' + (encInfo.revealed ? ('本波敌群：<b>' + encInfo.name + '</b>') : '普通敌群组合将在开战后独立抽取揭晓（无战前剧透）') + '</div>' +
+      '</div>';
+  }
+  if (omen.triggered && (game.wave === 28 || game.wave === 29)) {
+    stage3IntelHtml += '<div class="omen-badge">🌑 <b>终局预兆：</b>深渊危机逼近，W29 战后开启 90s 最终整备迎战 W30！</div>';
+  }
 
   body.innerHTML =
     '<div class="lh-sec">' +
@@ -7777,6 +10264,7 @@ function renderBattleHud(force){
       '<div class="bh-meta-line">' + meta.tag + ' · ' + getRealmStageLabel() + '</div>' +
       '<div class="bh-remain"><strong>' + remaining + '</strong><span>剩余敌人</span><small>场上 ' + alive.length + ' · 待刷新 ' + queued + '</small></div>' +
     '</div>' +
+    stage3IntelHtml +
     '<div class="lh-sec"><div class="lh-sec-t"><span>❤️ 领主状态</span><span>' + (hpPct < 35 ? '危险' : '生命线') + '</span></div>' +
       '<div class="bh-vital-line"><span>生命值</span><b>' + Math.ceil(h.hp) + ' / ' + h.maxHp + '</b></div>' +
       '<div class="bh-track ' + (hpPct < 35 ? 'hp-low' : '') + '"><i style="width:' + hpPct + '%"></i></div>' +
@@ -7818,9 +10306,10 @@ function renderLeftHud(force){
   const sealSig = game.seal ? `${game.seal.kind}:${game.seal.star}:${game.seal.prog}:${game.seal.route || ''}` : '0';
   const subSig = game.subSeals.map(x => `${x.kind}:${x.star}:${x.prog}`).join(',');
   const skSig = Object.entries(h.skills).map(([k,v]) => k + v + (h.w10Branch?.[k] || '')).join(',');
+  const w20Sig = `${game.wave}:${game.w20State?.preselectedDirection || ''}:${game.w20State?.locked ? 1 : 0}:${h.breakthroughs.w20?.directionKey || ''}:${h.breakthroughs.w20?.enhancementKey || ''}`;
   const key = [
     sealSig, subSig, gearListSig(h.gear), skSig, Object.keys(h.combos).join(','),
-    Object.keys(h.perks).join(','), h.realm, h.lv, game.gold, game.materials
+    Object.keys(h.perks).join(','), h.realm, h.lv, game.gold, game.materials, w20Sig
   ].join('|');
   if (!force && key === lastLeftHudKey) return;
   lastLeftHudKey = key;
@@ -7897,6 +10386,30 @@ function renderLeftHud(force){
     affixSynHtml = '<div class="bh-section-note">尚未激活词条联动 · 凑齐火系(炽炎烙印/爆燃核心/余烬连环)或冰系(寒霜侵骨/凝冰护心/凛冬反震)激活双/三联动</div>';
   }
 
+  // Stage 3 W20 Preselect / Active Breakthrough card in Left HUD
+  let w20HudHtml = '';
+  if (h.breakthroughs.w20 && !h.breakthroughs.w20.placeholder) {
+    const w20 = h.breakthroughs.w20;
+    w20HudHtml =
+      '<div class="lh-sec"><div class="lh-sec-t"><span>⚡ W20 第二次突破</span><span>已生效</span></div>' +
+        '<div class="syn-badge ' + (w20.directionKey === 'frost_bastion_counter' ? 'frost' : 'fire') + '">' +
+          '<b>' + (w20.directionIcon || '⚡') + ' ' + w20.directionName + (w20.enhancementName ? (' × ' + w20.enhancementName) : '') + '</b><br>' +
+          (w20.enhancementDesc || w20.baseEffectDesc || '') +
+        '</div>' +
+      '</div>';
+  } else if (isW20PreselectOpen()) {
+    const preSpec = game.w20State?.preselectedDirection ? W20_DIRECTIONS[game.w20State.preselectedDirection] : null;
+    w20HudHtml =
+      '<div class="lh-sec"><div class="lh-sec-t"><span>⚡ W20 方向预选</span><span>W16–W19可调</span></div>' +
+        '<button type="button" class="bh-item" data-open-w20-preselect>' +
+          '<span class="bh-item-icon">' + (preSpec ? preSpec.icon : '⚡') + '</span>' +
+          '<span class="bh-item-main"><b>' + (preSpec ? ('已预选：' + preSpec.name) : '点击预选 W20 突破方向') + '</b>' +
+          '<small>击败 W20 首领拿到突破凭证后，已锁定方向的基础效果才会生效</small></span>' +
+          '<span class="bh-item-tag">预选</span>' +
+        '</button>' +
+      '</div>';
+  }
+
   let setHtml = '';
   for (const [sk, n] of Object.entries(setCounts)) {
     if (!n || !GEAR_SETS[sk]) continue;
@@ -7928,6 +10441,7 @@ function renderLeftHud(force){
 
   const sealSlotsUsed = (game.seal ? 1 : 0) + game.subSeals.length;
   body.innerHTML =
+    w20HudHtml +
     '<div class="lh-sec"><div class="lh-sec-t"><span>✨ 灵印阵盘</span><span>' + sealSlotsUsed + ' 个已占用</span></div>' +
       sealHtml +
     '</div>' +
@@ -7945,6 +10459,9 @@ function renderLeftHud(force){
       '<div class="bh-build-footer"><span>节点 ' + getRealmStageLabel() + '</span><span>锻材 ⚙️' + (game.materials || 0) + '</span></div>' +
     '</div>';
 
+  body.querySelectorAll('[data-open-w20-preselect]').forEach(btn => {
+    btn.addEventListener('click', () => openW20PreselectModal());
+  });
   body.querySelectorAll('[data-open-seal]').forEach(btn => {
     btn.addEventListener('click', () => {
       game.inspTarget = { type:'seal' };
@@ -8579,9 +11096,18 @@ $('heroPill').addEventListener('click', () => {
   if (game.pendingBreakthrough === 'w10' && !game.hero.breakthroughs.w10) {
     game.activeModal = { type: 'w10_breakthrough', step: game.w10Draft?.skillKey ? 'pick_branch' : 'pick_skill' };
     renderW10BreakthroughModal();
+  } else if (game.pendingBreakthrough === 'w20' && game.w20Draft) {
+    openW20BreakthroughModal();
   } else {
     game.inspTarget = game.inspTarget?.type === 'hero' ? null : { type:'hero' };
     renderAllUI(true);
+  }
+});
+$('w20PrepBtn')?.addEventListener('click', () => {
+  if (game.pendingBreakthrough === 'w20' && game.w20Draft) {
+    openW20BreakthroughModal();
+  } else if (isW20PreselectOpen()) {
+    openW20PreselectModal();
   }
 });
 $('metaBadge').addEventListener('click', () => {
@@ -8624,6 +11150,7 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
   game.activeModal = null;
   game.pendingBreakthrough = null;
   game.w10Draft = null;
+  game.w20Draft = null;
   game.inspTarget = null;
 
   const h = game.hero;
@@ -8648,7 +11175,7 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
   else if (normTier === 'weak') calcBaseHp = Math.max(220, calcBaseHp - 40);
   h.baseMaxHp = calcBaseHp;
 
-  // Set breakthroughs & vouchers
+  // Set breakthroughs, vouchers, W16-W20 preselection, W19 intel & W28 omen
   if (hasW10) {
     h.vouchers.w10 = true;
     const primarySkill = normBuild === 'frost' ? 'nova' : 'firewave';
@@ -8671,18 +11198,61 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
     };
     game.stats.breakthroughsCompleted = 1;
   }
+
+  const defaultW20DirKey = normBuild === 'frost' ? 'frost_bastion_counter' : 'fire_chain_surge';
+  const defaultW20Dir = W20_DIRECTIONS[defaultW20DirKey];
+  if (targetWave >= 19) {
+    game.bossIntel.w20Revealed = true;
+  }
+  if (targetWave >= 16 && targetWave <= 20) {
+    // W16-W20 pre-battle: preselected direction ready to adjust or lock when starting W20, NOT active yet!
+    game.w20State = {
+      preselectedDirection: defaultW20Dir.key,
+      lockedDirection: null,
+      locked: false,
+      lockedAtWave: null
+    };
+  }
   if (hasW20) {
+    // Stage 3: Replace Stage 1 placeholder with REAL locked W20 direction & enhancement!
     h.vouchers.w20 = true;
+    const defaultEnhKey = normBuild === 'frost'
+      ? (normTier === 'strong' ? 'w20_frost_overflow_nova' : 'w20_frost_dash_ring')
+      : (normTier === 'strong' ? 'w20_fire_supernova_chain' : 'w20_fire_isolated_exec');
+    const enhSpec = W20_ENHANCEMENTS[defaultEnhKey];
+    game.w20State = {
+      preselectedDirection: defaultW20Dir.key,
+      lockedDirection: defaultW20Dir.key,
+      locked: true,
+      lockedAtWave: 20
+    };
     h.breakthroughs.w20 = {
       wave: 20,
       completed: true,
-      placeholder: true,
-      stage: 'stage1_placeholder',
-      directionKey: normBuild === 'frost' ? 'frost_bastion_mastery_placeholder' : 'fire_detonate_mastery_placeholder',
-      enhancementKey: 'pending_stage3',
-      note: 'Stage 1 placeholder: W20 second major breakthrough unlocked (full direction + enhancement UI scheduled for Stage 3)'
+      placeholder: false,
+      directionKey: defaultW20Dir.key,
+      directionName: defaultW20Dir.name,
+      directionIcon: defaultW20Dir.icon,
+      baseEffectActive: true,
+      baseEffectDesc: defaultW20Dir.baseDesc,
+      enhancementKey: enhSpec.key,
+      enhancementName: enhSpec.name,
+      enhancementIcon: enhSpec.icon,
+      enhancementDesc: enhSpec.desc,
+      enhancementBehaviorTag: enhSpec.behaviorTag,
+      rerollCount: 0
     };
     game.stats.breakthroughsCompleted = 2;
+  }
+  if (targetWave >= 29) {
+    const om = BALANCE.wave?.w28Omen || {};
+    game.endgameOmen = {
+      triggered: true,
+      wave: 28,
+      midWaveTriggered: true,
+      clearTriggered: true,
+      label: om.clearTitle || '🌑 终局预兆已现'
+    };
   }
 
   // Update active unlock node and shop tier bonus
@@ -8820,6 +11390,8 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
     seed: runSeed,
     gold: game.gold,
     materials: game.materials,
+    w20State: { ...game.w20State },
+    bossIntel: getW20BossIntel(),
     hero: {
       lv: h.lv,
       hp: h.hp,
@@ -8839,10 +11411,9 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
     subSeals: game.subSeals.map(s => ({ kind: s.kind, star: s.star })),
     unimplementedStageFeatures: {
       stage2_equipmentCraftingAndAffixes: 'Implemented in Stage 2 (independent gear instances, 1-3 slots, duo/trio synergies, shop pricing, sell/dismantle & material enhance; Fate Transfer scheduled for Stage 4)',
-      stage3_w20FullBreakthroughAndW21Elites: hasW20
-        ? 'W20 breakthrough state marked with Stage 1 placeholder (full direction + enhancement UI scheduled for Stage 3)'
-        : 'Pending Stage 3',
-      stage4_metaTreeAndDifficultyModifiers: 'Pending Stage 4'
+      stage3_w20FullBreakthroughAndW21Elites: 'Implemented in Stage 3 (W16-W19 preselect, W19 fair W20 Boss intel, W20 lock-in/voucher/paid full-group reroll, W21 showcase, W22-W24 shared-threat escalation, W25-W28 spoiler-free draws & W28 omen)',
+      stage4_fateGambleAndTransfer: 'Pending Stage 4 (Fate Gamble, affix transfer & late-game refinement)',
+      stage5_w29FinalPrepAndW30Boss: 'Pending Stage 5 (W29 full settlement edge cases & W30 signature phase lock)'
     }
   };
 }
@@ -8852,13 +11423,20 @@ function exportBuildPreset(){
   const h = game.hero;
   const syn = recomputeEquipmentSynergies();
   return JSON.parse(JSON.stringify({
-    schema: 'bg60-build-preset-v2',
+    schema: 'bg60-build-preset-v3',
     seed: game.seed,
     wave: game.wave,
     gold: game.gold,
     materials: game.materials,
     shopElemBuyCounts: { ...(game.shopElemBuyCounts || {}) },
     shopElemBuyStage: game.shopElemBuyStage || getSourceStageForWave(game.wave),
+    w20State: { ...(game.w20State || {}) },
+    bossIntel: { ...(game.bossIntel || {}) },
+    wavePlan: {
+      w22To24ThemeKey: game.wavePlan?.w22To24ThemeKey || 'mobile_rush',
+      w25To28Rolled: { ...(game.wavePlan?.w25To28Rolled || {}) }
+    },
+    endgameOmen: { ...(game.endgameOmen || {}) },
     seal: game.seal ? { kind: game.seal.kind, elem: game.seal.elem, star: game.seal.star, prog: game.seal.prog || 0, route: game.seal.route || null } : null,
     subSeals: game.subSeals.map(s => ({ kind: s.kind, elem: s.elem, star: s.star, prog: s.prog || 0 })),
     hero: {
@@ -8890,6 +11468,27 @@ function importBuildPreset(snapshot){
   game.materials = Math.max(0, Math.round(Number(data.materials ?? 0)));
   game.shopElemBuyCounts = { wind:0, fire:0, frost:0, thunder:0, holy:0, ...(data.shopElemBuyCounts || {}) };
   game.shopElemBuyStage = Number(data.shopElemBuyStage || getSourceStageForWave(game.wave));
+  if (data.w20State) {
+    game.w20State = {
+      preselectedDirection: data.w20State.preselectedDirection || null,
+      lockedDirection: data.w20State.lockedDirection || null,
+      locked: !!data.w20State.locked,
+      lockedAtWave: data.w20State.lockedAtWave || null
+    };
+  }
+  if (data.bossIntel) {
+    game.bossIntel = { ...game.bossIntel, ...data.bossIntel };
+  }
+  if (data.wavePlan) {
+    game.wavePlan = {
+      w22To24ThemeKey: data.wavePlan.w22To24ThemeKey || game.wavePlan.w22To24ThemeKey,
+      w25To28Rolled: { ...(data.wavePlan.w25To28Rolled || {}) },
+      currentEncounter: null
+    };
+  }
+  if (data.endgameOmen) {
+    game.endgameOmen = { ...game.endgameOmen, ...data.endgameOmen };
+  }
 
   const h = game.hero;
   const hd = data.hero || {};
@@ -8936,7 +11535,8 @@ function importBuildPreset(snapshot){
     wave: game.wave,
     gearCount: h.gear.length,
     bagCount: game.bag.length,
-    activeGearSynergies: activeSynergies.active.map(s => s.id)
+    activeGearSynergies: activeSynergies.active.map(s => s.id),
+    w20Breakthrough: h.breakthroughs.w20 ? { ...h.breakthroughs.w20 } : null
   };
 }
 
@@ -8973,7 +11573,7 @@ game.pendingModals.push({ type: 'starter' });
 requestAnimationFrame(loop);
 
 window.BG60 = {
-  version: '0.60.0-stage2',
+  version: '0.60.0-stage3',
   get game(){ return game; },
   get cam(){ return cam; },
   get perf(){ return { ...perfStats, enemies: game?.enemies.length || 0, projectiles: game?.projectiles.length || 0 }; },
@@ -8992,13 +11592,21 @@ window.BG60 = {
   getActiveUnlockNode, getUnlockedSkillPool, hasPendingDecision,
   getRealm, getRealmStageLabel, getSealStarCap, getSubSealSlotCap, getShopTier,
   getLearnedSkillKeys, rollW10BranchChoices, selectW10BreakthroughSkill, pickW10BreakthroughBranch,
+  // Stage 3: W16-W19 Preselect, W19 Boss Intel, W20 Breakthrough & Paid Reroll, W22-W28 Encounters & W28 Omen
+  isW20PreselectOpen, isW20BossIntelRevealed, getW20BossIntel, getRecommendedW20Direction,
+  selectW20PreselectDirection, lockW20DirectionForBattle, openW20PreselectModal,
+  getValidW20EnhancementPool, getW20RerollCost, drawW20CandidateGroup,
+  initW20EnhancementDraft, rerollW20Enhancements, pickW20Enhancement, openW20BreakthroughModal,
+  getW20ActiveState, hasW20Direction, hasW20Enhancement,
+  getW22To24Theme, getW25To28Pool, rollW25To28Encounter, getWaveEncounterInfo, getEndgameOmenState,
   applyFireMark, triggerFireDetonation, applyFrostSlow, triggerFrostPulse, gainFrostShield, getHeroMaxFrostShield,
   rollPerkChoices, pickPerk, refreshCombos, hasCombo, perkLv,
   getWavePhaseMeta, buildWaveQueue, pickChestGearChoices, getTelemetryReport,
   tick, closeModal, openNextModal, queueModal,
   getSynergyCounts, getSealStats, getHeroStats, worldToScreen, screenToWorld,
   getGearSetCounts, getActiveGearSets, gearSetTier, getActiveDualResonances, hasDualRes, isEnemyUnstoppable, toggleLeftHud, toggleBattleHud,
-  BALANCE, UNLOCK_NODES, W10_SKILL_BRANCHES, REALMS, SHRINE_WAVES, ARTIFACTS, SUB_SEAL_RESONANCE, SEAL_SPECIALIZATIONS,
+  BALANCE, UNLOCK_NODES, W10_SKILL_BRANCHES, W20_DIRECTIONS, W20_ENHANCEMENTS, W20_BOSS_AUX_POOL,
+  REALMS, SHRINE_WAVES, ARTIFACTS, SUB_SEAL_RESONANCE, SEAL_SPECIALIZATIONS,
   ELEMENTS, GEARS, GEAR_SETS, GEAR_AFFIXES, GEAR_SYNERGIES, SOURCE_STAGES, DUAL_RESONANCES, HERO_SKILLS, COMBOS, PERKS, PILLS, MAIN_WAVES, W, H, MAX_ENEMIES
 };
 window.BG52 = window.BG60;

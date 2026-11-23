@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "baseline": "v0.60/stage2-gear-affixes-economy",
+  "baseline": "v0.60/stage3-w16-w28-flow",
   "mainWaves": 30,
-  "notes": "v0.60 阶段 2（装备词条、联动和普通经济）数值基线：独立装备实例、1/2/3槽独立概率、来源阶段与品质回收、商店按阶段+同系递增与封顶、普通材料强化及3★灵印专精路线。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
+  "notes": "v0.60 阶段 3（W16-W28 贯通）数值基线：新增 W16-W19 方向预选、W19 首领情报与公平随机辅助机制池、W20 二破基础效果与付费整组重抽（K=2, 4/6/8...）、W22-W24 同源威胁组合递进、W25-W28 独立无剧透敌群抽取与 W28 终局预兆。修改此 JSON 后运行 node scripts/sync-balance.cjs。",
   "progression": {
     "initialGold": 55,
     "initialMaterials": 0,
@@ -774,6 +774,303 @@
           ]
         ]
       }
+    ],
+    "w21ShowcaseMix": {
+      "normal": [
+        ["slime", 0.22],
+        ["wolf", 0.48],
+        ["brute", 0.78],
+        ["mage", 0.92],
+        ["shaman", 1]
+      ],
+      "heavy": [
+        ["wolf", 0.25],
+        ["brute", 0.72],
+        ["mage", 0.88],
+        ["shaman", 1]
+      ]
+    },
+    "w22To24Themes": {
+      "mobile_rush": {
+        "key": "mobile_rush",
+        "name": "高机动突进压迫",
+        "primaryThreat": "mobile_rush",
+        "threatLabel": "高速突进与霸体撕裂防线",
+        "counterHint": "预留冲刺位移，优先用减速/聚怪打断合围并先清侧翼影狼与妖火祭司",
+        "waves": {
+          "22": {
+            "comboLabel": "初阶试探 · 影狼斥候+远程掩护",
+            "pressureLevel": 1,
+            "packBonus": 0,
+            "mobMultAdj": 0.98,
+            "normal": [["wolf", 0.52], ["slime", 0.76], ["mage", 0.94], ["brute", 1]],
+            "heavy": [["wolf", 0.50], ["mage", 0.80], ["brute", 1]]
+          },
+          "23": {
+            "comboLabel": "组合升压 · 双突进冲锋+毒虫封路",
+            "pressureLevel": 2,
+            "packBonus": 1,
+            "mobMultAdj": 1.02,
+            "normal": [["wolf", 0.42], ["brute", 0.72], ["bomber", 0.90], ["mage", 1]],
+            "heavy": [["wolf", 0.36], ["brute", 0.78], ["bomber", 1]]
+          },
+          "24": {
+            "comboLabel": "高压合围 · 狂暴双突进+祭司点名",
+            "pressureLevel": 3,
+            "packBonus": 2,
+            "mobMultAdj": 1.05,
+            "normal": [["wolf", 0.36], ["brute", 0.68], ["shaman", 0.86], ["bomber", 1]],
+            "heavy": [["wolf", 0.30], ["brute", 0.66], ["shaman", 0.88], ["bomber", 1]]
+          }
+        }
+      },
+      "flame_siege": {
+        "key": "flame_siege",
+        "name": "持续火圈与重甲推进",
+        "primaryThreat": "flame_siege",
+        "threatLabel": "持续地形封锁与重甲压境",
+        "counterHint": "保持弧线拉扯避免被火圈和毒池逼入死角，及时点杀后排祭司",
+        "waves": {
+          "22": {
+            "comboLabel": "初阶试探 · 重甲前推+祭司火圈",
+            "pressureLevel": 1,
+            "packBonus": 0,
+            "mobMultAdj": 0.98,
+            "normal": [["brute", 0.44], ["shaman", 0.68], ["slime", 0.90], ["mage", 1]],
+            "heavy": [["brute", 0.60], ["shaman", 0.88], ["mage", 1]]
+          },
+          "23": {
+            "comboLabel": "组合升压 · 重甲火圈+毒爆双重封地",
+            "pressureLevel": 2,
+            "packBonus": 1,
+            "mobMultAdj": 1.02,
+            "normal": [["brute", 0.38], ["shaman", 0.62], ["bomber", 0.86], ["mage", 1]],
+            "heavy": [["brute", 0.50], ["shaman", 0.76], ["bomber", 1]]
+          },
+          "24": {
+            "comboLabel": "高压合围 · 重甲双祭司+影狼侧袭",
+            "pressureLevel": 3,
+            "packBonus": 2,
+            "mobMultAdj": 1.05,
+            "normal": [["brute", 0.34], ["shaman", 0.60], ["bomber", 0.80], ["wolf", 1]],
+            "heavy": [["brute", 0.44], ["shaman", 0.72], ["bomber", 0.86], ["wolf", 1]]
+          }
+        }
+      },
+      "arcane_crossfire": {
+        "key": "arcane_crossfire",
+        "name": "远程火力网与控场合围",
+        "primaryThreat": "arcane_crossfire",
+        "threatLabel": "扇形弹幕交叉火力与阵型分割",
+        "counterHint": "斜向切入外圈清理法师与祭司，利用护盾或冲刺穿过弹幕缝隙",
+        "waves": {
+          "22": {
+            "comboLabel": "初阶试探 · 扇形法阵+盾墙掩护",
+            "pressureLevel": 1,
+            "packBonus": 0,
+            "mobMultAdj": 0.98,
+            "normal": [["mage", 0.46], ["slime", 0.74], ["brute", 0.92], ["wolf", 1]],
+            "heavy": [["mage", 0.52], ["brute", 0.86], ["wolf", 1]]
+          },
+          "23": {
+            "comboLabel": "组合升压 · 法师祭司联动+重甲护阵",
+            "pressureLevel": 2,
+            "packBonus": 1,
+            "mobMultAdj": 1.02,
+            "normal": [["mage", 0.42], ["shaman", 0.68], ["brute", 0.88], ["bomber", 1]],
+            "heavy": [["mage", 0.44], ["shaman", 0.74], ["brute", 1]]
+          },
+          "24": {
+            "comboLabel": "高压合围 · 交叉弹幕+影狼毒爆逼位",
+            "pressureLevel": 3,
+            "packBonus": 2,
+            "mobMultAdj": 1.05,
+            "normal": [["mage", 0.36], ["shaman", 0.62], ["wolf", 0.84], ["bomber", 1]],
+            "heavy": [["mage", 0.38], ["shaman", 0.66], ["wolf", 0.86], ["bomber", 1]]
+          }
+        }
+      }
+    },
+    "w25To28Pools": {
+      "25": [
+        {
+          "id": "w25_rush_vanguard",
+          "name": "影狼狂潮突袭群",
+          "primaryThreat": "mobile_rush",
+          "mobMultAdj": 1.0,
+          "hpMultAdj": 1.0,
+          "normal": [["wolf", 0.44], ["brute", 0.72], ["mage", 0.88], ["shaman", 1]],
+          "heavy": [["wolf", 0.40], ["brute", 0.78], ["shaman", 1]]
+        },
+        {
+          "id": "w25_siege_phalanx",
+          "name": "玄甲祭司推进阵",
+          "primaryThreat": "flame_siege",
+          "mobMultAdj": 0.96,
+          "hpMultAdj": 1.04,
+          "normal": [["brute", 0.42], ["shaman", 0.70], ["bomber", 0.88], ["mage", 1]],
+          "heavy": [["brute", 0.54], ["shaman", 0.82], ["bomber", 1]]
+        },
+        {
+          "id": "w25_arcane_volley",
+          "name": "星穹弹幕齐射群",
+          "primaryThreat": "arcane_crossfire",
+          "mobMultAdj": 1.02,
+          "hpMultAdj": 0.98,
+          "normal": [["mage", 0.46], ["shaman", 0.70], ["wolf", 0.88], ["brute", 1]],
+          "heavy": [["mage", 0.50], ["shaman", 0.76], ["brute", 1]]
+        }
+      ],
+      "26": [
+        {
+          "id": "w26_plague_stampede",
+          "name": "煞毒自爆突进群",
+          "primaryThreat": "mobile_rush",
+          "mobMultAdj": 1.02,
+          "hpMultAdj": 0.99,
+          "normal": [["wolf", 0.38], ["bomber", 0.70], ["brute", 0.88], ["shaman", 1]],
+          "heavy": [["wolf", 0.34], ["bomber", 0.66], ["brute", 1]]
+        },
+        {
+          "id": "w26_magma_wall",
+          "name": "炽地重甲合围阵",
+          "primaryThreat": "flame_siege",
+          "mobMultAdj": 0.96,
+          "hpMultAdj": 1.04,
+          "normal": [["brute", 0.44], ["shaman", 0.72], ["mage", 0.88], ["bomber", 1]],
+          "heavy": [["brute", 0.52], ["shaman", 0.84], ["bomber", 1]]
+        },
+        {
+          "id": "w26_crossfire_web",
+          "name": "双排巫师火力网",
+          "primaryThreat": "arcane_crossfire",
+          "mobMultAdj": 1.0,
+          "hpMultAdj": 1.0,
+          "normal": [["mage", 0.44], ["shaman", 0.68], ["bomber", 0.86], ["wolf", 1]],
+          "heavy": [["mage", 0.48], ["shaman", 0.76], ["wolf", 1]]
+        }
+      ],
+      "27": [
+        {
+          "id": "w27_feral_charge",
+          "name": "双霸体破阵突袭群",
+          "primaryThreat": "mobile_rush",
+          "mobMultAdj": 1.0,
+          "hpMultAdj": 1.01,
+          "normal": [["wolf", 0.36], ["brute", 0.72], ["bomber", 0.86], ["shaman", 1]],
+          "heavy": [["wolf", 0.32], ["brute", 0.76], ["shaman", 1]]
+        },
+        {
+          "id": "w27_ritual_pyre",
+          "name": "妖火祭坛封锁群",
+          "primaryThreat": "flame_siege",
+          "mobMultAdj": 0.97,
+          "hpMultAdj": 1.03,
+          "normal": [["shaman", 0.36], ["brute", 0.68], ["bomber", 0.88], ["mage", 1]],
+          "heavy": [["shaman", 0.42], ["brute", 0.78], ["bomber", 1]]
+        },
+        {
+          "id": "w27_barrage_hunters",
+          "name": "游猎弹幕绞杀群",
+          "primaryThreat": "arcane_crossfire",
+          "mobMultAdj": 1.02,
+          "hpMultAdj": 0.99,
+          "normal": [["mage", 0.42], ["wolf", 0.68], ["shaman", 0.86], ["brute", 1]],
+          "heavy": [["mage", 0.46], ["wolf", 0.72], ["shaman", 1]]
+        }
+      ],
+      "28": [
+        {
+          "id": "w28_abyss_vanguard_rush",
+          "name": "终局前锋·疾影破阵群",
+          "primaryThreat": "mobile_rush",
+          "mobMultAdj": 1.01,
+          "hpMultAdj": 1.0,
+          "normal": [["wolf", 0.38], ["brute", 0.70], ["shaman", 0.86], ["bomber", 1]],
+          "heavy": [["wolf", 0.34], ["brute", 0.72], ["shaman", 1]]
+        },
+        {
+          "id": "w28_abyss_siege_choir",
+          "name": "终局前锋·焦土铁壁群",
+          "primaryThreat": "flame_siege",
+          "mobMultAdj": 0.97,
+          "hpMultAdj": 1.04,
+          "normal": [["brute", 0.40], ["shaman", 0.68], ["bomber", 0.88], ["mage", 1]],
+          "heavy": [["brute", 0.48], ["shaman", 0.80], ["bomber", 1]]
+        },
+        {
+          "id": "w28_abyss_star_barrage",
+          "name": "终局前锋·裂隙弹幕群",
+          "primaryThreat": "arcane_crossfire",
+          "mobMultAdj": 1.0,
+          "hpMultAdj": 1.0,
+          "normal": [["mage", 0.40], ["shaman", 0.66], ["wolf", 0.84], ["brute", 1]],
+          "heavy": [["mage", 0.44], ["shaman", 0.72], ["brute", 1]]
+        }
+      ]
+    },
+    "w28Omen": {
+      "startTitle": "🌑 第 28 波 · 终局预兆降临！",
+      "startSub": "深渊裂隙正在撕开边境天穹！W29 将公布 W30 终焉魔帝情报并进入最终整备，请检验成型构筑！",
+      "midTitle": "🌑 终局阴云压境 · 深渊低语回响！",
+      "midSub": "终局危机迫近！稳住阵脚，筹备 W29 前哨决战与 90 秒最终整备！",
+      "clearTitle": "🌑 终局预兆已现 · W29 前哨与终局情报即将揭晓！",
+      "clearSub": "距离 W30 终焉魔帝仅余最后两波：下一波将迎来紧凑强敌，战后开启 90 秒独立最终整备！"
+    }
+  },
+  "w20Breakthrough": {
+    "preselectOpenWave": 16,
+    "bossIntelRevealWave": 19,
+    "groupSize": 2,
+    "rerollBaseCost": 4,
+    "rerollStep": 2,
+    "minPoolBuffer": 2,
+    "baseEffects": {
+      "firePullRadius": 3.4,
+      "firePullStrength": 0.75,
+      "fireBaseExtraChains": 1,
+      "fireBaseFocusRatio": 0.42,
+      "fireTrioBonusFocusCap": 1.15,
+      "frostBaseShieldCapBonus": 35,
+      "frostBaseAuraInterval": 1.6,
+      "frostBasePulseRadius": 3.05,
+      "frostBasePulseDmg": 46,
+      "frostBaseTrioActiveCdReduction": 0.35,
+      "frostBaseTrioPulseShieldRefund": 10,
+      "breakerDashRadius": 2.9,
+      "breakerDashDmgMult": 1.45,
+      "breakerDashCdFactor": 0.8,
+      "breakerDashShieldOnSlow": 22
+    },
+    "bossCore": {
+      "name": "天劫三重雷域 + 扇形紫电弹幕",
+      "desc": "周期在领主周边落下 3 处带 1.2s 红圈预警的雷域重击，并向领主方向倾泻 6 枚扇形紫电弹幕。"
+    },
+    "bossAuxPool": [
+      {
+        "key": "oppression_ring",
+        "name": "领域压迫环",
+        "desc": "周期释放带清晰红圈预警的扩散压迫光环，命中造成重击；可借走位穿隙或冲刺无敌帧越环躲避。",
+        "fairnessNote": "有明确预警与位移窗口，不反伤、不封流派"
+      },
+      {
+        "key": "shield_totem",
+        "name": "召唤护盾图腾",
+        "desc": "周期在场地中召唤 1 座可被集火摧毁的【护盾图腾】为首领周期补盾；击碎图腾会直接炸破首领护盾并施加 3 秒易伤！",
+        "fairnessNote": "鼓励转火交互，近战/远程与全元素均可正常击破"
+      },
+      {
+        "key": "chase_barrage",
+        "name": "周期追击弹幕",
+        "desc": "短暂蓄力预警后向领主方向连发两波间隔清晰的紫电追击弹幕，横向移动即可稳定规避。",
+        "fairnessNote": "弹道速度可控、有横移与冲刺躲避窗口"
+      },
+      {
+        "key": "charged_shockwave",
+        "name": "蓄力震荡波",
+        "desc": "原地蓄力 1.3s（清晰红圈读条）后释放高伤十字裂地预警阵，走出预警区或冲刺即可规避。",
+        "fairnessNote": "长前摇可读预警，留足走位应对时间"
+      }
     ]
   },
   "enemies": {
@@ -867,6 +1164,13 @@
       "dmg": 62,
       "xp": 240,
       "gold": 200
+    },
+    "totem": {
+      "hp": 920,
+      "spd": 0.01,
+      "dmg": 0,
+      "xp": 10,
+      "gold": 6
     }
   }
 }
