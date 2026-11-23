@@ -1128,7 +1128,31 @@
       "midSub": "终局危机迫近！稳住阵脚，筹备 W29 前哨决战与 90 秒最终整备！",
       "clearTitle": "🌑 终局预兆已现 · W29 前哨与终局情报即将揭晓！",
       "clearSub": "距离 W30 终焉魔帝仅余最后两波：下一波将迎来紧凑强敌，战后开启 90 秒独立最终整备！"
-    }
+    },
+    "w29Outpost": {
+      "name": "前哨精锐·紧凑合围群",
+      "desc": "较 W28 同向小幅升压：出怪节奏更紧凑、批次更密、敌人稍耐打；W29 战后开启 90 秒独立最终整备。",
+      "durationMult": 0.84,
+      "packBonus": 2,
+      "packOffsetMult": 0.72,
+      "spawnJitterMult": 0.75,
+      "hpMultAdj": 1.06,
+      "mobMultAdj": 1.04,
+      "normal": [
+        ["wolf", 0.30],
+        ["brute", 0.56],
+        ["shaman", 0.74],
+        ["mage", 0.88],
+        ["bomber", 1]
+      ],
+      "heavy": [
+        ["brute", 0.38],
+        ["shaman", 0.64],
+        ["wolf", 0.82],
+        ["mage", 1]
+      ]
+    },
+    "w30VanguardMobs": 16
   },
   "w20Breakthrough": {
     "preselectOpenWave": 16,
@@ -1182,6 +1206,58 @@
         "name": "蓄力震荡波",
         "desc": "原地蓄力 1.3s（清晰红圈读条）后释放高伤十字裂地预警阵，走出预警区或冲刺即可规避。",
         "fairnessNote": "长前摇可读预警，留足走位应对时间"
+      }
+    ]
+  },
+  "w30Boss": {
+    "intelRevealWave": 29,
+    "bossKind": "boss6",
+    "name": "深渊主宰",
+    "title": "W30 终局首领 · 深渊主宰",
+    "bossSpawnAt": 1.0,
+    "signatureThresholdPct": 0.8,
+    "finalPhaseThresholdPct": 0.35,
+    "signatureTelegraphSeconds": 2.6,
+    "signatureShockwaveSeconds": 2.2,
+    "signatureDamage": 68,
+    "signatureSafeZoneRadius": 2.8,
+    "signatureSafeZoneDist": 5.4,
+    "targetDurationMinSec": 180,
+    "targetDurationMaxSec": 300,
+    "coreCooldownOpening": 5.2,
+    "coreCooldownMid": 4.4,
+    "coreCooldownFinal": 3.4,
+    "auxCooldownMid": 9.5,
+    "auxCooldownFinal": 7.5,
+    "healOrbHpPct": 0.18,
+    "core": {
+      "name": "终焉锁血冲击波 + 三段复合压制",
+      "desc": "首次降至 80% 血线强制截断多余伤害并锁血释放【终焉裂空冲击波】（高对比顶层预警与安全区；锁血期合法命中可挂火标/减速/叠盾，但实际扣血与按伤害吸血为 0，冲击波结束立即解锁）；降至 35% 血线展开末段招式组合，无额外锁血，打空即胜！"
+    },
+    "auxPool": [
+      {
+        "key": "abyss_pillars",
+        "name": "护界晶柱",
+        "desc": "周期召唤 1 座可被任意流派集火击破的【深渊护界晶柱】为首领补盾；击破晶柱将震碎首领护盾、施加 3.5s 易伤并掉落回复灵气球！",
+        "fairnessNote": "全元素与近远程均可击破，附带转火易伤与灵气球续航，绝不封死火/冰流派"
+      },
+      {
+        "key": "eclipse_seekers",
+        "name": "星蚀追踪弹",
+        "desc": "短暂预警后齐射 5 枚中速星蚀追踪弹（清晰轨线与横移空隙，走位或冲刺即可规避），并周期遗落回复灵气球。",
+        "fairnessNote": "弹道速度可控、无反伤无元素免疫，走位/冲刺与冰盾均有效应对"
+      },
+      {
+        "key": "rift_rings",
+        "name": "裂空震荡环",
+        "desc": "周期以首领为中心展开两重先后扩散的裂空震荡环（高对比顶层双环预警，冲刺无敌帧穿环或走位拉距躲避），并周期掉落回复灵气球。",
+        "fairnessNote": "清晰双环预警与冲刺穿环窗口，主动走位可触发冰系冲刺冰环联动"
+      },
+      {
+        "key": "void_guards",
+        "name": "暗潮召卫",
+        "desc": "周期召唤 2 名中血量【暗潮近卫】协同压迫（可挂火标连爆、可减速叠冰盾），击杀暗潮近卫必掉回复灵气球！",
+        "fairnessNote": "无免疫无反伤，为火系群体连爆与冰系减速叠盾提供战术目标与回血续航"
       }
     ]
   },
@@ -1271,9 +1347,9 @@
       "gold": 140
     },
     "boss6": {
-      "hp": 72000,
+      "hp": 13800000,
       "spd": 1.16,
-      "dmg": 62,
+      "dmg": 56,
       "xp": 240,
       "gold": 200
     },
@@ -1283,6 +1359,20 @@
       "dmg": 0,
       "xp": 10,
       "gold": 6
+    },
+    "pillar": {
+      "hp": 2600,
+      "spd": 0.01,
+      "dmg": 0,
+      "xp": 12,
+      "gold": 8
+    },
+    "void_guard": {
+      "hp": 2400,
+      "spd": 2.05,
+      "dmg": 26,
+      "xp": 14,
+      "gold": 8
     }
   }
 }

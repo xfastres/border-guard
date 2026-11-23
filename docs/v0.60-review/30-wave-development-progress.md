@@ -491,3 +491,48 @@ window.BG60.loadTestPreset({ wave: 30, tier: 'strong',   build: 'frost', materia
 
 
 
+
+---
+
+## 阶段 5 · W29 最终整备与 W30（已完成）
+
+### 1. 分支、基线与变更文件
+- **工作分支**：`feat/v060-30wave`
+- **接手基线提交**：`5627fca`（阶段 4 交付提交）
+- **未改动基线核对**：`Border-Guard-v0.52.html` 与 `balance/v052-baseline.json` 保持完全未动，`node --test tests/v052-balance-lab.test.cjs` 100% 通过。
+- **阶段 5 变更文件清单**：
+  - `balance/v060-baseline.json`：新增 `wave.w29Outpost`（较 W28 同向小幅升压：出怪总跨度 `0.84×` 更紧凑、批次 `+2`、敌人稍耐打 `hpMultAdj: 1.06` / `mobMultAdj: 1.04`）、`wave.w30VanguardMobs (16)`、`w30Boss`（固定核心机制【终焉锁血冲击波 + 三段复合压制】、4 套公平可反制辅助机制 `abyss_pillars` / `eclipse_seekers` / `rift_rings` / `void_guards`、首测血线 `80%` / `35%`、安全区半径与灵气球回血比例）；校准固定 `enemies.boss6.hp = 13,800,000`（弱/标准/强共用同一固定血量），并新增 `pillar` 与 `void_guard` 实体。
+  - `Border-Guard-v0.60.html`：同步内嵌 `BALANCE`；落地 W29 波末奖励前置结清（升级与遗留宝箱关闭后才启动 90 秒真实时间倒计时）、倍速不变的实时 90 秒倒计时（`stepFrame` + `realDt = dt / speed`）、倒计时归零单帧互斥锁（`resolveW29FinalPrepTimeout`）、提前开战未领赌奖引导确认（`startW30Early` + `renderW30EarlyConfirmModal`）、商店购物确认草稿（`openShopPurchaseConfirm` / `confirmShopPurchase` / `cancelShopPurchaseConfirm`）、归零超时自动清草稿与安全随机领一件（异系灵印在主辅槽及背包均满时安全入 `rewardStash`，100% 保留在用主辅灵印与 4 槽装备）；落地 W30 `boss6` 三段状态机、80% 血线截断强制招牌招式、锁血期独立处理命中与零扣血/零按伤吸血、4 套公平辅助机制与场内灵气回血球（`healOrbs`）；清理 `loadTestPreset` 旧 v0.52 遗留 `perks`，改用真实 v0.60 强化档位与阶段 4 天命专属强化（`BG60.version = '0.60.0-stage5'`）。
+  - `tests/v060-stage5.test.cjs`：阶段 5 自动化验收测试套件（5 大场景全覆盖）。
+  - `tests/v060-stage4.test.cjs`：版本断言兼容 `0.60.0-stage[4-9]`。
+  - `docs/v0.60-review/30-wave-development-progress.md`：追加本阶段完整交接文档。
+
+### 2. 实测结果与 W30 固定血量三档时间表（全部 100% 实测通过）
+- `node scripts/sync-balance.cjs --check`：v0.52 与 v0.60 均 `PASS`
+- 全量测试套件：`v052-balance-lab`（7/7）+ `v060-stage1`（5/5）+ `v060-stage2`（5/5）+ `v060-stage3`（5/5）+ `v060-stage4`（5/5）+ `v060-stage5`（5/5）= **32/32 pass, 0 fail**。
+
+#### W30 最终 Boss 固定血量（`13,800,000`）三档构筑仿真时间表（种子 `5050`，55% 交战 / 45% 走位躲预警）
+| 构筑与档位 | 最终结果 | 总耗时 | 阶段时间线（开场 → 招牌预警 → 冲击波 → 中段 → 末段 → 结束） |
+| --- | :---: | :---: | --- |
+| 火系 · 偏弱 (`fire/weak`) | 激战中(>480s) | `>480.0s` | `opening@0 → sig_tele@106.6 → sig_wave@109.1 → mid@111.3 → final@347.3` |
+| **火系 · 标准 (`fire/standard`)** | **通关** | **`181.6s` (3m02s)** | `opening@0 → sig_tele@36.5 → sig_wave@39.0 → mid@41.2 → final@121.1 → ended@181.6` |
+| 火系 · 强势 (`fire/strong`) | 通关 | `73.0s` (1m13s) | `opening@0 → sig_tele@14.1 → sig_wave@16.7 → mid@18.9 → final@49.5 → ended@73.0` |
+| 冰系 · 偏弱 (`frost/weak`) | 激战中(>480s) | `>480.0s` | `opening@0 → sig_tele@285.5 → sig_wave@288.1 → mid@290.3` |
+| **冰系 · 标准 (`frost/standard`)** | **通关** | **`291.9s` (4m52s)** | `opening@0 → sig_tele@59.5 → sig_wave@62.1 → mid@64.3 → final@192.7 → ended@291.9` |
+| 冰系 · 强势 (`frost/strong`) | 通关 | `159.5s` (2m40s) | `opening@0 → sig_tele@33.1 → sig_wave@35.7 → mid@37.9 → final@106.3 → ended@159.5` |
+
+### 3. 下一阶段（阶段 6 · 局外传承、存档与整版验收）起手入口与可复制 `BG60` 调用
+```js
+// 1. W29 战后限时整备（波末奖励结清 + 90s 真实倒计时 + W30 情报常驻）
+window.BG60.loadTestPreset({ wave: 29, tier: 'standard', build: 'fire', gold: 800, materials: 30, transferTokens: 3, seed: 5050 });
+window.BG60.startWave();
+window.BG60.completeWaveClear();
+window.BG60.getFinalPrepState();
+
+// 2. W30 最终 Boss 实战验证（固定 13.8M 血量 + 80% 招牌锁血 + 4 套公平辅助机制）
+window.BG60.loadTestPreset({ wave: 30, tier: 'standard', build: 'fire',  seed: 5050 });
+window.BG60.loadTestPreset({ wave: 30, tier: 'standard', build: 'frost', seed: 5050 });
+window.BG60.getW30BossIntel();
+window.BG60.startWave();
+window.BG60.getW30BattleState();
+```

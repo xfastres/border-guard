@@ -90,7 +90,7 @@ function bootBG60() {
 
 test('1. Destiny Gamble thresholds, empty tribulation, strict 4x25% category weights, no rarity pity, and shop/dismantle isolation', () => {
   const { B } = bootBG60();
-  assert.equal(B.version, '0.60.0-stage4');
+  assert.match(B.version, /^0\.60\.0-stage[4-9]/);
 
   const cfg = B.getDestinyConfig();
   assert.equal(cfg.minBet, 30);

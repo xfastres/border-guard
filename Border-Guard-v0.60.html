@@ -2471,7 +2471,58 @@ const BALANCE = {
       "midSub": "终局危机迫近！稳住阵脚，筹备 W29 前哨决战与 90 秒最终整备！",
       "clearTitle": "🌑 终局预兆已现 · W29 前哨与终局情报即将揭晓！",
       "clearSub": "距离 W30 终焉魔帝仅余最后两波：下一波将迎来紧凑强敌，战后开启 90 秒独立最终整备！"
-    }
+    },
+    "w29Outpost": {
+      "name": "前哨精锐·紧凑合围群",
+      "desc": "较 W28 同向小幅升压：出怪节奏更紧凑、批次更密、敌人稍耐打；W29 战后开启 90 秒独立最终整备。",
+      "durationMult": 0.84,
+      "packBonus": 2,
+      "packOffsetMult": 0.72,
+      "spawnJitterMult": 0.75,
+      "hpMultAdj": 1.06,
+      "mobMultAdj": 1.04,
+      "normal": [
+        [
+          "wolf",
+          0.3
+        ],
+        [
+          "brute",
+          0.56
+        ],
+        [
+          "shaman",
+          0.74
+        ],
+        [
+          "mage",
+          0.88
+        ],
+        [
+          "bomber",
+          1
+        ]
+      ],
+      "heavy": [
+        [
+          "brute",
+          0.38
+        ],
+        [
+          "shaman",
+          0.64
+        ],
+        [
+          "wolf",
+          0.82
+        ],
+        [
+          "mage",
+          1
+        ]
+      ]
+    },
+    "w30VanguardMobs": 16
   },
   "w20Breakthrough": {
     "preselectOpenWave": 16,
@@ -2525,6 +2576,58 @@ const BALANCE = {
         "name": "蓄力震荡波",
         "desc": "原地蓄力 1.3s（清晰红圈读条）后释放高伤十字裂地预警阵，走出预警区或冲刺即可规避。",
         "fairnessNote": "长前摇可读预警，留足走位应对时间"
+      }
+    ]
+  },
+  "w30Boss": {
+    "intelRevealWave": 29,
+    "bossKind": "boss6",
+    "name": "深渊主宰",
+    "title": "W30 终局首领 · 深渊主宰",
+    "bossSpawnAt": 1,
+    "signatureThresholdPct": 0.8,
+    "finalPhaseThresholdPct": 0.35,
+    "signatureTelegraphSeconds": 2.6,
+    "signatureShockwaveSeconds": 2.2,
+    "signatureDamage": 68,
+    "signatureSafeZoneRadius": 2.8,
+    "signatureSafeZoneDist": 5.4,
+    "targetDurationMinSec": 180,
+    "targetDurationMaxSec": 300,
+    "coreCooldownOpening": 5.2,
+    "coreCooldownMid": 4.4,
+    "coreCooldownFinal": 3.4,
+    "auxCooldownMid": 9.5,
+    "auxCooldownFinal": 7.5,
+    "healOrbHpPct": 0.18,
+    "core": {
+      "name": "终焉锁血冲击波 + 三段复合压制",
+      "desc": "首次降至 80% 血线强制截断多余伤害并锁血释放【终焉裂空冲击波】（高对比顶层预警与安全区；锁血期合法命中可挂火标/减速/叠盾，但实际扣血与按伤害吸血为 0，冲击波结束立即解锁）；降至 35% 血线展开末段招式组合，无额外锁血，打空即胜！"
+    },
+    "auxPool": [
+      {
+        "key": "abyss_pillars",
+        "name": "护界晶柱",
+        "desc": "周期召唤 1 座可被任意流派集火击破的【深渊护界晶柱】为首领补盾；击破晶柱将震碎首领护盾、施加 3.5s 易伤并掉落回复灵气球！",
+        "fairnessNote": "全元素与近远程均可击破，附带转火易伤与灵气球续航，绝不封死火/冰流派"
+      },
+      {
+        "key": "eclipse_seekers",
+        "name": "星蚀追踪弹",
+        "desc": "短暂预警后齐射 5 枚中速星蚀追踪弹（清晰轨线与横移空隙，走位或冲刺即可规避），并周期遗落回复灵气球。",
+        "fairnessNote": "弹道速度可控、无反伤无元素免疫，走位/冲刺与冰盾均有效应对"
+      },
+      {
+        "key": "rift_rings",
+        "name": "裂空震荡环",
+        "desc": "周期以首领为中心展开两重先后扩散的裂空震荡环（高对比顶层双环预警，冲刺无敌帧穿环或走位拉距躲避），并周期掉落回复灵气球。",
+        "fairnessNote": "清晰双环预警与冲刺穿环窗口，主动走位可触发冰系冲刺冰环联动"
+      },
+      {
+        "key": "void_guards",
+        "name": "暗潮召卫",
+        "desc": "周期召唤 2 名中血量【暗潮近卫】协同压迫（可挂火标连爆、可减速叠冰盾），击杀暗潮近卫必掉回复灵气球！",
+        "fairnessNote": "无免疫无反伤，为火系群体连爆与冰系减速叠盾提供战术目标与回血续航"
       }
     ]
   },
@@ -2614,9 +2717,9 @@ const BALANCE = {
       "gold": 140
     },
     "boss6": {
-      "hp": 72000,
+      "hp": 13800000,
       "spd": 1.16,
-      "dmg": 62,
+      "dmg": 56,
       "xp": 240,
       "gold": 200
     },
@@ -2626,6 +2729,20 @@ const BALANCE = {
       "dmg": 0,
       "xp": 10,
       "gold": 6
+    },
+    "pillar": {
+      "hp": 2600,
+      "spd": 0.01,
+      "dmg": 0,
+      "xp": 12,
+      "gold": 8
+    },
+    "void_guard": {
+      "hp": 2400,
+      "spd": 2.05,
+      "dmg": 26,
+      "xp": 14,
+      "gold": 8
     }
   }
 };
@@ -3652,6 +3769,7 @@ const ELITE_AFFIXES = [
 
 /* ==================== STAGE 3: W20 SECOND MAJOR BREAKTHROUGH (DIRECTIONS, ENHANCEMENTS & BOSS AUX POOL) ==================== */
 const W20_BOSS_AUX_POOL = (BALANCE.w20Breakthrough?.bossAuxPool || []).slice();
+const W30_BOSS_AUX_POOL = (BALANCE.w30Boss?.auxPool || []).slice();
 
 const W20_DIRECTIONS = {
   fire_chain_surge: {
@@ -3884,12 +4002,14 @@ const ENEMY_SPECS = {
   brute:  { name:'铁甲兽人',   ...BALANCE.enemies.brute, r:0.29, col:'#7e94a8', rim:'#2d3c4a', charger:true },
   elite:  { name:'紫炎统领(精英)', ...BALANCE.enemies.elite, r:0.36, col:'#b966ff', rim:'#fff0a8', elite:true },
   totem:  { name:'天劫护盾图腾', ...(BALANCE.enemies.totem || { hp: 920, spd: 0.01, dmg: 0, xp: 10, gold: 6 }), r:0.42, col:'#6ce2ff', rim:'#ffe678', totem:true },
+  pillar: { name:'深渊护界晶柱', ...(BALANCE.enemies.pillar || { hp: 2600, spd: 0.01, dmg: 0, xp: 12, gold: 8 }), r:0.46, col:'#ff78d4', rim:'#ffe88a', pillar:true },
+  void_guard: { name:'暗潮近卫', ...(BALANCE.enemies.void_guard || { hp: 2400, spd: 2.05, dmg: 26, xp: 14, gold: 8 }), r:0.32, col:'#9c6dff', rim:'#ff98cc', voidGuard:true },
   boss1:  { name:'熔岩巨魔(W5首领)', ...BALANCE.enemies.boss1, r:0.52, col:'#ff5638', rim:'#ffe074', boss:true },
   boss2:  { name:'暗影死灵王(W10一破首领)',...BALANCE.enemies.boss2, r:0.54, col:'#a855ff', rim:'#ffe074', boss:true },
   boss3:  { name:'毁灭泰坦(W15首领)', ...BALANCE.enemies.boss3, r:0.60, col:'#ff334b', rim:'#fff3a0', boss:true },
   boss4:  { name:'天劫魔尊(W20二破首领)',...BALANCE.enemies.boss4, r:0.62, col:'#ff2e7a', rim:'#ffe678', boss:true },
   boss5:  { name:'玄冥妖皇(W25首领)',...(BALANCE.enemies.boss5 || BALANCE.enemies.boss4), r:0.64, col:'#d84cff', rim:'#ffe678', boss:true },
-  boss6:  { name:'终焉魔帝(W30终局Boss·阶段5深化)',...(BALANCE.enemies.boss6 || BALANCE.enemies.boss4), r:0.68, col:'#ff1e42', rim:'#fff09c', boss:true, tempStage1:true }
+  boss6:  { name:'深渊主宰(W30终局首领)',...(BALANCE.enemies.boss6 || BALANCE.enemies.boss4), r:0.70, col:'#ff1e42', rim:'#fff09c', boss:true }
 };
 
 /* ==================== STAGE 4: DESTINY GAMBLE EXCLUSIVE ENHANCEMENTS, BOONS & PILLS ====================
@@ -4209,7 +4329,9 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
   const w20AuxEntry = W20_BOSS_AUX_POOL.length
     ? W20_BOSS_AUX_POOL[Math.floor(rnd() * W20_BOSS_AUX_POOL.length)]
     : { key: 'oppression_ring', name: '领域压迫环', desc: '周期释放带预警的压迫光环。', fairnessNote: '有清晰预警与走位窗口' };
-  const w30AuxPool = ['虚空雷暴潮汐', '镜像弹幕矩阵', '深渊引力坍缩', '血月蚀魂领域'];
+  const w30AuxEntry = W30_BOSS_AUX_POOL.length
+    ? W30_BOSS_AUX_POOL[Math.floor(rnd() * W30_BOSS_AUX_POOL.length)]
+    : { key: 'abyss_pillars', name: '护界晶柱', desc: '周期召唤可击破的护界晶柱，击破破盾易伤并掉回复灵气球。', fairnessNote: '全流派可击破且提供续航' };
   const w22Themes = Object.keys(BALANCE.wave?.w22To24Themes || {});
   const w22ThemeKey = w22Themes.length ? w22Themes[Math.floor(rnd() * w22Themes.length)] : 'mobile_rush';
   const g = {
@@ -4255,15 +4377,23 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
       history: [],
       nextOfferSeq: 1
     },
-    transferDraft: null, // Preview-only draft, zero side effects on cancel
-    rewardStash: [],     // Overflow safe storage when bag is full (Stage 4 & Stage 5 W29 timeout handoff)
+    transferDraft: null,     // Preview-only draft, zero side effects on cancel
+    shopConfirmDraft: null,  // Uncommitted shop purchase draft, zero side effects on cancel / timeout
+    rewardStash: [],         // Overflow safe storage when bag is full (Stage 4 & Stage 5 W29 timeout handoff)
+    healOrbs: [],            // Stage 5 W30 arena healing spirit orbs for sustain across 3-5 min boss fight
     finalPrep: {
       active: false,
-      waitingWaveRewards: false,
+      awaitingWaveRewards: false,
+      started: false,
+      locked: false,
+      transitioning: false,
       timer: BALANCE.progression.w29FinalPrepSeconds || 90,
+      duration: BALANCE.progression.w29FinalPrepSeconds || 90,
       maxSeconds: BALANCE.progression.w29FinalPrepSeconds || 90,
-      w30IntelShown: false
+      w30IntelShown: false,
+      lastResolution: null
     },
+    w30Battle: null,
     bossIntel: {
       w20Core: BALANCE.w20Breakthrough?.bossCore?.name || '天劫三重雷域 + 扇形紫电弹幕',
       w20CoreDesc: BALANCE.w20Breakthrough?.bossCore?.desc || '周期落下 3 处带 1.2s 预警雷域并齐射 6 枚扇形紫电弹幕。',
@@ -4272,8 +4402,13 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
       w20AuxDesc: w20AuxEntry.desc,
       w20AuxFairness: w20AuxEntry.fairnessNote || '公平可读预警机制',
       w20Revealed: false,
-      w30Core: '终焉招牌锁血大招 + 中末段复合压制',
-      w30Aux: w30AuxPool[Math.floor(rnd() * w30AuxPool.length)],
+      w30Core: BALANCE.w30Boss?.core?.name || '终焉锁血冲击波 + 三段复合压制',
+      w30CoreDesc: BALANCE.w30Boss?.core?.desc || '80% 血线强制锁血释放终焉裂空冲击波（锁血期命中可挂状态/叠盾，扣血与吸血为 0），35% 进入末段组合压制，打空即胜！',
+      w30AuxKey: w30AuxEntry.key,
+      w30Aux: w30AuxEntry.name,
+      w30AuxDesc: w30AuxEntry.desc,
+      w30AuxFairness: w30AuxEntry.fairnessNote || '公平可反制辅助机制',
+      w30Revealed: false,
       tempStage1: false
     },
     wavePlan: {
@@ -4507,6 +4642,9 @@ function applyFireMark(e, arg2 = 1, arg3 = 'w10', arg4 = 4.5){
   if (game?.hero?.combatStateStats) {
     game.hero.combatStateStats.fireMarksApplied++;
   }
+  if (e.kind === 'boss6' && e.signatureLockActive && game?.w30Battle?.signatureStatusHitsDuringLock) {
+    game.w30Battle.signatureStatusHitsDuringLock.fireMarks++;
+  }
   return true;
 }
 
@@ -4555,6 +4693,9 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
   if (game.hero?.combatStateStats) {
     game.hero.combatStateStats.fireDetonations++;
     game.hero.combatStateStats.w10BranchProcs++;
+  }
+  if (e.kind === 'boss6' && e.signatureLockActive && game?.w30Battle?.signatureStatusHitsDuringLock) {
+    game.w30Battle.signatureStatusHitsDuringLock.fireDetonations++;
   }
 
   // Stage 3 W20 Base Direction [fire_chain_surge]: Pull nearby non-boss enemies inward & splash fire mark before blast!
@@ -4771,6 +4912,9 @@ function applyFrostSlow(e, arg2 = 0.50, arg3 = 3.0, arg4 = 'w10'){
   if (game?.hero?.combatStateStats) {
     game.hero.combatStateStats.frostSlowsApplied++;
   }
+  if (e.kind === 'boss6' && e.signatureLockActive && game?.w30Battle?.signatureStatusHitsDuringLock) {
+    game.w30Battle.signatureStatusHitsDuringLock.frostSlows++;
+  }
   return true;
 }
 
@@ -4825,6 +4969,9 @@ function triggerFrostPulse(radius = 2.8, rawDmg = 36, freezeDur = 0.9, source = 
   if (h.combatStateStats) {
     h.combatStateStats.frostPulsesTriggered++;
     h.combatStateStats.w10BranchProcs++;
+  }
+  if (game?.w30Battle?.signatureLockActive && game.w30Battle.signatureStatusHitsDuringLock) {
+    game.w30Battle.signatureStatusHitsDuringLock.frostPulses++;
   }
   if (game.stats) {
     if (source === 'shield_hit') game.stats.frostHitPulses = (game.stats.frostHitPulses || 0) + 1;
@@ -4938,6 +5085,9 @@ function gainFrostShield(amount, arg2 = 5.0, arg3 = 90){
   if (h.combatStateStats) {
     h.combatStateStats.frostShieldGained += gain;
     h.combatStateStats.w10BranchProcs++;
+  }
+  if (game?.w30Battle?.signatureLockActive && game.w30Battle.signatureStatusHitsDuringLock) {
+    game.w30Battle.signatureStatusHitsDuringLock.frostShieldGained += gain;
   }
   // Stage 3 W20 Enhancement [w20_frost_pillar_ward]: every 40 cumulative frost shield drops a 3.2s frost ward zone
   if (hasW20Enhancement('w20_frost_pillar_ward') && arg2?.source !== 'w20_frost_pillar_ward') {
@@ -5357,8 +5507,87 @@ function getWaveClearMaterialBonus(clearedWave){
   return 0;
 }
 
+/* ==================== STAGE 5: W29 FINAL PREP ATOMIC MUTEX LOCK & SHOP CONFIRM DRAFT ==================== */
+function isFinalPrepActionLocked(){
+  const fp = game?.finalPrep;
+  if (!fp) return false;
+  if (fp.locked || fp.transitioning) return true;
+  if (fp.active && fp.started && fp.timer <= 0) return true;
+  return false;
+}
+
+function openShopPurchaseConfirm(shopIdx){
+  if (!game || game.phase !== 'prep') return { ok: false, reason: 'not_in_prep' };
+  if (isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
+  const item = game.shop?.[shopIdx];
+  if (!item || item.bought) return { ok: false, reason: 'invalid_shop_item' };
+  const label = item.itemType === 'pill'
+    ? (PILLS[item.pillKey]?.name || item.pillKey)
+    : item.itemType === 'gear'
+      ? (item.gear?.name || '构装')
+      : `${ARTIFACTS[item.kind]?.name || item.kind} ${item.star || 1}★`;
+  game.shopConfirmDraft = {
+    shopIdx,
+    itemUid: item.uid,
+    itemType: item.itemType,
+    cost: item.cost,
+    label
+  };
+  game.activeModal = { type: 'shop_confirm', shopIdx, itemUid: item.uid };
+  renderShopConfirmModal();
+  return { ok: true, draft: { ...game.shopConfirmDraft } };
+}
+
+function cancelShopPurchaseConfirm(){
+  if (game) {
+    game.shopConfirmDraft = null;
+    if (game.activeModal?.type === 'shop_confirm') closeModal();
+  }
+  return { ok: true, cancelled: true };
+}
+
+function confirmShopPurchase(){
+  if (!game) return { ok: false, reason: 'no_game' };
+  if (isFinalPrepActionLocked()) {
+    game.shopConfirmDraft = null;
+    return { ok: false, reason: 'final_prep_locked' };
+  }
+  const draft = game.shopConfirmDraft;
+  if (!draft) return { ok: false, reason: 'no_shop_draft' };
+  const item = game.shop?.[draft.shopIdx];
+  if (!item || item.bought || item.uid !== draft.itemUid) {
+    game.shopConfirmDraft = null;
+    if (game.activeModal?.type === 'shop_confirm') closeModal();
+    return { ok: false, reason: 'stale_shop_draft' };
+  }
+  game.shopConfirmDraft = null;
+  if (game.activeModal?.type === 'shop_confirm') closeModal();
+  const bought = buyShopItem(draft.shopIdx);
+  return { ok: !!bought, reason: bought ? null : 'buy_failed', goldLeft: game.gold };
+}
+
+function renderShopConfirmModal(){
+  const draft = game?.shopConfirmDraft;
+  const item = draft ? game.shop?.[draft.shopIdx] : null;
+  if (!draft || !item || item.bought) { cancelShopPurchaseConfirm(); return; }
+  const box = $('modalBox');
+  const w29Note = game.finalPrep?.active ? ` · <span style="color:#ff9090">⏳ W29 整备倒计时继续运行 (${Math.ceil(game.finalPrep.timer)}s)</span>` : '';
+  box.innerHTML = `
+    <h2>🛒 确认购买【${draft.label}】</h2>
+    <p class="lead">花费 <strong>💰 ${item.cost} 金币</strong>（当前持有 💰 ${game.gold}）${w29Note}。未确认的草稿在倒计时归零时自动清空、零扣款。</p>
+    <div class="modal-footer">
+      <button class="btn" id="shopConfCancel" type="button">取消（零扣款）</button>
+      <button class="btn gold" id="shopConfOk" type="button" ${game.gold < item.cost ? 'disabled' : ''}>确认购买（💰${item.cost}）</button>
+    </div>
+  `;
+  box.querySelector('#shopConfCancel')?.addEventListener('click', () => { cancelShopPurchaseConfirm(); renderAllUI(true); });
+  box.querySelector('#shopConfOk')?.addEventListener('click', () => { confirmShopPurchase(); });
+  $('modalBackdrop').hidden = false;
+}
+
 /* ==================== SHOP (SEALS + STAGE 2 GEAR + V0.60 CLEAN PILLS) ==================== */
 function rollShop(free = false){
+  if (!free && isFinalPrepActionLocked()) return false;
   if (!free) {
     const freeProc = perkLv('gold_power') >= 2 && game.rnd() < 0.25;
     if (!freeProc) {
@@ -5454,6 +5683,7 @@ function sealTotalPoints(seal){
 }
 
 function chooseSealRoute(routeKey){
+  if (isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
   if (!game?.seal) return { ok: false, reason: 'no_seal' };
   const s = game.seal;
   if (s.star < 3) { toast('主灵印达到 3★ 后才可选择专精路线！', true); return { ok: false, reason: 'star_too_low' }; }
@@ -5475,6 +5705,7 @@ function chooseSealRoute(routeKey){
 }
 
 function buyShopItem(shopIdx){
+  if (isFinalPrepActionLocked()) return false;
   const item = game.shop[shopIdx];
   if (!item || item.bought) return false;
   if (game.gold < item.cost) { toast(`需要 ${item.cost} 金币！`, true); return false; }
@@ -5634,6 +5865,7 @@ function buyShopItem(shopIdx){
 }
 
 function sellSeal(){
+  if (isFinalPrepActionLocked()) return false;
   if (!game.seal) return false;
   const oldSpec = ARTIFACTS[game.seal.kind];
   const refund = Math.round(oldSpec.cost * sealTotalPoints(game.seal) * 0.8);
@@ -5648,6 +5880,7 @@ function sellSeal(){
 }
 
 function sellSubSeal(idx){
+  if (isFinalPrepActionLocked()) return false;
   const sub = game.subSeals[idx];
   if (!sub) return false;
   const spec = ARTIFACTS[sub.kind];
@@ -5662,6 +5895,7 @@ function sellSubSeal(idx){
 }
 
 function equipGearFromBag(bagIdx){
+  if (isFinalPrepActionLocked()) return false;
   if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
   const raw = game.bag[bagIdx];
   if (isBagSeal(raw)) {
@@ -5698,6 +5932,7 @@ function equipGearFromBag(bagIdx){
 }
 
 function replaceEquippedGear(slotIdx, bagIdx){
+  if (isFinalPrepActionLocked()) return false;
   if (slotIdx < 0 || slotIdx >= game.hero.gear.length) return false;
   if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
   if (isBagSeal(game.bag[bagIdx])) {
@@ -5717,6 +5952,7 @@ function replaceEquippedGear(slotIdx, bagIdx){
 }
 
 function unequipGear(slotIdx){
+  if (isFinalPrepActionLocked()) return false;
   const list = game.hero.gear;
   if (!list || slotIdx < 0 || slotIdx >= list.length) return false;
   const [inst] = list.splice(slotIdx, 1);
@@ -5730,6 +5966,7 @@ function unequipGear(slotIdx){
 }
 
 function sellBagGear(bagIdx){
+  if (isFinalPrepActionLocked()) return false;
   if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
   const inst = game.bag[bagIdx];
   if (isBagSeal(inst)) {
@@ -5755,6 +5992,7 @@ function sellBagGear(bagIdx){
 }
 
 function dismantleBagGear(bagIdx){
+  if (isFinalPrepActionLocked()) return false;
   if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
   const inst = game.bag[bagIdx];
   if (isBagSeal(inst)) {
@@ -5818,63 +6056,66 @@ function grantSealSafely(kind, star = 1, opts = {}){
   const cardPts = normStar === 3 ? 4 : normStar === 2 ? 2 : 1;
   const subIdx = game.subSeals.findIndex(s => s.kind === kind);
 
-  // Case 1: No Main Seal equipped yet -> equip safely
-  if (!game.seal) {
-    const initStar = Math.min(cap, normStar);
-    game.seal = { kind, elem: spec.elem, star: initStar, prog: 0, route: null, cd: 0, dmgDealt: 0, kills: 0 };
-    AudioKit.play('merge', 1.1);
-    if (!opts.silent) toast(`✨ 安全领奖：已铭刻主灵印【${spec.name} ${initStar}★】！`);
-    renderAllUI(true);
-    return { ok: true, action: 'equipped_main', mainSealPreserved: true, seal: game.seal };
-  }
-
-  // Case 2: Matches Main Seal & Main Seal is below current star cap -> absorb fusion points
-  if (game.seal.kind === kind && game.seal.star < cap) {
-    game.seal.prog += cardPts;
-    let leveled = false;
-    while (game.seal.star < cap && game.seal.prog >= SEAL_FUSE_NEED[game.seal.star]) {
-      game.seal.prog -= SEAL_FUSE_NEED[game.seal.star];
-      game.seal.star++;
-      game.stats.merges++;
-      leveled = true;
+  // On W29 timeout/auto-claim (opts.storeUnequipped), NEVER modify active Main/Sub Seals — always store as unequipped seal in bag or rewardStash!
+  if (!opts.storeUnequipped) {
+    // Case 1: No Main Seal equipped yet -> equip safely
+    if (!game.seal) {
+      const initStar = Math.min(cap, normStar);
+      game.seal = { kind, elem: spec.elem, star: initStar, prog: 0, route: null, cd: 0, dmgDealt: 0, kills: 0 };
+      AudioKit.play('merge', 1.1);
+      if (!opts.silent) toast(`✨ 安全领奖：已铭刻主灵印【${spec.name} ${initStar}★】！`);
+      renderAllUI(true);
+      return { ok: true, action: 'equipped_main', mainSealPreserved: true, seal: game.seal };
     }
-    if (game.seal.star >= cap) game.seal.prog = 0;
-    AudioKit.play('merge', 1.15);
-    if (!opts.silent) toast(leveled ? `★ 主灵印【${spec.name}】晋升 ${game.seal.star}★！` : `✨ 主灵印【${spec.name}】吸收灵印精华！`);
-    renderAllUI(true);
-    return { ok: true, action: 'upgraded_main', leveled, mainSealPreserved: true, seal: game.seal };
-  }
 
-  // Case 3: Matches existing Sub-Seal & Sub-Seal is below 3★ -> absorb fusion points
-  if (subIdx >= 0 && game.subSeals[subIdx].star < 3) {
-    const sub = game.subSeals[subIdx];
-    sub.prog += cardPts;
-    let leveled = false;
-    while (sub.star < 3 && sub.prog >= SEAL_FUSE_NEED[sub.star]) {
-      sub.prog -= SEAL_FUSE_NEED[sub.star];
-      sub.star++;
-      game.stats.merges++;
-      leveled = true;
+    // Case 2: Matches Main Seal & Main Seal is below current star cap -> absorb fusion points
+    if (game.seal.kind === kind && game.seal.star < cap) {
+      game.seal.prog += cardPts;
+      let leveled = false;
+      while (game.seal.star < cap && game.seal.prog >= SEAL_FUSE_NEED[game.seal.star]) {
+        game.seal.prog -= SEAL_FUSE_NEED[game.seal.star];
+        game.seal.star++;
+        game.stats.merges++;
+        leveled = true;
+      }
+      if (game.seal.star >= cap) game.seal.prog = 0;
+      AudioKit.play('merge', 1.15);
+      if (!opts.silent) toast(leveled ? `★ 主灵印【${spec.name}】晋升 ${game.seal.star}★！` : `✨ 主灵印【${spec.name}】吸收灵印精华！`);
+      renderAllUI(true);
+      return { ok: true, action: 'upgraded_main', leveled, mainSealPreserved: true, seal: game.seal };
     }
-    if (sub.star >= 3) sub.prog = 0;
-    AudioKit.play('merge', 1.1);
-    if (!opts.silent) toast(leveled ? `★ 辅灵印【${spec.name}】晋升 ${sub.star}★！` : `✨ 辅灵印【${spec.name}】吸收灵印精华！`);
-    renderAllUI(true);
-    return { ok: true, action: 'upgraded_sub', leveled, mainSealPreserved: true, subSeal: sub };
+
+    // Case 3: Matches existing Sub-Seal & Sub-Seal is below 3★ -> absorb fusion points
+    if (subIdx >= 0 && game.subSeals[subIdx].star < 3) {
+      const sub = game.subSeals[subIdx];
+      sub.prog += cardPts;
+      let leveled = false;
+      while (sub.star < 3 && sub.prog >= SEAL_FUSE_NEED[sub.star]) {
+        sub.prog -= SEAL_FUSE_NEED[sub.star];
+        sub.star++;
+        game.stats.merges++;
+        leveled = true;
+      }
+      if (sub.star >= 3) sub.prog = 0;
+      AudioKit.play('merge', 1.1);
+      if (!opts.silent) toast(leveled ? `★ 辅灵印【${spec.name}】晋升 ${sub.star}★！` : `✨ 辅灵印【${spec.name}】吸收灵印精华！`);
+      renderAllUI(true);
+      return { ok: true, action: 'upgraded_sub', leveled, mainSealPreserved: true, subSeal: sub };
+    }
+
+    // Case 4: Off-element seal & empty Sub-Seal slot available -> equip into Sub-Seal slot (Main Seal untouched!)
+    if (game.seal.kind !== kind && subIdx < 0 && game.subSeals.length < subCap) {
+      const initStar = Math.min(3, normStar);
+      const sub = { kind, elem: spec.elem, star: initStar, prog: 0, dmgDealt: 0 };
+      game.subSeals.push(sub);
+      AudioKit.play('merge', 1.1);
+      if (!opts.silent) toast(`✨ 辅印共鸣激活！【${SUB_SEAL_RESONANCE[spec.elem].name} ${initStar}★】已入空辅印槽，主灵印完好保留！`);
+      renderAllUI(true);
+      return { ok: true, action: 'equipped_sub', mainSealPreserved: true, subSeal: sub };
+    }
   }
 
-  // Case 4: Off-element seal & empty Sub-Seal slot available -> equip into Sub-Seal slot (Main Seal untouched!)
-  if (game.seal.kind !== kind && subIdx < 0 && game.subSeals.length < subCap) {
-    const initStar = Math.min(3, normStar);
-    const sub = { kind, elem: spec.elem, star: initStar, prog: 0, dmgDealt: 0 };
-    game.subSeals.push(sub);
-    AudioKit.play('merge', 1.1);
-    if (!opts.silent) toast(`✨ 辅印共鸣激活！【${SUB_SEAL_RESONANCE[spec.elem].name} ${initStar}★】已入空辅印槽，主灵印完好保留！`);
-    renderAllUI(true);
-    return { ok: true, action: 'equipped_sub', mainSealPreserved: true, subSeal: sub };
-  }
-
-  // Case 5 (SAFE IRON RULE): Off-element with full slots OR maxed same-element seal ->
+  // Case 5 (SAFE IRON RULE): Off-element with full slots, maxed seal, or W29 timeout unequipped rule ->
   // NEVER call buyShopItem, NEVER sell or overwrite active Main/Sub Seal! Store as unequipped seal in bag or rewardStash!
   if (opts.dryIfStore) {
     return { ok: false, reason: 'slots_full_or_maxed', mainSealPreserved: true };
@@ -5907,6 +6148,7 @@ function grantSealSafely(kind, star = 1, opts = {}){
 }
 
 function claimRewardStashItem(stashIdx = 0){
+  if (isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
   if (!game?.rewardStash || stashIdx < 0 || stashIdx >= game.rewardStash.length) {
     return { ok: false, reason: 'invalid_stash_index' };
   }
@@ -5926,6 +6168,7 @@ function claimRewardStashItem(stashIdx = 0){
 // Consumes game.materials to raise enhanceLv (base stats + existing affix numeric tier),
 // STRICTLY preserving rarity, sourceStage, slotsCount, and affix IDs!
 function enhanceGear(target){
+  if (isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
   if (!game?.hero) return { ok: false, reason: 'no_game' };
   let inst = null;
   if (typeof target === 'string') {
@@ -6064,11 +6307,14 @@ function buildWaveQueue(w, customEncounter = null){
     : w >= bw.lateHpGrowthStart
       ? Math.pow(bw.lateHpGrowthFirst, w - (bw.lateHpGrowthStart - 1)) : 1;
 
-  // Stage 3 Wave-specific encounter mixes (W21 showcase, W22-24 shared-threat escalation, W25-28 independent draws)
+  // Stage 3 & Stage 5 Wave-specific encounter mixes (W21 showcase, W22-24 shared-threat, W25-28 independent draws, W29 compact outpost)
   let encounterSpec = customEncounter;
   let packBonus = 0;
   let mobMultAdj = 1;
   let hpMultAdj = 1;
+  let durationMult = 1;
+  let packOffsetMult = 1;
+  let spawnJitterMult = 1;
   let activeMix = bw.mobMix.find(m => w <= m.to) || bw.mobMix[bw.mobMix.length - 1];
 
   if (w === 21 && bw.w21ShowcaseMix) {
@@ -6089,13 +6335,26 @@ function buildWaveQueue(w, customEncounter = null){
       mobMultAdj = encounterSpec.mobMultAdj ?? 1;
       hpMultAdj = encounterSpec.hpMultAdj ?? 1;
     }
+  } else if (w === 29 && bw.w29Outpost) {
+    // Stage 5: W29 same-direction modest escalation over W28 — tighter spawn pacing/denser batches AND slightly tougher enemies!
+    const w29 = bw.w29Outpost;
+    activeMix = w29;
+    packBonus = w29.packBonus || 2;
+    mobMultAdj = w29.mobMultAdj ?? 1.04;
+    hpMultAdj = w29.hpMultAdj ?? 1.06;
+    durationMult = w29.durationMult ?? 0.84;
+    packOffsetMult = w29.packOffsetMult ?? 0.72;
+    spawnJitterMult = w29.spawnJitterMult ?? 0.75;
   }
 
   const scale = Math.pow(bw.normalHpGrowth, w - 1) * meta.hpMult * lateScale * hpMultAdj;
   const sides = w <= 2 ? ['west','east','north'] : ['west','east','north','south'];
   const baseMobs = Math.min(bw.mobsBaseCap, Math.round(bw.mobsBase + w * bw.mobsPerWave));
-  const totalMobs = Math.min(bw.mobsFinalCap, Math.round(baseMobs * meta.mobMult * mobMultAdj));
-  const duration = Math.min(bw.durationCap, bw.durationBase + w * bw.durationPerWave);
+  const totalMobs = w === MAIN_WAVES
+    ? Math.max(8, Number(bw.w30VanguardMobs || 16))
+    : Math.min(bw.mobsFinalCap, Math.round(baseMobs * meta.mobMult * mobMultAdj));
+  const baseDuration = Math.min(bw.durationCap, bw.durationBase + w * bw.durationPerWave);
+  const duration = w === MAIN_WAVES ? 12.0 : Number((baseDuration * durationMult).toFixed(2));
 
   const pickMobKind = (forceHeavy = false) => {
     const r = game.rnd();
@@ -6104,9 +6363,24 @@ function buildWaveQueue(w, customEncounter = null){
     return distribution[distribution.length - 1][0];
   };
 
-  // Arknights-style 3-stage waveform inside each wave:
-  // Stage 1 (0..40% dur): 40% probing wave -> Stage 2 (40..54% dur): quiet storm buffer -> Stage 3 (54..100% dur): dense surge!
+  // Arknights-style 3-stage waveform inside each wave (W30 uses a crisp opening vanguard for the Final Boss arena)
   const stage = bw.stages;
+  const effJitter = stage.spawnJitter * spawnJitterMult;
+  const effPackOffset = stage.packOffset * packOffsetMult;
+
+  if (w === MAIN_WAVES) {
+    // Focused W30 Boss Arena: small vanguard starting at 0.35s + Final Boss (boss6) arriving at 1.0s
+    for (let i = 0; i < totalMobs; i++) {
+      const at = Number((0.35 + (i / Math.max(1, totalMobs - 1)) * 10.5).toFixed(3));
+      q.push({ at, side: sides[i % sides.length], kind: pickMobKind(i >= totalMobs / 2), scale, spawned: false });
+    }
+    const bossKind = bw.bossByWave?.[String(w)] || 'boss6';
+    const w30SpawnAt = BALANCE.w30Boss?.bossSpawnAt ?? 1.0;
+    q.push({ at: w30SpawnAt, side: 'west', kind: bossKind, scale: 1, spawned: false });
+    q.sort((a, b) => a.at - b.at);
+    return q;
+  }
+
   const s1Count = Math.round(totalMobs * stage.fractionOne);
   const s2Count = Math.min(stage.quietMax, Math.max(stage.quietMin, Math.round(totalMobs * stage.fractionTwo)));
   const s3Count = Math.max(0, totalMobs - s1Count - s2Count);
@@ -6116,10 +6390,10 @@ function buildWaveQueue(w, customEncounter = null){
     for (let i = 0; i < count; ) {
       const pack = Math.min(effPack, count - i);
       const frac = count <= effPack ? 0.5 : i / count;
-      const t = tStart + frac * (tEnd - tStart) + game.rnd() * stage.spawnJitter;
+      const t = tStart + frac * (tEnd - tStart) + game.rnd() * effJitter;
       const side = sides[Math.floor(game.rnd() * sides.length)];
       for (let k = 0; k < pack; k++) {
-        q.push({ at: t + k * stage.packOffset, side, kind: pickMobKind(heavy), scale, spawned: false });
+        q.push({ at: t + k * effPackOffset, side, kind: pickMobKind(heavy), scale, spawned: false });
       }
       i += pack;
     }
@@ -6137,11 +6411,12 @@ function buildWaveQueue(w, customEncounter = null){
     const eliteCount = (bw.eliteCountLateWave && w >= bw.eliteCountLateWave)
       ? (bw.eliteCountEndgame || bw.eliteCountLate)
       : (w >= bw.eliteCountIncreasedWave ? (bw.eliteCountMid || bw.eliteCountLate) : bw.eliteCountEarly);
+    const eliteWaveScale = Math.pow(bw.eliteHpGrowth, w - bw.eliteFirstWave) * (w === 29 ? hpMultAdj : 1);
     for (let e = 0; e < eliteCount; e++) {
       q.push({
         at: duration * (0.24 + e * 0.24),
         side: sides[e % sides.length],
-        kind: 'elite', scale: Math.pow(bw.eliteHpGrowth, w - bw.eliteFirstWave), spawned: false
+        kind: 'elite', scale: eliteWaveScale, spawned: false
       });
     }
   }
@@ -6156,8 +6431,16 @@ function buildWaveQueue(w, customEncounter = null){
   return q;
 }
 
-function startWave(){
+function startWave(opts = {}){
   if (game.phase !== 'prep') return false;
+  const fromFinalPrep = !!(opts && (opts.fromFinalPrepTimeout || opts.fromFinalPrepEarly));
+
+  // Stage 5: Active W29 90s final prep routes manual startWave clicks through startW30Early() for full boundary safety!
+  if (game.finalPrep?.active && !fromFinalPrep) {
+    const res = startW30Early({ acceptRandomClaim: !!opts?.acceptRandomClaim });
+    return !!res?.ok;
+  }
+
   AudioKit.unlock();
   // Safety net: auto-collect any unpicked ground chests from prep before starting next wave!
   if (game.chests.length) {
@@ -6167,19 +6450,22 @@ function startWave(){
     renderAllUI();
     return false;
   }
-  if (game.destiny?.pendingOffer && !game.destiny.pendingOffer.claimed) {
+  if (!fromFinalPrep && game.destiny?.pendingOffer && !game.destiny.pendingOffer.claimed) {
     openDestinyGambleModal();
     toast('🎲 天命赌局尚有未领取的三选一奖励，请先领取再开战！', true);
     renderAllUI(true);
     return false;
   }
-  if (game.pendingBreakthrough || game.activeModal || game.pendingModals.length > 0) {
+  if (!fromFinalPrep && (game.pendingBreakthrough || game.activeModal || game.pendingModals.length > 0)) {
     toast('请先完成当前待选突破或奖励！', true);
     renderAllUI();
     return false;
   }
   if (game.transferDraft) {
     cancelAffixTransferPreview();
+  }
+  if (game.shopConfirmDraft) {
+    cancelShopPurchaseConfirm();
   }
 
   // Stage 3: W20 start requires a confirmed preselected direction and locks it immediately!
@@ -6195,20 +6481,29 @@ function startWave(){
 
   if (game.finalPrep && game.finalPrep.active) {
     game.finalPrep.active = false;
+    game.finalPrep.awaitingWaveRewards = false;
+    game.finalPrep.transitioning = false;
     game.subPhase = null;
   }
   const meta = getWavePhaseMeta(game.wave);
-  const duration = Math.min(BALANCE.wave.durationCap, BALANCE.wave.durationBase + game.wave * BALANCE.wave.durationPerWave);
+  const w29DurMult = (game.wave === 29 && BALANCE.wave?.w29Outpost?.durationMult) ? BALANCE.wave.w29Outpost.durationMult : 1;
+  const duration = Math.min(BALANCE.wave.durationCap, BALANCE.wave.durationBase + game.wave * BALANCE.wave.durationPerWave) * w29DurMult;
   game.phase = 'wave';
   game.subPhase = null;
   game.waveClock = 0;
-  game.stormWarnAt = duration * 0.44;
+  game.stormWarnAt = game.wave === MAIN_WAVES ? 9999 : duration * 0.44;
   game.stormWarned = false;
   game.eliteChestDropped = false;
+  game.healOrbs = [];
+  game.inspTarget = null;
+  game.mode = null;
 
-  // Stage 3: Reveal W20 Boss intel on W19+; roll W25-W28 encounter ONLY at wave start (zero prep spoilers!)
+  // Stage 3 & Stage 5: Reveal W20 Boss intel on W19+ and W30 Boss intel on W29+; roll W25-W28 encounter ONLY at wave start!
   if (game.wave >= (BALANCE.w20Breakthrough?.bossIntelRevealWave || 19)) {
     game.bossIntel.w20Revealed = true;
+  }
+  if (game.wave >= (BALANCE.w30Boss?.intelRevealWave || 29)) {
+    game.bossIntel.w30Revealed = true;
   }
   let rolledEncounter = null;
   if (game.wave >= 25 && game.wave <= 28) {
@@ -6222,6 +6517,52 @@ function startWave(){
   game.waveQueue = buildWaveQueue(game.wave, rolledEncounter);
   game.autoWaveTimer = 0;
   game.autoWavePausedForDecision = false;
+
+  // Stage 5: Start unified W30 Final Boss battle timer the exact moment player gains control in W30!
+  if (game.wave === MAIN_WAVES) {
+    const w30Cfg = BALANCE.w30Boss || {};
+    const fixedMaxHp = BALANCE.enemies?.boss6?.hp || 320000;
+    const sigPct = w30Cfg.signatureThresholdPct ?? 0.80;
+    const finPct = w30Cfg.finalPhaseThresholdPct ?? 0.35;
+    game.w30Battle = {
+      active: true,
+      startedAtWaveClock: 0,
+      elapsedSeconds: 0,
+      phase: 'opening',
+      outcome: null,
+      bossId: null,
+      bossMaxHp: fixedMaxHp,
+      signatureThresholdPct: sigPct,
+      signatureThresholdHp: Math.round(fixedMaxHp * sigPct),
+      finalThresholdPct: finPct,
+      finalThresholdHp: Math.round(fixedMaxHp * finPct),
+      signatureTriggered: false,
+      signatureLockActive: false,
+      signatureLockStartedAt: null,
+      signatureLockEndedAt: null,
+      signatureTruncatedDmg: 0,
+      signatureHitsDuringLock: 0,
+      signatureHpDamageDuringLock: 0,
+      signatureLifestealDuringLock: 0,
+      signatureStatusHitsDuringLock: {
+        fireMarks: 0,
+        fireDetonations: 0,
+        frostSlows: 0,
+        frostShieldGained: 0,
+        frostPulses: 0
+      },
+      auxKey: game.bossIntel?.w30AuxKey || 'abyss_pillars',
+      auxName: game.bossIntel?.w30Aux || '护界晶柱',
+      auxTriggers: 0,
+      healOrbsSpawned: 0,
+      healOrbsCollected: 0,
+      phaseTimeline: [
+        { phase: 'opening', at: 0, bossHpPct: 100 }
+      ]
+    };
+  } else {
+    game.w30Battle = null;
+  }
 
   // Spawn optional Black-Myth-style Blood Shrine (W3/W7/W12/W17/W22/W27)
   if (SHRINE_WAVES.includes(game.wave)) {
@@ -6240,7 +6581,7 @@ function startWave(){
   const h = game.hero;
   game.curWaveTel = {
     wave: game.wave, phaseTag: meta.tag, kind: meta.kind,
-    encounterId: rolledEncounter?.id || game.wavePlan.currentEncounter?.themeKey || null,
+    encounterId: rolledEncounter?.id || game.wavePlan.currentEncounter?.themeKey || (game.wave === 29 ? 'w29_outpost' : game.wave === 30 ? 'w30_boss6' : null),
     duration: 0, minHpPct: Math.round(h.hp * 100 / Math.max(1, h.maxHp)),
     dmgTaken: 0, hitsTaken: 0, moveDist: 0, dashCount: 0, ultCount: 0,
     shrineTried: false, shrineCleared: false, ehpTotal: 0,
@@ -6274,9 +6615,10 @@ function startWave(){
       ? (game.wave === 10 ? '击败首领后触发【W10 首次大型突破】！'
         : game.wave === 20 ? `已锁定二破方向【${lockedDir?.name || '未定'}】！击败天劫魔尊（辅助：${game.bossIntel.w20Aux}）当场激活基础效果！`
         : game.wave === 25 ? `玄冥妖皇携【${rolledEncounter?.name || '成型敌群'}】降临！注意走位躲避寒潮与弹幕！`
-        : game.wave === 30 ? '终局决战！击败深渊主宰即可完成 30 波守卫！'
+        : game.wave === 30 ? `终局决战 · 深渊主宰（本局辅助：${game.bossIntel.w30Aux}）！80% 血线锁血冲击波请入安全区，末段打空即胜！`
         : '高能首领战！注意走位躲避破阵重击，斩首必爆高阶宝箱！')
       : game.wave === 21 ? '⚡ 第二次大型突破已生效！畅快体验聚焰连爆 / 凛冬反制 / 破阵蓄势与已有装备的实战联动！'
+      : game.wave === 29 ? `前哨紧凑强敌来袭（W30 情报已揭晓 · 辅助：${game.bossIntel.w30Aux}）！通关后开启 90 秒独立最终整备！`
       : w22Info ? `同源威胁【${w22Info.themeName}】· ${w22Info.comboLabel}（${w22Info.counterHint}）`
       : rolledEncounter ? `本波独立抽中敌群【${rolledEncounter.name}】！检验成型构筑！`
       : (game.shrine ? '本章【🩸血煞妖碑】已现身远端！试炼赢金币、锻材与高阶构装宝箱！' : '注意走位切入外圈弓巫并避开重击破阵！');
@@ -6333,29 +6675,152 @@ function spawnEnemy(kind, side, scale = 1, customPos = null){
   const waveSpdMult = bw.enemySpeedBands.reduce((m, band) => game.wave >= band.from ? band.mult : m, 1);
   const wDmgMult = (1 + (game.wave - 1) * bw.enemyDamageGrowthPerWave) *
     (game.wave >= bw.enemyDamageLateStart ? Math.pow(bw.enemyDamageLateGrowth, game.wave - (bw.enemyDamageLateStart - 1)) : 1);
+  const w30Cfg = BALANCE.w30Boss || {};
+  const baseSpd = Number((sp.spd * waveSpdMult).toFixed(2));
   const e = {
     id: game.nextEnemyId++,
     kind, name: sp.name,
     x: pos.x, y: pos.y,
     hp, maxHp: hp, shield: 0,
-    spd: Number((sp.spd * waveSpdMult).toFixed(2)), dmg: Math.round(sp.dmg * wDmgMult),
+    spd: baseSpd, baseSpd, dmg: Math.round(sp.dmg * wDmgMult),
     xp: sp.xp, gold: sp.gold, r: sp.r,
     col: sp.col, rim: sp.rim,
     ranged: !!sp.ranged, range: sp.range || 0,
     leaper: !!sp.leaper, charger: !!sp.charger, bomber: !!sp.bomber, shaman: !!sp.shaman,
     totem: !!sp.totem, totemTimer: 2.2, totemBossId: null,
+    pillar: !!sp.pillar, pillarTimer: 2.8, pillarBossId: null,
+    voidGuard: !!sp.voidGuard,
     elite: !!sp.elite, boss: !!sp.boss,
     affixes: affixCnt > 0 ? pickEliteAffixes(affixCnt) : [],
     cd: 0.4, slow: 0, slowT: 0, freezeT: 0, burnDps: 0, burnT: 0, vulnT: 0, frenzyT: 0,
     fireMarkT: 0, fireMarkStacks: 0, fireMarkSource: null, fireDetonateCd: 0,
-    flash: 0, bossTimer: 5.0, bossAuxTimer: 3.6, bossChaseQueue: 0, bossChaseCd: 0, bossPhase: 0, frenzied: false,
+    flash: 0, bossTimer: kind === 'boss6' ? (w30Cfg.coreCooldownOpening || 5.2) : 5.0,
+    bossAuxTimer: kind === 'boss6' ? (w30Cfg.auxCooldownMid || 9.5) : 3.6,
+    bossAuxCasts: 0, bossChaseQueue: 0, bossChaseCd: 0, bossPhase: 0, frenzied: false,
+    signatureThresholdHp: kind === 'boss6' ? Math.round(hp * (w30Cfg.signatureThresholdPct ?? 0.80)) : 0,
+    finalThresholdHp: kind === 'boss6' ? Math.round(hp * (w30Cfg.finalPhaseThresholdPct ?? 0.35)) : 0,
+    signatureTriggered: false,
+    signatureLockActive: false,
+    signatureStage: 'none', // 'none' | 'telegraph' | 'shockwave' | 'done'
+    signatureTimer: 0,
+    signatureSafeZone: null,
+    finalPhaseEntered: false,
+    sigFloatCd: 0,
+    zeroExecCd: 0,
     aiState: 'chase', aiTimer: 0, aiCd: 2.0 + game.rnd() * 1.4, aiVx: 0, aiVy: 0,
     affixTimer: 2.4 + game.rnd() * 1.2, shamanTimer: 2.2, unstopFloatCd: 0
   };
   game.enemies.push(e);
+  if (kind === 'boss6' && game.w30Battle) {
+    game.w30Battle.bossId = e.id;
+    game.w30Battle.bossMaxHp = e.maxHp;
+    game.w30Battle.signatureThresholdHp = e.signatureThresholdHp;
+    game.w30Battle.finalThresholdHp = e.finalThresholdHp;
+  }
   if (game.curWaveTel) game.curWaveTel.ehpTotal += hp;
   return e;
 }
+
+function spawnHealOrb(x, y, opts = {}){
+  if (!game) return null;
+  game.healOrbs = game.healOrbs || [];
+  const w30Cfg = BALANCE.w30Boss || {};
+  const orb = {
+    x: clamp(x, 2.0, W - 2.0),
+    y: clamp(y, 2.0, H - 2.0),
+    hpPct: opts.hpPct ?? (w30Cfg.healOrbHpPct || 0.18),
+    shield: opts.shield ?? 18,
+    life: opts.life ?? 18.0,
+    bob: game.rnd() * Math.PI * 2
+  };
+  game.healOrbs.push(orb);
+  if (game.w30Battle) game.w30Battle.healOrbsSpawned = (game.w30Battle.healOrbsSpawned || 0) + 1;
+  addRing(orb.x, orb.y, '#62ffb8', 1.2);
+  return orb;
+}
+
+function triggerW30BossSignature(boss, truncatedDmg = 0){
+  if (!boss || boss.kind !== 'boss6' || boss.signatureTriggered) return false;
+  const w30Cfg = BALANCE.w30Boss || {};
+  const h = game.hero;
+  const teleSec = w30Cfg.signatureTelegraphSeconds || 2.6;
+  const safeDist = w30Cfg.signatureSafeZoneDist || 5.4;
+  const safeR = w30Cfg.signatureSafeZoneRadius || 2.8;
+  const baseAng = Math.atan2(h.y - boss.y, h.x - boss.x);
+  const safeAng = baseAng + (game.rnd() < 0.5 ? 0.55 : -0.55);
+  const safeX = clamp(boss.x + Math.cos(safeAng) * safeDist, 4.0, W - 4.0);
+  const safeY = clamp(boss.y + Math.sin(safeAng) * safeDist, 4.0, H - 4.0);
+
+  boss.hp = boss.signatureThresholdHp;
+  boss.signatureTriggered = true;
+  boss.signatureLockActive = true;
+  boss.signatureStage = 'telegraph';
+  boss.signatureTimer = teleSec;
+  boss.signatureSafeZone = { x: safeX, y: safeY, r: safeR };
+  boss.aiState = 'signature'; // NOT unstoppable -> Fire marks, Frost slow & Frost shield still work legitimately!
+
+  game.zones.push({
+    kind: 'w30SigTelegraph',
+    bossId: boss.id,
+    x: boss.x, y: boss.y, r: 16.5,
+    safeX, safeY, safeR,
+    t: teleSec, max: teleSec,
+    dmg: w30Cfg.signatureDamage || 68
+  });
+
+  if (game.w30Battle) {
+    const at = Number((game.w30Battle.elapsedSeconds || 0).toFixed(2));
+    game.w30Battle.phase = 'signature_telegraph';
+    game.w30Battle.signatureTriggered = true;
+    game.w30Battle.signatureLockActive = true;
+    game.w30Battle.signatureLockStartedAt = at;
+    game.w30Battle.signatureTruncatedDmg = Math.max(0, Math.round(truncatedDmg));
+    game.w30Battle.phaseTimeline.push({
+      phase: 'signature_telegraph',
+      at,
+      bossHpPct: Math.round(boss.hp * 100 / Math.max(1, boss.maxHp)),
+      truncatedDmg: Math.max(0, Math.round(truncatedDmg))
+    });
+  }
+
+  AudioKit.play('boss', 0.85);
+  game.shake = Math.max(game.shake, 9);
+  flashScreen('fail');
+  addRing(boss.x, boss.y, '#ff2e63', 4.5);
+  addFloat(boss.x, boss.y - 1.0, '🛡️ 终焉锁血 · 招牌招式蓄力！', '#ffe678', true);
+  showBanner(
+    '⚠️ 深渊主宰 · 80% 血线招牌招式【终焉裂空冲击波】！',
+    '🛡️ 首领进入终焉锁血（命中可挂火标/减速/叠盾，扣血与吸血为 0）！速入青绿安全区规避爆发！',
+    'boss'
+  );
+  return true;
+}
+
+function enterW30BossFinalPhase(boss){
+  if (!boss || boss.kind !== 'boss6' || boss.finalPhaseEntered || boss.signatureLockActive) return false;
+  boss.finalPhaseEntered = true;
+  boss.frenzied = true;
+  boss.spd = Number(((boss.baseSpd || boss.spd) * 1.16).toFixed(2));
+  boss.bossTimer = Math.min(boss.bossTimer, 1.4);
+  if (game.w30Battle) {
+    const at = Number((game.w30Battle.elapsedSeconds || 0).toFixed(2));
+    game.w30Battle.phase = 'final_combo';
+    game.w30Battle.phaseTimeline.push({
+      phase: 'final_combo',
+      at,
+      bossHpPct: Math.round(boss.hp * 100 / Math.max(1, boss.maxHp))
+    });
+  }
+  const h = game.hero;
+  spawnHealOrb(clamp(h.x + (game.rnd() - 0.5) * 4.0, 3, W - 3), clamp(h.y + (game.rnd() - 0.5) * 4.0, 3, H - 3));
+  AudioKit.play('boss', 1.1);
+  game.shake = Math.max(game.shake, 8);
+  addRing(boss.x, boss.y, '#ff385c', 4.2);
+  addFloat(boss.x, boss.y - 0.95, '🔥 末段组合压制 · 打空即胜！', '#ff809c', true);
+  showBanner('🔥 深渊主宰进入末段（≤35%）· 招式组合全力展开！', '末段无锁血，伤害正常结算，打空血条即刻通关 30 波！', 'boss');
+  return true;
+}
+
 function isEnemyUnstoppable(e){
   return !!e && (e.aiState === 'windup' || e.aiState === 'leap' || e.aiState === 'charge');
 }
@@ -6377,6 +6842,7 @@ function applyHeroLifesteal(rawAmt){
 
 function dealDamage(e, rawDmg, opts = {}){
   if (!e || e.hp <= 0) return 0;
+  const wasSignatureLocked = !!(e.kind === 'boss6' && e.signatureLockActive);
   const syn = getSynergyCounts();
   const frostSet = gearSetTier('frost');
   const flameSet = gearSetTier('flame');
@@ -6409,12 +6875,13 @@ function dealDamage(e, rawDmg, opts = {}){
 
   // Dual Cataclysm (雷火劫印): burning enemy takes bonus thunder dmg + instant burn burst!
   const dcLv = perkLv('dual_cataclysm');
+  let dcHealPending = false;
   if (dcLv > 0 && opts.isThunder && e.burnT > 0) {
     dmg *= (dcLv >= 2 ? 2.0 : 1.6);
     const burnBurst = Math.round(e.burnDps * e.burnT * 0.6);
     if (burnBurst > 0) dmg += burnBurst;
     e.burnT = 3.0;
-    if (dcLv >= 2) applyHeroLifesteal(3);
+    if (dcLv >= 2) dcHealPending = true;
   }
 
   const isCrit = opts.critChance ? game.rnd() < opts.critChance : false;
@@ -6428,25 +6895,67 @@ function dealDamage(e, rawDmg, opts = {}){
   }
   dmg = Math.max(1, Math.round(dmg));
 
-  // Zero Execution (绝对零度): Boss extra missing HP true dmg at Lv.2
+  // Zero Execution (绝对零度): Boss extra missing HP true dmg at Lv.2 (fair 1.5s ICD + cap so 3-5 min W30 Boss isn't broken)
   const zeLv = perkLv('zero_exec');
-  if (zeLv >= 2 && e.boss && !opts.fromExec) {
-    dmg += Math.round((e.maxHp - e.hp) * 0.06);
+  if (zeLv >= 2 && e.boss && !opts.fromExec && (e.zeroExecCd || 0) <= 0) {
+    const rawMissing = Math.round((e.maxHp - e.hp) * 0.06);
+    const bossCap = e.kind === 'boss6' ? Math.max(240, Math.round(dmg * 0.55)) : Math.max(320, Math.round(dmg * 0.80));
+    dmg += Math.min(rawMissing, bossCap);
+    e.zeroExecCd = 1.5;
   }
 
-  // Absorb enemy shield first if present (Elite affix)
-  let hpDmg = dmg;
-  if (e.shield > 0) {
-    const abs = Math.min(e.shield, hpDmg);
-    e.shield -= abs;
-    hpDmg -= abs;
+  // ==================== STAGE 5: DECOUPLED HP DEDUCTION & W30 BOSS SIGNATURE LOCK ====================
+  let actualHpDmg = 0;
+  let actualShieldDmg = 0;
+
+  if (wasSignatureLocked) {
+    // STRICT HP LOCK: actual HP deduction = 0, damage-based lifesteal = 0; legitimate hit effects STILL resolve below!
+    actualHpDmg = 0;
+    actualShieldDmg = 0;
+    e.hp = Math.max(e.hp, e.signatureThresholdHp);
+    e.flash = 0.08;
+    if (game.w30Battle) {
+      game.w30Battle.signatureHitsDuringLock++;
+    }
+    if ((e.sigFloatCd || 0) <= 0) {
+      e.sigFloatCd = 0.42;
+      addFloat(e.x + (game.rnd() - 0.5) * 0.35, e.y - 0.65, '🛡️终焉锁血(0扣血)', '#ffd97d', true);
+    }
+  } else {
+    // Absorb enemy shield first if present (Elite/Boss affix)
+    let hpDmg = dmg;
+    if (e.shield > 0) {
+      const abs = Math.min(e.shield, hpDmg);
+      e.shield -= abs;
+      actualShieldDmg = abs;
+      hpDmg -= abs;
+    }
+
+    // W30 Boss6 first crossing of signature threshold (80% HP): TRUNCATE excess crossing damage & enter signature lock!
+    if (e.kind === 'boss6' && !e.signatureTriggered && e.signatureThresholdHp > 0 && (e.hp - hpDmg) <= e.signatureThresholdHp) {
+      const allowedHpDmg = Math.max(0, e.hp - e.signatureThresholdHp);
+      const truncated = Math.max(0, hpDmg - allowedHpDmg);
+      actualHpDmg = allowedHpDmg;
+      e.hp = e.signatureThresholdHp;
+      e.flash = 0.12;
+      triggerW30BossSignature(e, truncated);
+    } else {
+      actualHpDmg = Math.min(e.hp, hpDmg);
+      e.hp -= hpDmg;
+      e.flash = 0.10;
+      if (e.kind === 'boss6' && e.signatureTriggered && !e.signatureLockActive && !e.finalPhaseEntered && e.hp > 0 && e.hp <= e.finalThresholdHp) {
+        enterW30BossFinalPhase(e);
+      }
+    }
   }
-  e.hp -= hpDmg;
-  e.flash = 0.10;
-  game.stats.dmgTotal += dmg;
-  if (opts.tower) opts.tower.dmgDealt = (opts.tower.dmgDealt || 0) + dmg;
-  if (opts.skillKey && game.stats.skillDmg && opts.skillKey in game.stats.skillDmg) {
-    game.stats.skillDmg[opts.skillKey] += dmg;
+
+  const effectiveDmg = actualHpDmg + actualShieldDmg;
+  if (effectiveDmg > 0) {
+    game.stats.dmgTotal += effectiveDmg;
+    if (opts.tower) opts.tower.dmgDealt = (opts.tower.dmgDealt || 0) + effectiveDmg;
+    if (opts.skillKey && game.stats.skillDmg && opts.skillKey in game.stats.skillDmg) {
+      game.stats.skillDmg[opts.skillKey] += effectiveDmg;
+    }
   }
 
   // Zero Execution instant shatter kill on non-boss
@@ -6456,8 +6965,8 @@ function dealDamage(e, rawDmg, opts = {}){
     addFloat(e.x, e.y - 0.5, '💠 绝对斩杀!', '#a8f8ff', true);
   }
 
-  if (isCrit || dmg >= 28 || game.floats.length < 40) {
-    addFloat(e.x + (game.rnd()-0.5)*0.3, e.y - 0.3, isCrit ? `${dmg}!` : `${dmg}`, isCrit ? '#ffdf4d' : (opts.col || '#ffffff'), isCrit);
+  if (!wasSignatureLocked && (isCrit || effectiveDmg >= 28 || game.floats.length < 40)) {
+    addFloat(e.x + (game.rnd()-0.5)*0.3, e.y - 0.3, isCrit ? `${effectiveDmg}!` : `${effectiveDmg}`, isCrit ? '#ffdf4d' : (opts.col || '#ffffff'), isCrit);
   }
   if (isCrit) {
     AudioKit.play('crit');
@@ -6490,7 +6999,7 @@ function dealDamage(e, rawDmg, opts = {}){
     }
   }
 
-  // Slow & Frost Tier-4 Freeze Shatter (BLOCKED if Unstoppable windup/leap/charge!)
+  // Slow & Frost Tier-4 Freeze Shatter (BLOCKED if Unstoppable windup/leap/charge; ALLOWED during Boss6 signature lock!)
   const appliedSlow = Math.max(opts.slow || 0, (opts.fromHero && !opts.noFrostShieldProc) ? (gm.slowOnHit || 0) : 0);
   if (appliedSlow > 0) {
     if (isEnemyUnstoppable(e)) {
@@ -6504,6 +7013,9 @@ function dealDamage(e, rawDmg, opts = {}){
       e.slowT = Math.max(e.slowT, opts.slowDur || 2.4);
       if (!hadSlowBefore && game?.stats) {
         game.stats.frostSlowsApplied = (game.stats.frostSlowsApplied || 0) + 1;
+      }
+      if (e.kind === 'boss6' && e.signatureLockActive && game?.w30Battle?.signatureStatusHitsDuringLock) {
+        game.w30Battle.signatureStatusHitsDuringLock.frostSlows++;
       }
       if (syn.frost >= 4 && !e.boss && e.freezeT <= 0 && game.rnd() < 0.25) {
         e.freezeT = 1.5 * (perkLv('frost_shatter') >= 2 ? 1.5 : 1);
@@ -6611,9 +7123,12 @@ function dealDamage(e, rawDmg, opts = {}){
     gainFrostShield(10, 4.0, 60);
   }
 
-  // Capped Lifesteal (100% consolidated into Hero with per-second recovery cap)
-  if (opts.lifesteal > 0) {
-    applyHeroLifesteal(opts.lifesteal * 0.50);
+  // Capped Damage-Based Lifesteal: STRICTLY based on actual HP damage dealt (0 during W30 Boss signature lock!)
+  if (!wasSignatureLocked && actualHpDmg > 0) {
+    if (dcHealPending) applyHeroLifesteal(3);
+    if (opts.lifesteal > 0) {
+      applyHeroLifesteal(opts.lifesteal * 0.50);
+    }
   }
 
   // On-hit Volt Crest / Thunder Spark affix chain proc
@@ -6650,7 +7165,7 @@ function dealDamage(e, rawDmg, opts = {}){
   }
 
   if (e.hp <= 0) onEnemyKilled(e, opts);
-  return dmg;
+  return effectiveDmg;
 }
 
 function onEnemyKilled(e, opts){
@@ -6682,10 +7197,41 @@ function onEnemyKilled(e, opts){
     return;
   }
 
+  // Stage 5: W30 Abyss Pillar destroyed -> shatter boss6 shield, apply 3.5s vuln & drop healing spirit orb!
+  if (e.pillar) {
+    const ownerBoss = game.enemies.find(o => o.hp > 0 && (o.id === e.pillarBossId || o.kind === 'boss6'));
+    addRing(e.x, e.y, '#ff88dc', 2.6);
+    if (ownerBoss) {
+      ownerBoss.shield = 0;
+      ownerBoss.vulnT = Math.max(ownerBoss.vulnT || 0, 3.5);
+      addRing(ownerBoss.x, ownerBoss.y, '#ffe678', 2.8);
+      addFloat(ownerBoss.x, ownerBoss.y - 0.9, '💥 晶柱击破 · 主宰易伤 3.5s!', '#ffe678', true);
+    }
+    spawnHealOrb(e.x, e.y);
+    AudioKit.play('crit', 1.2);
+    return;
+  }
+
+  // Stage 5: W30 Void Guard slain -> guaranteed healing spirit orb drop!
+  if (e.voidGuard) {
+    spawnHealOrb(e.x, e.y);
+  }
+
   // Material drops for v0.60 equipment & crafting loop (scales up in W21-W29 endgame refinement!)
   if (e.boss || e.elite) {
     const matDrop = getEnemyMaterialDrop(e, game.wave);
     game.materials = (game.materials || 0) + matDrop;
+  }
+
+  // Stage 5: Depleting W30 Final Boss (boss6) HP bar in Final Phase triggers IMMEDIATE 3D Victory Settlement!
+  if (e.kind === 'boss6' && game.wave === MAIN_WAVES && game.phase === 'wave') {
+    for (const qItem of game.waveQueue) qItem.spawned = true;
+    game.enemies = [];
+    game.projectiles = [];
+    game.zones = [];
+    game.healOrbs = [];
+    completeWaveClear();
+    return;
   }
 
   if ((e.elite || e.boss) && gearSetTier('blood') >= 2 && (game.hero.bloodKills || 0) < 10) {
@@ -7658,11 +8204,11 @@ function updateHero(dt){
         for (const e of alive) {
           if (dist(h, e) <= rad + e.r) {
             hitCount++;
-            dealDamage(e, baseDmg, {
+            const dealt = dealDamage(e, baseDmg, {
               fromHero:true, skillKey: hasQuakeBlood ? 'combo' : 'stomp',
               critChance: hs.crit, critDmg: hs.critDmg, col: hasQuakeBlood ? '#ff8a6b' : '#ffd478', lifesteal: hs.lifesteal, bonusGold: hs.gm.bonusGold
             });
-            if (hasQuakeBlood) applyHeroLifesteal(3);
+            if (hasQuakeBlood && dealt > 0) applyHeroLifesteal(3);
             if (!e.boss && !isEnemyUnstoppable(e)) e.freezeT = Math.max(e.freezeT, stBranch === 'st_glacier_quake' ? 1.2 : 0.75);
             if ((stBranch === 'st_fissure_wave' || stBranch === 'st_aftershock_ring' || stBranch === 'st_molten_crater') && e.hp > 0) {
               applyFireMark(e, 2, stBranch, 5.0);
@@ -8113,12 +8659,22 @@ function updateProjectilesAndZones(dt){
         z.tick = z.kind === 'enemyLava' ? 0.55 : 0.65;
         if (dist(game.hero, z) <= z.r) damageHero(z.dmg);
       }
-    } else if (z.kind === 'bossWave') {
+    } else if (z.kind === 'bossWave' || z.kind === 'w30RiftRing') {
       const prog = 1 - clamp(z.t / z.max, 0, 1);
       const curR = z.r * prog;
-      if (!z.hitHero && Math.abs(dist(game.hero, z) - curR) <= 0.52) {
+      if (!z.hitHero && Math.abs(dist(game.hero, z) - curR) <= 0.55) {
         z.hitHero = true;
         damageHero(z.dmg || 36);
+      }
+    } else if (z.kind === 'w30SigTelegraph') {
+      // Pure telegraph + safe zone marker; deals no damage until shockwave phase
+    } else if (z.kind === 'w30SigShockwave') {
+      const prog = 1 - clamp(z.t / z.max, 0, 1);
+      const curR = z.r * prog;
+      const inSafeZone = dist(game.hero, { x: z.safeX, y: z.safeY }) <= (z.safeR || 2.8);
+      if (!z.hitHero && !inSafeZone && Math.abs(dist(game.hero, z) - curR) <= 0.85) {
+        z.hitHero = true;
+        damageHero(z.dmg || 68);
       }
     }
   }
@@ -8135,6 +8691,8 @@ function updateEnemies(dt){
     e.aiCd = Math.max(0, e.aiCd - dt);
     e.flash = Math.max(0, e.flash - dt);
     if (e.unstopFloatCd > 0) e.unstopFloatCd = Math.max(0, e.unstopFloatCd - dt);
+    if (e.sigFloatCd > 0) e.sigFloatCd = Math.max(0, e.sigFloatCd - dt);
+    if (e.zeroExecCd > 0) e.zeroExecCd = Math.max(0, e.zeroExecCd - dt);
     if (e.frenzyT > 0) e.frenzyT = Math.max(0, e.frenzyT - dt);
     if (e.vulnT > 0) e.vulnT = Math.max(0, e.vulnT - dt);
     if (e.fireDetonateCd > 0) e.fireDetonateCd = Math.max(0, e.fireDetonateCd - dt);
@@ -8146,8 +8704,21 @@ function updateEnemies(dt){
     else if (e.slowT > 0) { e.slowT = Math.max(0, e.slowT - dt); if (e.slowT === 0) e.slow = 0; }
     if (e.burnT > 0) {
       e.burnT = Math.max(0, e.burnT - dt);
-      e.hp -= e.burnDps * dt;
-      if (e.hp <= 0) { onEnemyKilled(e, {}); continue; }
+      const burnTick = e.burnDps * dt;
+      if (e.kind === 'boss6' && e.signatureLockActive) {
+        // STRICT HP LOCK during signature: burn timer ticks, 0 HP deducted!
+        e.hp = Math.max(e.hp, e.signatureThresholdHp);
+      } else if (e.kind === 'boss6' && !e.signatureTriggered && e.signatureThresholdHp > 0 && (e.hp - burnTick) <= e.signatureThresholdHp) {
+        const trunc = Math.max(0, burnTick - Math.max(0, e.hp - e.signatureThresholdHp));
+        e.hp = e.signatureThresholdHp;
+        triggerW30BossSignature(e, trunc);
+      } else {
+        e.hp -= burnTick;
+        if (e.kind === 'boss6' && e.signatureTriggered && !e.signatureLockActive && !e.finalPhaseEntered && e.hp > 0 && e.hp <= e.finalThresholdHp) {
+          enterW30BossFinalPhase(e);
+        }
+        if (e.hp <= 0) { onEnemyKilled(e, {}); continue; }
+      }
     }
     if (e.freezeT > 0 && !isEnemyUnstoppable(e)) { e.freezeT = Math.max(0, e.freezeT - dt); continue; }
 
@@ -8161,6 +8732,21 @@ function updateEnemies(dt){
           ownerBoss.shield = Math.min(Math.round(ownerBoss.maxHp * 0.14), (ownerBoss.shield || 0) + 160);
           addRing(e.x, e.y, '#6ce2ff', 1.4);
           game.bolts.push({ pts: [{ x: e.x, y: e.y }, { x: ownerBoss.x, y: ownerBoss.y }], t: 0.25, max: 0.25, col: '#6ce2ff' });
+        }
+      }
+      continue;
+    }
+
+    // Stage 5: W30 Abyss Pillar stays stationary and grants modest shield to boss6 until destroyed (fair to all builds)
+    if (e.pillar) {
+      e.pillarTimer = (e.pillarTimer ?? 2.8) - dt;
+      if (e.pillarTimer <= 0) {
+        e.pillarTimer = 2.8;
+        const ownerBoss = game.enemies.find(o => o.hp > 0 && (o.id === e.pillarBossId || o.kind === 'boss6'));
+        if (ownerBoss && !ownerBoss.signatureLockActive) {
+          ownerBoss.shield = Math.min(Math.round(ownerBoss.maxHp * 0.04), (ownerBoss.shield || 0) + 650);
+          addRing(e.x, e.y, '#ff88dc', 1.5);
+          game.bolts.push({ pts: [{ x: e.x, y: e.y }, { x: ownerBoss.x, y: ownerBoss.y }], t: 0.28, max: 0.28, col: '#ff88dc' });
         }
       }
       continue;
@@ -8232,12 +8818,135 @@ function updateEnemies(dt){
 
     // 6 Distinct Boss Mechanics (W5/10/15/20/25/30) + Half-HP Frenzy!
     if (e.boss) {
-      if (!e.frenzied && e.hp <= e.maxHp * 0.5) {
+      if (e.kind !== 'boss6' && !e.frenzied && e.hp <= e.maxHp * 0.5) {
         e.frenzied = true;
         e.spd *= 1.25;
         addRing(e.x, e.y, '#ff4f42', 3.6);
         addFloat(e.x, e.y - 0.8, '🔥 首领半血狂暴！', '#ff4f42', true);
       }
+
+      // Stage 5: W30 Final Boss (boss6) 3-Phase State Machine (Signature Lock + Fair Auxiliary Mechanics)
+      if (e.kind === 'boss6') {
+        const w30Cfg = BALANCE.w30Boss || {};
+        if (e.signatureLockActive) {
+          e.hp = Math.max(e.hp, e.signatureThresholdHp);
+          e.signatureTimer = Math.max(0, (e.signatureTimer || 0) - dt);
+          if (e.signatureStage === 'telegraph' && e.signatureTimer <= 0) {
+            const shockSec = w30Cfg.signatureShockwaveSeconds || 2.2;
+            e.signatureStage = 'shockwave';
+            e.signatureTimer = shockSec;
+            const sz = e.signatureSafeZone || { x: clamp(h.x, 4, W - 4), y: clamp(h.y, 4, H - 4), r: w30Cfg.signatureSafeZoneRadius || 2.8 };
+            game.zones.push({
+              kind: 'w30SigShockwave',
+              bossId: e.id,
+              x: e.x, y: e.y, r: 17.0,
+              safeX: sz.x, safeY: sz.y, safeR: sz.r,
+              t: shockSec, max: shockSec,
+              dmg: w30Cfg.signatureDamage || 68,
+              hitHero: false
+            });
+            if (game.w30Battle) {
+              const at = Number((game.w30Battle.elapsedSeconds || 0).toFixed(2));
+              game.w30Battle.phase = 'signature_shockwave';
+              game.w30Battle.phaseTimeline.push({
+                phase: 'signature_shockwave',
+                at,
+                bossHpPct: Math.round(e.hp * 100 / Math.max(1, e.maxHp))
+              });
+            }
+            AudioKit.play('boss', 1.18);
+            game.shake = Math.max(game.shake, 11);
+            addRing(e.x, e.y, '#ff2e63', 5.5);
+            addFloat(e.x, e.y - 1.0, '💥 终焉裂空冲击波爆发！', '#ff5c7a', true);
+          } else if (e.signatureStage === 'shockwave' && e.signatureTimer <= 0) {
+            // IMMEDIATE UNLOCK the instant shockwave finishes -> enter mid_skirmish!
+            e.signatureStage = 'done';
+            e.signatureLockActive = false;
+            e.aiState = 'chase';
+            e.bossTimer = Math.min(e.bossTimer || 2.5, 2.2);
+            e.bossAuxTimer = Math.min(e.bossAuxTimer || 4.0, 3.6);
+            game.zones = game.zones.filter(z => z.kind !== 'w30SigTelegraph' && z.kind !== 'w30SigShockwave');
+            if (game.w30Battle) {
+              const at = Number((game.w30Battle.elapsedSeconds || 0).toFixed(2));
+              game.w30Battle.signatureLockActive = false;
+              game.w30Battle.signatureLockEndedAt = at;
+              game.w30Battle.phase = 'mid_skirmish';
+              game.w30Battle.phaseTimeline.push({
+                phase: 'mid_skirmish',
+                at,
+                bossHpPct: Math.round(e.hp * 100 / Math.max(1, e.maxHp))
+              });
+            }
+            const sz = e.signatureSafeZone || { x: h.x, y: h.y };
+            spawnHealOrb(sz.x, sz.y);
+            addRing(e.x, e.y, '#72f2b4', 3.4);
+            addFloat(e.x, e.y - 0.95, '🔓 终焉锁血解除 · 恢复正常扣血！', '#72f2b4', true);
+            showBanner('🔓 终焉冲击波结束 · 首领解除锁血！', '现在可正常造成伤害与吸血，进入中段周旋（35% 进入末段）！', 'good');
+          }
+          continue; // Channel signature in place (remains hittable for Fire Marks / Frost Slow / Frost Shield!)
+        }
+
+        // Mid-skirmish & Final-combo Fair Auxiliary Mechanic Execution
+        if (e.signatureTriggered && !e.signatureLockActive) {
+          e.bossAuxTimer = (e.bossAuxTimer ?? (w30Cfg.auxCooldownMid || 9.5)) - dt;
+          if (e.bossAuxTimer <= 0) {
+            e.bossAuxTimer = e.finalPhaseEntered ? (w30Cfg.auxCooldownFinal || 7.5) : (w30Cfg.auxCooldownMid || 9.5);
+            e.bossAuxCasts = (e.bossAuxCasts || 0) + 1;
+            const auxKey = game.bossIntel?.w30AuxKey || 'abyss_pillars';
+            if (game.w30Battle) game.w30Battle.auxTriggers = (game.w30Battle.auxTriggers || 0) + 1;
+
+            if (auxKey === 'abyss_pillars') {
+              const hasPillar = game.enemies.some(o => o.hp > 0 && o.pillar);
+              if (!hasPillar && game.enemies.length < MAX_ENEMIES) {
+                const ang = game.rnd() * Math.PI * 2;
+                const px = clamp(e.x + Math.cos(ang) * 3.8, 2.0, W - 2.0);
+                const py = clamp(e.y + Math.sin(ang) * 3.8, 2.0, H - 2.0);
+                const pil = spawnEnemy('pillar', 'west', 1, { x: px, y: py });
+                pil.pillarBossId = e.id;
+                addRing(px, py, '#ff78d4', 2.2);
+                addFloat(px, py - 0.7, '🔮 护界晶柱降临(击破易伤+回血)!', '#ff9ae0', true);
+              } else {
+                spawnHealOrb(clamp(h.x + (game.rnd() - 0.5) * 4.5, 2.5, W - 2.5), clamp(h.y + (game.rnd() - 0.5) * 4.5, 2.5, H - 2.5));
+              }
+            } else if (auxKey === 'eclipse_seekers') {
+              const baseAng = Math.atan2(h.y - e.y, h.x - e.x);
+              for (let k = 0; k < 5; k++) {
+                const a = baseAng + (k - 2) * 0.28;
+                pushProjectile({
+                  kind: 'enemyShot', w30Aux: 'eclipse_seekers', sx: e.x, sy: e.y, x: e.x, y: e.y,
+                  tx: clamp(e.x + Math.cos(a) * 9.2, 0.8, W - 0.8),
+                  ty: clamp(e.y + Math.sin(a) * 9.2, 0.8, H - 0.8),
+                  t: 0, dur: 0.95, dmg: 30
+                });
+              }
+              addFloat(e.x, e.y - 0.9, '🌑 辅助·星蚀追踪弹！', '#d9a4ff', true);
+              if (e.bossAuxCasts % 2 === 0) {
+                spawnHealOrb(clamp(h.x + (game.rnd() - 0.5) * 5.0, 2.5, W - 2.5), clamp(h.y + (game.rnd() - 0.5) * 5.0, 2.5, H - 2.5));
+              }
+            } else if (auxKey === 'rift_rings') {
+              game.zones.push({ kind: 'w30RiftRing', w30Aux: 'rift_rings', x: e.x, y: e.y, r: 7.4, t: 1.35, max: 1.35, dmg: 34, hitHero: false });
+              game.zones.push({ kind: 'w30RiftRing', w30Aux: 'rift_rings', x: e.x, y: e.y, r: 9.8, t: 2.05, max: 2.05, dmg: 34, hitHero: false });
+              addFloat(e.x, e.y - 0.9, '💫 辅助·双重裂空震荡环！', '#ff80c8', true);
+              if (e.bossAuxCasts % 2 === 0) {
+                spawnHealOrb(clamp(h.x + (game.rnd() - 0.5) * 5.0, 2.5, W - 2.5), clamp(h.y + (game.rnd() - 0.5) * 5.0, 2.5, H - 2.5));
+              }
+            } else if (auxKey === 'void_guards') {
+              const liveGuards = game.enemies.filter(o => o.hp > 0 && o.voidGuard).length;
+              const toSpawn = Math.max(0, Math.min(2, 3 - liveGuards));
+              for (let k = 0; k < toSpawn; k++) {
+                if (game.enemies.length >= MAX_ENEMIES) break;
+                const a = game.rnd() * Math.PI * 2;
+                spawnEnemy('void_guard', 'west', 1, {
+                  x: clamp(e.x + Math.cos(a) * 3.0, 1.5, W - 1.5),
+                  y: clamp(e.y + Math.sin(a) * 3.0, 1.5, H - 1.5)
+                });
+              }
+              addFloat(e.x, e.y - 0.9, '👾 辅助·暗潮近卫召临！', '#b896ff', true);
+            }
+          }
+        }
+      }
+
       // Stage 3: W20 Boss (boss4) fair rolled auxiliary mechanic execution
       if (e.kind === 'boss4') {
         if ((e.bossChaseQueue || 0) > 0) {
@@ -8384,28 +9093,43 @@ function updateEnemies(dt){
             spawnEnemy('shaman', 'west', scale, { x: clamp(e.x + (game.rnd()-0.5)*2.0, 0.8, W-0.8), y: clamp(e.y + (game.rnd()-0.5)*2.0, 0.8, H-0.8) });
           }
         } else {
-          // 深渊主宰 (W30 Boss 6): 4 abyssal lava slams + shockwave ring + 8-orb barrage + 2 Brutes
-          for (let k = 0; k < 4; k++) {
-            const ang = (Math.PI * 2 * k) / 4 + game.rnd() * 0.5;
-            const distOff = k === 0 ? 0 : 2.5;
-            game.zones.push({ kind:'bossSlam', leaveLava:true, x: clamp(h.x + Math.cos(ang)*distOff, 1, W-1), y: clamp(h.y + Math.sin(ang)*distOff, 1, H-1), r: 2.2, t: 1.15, max: 1.15, dmg: 52 });
-          }
-          game.zones.push({ kind:'bossWave', x: e.x, y: e.y, r: 6.8, t: 1.10, max: 1.10, dmg: 48, hitHero: false });
-          const baseAng = Math.atan2(h.y - e.y, h.x - e.x);
-          for (let k = 0; k < 8; k++) {
-            const a = baseAng + (k - 3.5) * 0.24;
-            pushProjectile({
-              kind:'enemyShot', sx:e.x, sy:e.y, x:e.x, y:e.y,
-              tx: clamp(e.x + Math.cos(a) * 8.5, 0.8, W-0.8),
-              ty: clamp(e.y + Math.sin(a) * 8.5, 0.8, H-0.8),
-              t:0, dur: 0.75, dmg: 38
+          // Stage 5: 深渊主宰 (W30 Boss 6) 3-Phase Core Attacks (opening -> mid_skirmish -> final_combo)
+          const w30Cfg = BALANCE.w30Boss || {};
+          e.bossTimer = e.finalPhaseEntered
+            ? (w30Cfg.coreCooldownFinal || 3.4)
+            : e.signatureTriggered
+              ? (w30Cfg.coreCooldownMid || 4.4)
+              : (w30Cfg.coreCooldownOpening || 5.2);
+          const slamCount = e.finalPhaseEntered ? 4 : e.signatureTriggered ? 3 : 2;
+          const orbCount = e.finalPhaseEntered ? 8 : e.signatureTriggered ? 6 : 5;
+          for (let k = 0; k < slamCount; k++) {
+            const ang = (Math.PI * 2 * k) / slamCount + game.rnd() * 0.5;
+            const distOff = k === 0 ? 0 : 2.6;
+            game.zones.push({
+              kind: 'bossSlam',
+              leaveLava: !!e.finalPhaseEntered,
+              x: clamp(h.x + Math.cos(ang) * distOff, 1.2, W - 1.2),
+              y: clamp(h.y + Math.sin(ang) * distOff, 1.2, H - 1.2),
+              r: e.finalPhaseEntered ? 2.15 : 1.95,
+              t: e.finalPhaseEntered ? 1.18 : 1.28,
+              max: e.finalPhaseEntered ? 1.18 : 1.28,
+              dmg: e.finalPhaseEntered ? 44 : 36
             });
           }
-          addFloat(e.x, e.y - 0.7, '👑 深渊主宰·灭世降临！', '#ff80b5', true);
-          for (let k = 0; k < 2; k++) {
-            if (game.enemies.length >= MAX_ENEMIES) break;
-            spawnEnemy('brute', 'west', scale, { x: clamp(e.x + (game.rnd()-0.5)*2.0, 0.8, W-0.8), y: clamp(e.y + (game.rnd()-0.5)*2.0, 0.8, H-0.8) });
+          if (e.finalPhaseEntered) {
+            game.zones.push({ kind: 'w30RiftRing', x: e.x, y: e.y, r: 7.5, t: 1.25, max: 1.25, dmg: 38, hitHero: false });
           }
+          const baseAng = Math.atan2(h.y - e.y, h.x - e.x);
+          for (let k = 0; k < orbCount; k++) {
+            const a = baseAng + (k - (orbCount - 1) / 2) * 0.24;
+            pushProjectile({
+              kind: 'enemyShot', sx: e.x, sy: e.y, x: e.x, y: e.y,
+              tx: clamp(e.x + Math.cos(a) * 8.6, 0.8, W - 0.8),
+              ty: clamp(e.y + Math.sin(a) * 8.6, 0.8, H - 0.8),
+              t: 0, dur: 0.86, dmg: e.finalPhaseEntered ? 34 : 28
+            });
+          }
+          addFloat(e.x, e.y - 0.75, e.finalPhaseEntered ? '👑 终末组合·深渊裂界！' : '👑 深渊主宰·裂界轰击！', '#ff80b5', true);
         }
       }
     }
@@ -8544,6 +9268,37 @@ function updatePickups(dt){
     }
   }
   game.chests = game.chests.filter(c => !c.done);
+
+  // Stage 5: W30 Healing Spirit Orbs (sustain for non-lifesteal kiting builds across 3-5 min boss fight)
+  if (game.healOrbs && game.healOrbs.length) {
+    for (const orb of game.healOrbs) {
+      orb.life -= dt;
+      orb.bob = (orb.bob || 0) + dt * 5.0;
+      const d = dist(orb, h);
+      if (d <= 2.8) {
+        const pullSpd = 10.5;
+        if (d <= 0.95) {
+          orb.done = true;
+          const healAmt = Math.max(25, Math.round(h.maxHp * (orb.hpPct || 0.18)));
+          const prevHp = h.hp;
+          h.hp = Math.min(h.maxHp, h.hp + healAmt);
+          const actualHeal = Math.round(h.hp - prevHp);
+          if ((orb.shield || 0) > 0 && h.shield < orb.shield) {
+            h.shield = Math.max(h.shield, orb.shield);
+            h.shieldTimer = Math.max(h.shieldTimer || 0, 4.5);
+          }
+          if (game.w30Battle) game.w30Battle.healOrbsCollected = (game.w30Battle.healOrbsCollected || 0) + 1;
+          addRing(h.x, h.y, '#62ffb8', 1.6);
+          addFloat(h.x, h.y - 0.6, `💚 灵气回血 +${actualHeal || healAmt}`, '#72f2b4', true);
+          AudioKit.play('holy', 1.15);
+        } else {
+          orb.x += (h.x - orb.x) / d * pullSpd * dt;
+          orb.y += (h.y - orb.y) / d * pullSpd * dt;
+        }
+      }
+    }
+    game.healOrbs = game.healOrbs.filter(o => !o.done && o.life > 0);
+  }
 }
 
 function gainHeroXp(amt){
@@ -8700,16 +9455,200 @@ function beginWaveHarvest(){
   }
 }
 
+function isW29WaveRewardModal(m){
+  return !!(m && ['levelup', 'chest', 'perk'].includes(m.type));
+}
+
+function hasPendingW29WaveRewards(){
+  if (!game) return false;
+  if (game.chests && game.chests.length > 0) return true;
+  if (isW29WaveRewardModal(game.activeModal)) return true;
+  if (game.pendingModals && game.pendingModals.some(isW29WaveRewardModal)) return true;
+  return false;
+}
+
+function getFinalPrepState(){
+  const fp = game?.finalPrep;
+  if (!fp) return null;
+  return {
+    active: !!fp.active,
+    awaitingWaveRewards: !!fp.awaitingWaveRewards,
+    started: !!fp.started,
+    locked: !!fp.locked,
+    transitioning: !!fp.transitioning,
+    timer: Number((fp.timer || 0).toFixed(3)),
+    duration: fp.duration || fp.maxSeconds || 90,
+    w30IntelShown: !!fp.w30IntelShown,
+    lastResolution: fp.lastResolution ? JSON.parse(JSON.stringify(fp.lastResolution)) : null
+  };
+}
+
+function syncW29FinalPrepStart(){
+  const fp = game?.finalPrep;
+  if (!fp || !fp.active || fp.started) return false;
+  if (!hasPendingW29WaveRewards()) {
+    fp.awaitingWaveRewards = false;
+    fp.started = true;
+    showBanner(
+      `⏳ W29 终局整备正式倒计时（${Math.round(fp.duration || 90)} 秒）！`,
+      `波末奖励已结清！真实时间走表（不受倍速与面板暂停），迎战 W30 深渊主宰（辅助：${game.bossIntel?.w30Aux || '未知'}）！`,
+      'boss'
+    );
+    renderAllUI(true);
+    return true;
+  }
+  return false;
+}
+
+function closeAllPrepModals(){
+  if (!game) return;
+  game.activeModal = null;
+  game.pendingModals = [];
+  game.inspTarget = null;
+  game.mode = null;
+  $('modalBackdrop').hidden = true;
+}
+
+function renderW30EarlyConfirmModal(){
+  const offer = getPendingDestinyOffer();
+  if (!offer) {
+    closeModal();
+    return;
+  }
+  const box = $('modalBox');
+  const remSec = Math.ceil(game.finalPrep?.timer || 0);
+  const choiceNames = offer.choices.map((c, i) => `${i + 1}. ${c.icon || '✨'}${c.name}`).join(' · ');
+  box.innerHTML = `
+    <h2>⚠️ 尚有未领取的天命赌局奖励</h2>
+    <p class="lead">你已赢得天命三选一候选（<strong>${choiceNames}</strong>），尚未领取！<br>
+    ⏳ W29 整备倒计时继续运行（剩余 <strong>${remSec}s</strong>）。你可以先完成三选一领取，或明确接受从这 3 件中<strong>随机安全领取 1 件</strong>并立即迎战 W30 深渊主宰！</p>
+    <div class="modal-footer" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+      <button class="btn" id="w30EarlyBackBtn" type="button">返回整备</button>
+      <button class="btn gold" id="w30EarlyClaimBtn" type="button">🎲 先去三选一领取</button>
+      <button class="btn danger" id="w30EarlyRandomBtn" type="button">⚡ 接受随机领取并立即开战 W30</button>
+    </div>
+  `;
+  box.querySelector('#w30EarlyBackBtn')?.addEventListener('click', () => { closeModal(); renderAllUI(true); });
+  box.querySelector('#w30EarlyClaimBtn')?.addEventListener('click', () => { openDestinyGambleModal(); });
+  box.querySelector('#w30EarlyRandomBtn')?.addEventListener('click', () => { startW30Early({ acceptRandomClaim: true }); });
+  $('modalBackdrop').hidden = false;
+}
+
+function startW30Early({ acceptRandomClaim = false } = {}){
+  if (!game || game.phase !== 'prep') return { ok: false, reason: 'not_in_prep' };
+  const fp = game.finalPrep;
+  if (!fp || !fp.active) {
+    const started = startWave();
+    return { ok: !!started, reason: started ? null : 'start_wave_blocked' };
+  }
+  if (fp.locked || fp.transitioning) {
+    return { ok: false, reason: 'final_prep_locked' };
+  }
+  if (fp.awaitingWaveRewards || hasPendingW29WaveRewards()) {
+    toast('⏳ 请先结清 W29 波末奖励（升级 / 遗留宝箱）后再进入 W30！', true);
+    return { ok: false, reason: 'awaiting_wave_rewards' };
+  }
+  const pendingOffer = getPendingDestinyOffer();
+  if (pendingOffer && !acceptRandomClaim) {
+    game.activeModal = { type: 'w30_early_confirm', offerId: pendingOffer.offerId };
+    renderW30EarlyConfirmModal();
+    toast('🎲 天命赌局尚有未领取的三选一奖励：请先领取，或明确点击“接受随机领取并立即开战”！', true);
+    renderAllUI(true);
+    return { ok: false, reason: 'pending_destiny_offer_requires_choice', offerId: pendingOffer.offerId };
+  }
+
+  // ATOMIC SINGLE-FRAME TRANSITION MUTEX LOCK
+  fp.locked = true;
+  fp.transitioning = true;
+  const clearedTransferDraft = !!game.transferDraft;
+  const clearedShopDraft = !!game.shopConfirmDraft;
+  if (game.transferDraft) cancelAffixTransferPreview();
+  if (game.shopConfirmDraft) game.shopConfirmDraft = null;
+
+  let autoClaimedOffer = null;
+  if (pendingOffer && acceptRandomClaim) {
+    autoClaimedOffer = autoClaimPendingDestinyReward(game.rnd, { allowDuringFinalPrepResolve: true });
+  }
+  closeAllPrepModals();
+  fp.lastResolution = {
+    trigger: pendingOffer ? 'early_start_random_claim' : 'early_start',
+    clearedTransferDraft,
+    clearedShopDraft,
+    autoClaimedOffer,
+    resolvedAtWave: game.wave
+  };
+  const started = startWave({ fromFinalPrepEarly: true });
+  return { ok: !!started, startedW30: !!started, autoClaimed: autoClaimedOffer, resolution: fp.lastResolution };
+}
+
+function resolveW29FinalPrepTimeout(){
+  const fp = game?.finalPrep;
+  if (!fp || !fp.active) return { ok: false, reason: 'not_active' };
+  if (fp.locked || fp.transitioning) return { ok: false, reason: 'already_locked' };
+
+  // ATOMIC SINGLE-FRAME TRANSITION MUTEX LOCK (rejects all duplicate/post-expiry clicks with 0 deduction!)
+  fp.locked = true;
+  fp.transitioning = true;
+  fp.timer = 0;
+
+  const clearedTransferDraft = !!game.transferDraft;
+  const clearedShopDraft = !!game.shopConfirmDraft;
+  if (game.transferDraft) cancelAffixTransferPreview();
+  if (game.shopConfirmDraft) game.shopConfirmDraft = null;
+
+  let autoClaimedOffer = null;
+  if (game.destiny?.pendingOffer && !game.destiny.pendingOffer.claimed) {
+    autoClaimedOffer = autoClaimPendingDestinyReward(game.rnd, { allowDuringFinalPrepResolve: true });
+  }
+
+  closeAllPrepModals();
+  fp.lastResolution = {
+    trigger: 'timeout',
+    clearedTransferDraft,
+    clearedShopDraft,
+    autoClaimedOffer,
+    resolvedAtWave: game.wave
+  };
+  const started = startWave({ fromFinalPrepTimeout: true });
+  return { ok: !!started, startedW30: !!started, autoClaimed: autoClaimedOffer, resolution: fp.lastResolution };
+}
+
 function enterW29FinalPrep(seconds = 90){
-  const dur = Number(seconds) > 0 ? Number(seconds) : (BALANCE.wave.w29FinalPrepSeconds || 90);
-  // Auto-collect any remaining ground chests from W29 so rewards settle before 90s final prep
+  const dur = Number(seconds) > 0 ? Number(seconds) : (BALANCE.progression.w29FinalPrepSeconds || 90);
+  // Reveal W30 Boss intel if not already shown
+  if (game.bossIntel) game.bossIntel.w30Revealed = true;
+  // Auto-collect any remaining ground chests from W29 into reward modals so wave-end rewards settle BEFORE 90s timer starts!
   if (game.chests.length) {
     for (const c of game.chests) queueModal({ type:'chest', legend: c.legend, shrineTier: !!c.shrineTier });
     game.chests = [];
   }
+  const awaiting = hasPendingW29WaveRewards();
   game.subPhase = 'w29_final_prep';
-  game.finalPrep = { active: true, timer: dur, duration: dur };
-  showBanner('⏳ W29 终局整备开启（限时 90 秒）！', '最后调整灵印共鸣、构装与丹药！倒计时归零或点击【开始第 30 波】将直接进入 W30 终局决战！', 'boss');
+  game.finalPrep = {
+    active: true,
+    awaitingWaveRewards: awaiting,
+    started: !awaiting,
+    locked: false,
+    transitioning: false,
+    timer: dur,
+    duration: dur,
+    maxSeconds: dur,
+    w30IntelShown: true,
+    lastResolution: null
+  };
+  if (awaiting) {
+    showBanner(
+      '📦 W29 波末奖励结清中（90 秒倒计时暂未开始）',
+      '请先完成 W29 升级选择与遗留宝箱领取；最后一个波末奖励关闭后将立即开启 90 秒终局整备倒计时！',
+      'good'
+    );
+  } else {
+    showBanner(
+      `⏳ W29 终局整备开启（限时 ${Math.round(dur)} 秒）！`,
+      `W30 深渊主宰情报（辅助：${game.bossIntel?.w30Aux || '未知'}）常驻右侧战况栏！真实时间走表，归零或提前开战将进入 W30 终局决战！`,
+      'boss'
+    );
+  }
 }
 
 function completeWaveClear(){
@@ -8718,6 +9657,7 @@ function completeWaveClear(){
   for (const g of game.gems) gainHeroXp(g.xp);
   game.gems = [];
   game.shrine = null;
+  game.healOrbs = [];
 
   const clearedWave = game.wave;
   const greedBonus = gearSetTier('greed') >= 2 ? 12 : 0;
@@ -8741,7 +9681,7 @@ function completeWaveClear(){
   game.rerollCost = BALANCE.economy.rerollStart;
   if (game.wavePlan) game.wavePlan.currentEncounter = null;
 
-  // Stage progression & Major Breakthrough triggers (W5->W6, W10, W15->W16 preselect, W18->W19 intel, W20 breakthrough, W28 omen, W29->W30 final prep)
+  // Stage progression & Major Breakthrough triggers (W5->W6, W10, W15->W16 preselect, W18->W19 intel, W20 breakthrough, W28 omen+W30 intel, W29->W30 final prep)
   if (clearedWave === 5) {
     game.shopTierBonus = Math.max(game.shopTierBonus, 1);
   } else if (clearedWave === 10) {
@@ -8808,8 +9748,10 @@ function completeWaveClear(){
       clearTriggered: true,
       label: om.clearTitle || '🌑 终局预兆已现 · W29 前哨与终局情报即将揭晓！'
     };
+    // Stage 5: Reveal W30 Final Boss (boss6) intel in W29 prep (concise banner + persistent HUD card, zero blocking popup!)
+    if (game.bossIntel) game.bossIntel.w30Revealed = true;
   } else if (clearedWave === 29) {
-    enterW29FinalPrep(BALANCE.wave.w29FinalPrepSeconds || 90);
+    enterW29FinalPrep(BALANCE.progression.w29FinalPrepSeconds || 90);
   }
 
   game.hero.realm = getActiveUnlockNode().idx;
@@ -8829,7 +9771,11 @@ function completeWaveClear(){
     showBanner(`⚡ 天劫魔尊伏诛 · 【${w20?.directionName || '二破'}】基础效果已当场生效！`, '已获得 W20 突破凭证（零材料同样 100% 生效）！请从战后强化的候选卡中择一或消耗锻材整组重抽！', 'good');
   } else if (clearedWave === 28) {
     const om = BALANCE.wave?.w28Omen || {};
-    showBanner(om.clearTitle || '🌑 终局预兆已现 · W29 前哨即将开启！', om.clearSub || 'W29 将公布 W30 终焉魔帝情报并在战后开启 90 秒独立最终整备！', 'boss');
+    showBanner(
+      `🔎 W30 终局情报揭晓 · 深渊主宰（本局辅助：${game.bossIntel?.w30Aux || '未知'}）`,
+      `核心：${game.bossIntel?.w30Core || '80%锁血冲击波'} · 辅助：${game.bossIntel?.w30AuxDesc || om.clearSub || 'W29 战后开启 90 秒最终整备'}`,
+      'boss'
+    );
   } else if (clearedWave !== 29) {
     const matNote = clearMatBonus > 0 ? ` · 精修锻材 +${clearMatBonus}` : '';
     showBanner(`✅ 第 ${clearedWave} / ${MAIN_WAVES} 波通关！`, `赏金 +${clearBonus}${intNote} 金${matNote} · 回血 +${BALANCE.progression.waveClearHeal}${chestNote}`, 'good');
@@ -8851,11 +9797,25 @@ function completeWaveClear(){
 
 function finishGame(victory){
   if (game.curWaveTel) finalizeCurrentTelemetry();
+  if (game.w30Battle && game.w30Battle.active) {
+    const boss = game.enemies.find(e => e.kind === 'boss6');
+    const hpPct = victory ? 0 : (boss ? Math.round(clamp(boss.hp, 0, boss.maxHp) * 100 / Math.max(1, boss.maxHp)) : 0);
+    const at = Number((game.w30Battle.elapsedSeconds || 0).toFixed(2));
+    game.w30Battle.active = false;
+    game.w30Battle.signatureLockActive = false;
+    game.w30Battle.outcome = victory ? 'victory' : 'defeat';
+    game.w30Battle.phase = 'ended';
+    game.w30Battle.phaseTimeline.push({ phase: 'ended', outcome: game.w30Battle.outcome, at, bossHpPct: hpPct });
+  }
   game.phase = victory ? 'won' : 'lost';
   game.subPhase = null;
-  if (game.finalPrep) game.finalPrep.active = false;
+  if (game.finalPrep) {
+    game.finalPrep.active = false;
+    game.finalPrep.transitioning = false;
+  }
   game.projectiles = [];
   game.zones = [];
+  game.healOrbs = [];
   game.shrine = null;
   game.speed = 1;
   $('hpVignette')?.classList.remove('danger');
@@ -8871,20 +9831,14 @@ function tick(dt){
   // In prep phase, check auto-wave decision pause and W29 90s real-time final prep countdown
   if (game.phase === 'prep') {
     if (game.finalPrep && game.finalPrep.active) {
-      // Wait for W29 wave-clear modals (e.g., levelup/chest) to close, then count down 90s in real time.
-      // Opening Destiny Gamble or Affix Transfer does NOT pause the W29 90s countdown!
-      const isPrepInteractiveModal = game.activeModal && ['destiny_gamble', 'affix_transfer'].includes(game.activeModal.type);
-      if ((!game.activeModal || isPrepInteractiveModal) && game.pendingModals.length === 0 && !game.pendingBreakthrough) {
+      // Phase A: Settle W29 wave-end rewards (levelup / ground chests) FIRST; 90s timer stays frozen until last wave-end reward closes!
+      syncW29FinalPrepStart();
+      // Phase B: Once started, 90s counts down strictly in REAL elapsed time (unaffected by game.speed=2 AND NEVER paused by ANY prep panel/modal!)
+      if (game.finalPrep.started && !game.finalPrep.locked) {
         const realDt = dt / Math.max(1, game.speed || 1);
         game.finalPrep.timer = Math.max(0, game.finalPrep.timer - realDt);
         if (game.finalPrep.timer <= 0) {
-          // Stage 4 -> Stage 5 handoff: clear uncommitted transfer draft, auto-claim any won-but-unclaimed Destiny offer once, close prep modal, then enter W30!
-          if (game.transferDraft) cancelAffixTransferPreview();
-          if (game.destiny?.pendingOffer && !game.destiny.pendingOffer.claimed) {
-            autoClaimPendingDestinyReward();
-          }
-          if (isPrepInteractiveModal) closeModal();
-          startWave();
+          resolveW29FinalPrepTimeout();
           return;
         }
       }
@@ -8937,6 +9891,9 @@ function tick(dt){
 
   // Wave Simulation with MAX_ENEMIES soft cap
   game.waveClock += dt;
+  if (game.wave === MAIN_WAVES && game.w30Battle?.active) {
+    game.w30Battle.elapsedSeconds = Number((game.w30Battle.elapsedSeconds + dt).toFixed(3));
+  }
   if (game.curWaveTel) game.curWaveTel.duration = Number(game.waveClock.toFixed(1));
 
   // Arknights-style storm warning cue right before Stage 3 dense surge (and W28 Mid-Wave Endgame Omen!)
@@ -9061,6 +10018,8 @@ function openNextModal(){
   else if (m.type === 'perk') renderPerkModal(m.quality || 'ren');
   else if (m.type === 'destiny_gamble') renderDestinyGambleModal();
   else if (m.type === 'affix_transfer') renderAffixTransferModal();
+  else if (m.type === 'shop_confirm') renderShopConfirmModal();
+  else if (m.type === 'w30_early_confirm') renderW30EarlyConfirmModal();
 }
 
 function closeModal(){
@@ -9074,6 +10033,8 @@ function closeModal(){
   } else if (game && game.pendingBreakthrough === 'w20' && game.w20Draft) {
     game.activeModal = { type: 'w20_breakthrough' };
     renderW20BreakthroughModal();
+  } else if (game && game.finalPrep?.active && game.finalPrep.awaitingWaveRewards) {
+    syncW29FinalPrepStart();
   }
 }
 
@@ -9380,6 +10341,59 @@ function getW20BossIntel(){
     auxName: game.bossIntel.w20Aux,
     auxDesc: game.bossIntel.w20AuxDesc,
     auxFairness: game.bossIntel.w20AuxFairness
+  };
+}
+
+function isW30BossIntelRevealed(){
+  if (!game) return false;
+  const revealWave = BALANCE.w30Boss?.intelRevealWave || 29;
+  return game.wave >= revealWave || !!game.bossIntel?.w30Revealed || !!game.finalPrep?.w30IntelShown;
+}
+
+function getW30BossIntel(){
+  if (!game?.bossIntel) return null;
+  const revealed = isW30BossIntelRevealed();
+  const w30Cfg = BALANCE.w30Boss || {};
+  const revealWave = w30Cfg.intelRevealWave || 29;
+  if (!revealed) {
+    return {
+      revealed: false,
+      revealWave,
+      wave: 30,
+      bossName: w30Cfg.name || '深渊主宰',
+      coreName: null,
+      coreDesc: '第 29 波备战时揭晓 W30 终局首领固定核心机制与本局随机辅助机制',
+      auxKey: null,
+      auxName: null,
+      auxDesc: null,
+      auxFairness: null,
+      signatureThresholdPct: w30Cfg.signatureThresholdPct ?? 0.80,
+      finalPhaseThresholdPct: w30Cfg.finalPhaseThresholdPct ?? 0.35
+    };
+  }
+  return {
+    revealed: true,
+    revealWave,
+    wave: 30,
+    bossName: w30Cfg.name || '深渊主宰',
+    coreName: game.bossIntel.w30Core,
+    coreDesc: game.bossIntel.w30CoreDesc,
+    auxKey: game.bossIntel.w30AuxKey,
+    auxName: game.bossIntel.w30Aux,
+    auxDesc: game.bossIntel.w30AuxDesc,
+    auxFairness: game.bossIntel.w30AuxFairness,
+    signatureThresholdPct: w30Cfg.signatureThresholdPct ?? 0.80,
+    finalPhaseThresholdPct: w30Cfg.finalPhaseThresholdPct ?? 0.35
+  };
+}
+
+function getW30BattleState(){
+  if (!game?.w30Battle) return null;
+  const boss = game.enemies?.find(e => e.kind === 'boss6') || null;
+  return {
+    ...JSON.parse(JSON.stringify(game.w30Battle)),
+    bossHp: boss ? Math.max(0, Math.round(boss.hp)) : (game.w30Battle.outcome === 'victory' ? 0 : null),
+    bossHpPct: boss ? Number((clamp(boss.hp, 0, boss.maxHp) * 100 / Math.max(1, boss.maxHp)).toFixed(2)) : (game.w30Battle.outcome === 'victory' ? 0 : null)
   };
 }
 
@@ -10047,6 +11061,10 @@ function showEndModal(victory){
   const synNames = activeGearSyn.active.length
     ? activeGearSyn.active.map(s => `${s.icon}${s.name}(${s.tier === 3 ? '三联动' : '双联动'})`).join('、')
     : '无词条联动';
+  const w30B = game.w30Battle;
+  const w30Line = w30B
+    ? `<br>W30 深渊主宰：用时 <b>${Number(w30B.elapsedSeconds || 0).toFixed(1)}s</b> · 辅助 <b>${w30B.auxName || '—'}</b> · 招牌锁血 <b>${w30B.signatureTriggered ? '已完整经历' : '未触发'}</b>`
+    : '';
   const box = $('modalBox');
   box.innerHTML = `
     <h2>${victory ? `🏆 30 波秘境守卫大成！你斩杀了第 ${MAIN_WAVES} 波深渊主宰！` : `💀 道消身陨 · 止步第 ${game.wave} / ${MAIN_WAVES} 波（${getRealmStageLabel()}）`}</h2>
@@ -10054,7 +11072,7 @@ function showEndModal(victory){
     <div class="intro-grid" style="margin:10px 0">
       <div class="intro-box">
         <h4>① 通关结果</h4>
-        <p>结算状态：<b style="color:${victory?'#7ce896':'#ff7b6b'}">${victory ? '30 波通关胜利' : `第 ${game.wave} 波战败结算`}</b><br>到达波次：<b>W${game.wave} / W${MAIN_WAVES}</b> · 节点：<b>${getRealmStageLabel()}</b></p>
+        <p>结算状态：<b style="color:${victory?'#7ce896':'#ff7b6b'}">${victory ? '30 波通关胜利' : `第 ${game.wave} 波战败结算`}</b><br>到达波次：<b>W${game.wave} / W${MAIN_WAVES}</b> · 节点：<b>${getRealmStageLabel()}</b>${w30Line}</p>
       </div>
       <div class="intro-box">
         <h4>② 本局表现</h4>
@@ -10479,6 +11497,7 @@ function getPendingDestinyOffer(){
 // Single atomic checkout: validates bet & pendingOffer, deducts gold ONCE, resolves empty tribulation OR generates 3 candidates!
 function rollDestinyGamble(betAmount, opts = {}){
   if (!game || !game.destiny) return { ok: false, reason: 'no_game' };
+  if (isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
   if (game.phase !== 'prep') {
     toast('仅在备战期（含 W29 终局整备）可开启天命赌局！', true);
     return { ok: false, reason: 'not_in_prep' };
@@ -10622,6 +11641,9 @@ function applyDestinyPillReward(pillKey){
 // Unified single-checkout STRICTLY IDEMPOTENT reward claim entry (reusable by Stage 5 W29 timeout!)
 function claimDestinyReward(choiceIndex, opts = {}){
   if (!game?.destiny) return { ok: false, reason: 'no_game' };
+  if (isFinalPrepActionLocked() && !opts.allowDuringFinalPrepResolve) {
+    return { ok: false, reason: 'final_prep_locked' };
+  }
   const offer = game.destiny.pendingOffer;
   if (!offer) return { ok: false, reason: 'no_pending_offer' };
   if (opts.offerId && offer.offerId !== opts.offerId) {
@@ -10659,7 +11681,13 @@ function claimDestinyReward(choiceIndex, opts = {}){
       if (!opts.silent) toast(`✨ 吸收【${chosen.name}】，主灵印永久伤害累计 +${Math.round(game.hero.sealEssenceBonus * 100)}%！`);
     } else {
       // SAFE CLAIM PATH: NEVER calls buyShopItem, NEVER overwrites/sells active 5★ Main Seal!
-      grantResult = grantSealSafely(chosen.kind, chosen.star, { rarity: chosen.rarity, origin: 'destiny_gamble', silent: !!opts.silent });
+      // On W29 timeout/early random claim (opts.autoTimeout), ALWAYS store as unequipped seal in bag/stash so active seals & gear stay 100% intact!
+      grantResult = grantSealSafely(chosen.kind, chosen.star, {
+        rarity: chosen.rarity,
+        origin: 'destiny_gamble',
+        silent: !!opts.silent,
+        storeUnequipped: !!opts.autoTimeout
+      });
     }
   } else if (chosen.category === 'pill') {
     grantResult = { ok: true, ...applyDestinyPillReward(chosen.pillKey) };
@@ -10717,11 +11745,15 @@ function claimDestinyReward(choiceIndex, opts = {}){
   return { ok: true, offerId: offer.offerId, choiceIndex: idx, chosen, grantResult };
 }
 
-function autoClaimPendingDestinyReward(rndFn = game?.rnd || Math.random){
+function autoClaimPendingDestinyReward(rndFn = game?.rnd || Math.random, opts = {}){
   const offer = getPendingDestinyOffer();
   if (!offer) return { ok: false, reason: 'no_pending_offer' };
   const idx = Math.floor(rndFn() * offer.choices.length);
-  return claimDestinyReward(idx, { offerId: offer.offerId, autoTimeout: true });
+  return claimDestinyReward(idx, {
+    offerId: offer.offerId,
+    autoTimeout: true,
+    allowDuringFinalPrepResolve: !!opts?.allowDuringFinalPrepResolve
+  });
 }
 
 /* ==================== STAGE 4: AFFIX TRANSFER WORKBENCH (词条转移台) ==================== */
@@ -10940,6 +11972,7 @@ function cancelAffixTransferPreview(){
 // SINGLE ATOMIC COMMIT: validates everything fresh at commit time, deducts tokens+gold, extracts source slot -> null (keeping source gear), writes target slot, recomputes synergies!
 function commitAffixTransfer(params = null){
   if (!game?.hero) return { ok: false, reason: 'no_game' };
+  if (isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
   const input = params || game.transferDraft;
   if (!input) return { ok: false, reason: 'no_transfer_params' };
 
@@ -11376,12 +12409,106 @@ function render(){
   drawHero();
   drawArtifacts();
   drawProjectilesBeamsBolts();
+  drawTopTelegraphs();
   drawRingsAndFloats();
 
   ctx.restore();
 
-  // Screen-space offscreen directional arrows (Boss / Elite / Chests)
+  // Screen-space offscreen directional arrows (Boss / Elite / Chests) & W30 Boss Top Bar
   drawEdgeIndicators();
+  drawW30BossTopBar();
+}
+
+function drawTopTelegraphs(){
+  if (!game?.zones?.length) return;
+  for (const z of game.zones) {
+    if (z.kind === 'w30SigTelegraph' || z.kind === 'w30SigShockwave') {
+      const zx = z.x * CELL, zy = z.y * CELL, zr = z.r * CELL;
+      const sx = z.safeX * CELL, sy = z.safeY * CELL, sr = (z.safeR || 2.8) * CELL;
+      const prog = 1 - clamp(z.t / Math.max(0.01, z.max), 0, 1);
+      ctx.save();
+      if (z.kind === 'w30SigTelegraph') {
+        // High-contrast crimson danger ring + sweeping charge wave
+        ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,30,66,0.12)'; ctx.fill();
+        ctx.strokeStyle = '#ff2e63'; ctx.lineWidth = 4; ctx.setLineDash([12, 8]); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.beginPath(); ctx.arc(zx, zy, Math.max(10, zr * prog), 0, Math.PI * 2);
+        ctx.strokeStyle = '#ffe678'; ctx.lineWidth = 3.5; ctx.stroke();
+      } else {
+        // Erupting high-contrast shockwave rings
+        const curR = Math.max(12, zr * prog);
+        ctx.beginPath(); ctx.arc(zx, zy, curR, 0, Math.PI * 2);
+        ctx.strokeStyle = '#ff2e63'; ctx.lineWidth = 10; ctx.stroke();
+        ctx.beginPath(); ctx.arc(zx, zy, curR, 0, Math.PI * 2);
+        ctx.strokeStyle = '#fff0a0'; ctx.lineWidth = 3.5; ctx.stroke();
+      }
+      // Ultra-clear Emerald/Cyan Safe Zone (drawn on TOP so hero ALWAYS sees safety!)
+      ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(72,255,178,0.24)'; ctx.fill();
+      ctx.strokeStyle = '#62ffb8'; ctx.lineWidth = 4; ctx.stroke();
+      ctx.beginPath(); ctx.arc(sx, sy, sr * 0.72, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1.6; ctx.setLineDash([6, 6]); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font = '900 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#eafff5';
+      ctx.fillText(z.kind === 'w30SigTelegraph' ? `✅ 安全区 (${z.t.toFixed(1)}s)` : '✅ 安全区(免疫冲击波)', sx, sy - sr - 10);
+      ctx.restore();
+    } else if (z.kind === 'w30RiftRing') {
+      const zx = z.x * CELL, zy = z.y * CELL, zr = z.r * CELL;
+      const prog = 1 - clamp(z.t / Math.max(0.01, z.max), 0, 1);
+      ctx.save();
+      ctx.beginPath(); ctx.arc(zx, zy, Math.max(8, zr * prog), 0, Math.PI * 2);
+      ctx.strokeStyle = '#ff52b8'; ctx.lineWidth = 7; ctx.stroke();
+      ctx.beginPath(); ctx.arc(zx, zy, Math.max(8, zr * prog), 0, Math.PI * 2);
+      ctx.strokeStyle = '#ffe88a'; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
+function drawW30BossTopBar(){
+  if (!game || game.wave !== MAIN_WAVES || game.phase !== 'wave') return;
+  const boss = game.enemies.find(e => e.kind === 'boss6' && e.hp > 0);
+  if (!boss) return;
+  const barW = Math.min(520, Math.max(260, cam.w * 0.44));
+  const barH = 18;
+  const x = (cam.w - barW) / 2;
+  const y = 108;
+  const ratio = clamp(boss.hp / Math.max(1, boss.maxHp), 0, 1);
+  const sigPct = BALANCE.w30Boss?.signatureThresholdPct ?? 0.80;
+  const finPct = BALANCE.w30Boss?.finalPhaseThresholdPct ?? 0.35;
+  const bState = game.w30Battle;
+  const phaseTag = boss.signatureLockActive
+    ? '🛡️ 终焉锁血（命中可挂状态/叠盾 · 0 扣血）'
+    : boss.finalPhaseEntered
+      ? '🔥 末段组合压制（无锁血 · 打空即胜）'
+      : boss.signatureTriggered
+        ? '⚔️ 中段周旋'
+        : '⚔️ 开场交锋';
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(10,16,22,0.86)';
+  ctx.fillRect(x - 10, y - 24, barW + 20, barH + 34);
+  ctx.strokeStyle = boss.signatureLockActive ? '#ffd97d' : '#ff4d6d';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x - 10, y - 24, barW + 20, barH + 34);
+
+  ctx.font = '900 12px sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = '#fff3d6';
+  ctx.fillText(`👑 深渊主宰 · ${phaseTag}`, x, y - 8);
+  ctx.textAlign = 'right'; ctx.fillStyle = '#ffd97d';
+  ctx.fillText(`${Math.ceil(boss.hp).toLocaleString()} / ${boss.maxHp.toLocaleString()} (${Math.round(ratio * 100)}%) · ${Number(bState?.elapsedSeconds || 0).toFixed(0)}s`, x + barW, y - 8);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.fillRect(x, y, barW, barH);
+  ctx.fillStyle = boss.signatureLockActive ? '#ffd166' : boss.finalPhaseEntered ? '#ff385c' : '#ff5270';
+  ctx.fillRect(x, y, barW * ratio, barH);
+
+  // 80% Signature & 35% Final Phase threshold markers
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(x + barW * sigPct - 1, y - 2, 2, barH + 4);
+  ctx.fillRect(x + barW * finPct - 1, y - 2, 2, barH + 4);
+  ctx.restore();
 }
 
 function drawArena(){
@@ -11735,6 +12862,15 @@ function drawPickups(){
     ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(c.legend ? '👑' : c.shrineTier ? '🩸' : '📦', cx, cy);
   }
+  for (const orb of (game.healOrbs || [])) {
+    const ox = orb.x * CELL, oy = orb.y * CELL + Math.sin(orb.bob || 0) * 3;
+    ctx.beginPath();
+    ctx.arc(ox, oy, 14, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(98,255,184,0.32)'; ctx.fill();
+    ctx.strokeStyle = '#62ffb8'; ctx.lineWidth = 2.2; ctx.stroke();
+    ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('💚', ox, oy);
+  }
 }
 
 function drawZones(){
@@ -11932,8 +13068,10 @@ function renderAllUI(force = false){
   const pTxt = game.phase === 'harvest'
     ? '收菜中'
     : game.phase === 'wave'
-      ? '激战中'
-      : (game.finalPrep?.active ? `终局整备 ${Math.ceil(game.finalPrep.timer)}s` : '备战');
+      ? (game.wave === MAIN_WAVES && game.w30Battle?.active ? `决战 ${Math.floor(game.w30Battle.elapsedSeconds || 0)}s` : '激战中')
+      : (game.finalPrep?.active
+        ? (game.finalPrep.awaitingWaveRewards ? '波末奖励结清中' : `终局整备 ${Math.ceil(game.finalPrep.timer)}s`)
+        : '备战');
   wp.textContent = `第 ${game.wave}/${MAIN_WAVES} 波 [${meta.tag}] · ${pTxt}`;
   wp.className = 'pill ' + (isWave ? 'wave-live' : 'wave-prep');
 
@@ -12039,7 +13177,9 @@ function renderAllUI(force = false){
     $('waveBtnSb').textContent = `剩余 ${rem} 敌`;
   } else if (game.finalPrep?.active) {
     $('waveBtnNm').textContent = `开始第 ${game.wave} 波`;
-    $('waveBtnSb').textContent = `⏳ 终局整备 ${Math.ceil(game.finalPrep.timer)}s`;
+    $('waveBtnSb').textContent = game.finalPrep.awaitingWaveRewards
+      ? '📦 先结清波末奖励'
+      : `⏳ 终局整备 ${Math.ceil(game.finalPrep.timer)}s`;
   } else {
     $('waveBtnNm').textContent = `开始第 ${game.wave} 波`;
     $('waveBtnSb').textContent = game.pendingBreakthrough
@@ -12102,7 +13242,15 @@ function renderBattleHud(force){
   const hpPct = clamp((h.hp / Math.max(1, h.maxHp)) * 100, 0, 100);
   const shieldPct = clamp((h.shield / Math.max(1, h.maxHp)) * 100, 0, 100);
   const meta = getWavePhaseMeta(game.wave);
-  const phaseLabels = { prep: game.finalPrep?.active ? `终局整备 (${Math.ceil(game.finalPrep.timer)}s)` : '备战中', wave:'激战中', harvest:'战利品结算', won:'已通关', lost:'已陨落' };
+  const phaseLabels = {
+    prep: game.finalPrep?.active
+      ? (game.finalPrep.awaitingWaveRewards ? '波末奖励结清中' : `终局整备 (${Math.ceil(game.finalPrep.timer)}s)`)
+      : '备战中',
+    wave: (game.wave === MAIN_WAVES && game.w30Battle?.active) ? `终局决战 (${Math.floor(game.w30Battle.elapsedSeconds || 0)}s)` : '激战中',
+    harvest: '战利品结算',
+    won: '已通关',
+    lost: '已陨落'
+  };
   const phaseLabel = phaseLabels[game.phase] || game.phase;
   const phaseClass = game.phase === 'wave' ? 'live' : (game.phase === 'won' ? 'done' : '');
   const threatText = bosses > 0
@@ -12116,17 +13264,21 @@ function renderBattleHud(force){
           : (game.wave % 5 === 0 ? '⚠️ 下一场是首领波' : '暂未发现高危单位');
   const threatClass = bosses > 0 ? 'danger' : (elites > 0 ? 'elite' : '');
 
-  // Stage 3 Wave Intel / Encounter Info (NO pre-wave spoilers for W25-W28 regular enemies!)
+  // Stage 3 & Stage 5 Wave Intel / Encounter Info (NO pre-wave spoilers for W25-W28 regular enemies!)
   const w20Intel = (game.wave === 19 || game.wave === 20) ? getW20BossIntel() : null;
+  const w30Intel = (game.wave >= 29 || game.finalPrep?.active) ? getW30BossIntel() : null;
+  const w30Battle = game.wave === MAIN_WAVES ? game.w30Battle : null;
   const encInfo = getWaveEncounterInfo(game.wave);
   const omen = getEndgameOmenState();
 
   const key = [
-    game.wave, game.phase, game.finalPrep?.active ? Math.ceil(game.finalPrep.timer) : 0,
+    game.wave, game.phase, game.finalPrep?.active ? `${game.finalPrep.awaitingWaveRewards?1:0}:${Math.ceil(game.finalPrep.timer)}` : 0,
     remaining, alive.length, queued, bosses, elites,
     Math.ceil(h.hp), h.maxHp, Math.ceil(h.shield), game.stats.kills,
     game.stats.elites, Math.floor(game.stats.dmgTotal / 50),
     w20Intel?.revealed ? w20Intel.auxKey : '',
+    w30Intel?.revealed ? w30Intel.auxKey : '',
+    w30Battle ? `${w30Battle.phase}:${Math.floor(w30Battle.elapsedSeconds || 0)}:${w30Battle.signatureLockActive ? 1 : 0}` : '',
     encInfo ? `${encInfo.type}:${encInfo.revealed}:${encInfo.id || encInfo.themeKey || ''}` : '',
     omen.triggered ? `${omen.midWaveTriggered}:${omen.clearTriggered}` : ''
   ].join('|');
@@ -12140,6 +13292,26 @@ function renderBattleHud(force){
         '<div class="bh-meta-line" style="color:#ffdce6"><b>核心：</b>' + w20Intel.coreName + '</div>' +
         '<div class="bh-meta-line" style="color:#ff9ec4"><b>辅助：</b>' + w20Intel.auxName + '</div>' +
         '<div class="bh-meta-line">' + w20Intel.auxDesc + '</div>' +
+      '</div>';
+  }
+  if (w30Intel?.revealed) {
+    const w30PhaseLabelMap = {
+      opening: '开场交锋 (100%→80%)',
+      signature_telegraph: '🛡️ 招牌锁血预警 (0扣血)',
+      signature_shockwave: '🛡️ 招牌锁血冲击波 (0扣血)',
+      mid_skirmish: '中段周旋 (80%→35%)',
+      final_combo: '🔥 末段组合 (35%→0%)',
+      ended: '已结束'
+    };
+    const w30LiveLine = w30Battle
+      ? '<div class="bh-meta-line" style="color:#ffe28a"><b>阶段：</b>' + (w30PhaseLabelMap[w30Battle.phase] || w30Battle.phase) + ' · <b>' + Number(w30Battle.elapsedSeconds || 0).toFixed(1) + 's</b></div>'
+      : '';
+    stage3IntelHtml +=
+      '<div class="lh-sec"><div class="lh-sec-t"><span>👑 W30 深渊主宰情报</span><span>' + (game.finalPrep?.active ? (game.finalPrep.awaitingWaveRewards ? '结清波末奖励' : `整备 ${Math.ceil(game.finalPrep.timer)}s`) : '已揭晓') + '</span></div>' +
+        '<div class="bh-meta-line" style="color:#ffdce6"><b>固定核心：</b>' + w30Intel.coreName + '</div>' +
+        '<div class="bh-meta-line" style="color:#ff9ec4"><b>本局辅助：</b>' + w30Intel.auxName + '</div>' +
+        '<div class="bh-meta-line">' + w30Intel.auxDesc + '</div>' +
+        w30LiveLine +
       '</div>';
   }
   if (encInfo && encInfo.type === 'w22_24_shared_threat') {
@@ -13229,6 +14401,7 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
       clearTriggered: true,
       label: om.clearTitle || '🌑 终局预兆已现'
     };
+    game.bossIntel.w30Revealed = true;
   }
 
   // Update active unlock node and shop tier bonus
@@ -13300,7 +14473,11 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
   // Stage 2: Initialize real independent Gear Instances according to build, wave, and tier
   // weak = 1-slot single affix (no synergy), standard = 2-slot Duo synergy, strong = 3-slot Complete Trio synergy!
   const srcStage = getSourceStageForWave(targetWave);
-  const enhanceLv = normTier === 'strong' ? Math.min(3, srcStage) : normTier === 'standard' ? Math.max(0, srcStage - 1) : 0;
+  const enhanceLv = normTier === 'strong'
+    ? (targetWave >= 21 ? 5 : Math.min(3, srcStage))
+    : normTier === 'standard'
+      ? Math.max(0, srcStage - 1)
+      : 0;
   const gearPool = normBuild === 'frost'
     ? ['frost_mirror', 'frost_orb', 'jade_pendant', 'seal_astrolabe']
     : ['flame_fan', 'burn_core', 'crit_axe', 'vamp_fang'];
@@ -13324,19 +14501,13 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
     }));
   }
 
-  // Initialize Perks for mid/late waves
+  // v0.60 uses W10/W20 breakthroughs, gear affixes & Stage 4 Destiny Exclusives (no legacy v0.52 tribulation perks)
   h.perks = {};
-  if (targetWave >= 11) {
-    const pLv = (targetWave >= 21 || normTier === 'strong') ? 2 : 1;
-    if (normBuild === 'frost') {
-      h.perks.frost_domain = pLv;
-      h.perks.frost_shatter = pLv;
-      if (targetWave >= 21) h.perks.zero_exec = pLv;
-    } else {
-      h.perks.fire_nova = pLv;
-      h.perks.dual_cataclysm = pLv;
-      if (targetWave >= 21) h.perks.crit_surge = pLv;
-    }
+  h.destinyEnhancements = {};
+  if (normTier === 'strong' && targetWave >= 21) {
+    h.destinyEnhancements = normBuild === 'frost'
+      ? { destiny_fate_breaker: true, destiny_frost_refraction: true }
+      : { destiny_fate_breaker: true, destiny_ember_echo: true };
   }
 
   // Initialize Gold, Materials, and Transfer Tokens budgets
@@ -13377,6 +14548,7 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
     transferTokens: game.transferTokens,
     w20State: { ...game.w20State },
     bossIntel: getW20BossIntel(),
+    w30BossIntel: getW30BossIntel(),
     hero: {
       lv: h.lv,
       hp: h.hp,
@@ -13399,7 +14571,7 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
       stage2_equipmentCraftingAndAffixes: 'Implemented in Stage 2 (independent gear instances, 1-3 slots, duo/trio synergies, shop pricing, sell/dismantle & material enhance)',
       stage3_w20FullBreakthroughAndW21Elites: 'Implemented in Stage 3 (W16-W19 preselect, W19 fair W20 Boss intel, W20 lock-in/voucher/paid full-group reroll, W21 showcase, W22-W24 shared-threat escalation, W25-W28 spoiler-free draws & W28 omen)',
       stage4_fateGambleAndTransfer: 'Implemented in Stage 4 (Destiny Gamble with free bet/empty tribulation/4x25% category weights/precious thresholds/8 exclusive enhancements/single-checkout idempotent safe claim, Affix Transfer Workbench with zero-side-effect preview & atomic commit, and W21-W29 endgame refinement economy)',
-      stage5_w29FinalPrepAndW30Boss: 'Pending Stage 5 (W29 full settlement edge cases & W30 signature phase lock)'
+      stage5_w29FinalPrepAndW30Boss: 'Implemented in Stage 5 (W29 compact & tougher escalation, W30 fair Boss intel, wave-reward gated real-time 90s final prep with full-boundary mutex lock & safe unequipped timeout claim, W30 Boss6 3-phase structure with 80% signature HP lock + decoupled hit/HP resolution & 3-5 min fixed-HP calibration)'
     }
   };
 }
@@ -13541,6 +14713,11 @@ function importBuildPreset(snapshot){
 
 /* ==================== MAIN LOOP ==================== */
 let lastTs = performance.now(), uiAccum = 0;
+function stepFrame(rawDt){
+  if (!game) return;
+  const steps = game.speed === 2 ? 2 : 1;
+  for (let i = 0; i < steps; i++) tick(rawDt);
+}
 function loop(ts){
   const rawDt = Math.min(0.05, (ts - lastTs) / 1000);
   lastTs = ts;
@@ -13552,8 +14729,7 @@ function loop(ts){
     perfStats.fpsTimer = 0;
   }
   if (game) {
-    const steps = game.speed === 2 ? 2 : 1;
-    for (let i = 0; i < steps; i++) tick(rawDt);
+    stepFrame(rawDt);
     render();
     uiAccum += rawDt;
     if (uiAccum >= 0.14) {
@@ -13572,7 +14748,7 @@ game.pendingModals.push({ type: 'starter' });
 requestAnimationFrame(loop);
 
 window.BG60 = {
-  version: '0.60.0-stage4',
+  version: '0.60.0-stage5',
   get game(){ return game; },
   get cam(){ return cam; },
   get perf(){ return { ...perfStats, enemies: game?.enemies.length || 0, projectiles: game?.projectiles.length || 0 }; },
@@ -13607,13 +14783,18 @@ window.BG60 = {
   openDestinyGambleModal, renderDestinyGambleModal,
   resolveGearLocation, getAffixTransferCost, validateAffixTransfer, previewAffixTransfer, cancelAffixTransferPreview, commitAffixTransfer,
   openAffixTransferModal, renderAffixTransferModal,
+  // Stage 5: W29 Real-Time Final Prep, Full-Boundary Transaction Lock, Shop Confirm Draft, W30 Boss Intel & 3-Phase Signature Lock
+  isFinalPrepActionLocked, hasPendingW29WaveRewards, getFinalPrepState, syncW29FinalPrepStart,
+  startW30Early, resolveW29FinalPrepTimeout,
+  openShopPurchaseConfirm, confirmShopPurchase, cancelShopPurchaseConfirm,
+  isW30BossIntelRevealed, getW30BossIntel, getW30BattleState, spawnHealOrb,
   applyFireMark, triggerFireDetonation, applyFrostSlow, triggerFrostPulse, gainFrostShield, getHeroMaxFrostShield,
   rollPerkChoices, pickPerk, refreshCombos, hasCombo, perkLv,
   getWavePhaseMeta, buildWaveQueue, pickChestGearChoices, getTelemetryReport,
-  tick, closeModal, openNextModal, queueModal,
+  tick, stepFrame, closeModal, openNextModal, queueModal,
   getSynergyCounts, getSealStats, getHeroStats, worldToScreen, screenToWorld,
   getGearSetCounts, getActiveGearSets, gearSetTier, getActiveDualResonances, hasDualRes, isEnemyUnstoppable, toggleLeftHud, toggleBattleHud,
-  BALANCE, UNLOCK_NODES, W10_SKILL_BRANCHES, W20_DIRECTIONS, W20_ENHANCEMENTS, W20_BOSS_AUX_POOL,
+  BALANCE, UNLOCK_NODES, W10_SKILL_BRANCHES, W20_DIRECTIONS, W20_ENHANCEMENTS, W20_BOSS_AUX_POOL, W30_BOSS_AUX_POOL,
   DESTINY_ENHANCEMENTS, DESTINY_SPECIAL_BOONS, DESTINY_PILLS,
   REALMS, SHRINE_WAVES, ARTIFACTS, SUB_SEAL_RESONANCE, SEAL_SPECIALIZATIONS,
   ELEMENTS, GEARS, GEAR_SETS, GEAR_AFFIXES, GEAR_SYNERGIES, SOURCE_STAGES, DUAL_RESONANCES, HERO_SKILLS, COMBOS, PERKS, PILLS, MAIN_WAVES, W, H, MAX_ENEMIES
