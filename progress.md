@@ -27,6 +27,10 @@
   - 迁出 20 个经济账本、定价、防套利回收、强化费用、背包容量与精修掉落函数至 `src/systems/economy/{ledger,pricing,index}.js`（`src/legacy/game.js` 降至 11,552 行）。
   - 新增 `tests/unit/economy-core.test.mjs`（12 项无 DOM 单测）。
   - 实测结果：`npm run build` PASS（479,652 B）；`npm run test:unit` 46/46 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.4（`src/systems/progression/unlock.js` + `src/systems/hero/stats.js` 解锁节点与属性计算）**：已完成并经主控独立审查与实测验收。
+  - 迁出 8 个解锁/境界/待决策函数与 13 个羁绊/套装/组合技/英雄与灵印属性计算函数（`src/legacy/game.js` 降至 11,255 行）。
+  - 新增 `tests/unit/hero-stats.test.mjs`（15 项无 DOM 单测，含 BUG-02 换装 0 免费回血回归）。
+  - 实测结果：`npm run build` PASS（480,948 B）；`npm run test:unit` 61/61 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 
