@@ -72,6 +72,10 @@
   - 迁出 3 个共享格式化函数与 22 个弹窗队列/渲染函数至 `src/ui/shared/formatters.js` 与 `src/ui/modals/{modal-manager,shop-confirm-modals,progression-modals,meta-modal,intro-end-modals,destiny-transfer-modals,index}.js`，`modalsSystem` 已直连 `runtimeCtx.ports.modals`（`src/legacy/game.js` 降至 2,325 行）。
   - 新增 `tests/unit/ui-formatters-modals.test.mjs`（5 项单测）。
   - 实测结果：`npm run build` PASS（516,200 B，80 模块）；`npm run test:unit` 286/286 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 4.3（`src/ui/hud/` 全部 HUD 面板与零闪烁协调器）**：已完成并经主控独立审查与实测验收（审查期间拦截并回退响应式折叠阈值至原版 980px 且保留原按钮属性，确保零行为差异）。
+  - 迁出 13 个 HUD 函数至 `src/ui/hud/{battle-hud,build-hud,dock-ui,inspector,hud-controller,index}.js`，统一封装 8 个脏检查键重置（`src/legacy/game.js` 降至 1,191 行）。
+  - 新增 `tests/unit/ui-hud.test.mjs`（6 项无浏览器单测）。
+  - 实测结果：`npm run build` PASS（519,987 B，86 模块）；`npm run test:unit` 292/292 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 
