@@ -13,7 +13,7 @@
 
 <header class="topbar" id="topbar">
   <div class="top-left">
-    <div class="brand">⚔️ 边境守卫 <span class="ver">v0.60 · 30波完整试玩版</span></div>
+    <div class="brand">⚔️ 边境守卫</div>
     <span class="pill wave-prep" id="wavePill">第 1 / 30 波 · 备战</span>
     <span class="pill gold" id="goldPill">💰 55</span>
     <span class="pill" id="matPill" title="普通材料（用于常规装备优化与W20突破强化重抽）">⚙️ 0 锻材</span>
@@ -38,7 +38,7 @@
 
 <section class="subbar" id="subbar">
   <div class="syn-strip" id="sealStrip"></div>
-  <div class="sub-actions">
+  <div class="sub-actions" id="secondaryActions">
     <div class="skill-strip" id="skillStrip" title="已学领主神通（点击展开属性与伤害构成）"></div>
     <button class="btn gold" id="w20PrepBtn" type="button" hidden title="W16-W20 预选第二次突破方向与查看 W19 首领情报">⚡ W20 方向预选</button>
     <button class="btn gold" id="destinyBtn" type="button" title="天命赌局：自由押注金币抽取灵印/构装/丹药/天命专属强化与转印符（备战期可用）">🎲 天命赌局</button>
@@ -53,7 +53,7 @@
 <div class="hp-vignette" id="hpVignette"></div>
 <div class="trib-flash" id="tribFlash"></div>
 
-<aside class="battle-hud" id="battleHud">
+<aside class="battle-hud" id="battleHud" hidden>
   <div class="lh-head" id="battleHudHead" title="战场状态、敌潮威胁与本局战绩">
     <span>⚔️ 战场情报</span>
     <button class="btn" id="battleHudToggle" type="button" style="padding:2px 7px;font-size:10.5px">折叠</button>
@@ -68,6 +68,8 @@
   </div>
   <div class="lh-body" id="leftHudBody"></div>
 </aside>
+
+<aside class="progress-hud" id="progressHud"><div class="lh-head"><span>构筑进度</span><button class="btn" id="progressToggle" type="button">折叠</button></div><div class="lh-body" id="progressHudBody"></div></aside>
 
 <aside class="inspector" id="inspector" hidden>
   <div class="insp-head">
@@ -103,20 +105,28 @@
       </button>
     </div>
     <div class="dock-div"></div>
-    <div class="dock-gold" id="dockGold"><span class="lbl">💰 金币</span><b id="dockGoldNum">55</b></div>
-    <div class="dock-sec" id="shopSec"></div>
-    <button class="act-btn" id="rerollBtn" type="button">
-      <span class="k">Q</span><span class="ic">🎲</span><span class="nm">刷新商店</span><span class="sb" id="rerollCost">5 金币</span>
-    </button>
-    <div class="dock-div"></div>
-    <div class="bag-tray" id="bagTray"></div>
-    <div class="dock-div"></div>
+    <button class="act-btn ui-launch" id="bagOpen" type="button"><span class="ic">🎒</span><span class="nm">背包</span><span class="sb" id="bagCount">0/12</span></button>
+    <button class="act-btn ui-launch" id="shopOpen" type="button"><span class="ic">🏪</span><span class="nm">商店</span></button>
+    <button class="act-btn ui-launch" id="intelOpen" type="button"><span class="ic">📊</span><span class="nm">情报</span></button>
+    <button class="act-btn ui-launch" id="toolsOpen" type="button"><span class="ic">⚙️</span><span class="nm">功能</span></button>
     <button class="act-btn primary" id="waveBtn" type="button">
       <span class="k">Enter</span><span class="ic">⚔️</span><span class="nm" id="waveBtnNm">开始第 1 波</span><span class="sb" id="waveBtnSb">备战中</span>
     </button>
   </div>
 </div>
 
+<div class="ui-panel-backdrop" id="uiPanelBackdrop" hidden>
+  <section class="ui-panel" role="dialog" aria-modal="true" aria-labelledby="uiPanelTitle">
+    <header><h2 id="uiPanelTitle">背包</h2><button class="btn" id="uiPanelClose" type="button" aria-label="关闭">关闭 ×</button></header>
+    <section id="uiBagPanel" hidden><div class="bag-tray" id="bagTray"></div><div id="bagSelection" class="bag-selection" hidden></div><p class="ui-hint">悬停查看完整信息，点击选择后操作。</p></section>
+    <section id="uiShopPanel" hidden><div class="ui-shop-head"><div class="dock-gold" id="dockGold"><span class="lbl">💰 金币</span><b id="dockGoldNum">55</b></div><button class="act-btn" id="rerollBtn" type="button">
+      <span class="k">Q</span><span class="ic">🎲</span><span class="nm">刷新商店</span><span class="sb" id="rerollCost">5 金币</span>
+    </button></div><div class="dock-sec" id="shopSec"></div><p class="ui-hint">悬停查看商品效果与联动，点击购买。</p></section>
+    <section id="uiIntelPanel" hidden></section>
+    <section id="uiToolsPanel" hidden></section>
+  </section>
+</div>
+<div id="uiDetailTooltip" role="tooltip" hidden></div>
 <div class="modal-backdrop" id="modalBackdrop" hidden>
   <div class="modal" id="modalBox"></div>
 </div>

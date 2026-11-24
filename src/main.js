@@ -6,6 +6,7 @@ import './ui/styles/dock.css';
 import './ui/styles/feedback.css';
 import './ui/styles/modals.css';
 import './ui/styles/meta.css';
+import './ui/styles/compact-ui.css';
 import { bootBrowserGame } from './app/bootstrap.js';
 
 bootBrowserGame();

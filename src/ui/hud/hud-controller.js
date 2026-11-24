@@ -10,7 +10,7 @@ export function createHudController(runtimeCtx, deps) {
   function syncOffsets(){
     const topH = $('topbar').getBoundingClientRect().height || 52;
     document.documentElement.style.setProperty('--top-h', `${Math.ceil(topH)}px`);
-    const subB = $('subbar').getBoundingClientRect().bottom || (topH + 44);
+    const subB = $('subbar').getBoundingClientRect().bottom || topH;
     document.documentElement.style.setProperty('--sub-bottom', `${Math.ceil(subB)}px`);
   }
 
@@ -22,6 +22,10 @@ export function createHudController(runtimeCtx, deps) {
     const { isW20PreselectOpen, getPendingDestinyOffer } = progression;
     const { getRealmStageLabel, hasPendingDecision } = unlock;
     const h = game.hero;
+    const overlay = $('uiPanelBackdrop');
+    if (overlay && !overlay.hidden && overlay.dataset?.phase && (overlay.dataset.phase !== game.phase || overlay.dataset.wave !== String(game.wave) || game.activeModal)) {
+      overlay.dispatchEvent(new Event('bg-close-panel'));
+    }
     const isWave = game.phase === 'wave' || game.phase === 'harvest';
     const meta = getWavePhaseMeta(game.wave);
 
@@ -33,7 +37,8 @@ export function createHudController(runtimeCtx, deps) {
         : (game.finalPrep?.active
           ? (game.finalPrep.awaitingWaveRewards ? '波末奖励结清中' : `终局整备 ${Math.ceil(game.finalPrep.timer)}s`)
           : '备战');
-    wp.textContent = `第 ${game.wave}/${MAIN_WAVES} 波 [${meta.tag}] · ${pTxt}`;
+    wp.textContent = `第 ${game.wave}/${MAIN_WAVES} 波 · ${pTxt}`;
+    wp.title = meta.tag;
     wp.className = 'pill ' + (isWave ? 'wave-live' : 'wave-prep');
 
     const goldTxt = `💰 ${game.gold}`;
@@ -179,6 +184,9 @@ export function createHudController(runtimeCtx, deps) {
     const build = $('leftHud'), battle = $('battleHud');
     if (build) build.classList.toggle('collapsed', compact);
     if (battle) battle.classList.toggle('collapsed', compact);
+    $('progressHud')?.classList.toggle('collapsed', compact);
+    const progressBtn = $('progressToggle');
+    if (progressBtn) progressBtn.textContent = compact ? '展开' : '折叠';
     const buildBtn = $('leftHudToggle'), battleBtn = $('battleHudToggle');
     if (buildBtn) buildBtn.textContent = compact ? '展开 [Tab]' : '折叠 [Tab]';
     if (battleBtn) battleBtn.textContent = compact ? '展开' : '折叠';

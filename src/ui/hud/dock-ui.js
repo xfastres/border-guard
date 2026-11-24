@@ -15,6 +15,7 @@ export function createDockUI(runtimeCtx, deps) {
   } = deps.equipment;
   let lastArtKey = '', lastSkillKey = '', lastShopKey = '', lastBagKey = '';
   let shopCardNodes = null;
+  let selectedBagUid = null;
 
   function renderSealStrip(force){
     const game = runtimeCtx.game;
@@ -229,12 +230,16 @@ export function createDockUI(runtimeCtx, deps) {
 
   function renderBag(force){
     const game = runtimeCtx.game;
+    const count = $('bagCount');
+    if (count) count.textContent = `${game.bag.length}/12`;
     const key = gearListSig(game.bag) + '|' + game.hero.gear.length;
     if (!force && key === lastBagKey) return;
     lastBagKey = key;
 
     const tray = $('bagTray');
     tray.replaceChildren();
+    if (!game.bag.some(g => g?.uid === selectedBagUid)) selectedBagUid = null;
+    renderBagSelection();
     if (!game.bag.length) {
       const sp = document.createElement('div');
       sp.className = 'bag-empty';
@@ -249,9 +254,9 @@ export function createDockUI(runtimeCtx, deps) {
         btn.className = 'bag-item ' + (inst.rarity || 'rare');
         btn.dataset.bagIdx = String(idx);
         btn.dataset.uid = inst.uid;
-        btn.title = `未装备灵印【${inst.name} ${inst.star}★】（安全收纳，不覆盖主灵印）\n左键尝试吸收 · 右键出售换金 · Shift+右键拆解换锻材`;
+        btn.title = `未装备灵印【${inst.name} ${inst.star}★】（安全收纳，不覆盖主灵印）\n点击选择 · 右键出售换金 · Shift+右键拆解换锻材`;
         btn.innerHTML = `<span class="ic">${inst.icon || '✨'}</span><span class="nm">${inst.name}</span><span class="star-tag">${inst.star}★</span><span class="slot-tag">灵印</span>`;
-        btn.addEventListener('click', () => equipGearFromBag(idx));
+        btn.addEventListener('click', () => { selectedBagUid = game.bag[idx]?.uid; renderBagSelection(); });
         btn.addEventListener('contextmenu', ev => {
           ev.preventDefault();
           if (ev.shiftKey) dismantleBagGear(idx);
@@ -268,9 +273,9 @@ export function createDockUI(runtimeCtx, deps) {
       btn.className = 'bag-item ' + g.rarity;
       btn.dataset.bagIdx = String(idx);
       btn.dataset.uid = g.uid;
-      btn.title = `${describeGearInstance(g)}\n左键穿戴 · 右键出售(+${sellGold}金) · Shift+右键拆解(+${disMats}锻材)`;
+      btn.title = `${g.name}\n${describeGearInstance(g)}\n${(g.affixes||[]).filter(Boolean).map(a=>GEAR_AFFIXES[a.id]?.desc(a.tier||1)||'').join('\n')}\n点击选择 · 右键出售(+${sellGold}金) · Shift+右键拆解(+${disMats}锻材)`;
       btn.innerHTML = `<span class="ic">${g.icon}</span><span class="nm">${g.name}</span>${g.enhanceLv > 0 ? `<span class="star-tag">+${g.enhanceLv}</span>` : ''}<span class="slot-tag">${g.slotsCount}槽</span>`;
-      btn.addEventListener('click', () => equipGearFromBag(idx));
+      btn.addEventListener('click', () => { selectedBagUid = game.bag[idx]?.uid; renderBagSelection(); });
       btn.addEventListener('contextmenu', ev => {
         ev.preventDefault();
         if (ev.shiftKey) dismantleBagGear(idx);
@@ -280,8 +285,29 @@ export function createDockUI(runtimeCtx, deps) {
     });
   }
 
+  function renderBagSelection(){
+    const panel = $('bagSelection');
+    if (!panel) return;
+    const game = runtimeCtx.game, idx = game.bag.findIndex(g => g?.uid === selectedBagUid);
+    panel.hidden = idx < 0;
+    panel.replaceChildren();
+    if (idx < 0) return;
+    const inst = game.bag[idx], isSeal = isBagSeal(inst);
+    const h = document.createElement('b');
+    h.textContent = inst.name || '构装';
+    const text = document.createElement('p');
+    text.textContent = isSeal ? ARTIFACTS[inst.kind]?.desc || '未装备灵印' : [describeGearInstance(inst),...(inst.affixes||[]).filter(Boolean).map(a=>GEAR_AFFIXES[a.id]?.desc(a.tier||1)||'')].join('\n');
+    panel.append(h,text);
+    for (const [label,action] of [[isSeal?'吸收':'穿戴',equipGearFromBag],['出售 +'+getGearSellGold(inst)+'金',sellBagGear],['拆解 +'+getGearDismantleMaterials(inst)+'锻材',dismantleBagGear]]) {
+      const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent=label;
+      btn.addEventListener('click',()=>{const current=runtimeCtx.game.bag.findIndex(g=>g?.uid===selectedBagUid);if(current>=0) action(current);});
+      panel.append(btn);
+    }
+  }
+
   function resetDirty() {
     lastArtKey = lastSkillKey = lastShopKey = lastBagKey = '';
+    selectedBagUid = null;
   }
 
   return { renderSealStrip, renderSkillStrip, renderShop, renderBag, resetDirty };

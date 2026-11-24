@@ -1,5 +1,6 @@
 import { clamp } from '../../core/math.js';
 import { H, W } from '../../data/index.js';
+import { bindCompactPanels } from './compact-panels.js';
 
 export function createInputController(runtimeCtx, deps) {
   const keys = new Set();
@@ -42,7 +43,10 @@ export function createInputController(runtimeCtx, deps) {
     const { hasPendingDecision } = deps.unlock;
     const { isW20PreselectOpen } = deps.w20;
 
+    const panels = bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clearInput: () => { keys.clear(); pointerDown = false; } });
+
     canvas.addEventListener('pointerdown', e => {
+      if (panels.isOpen()) return;
       if (e.button !== 0) return;
       audio.unlock();
       pointerScreen = { x: e.clientX, y: e.clientY };
@@ -52,10 +56,13 @@ export function createInputController(runtimeCtx, deps) {
       handleCanvasClick(w.x, w.y);
     });
     win.addEventListener('pointermove', e => {
+      if (e.target !== canvas || panels.isOpen()) { pointerDown = false; return; }
       pointerScreen = { x: e.clientX, y: e.clientY };
       pointerWorld = screenToWorld(e.clientX, e.clientY);
     });
     win.addEventListener('pointerup', () => { pointerDown = false; });
+    win.addEventListener('pointercancel', () => { pointerDown = false; });
+    win.addEventListener('blur', () => { pointerDown = false; keys.clear(); });
     canvas.addEventListener('contextmenu', e => {
       const game = runtimeCtx.game;
       if (game?.inspTarget) { e.preventDefault(); game.inspTarget = null; renderAllUI(); }
@@ -65,6 +72,11 @@ export function createInputController(runtimeCtx, deps) {
       const game = runtimeCtx.game;
       if (!game) return;
       const k = e.key.toLowerCase();
+      if (!game.activeModal && panels.isOpen()) {
+        if (k === 'escape') { e.preventDefault(); panels.close(); }
+        return;
+      }
+      if (e.target?.closest?.('button') && (k === ' ' || k === 'enter')) return;
       keys.add(k);
       if (k === 'escape') {
         if (game.activeModal?.type === 'affix_transfer') { cancelAffixTransferPreview(); closeModal(); renderAllUI(); return; }
@@ -100,7 +112,7 @@ export function createInputController(runtimeCtx, deps) {
     });
     $('soundBtn').addEventListener('click', () => { audio.enabled = !audio.enabled; renderAllUI(); });
     $('helpBtn').addEventListener('click', showIntroModal);
-    $('resetBtn').addEventListener('click', () => startNewRun());
+    $('resetBtn').addEventListener('click', () => { panels.close(); startNewRun(); });
     $('dashBtn').addEventListener('click', castHeroDash);
     $('ultBtn').addEventListener('click', castHeroOverdrive);
     $('rerollBtn').addEventListener('click', () => rollShop(false));
