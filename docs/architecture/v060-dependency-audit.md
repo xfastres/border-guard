@@ -54,6 +54,22 @@
 
 合计：314 个顶层函数。部分区块需要按职责再拆分，不能直接整段搬入单一目标文件。
 
+### 2.1 静态数据常量的首批归属建议
+
+以下名称来自原版顶层声明扫描。它们是下一轮拆分候选，不代表已搬迁。实际迁移前还要检查常量之间的引用，避免产生循环 import。
+
+| 目标文件 | 现有常量 |
+|---|---|
+| `src/data/core-constants.js` | `W`、`MAIN_WAVES`、`MAX_ENEMIES`、`MAX_PROJECTILES`、`MAX_FLOATS`、`MAX_RINGS`、`HERO_GEAR_SLOTS`、`SHRINE_WAVES` |
+| `src/data/seal-data.js` | `ELEMENTS`、`UNLOCK_NODES`、`REALMS`、`SEAL_TIER_NAMES`、`SEAL_FUSE_NEED`、`ARTIFACTS`、`ARTIFACT_KEYS`、`SUB_SEAL_RESONANCE`、`SEAL_SPECIALIZATIONS` |
+| `src/data/hero-data.js` | `COMBOS`、`COMBO_LIST`、`PERKS`、`PERK_LIST`、`PILLS`、`PILL_KEYS`、`HERO_SKILLS` |
+| `src/data/equipment-data.js` | `GEAR_SETS`、`DUAL_RESONANCES`、`GEARS`、`GEAR_KEYS`、`BASE_GEAR_KEYS`、`GEAR_RARITY_LABELS`、`GEAR_RARITY_COLORS`、`GEAR_SALVAGE_GOLD`、`SOURCE_STAGES`、`GEAR_MAX_STAR`、`GEAR_STAR_MULT`、`GEAR_AFFIXES`、`GEAR_AFFIX_KEYS`、`BASE_AFFIX_KEYS`、`GEAR_SYNERGIES` |
+| `src/data/progression-data.js` | `W10_SKILL_BRANCHES`、`ELITE_AFFIXES`、`W20_BOSS_AUX_POOL`、`W30_BOSS_AUX_POOL`、`W20_DIRECTIONS`、`W20_DIRECTION_KEYS`、`W20_ENHANCEMENTS`、`DESTINY_ENHANCEMENTS`、`DESTINY_ENHANCEMENT_KEYS`、`DESTINY_SPECIAL_BOONS`、`DESTINY_SPECIAL_BOON_KEYS`、`DESTINY_PILLS` |
+| `src/data/enemy-data.js` | `ENEMY_SPECS` |
+| `src/data/balance.js` | 从 `balance/v060-baseline.json` 直接 import `BALANCE`；不要再维护第二份手写数值源 |
+
+`AudioKit` 是音频服务，不属于静态数据；`META_SAVE_MIGRATORS` 是存档迁移逻辑，不属于游戏数据；`RESOURCE_LEDGER_MAX` 是运行时系统常量，归属待在资源账本模块确定。
+
 ## 3. 共享状态与副作用
 
 ### 3.1 运行时状态
