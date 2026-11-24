@@ -15,6 +15,10 @@
   - `src/data/balance.js` 补充 `with { type: 'json' }` 支持 Node 直接导入单测；`src/legacy/game.js` 接入 `runtimeCtx` 桥接（13,031 → 12,998 行）。
   - 新增 `tests/unit/runtime-context.test.mjs`（11 项无 DOM 单测）。
   - 实测结果：`npm run build` PASS（474,626 B）；`npm run test:unit` 14/14 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.1（`src/systems/meta/` 局外传承与版本化持久化）**：已完成并经主控独立审查与实测验收。
+  - 迁出 36 个 Meta 业务函数与 `META_SAVE_MIGRATORS` 至 `src/systems/meta/{config,persistence,loadout,rewards,index}.js`（单向 DAG，零 DOM/浏览器全局标识符，`src/legacy/game.js` 降至 12,138 行）。
+  - 对齐 `runtime-context.js` 的 `meta.storageStatus` 契约与弹窗端口，新增 `tests/unit/meta.test.mjs`（8 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（477,119 B）；`npm run test:unit` 22/22 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 

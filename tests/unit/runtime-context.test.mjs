@@ -58,16 +58,14 @@ test('runtime context owns independent default state and counters', () => {
     runIdSeq: 1,
     save: null,
     storageStatus: {
-      mode: 'unknown',
-      lastLoadState: 'init',
-      lastSaveOk: true,
-      lastError: null,
-      pendingSave: false,
-      hasCorruptedRaw: false,
-      corruptedRawSnapshot: null,
-      migratedFromVersion: null,
-      lastMigratedAt: null,
-      schemaVersion: 1,
+      state: 'ok',
+      loadError: null,
+      foundVersion: null,
+      supportedVersion: 1,
+      saveFailed: false,
+      lastSaveError: null,
+      rawCorruptedBackup: null,
+      pendingUnsavedSettlement: null,
     },
   });
   assert.deepEqual(context.counters, {
@@ -80,11 +78,11 @@ test('runtime context owns independent default state and counters', () => {
 
   const other = createRuntimeContext();
   context.meta.memoryStore.set('save', 'stored');
-  context.meta.storageStatus.pendingSave = true;
+  context.meta.storageStatus.saveFailed = true;
   context.terrainProps.push({ x: 1 });
   context.counters.gearUidSeq++;
   assert.equal(other.meta.memoryStore.size, 0);
-  assert.equal(other.meta.storageStatus.pendingSave, false);
+  assert.equal(other.meta.storageStatus.saveFailed, false);
   assert.deepEqual(other.terrainProps, []);
   assert.equal(other.counters.gearUidSeq, 1);
 });
@@ -103,11 +101,11 @@ test('default ports can run without a browser', () => {
   assert.equal(ports.ui.setDangerVignette(true), undefined);
   assert.equal(ports.ui.setPaused(true), false);
   for (const method of [
-    'queueModal', 'closeModal', 'openNextModal', 'showEndModal', 'openW20PreselectModal',
+    'queueModal', 'closeModal', 'openNextModal', 'showEndModal', 'showIntroModal', 'openW20PreselectModal',
     'openDestinyGambleModal', 'openAffixTransferModal', 'openMetaLegacyModal',
     'renderW10BreakthroughModal', 'renderW20PreselectModal', 'renderW20BreakthroughModal',
     'renderDestinyGambleModal', 'renderAffixTransferModal', 'renderShopConfirmModal',
-    'renderW30EarlyConfirmModal',
+    'renderW30EarlyConfirmModal', 'renderMetaLegacyModal',
   ]) {
     assert.equal(ports.modals[method](), undefined, method);
   }
