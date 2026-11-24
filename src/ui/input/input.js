@@ -76,7 +76,7 @@ export function createInputController(runtimeCtx, deps) {
         if (k === 'escape') { e.preventDefault(); panels.close(); }
         return;
       }
-      if (e.target?.closest?.('button') && (k === ' ' || k === 'enter')) return;
+      if (e.target?.closest?.('button') && !game.activeModal && (k === ' ' || k === 'enter')) { e.preventDefault(); e.target.blur?.(); }
       keys.add(k);
       if (k === 'escape') {
         if (game.activeModal?.type === 'affix_transfer') { cancelAffixTransferPreview(); closeModal(); renderAllUI(); return; }

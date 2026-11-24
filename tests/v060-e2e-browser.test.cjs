@@ -290,6 +290,7 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     assert.ok(w1ShopInfo.idx >= 0, 'W1 shop must contain an affordable gear or pill card');
 
     // Real click on normal-wave shop button -> buys directly, NO confirmation modal!
+    if (await cdp.eval("document.getElementById('uiPanelBackdrop').hidden")) await cdp.clickSelector('#shopOpen');
     await cdp.clickSelector(`#shopSec .shop-card[data-shop-idx="${w1ShopInfo.idx}"]`);
     const afterDirectBuy = await cdp.eval(`({
       modal: window.BG60.game.activeModal,
@@ -313,6 +314,7 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
       return { cap, gearIdx, goldBefore: window.BG60.game.gold, bagLen: window.BG60.game.bag.length };
     })()`);
     assert.ok(fullBagShop.gearIdx >= 0);
+    if (await cdp.eval("document.getElementById('uiPanelBackdrop').hidden")) await cdp.clickSelector('#shopOpen');
     await cdp.clickSelector(`#shopSec .shop-card[data-shop-idx="${fullBagShop.gearIdx}"]`);
     const afterFullBagClick = await cdp.eval(`({
       bagLen: window.BG60.game.bag.length,
@@ -346,6 +348,7 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     assert.ok(w29ShopSetup.idxA >= 0);
 
     // Real click shop card in W29 -> opens confirmation modal (#shopConfirmBuyBtn / #shopConfirmCancelBtn), 0 gold deducted yet!
+    if (await cdp.eval("document.getElementById('uiPanelBackdrop').hidden")) await cdp.clickSelector('#shopOpen');
     await cdp.clickSelector(`#shopSec .shop-card[data-shop-idx="${w29ShopSetup.idxA}"]`);
     await cdp.waitFor('Boolean(document.getElementById("shopConfirmBuyBtn") && document.getElementById("shopConfirmCancelBtn"))', { label: 'W29 shop confirm buttons' });
     const midConfirm = await cdp.eval('({ gold: window.BG60.game.gold, draft: !!window.BG60.game.shopConfirmDraft, modal: window.BG60.game.activeModal?.type })');
@@ -367,6 +370,7 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     assert.equal(afterCancel.bought, false);
 
     // Real click shop card again -> real click #shopConfirmBuyBtn -> purchase succeeds!
+    if (await cdp.eval("document.getElementById('uiPanelBackdrop').hidden")) await cdp.clickSelector('#shopOpen');
     await cdp.clickSelector(`#shopSec .shop-card[data-shop-idx="${w29ShopSetup.idxA}"]`);
     await cdp.waitFor('Boolean(document.getElementById("shopConfirmBuyBtn"))', { label: 'W29 shop confirm buy btn' });
     await cdp.clickSelector('#shopConfirmBuyBtn');
@@ -390,6 +394,7 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
       return { idxB, goldBefore: window.BG60.game.gold };
     })()`);
     assert.ok(w29Second.idxB >= 0, 'Must have a second affordable W29 shop item');
+    if (await cdp.eval("document.getElementById('uiPanelBackdrop').hidden")) await cdp.clickSelector('#shopOpen');
     await cdp.clickSelector(`#shopSec .shop-card[data-shop-idx="${w29Second.idxB}"]`);
     await cdp.waitFor('Boolean(document.getElementById("shopConfirmBuyBtn"))', { label: 'second W29 confirm modal' });
 

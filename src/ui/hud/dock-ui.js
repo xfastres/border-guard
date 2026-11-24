@@ -1,6 +1,7 @@
 import { getSourceStageSpec } from '../../core/state-queries.js';
+import { getBagCapacity } from '../../systems/economy/pricing.js';
 import {
-  ARTIFACTS, DUAL_RESONANCES, ELEMENTS, GEAR_AFFIXES, GEAR_RARITY_LABELS, HERO_SKILLS,
+  ARTIFACTS, DUAL_RESONANCES, ELEMENTS, GEAR_AFFIXES, GEAR_RARITY_LABELS, HERO_SKILLS, GEARS, GEAR_SETS,
   PILLS, SEAL_FUSE_NEED, SUB_SEAL_RESONANCE, W10_SKILL_BRANCHES,
 } from '../../data/index.js';
 import { gearListSig } from './build-hud.js';
@@ -113,7 +114,7 @@ export function createDockUI(runtimeCtx, deps) {
     const sealSig = game.seal ? `${game.seal.kind}:${game.seal.star}:${game.seal.prog}:${game.seal.route || ''}` : 'none';
     const subSig = game.subSeals.map(x => `${x.kind}:${x.star}:${x.prog}`).join(',');
     const inW29TimedPrep = !!(game.finalPrep?.active && game.finalPrep?.started);
-    const key = `${sealSig}:${cap}:${subCap}:${subSig}:${game.wave}:${inW29TimedPrep ? 1 : 0}|` + game.shop.map(s=>`${s.uid}:${s.itemType}:${s.bought?1:0}:${s.cost}:${s.star||0}:${s.pillKey||''}:${s.gear?.uid||''}:${game.gold>=s.cost?1:0}`).join('|');
+    const key = `${sealSig}:${cap}:${subCap}:${subSig}:${gearListSig(game.hero.gear)}:${game.wave}:${inW29TimedPrep ? 1 : 0}|` + game.shop.map(s=>`${s.uid}:${s.itemType}:${s.bought?1:0}:${s.cost}:${s.star||0}:${s.pillKey||''}:${s.gear?.uid||''}:${game.gold>=s.cost?1:0}`).join('|');
     if (!force && key === lastShopKey) return;
     lastShopKey = key;
 
@@ -168,7 +169,12 @@ export function createDockUI(runtimeCtx, deps) {
         const g = item.gear;
         const el = ELEMENTS[g.elem] || { icon: '🧩', name: '无', color: '#8ad8ce' };
         const stSpec = getSourceStageSpec(g.sourceStage);
-        const synHints = getGearSynergyHints(g);
+        const synHints = [...getGearSynergyHints(g)];
+        const set = GEAR_SETS[GEARS[g.baseKey]?.set];
+        if (set) {
+          const n = deps.hero.getGearSetCounts()[set.key] || 0;
+          if (n > 0 && n < 3) synHints.push(`${set.name} ${n}/3 · 装备后若不替换同套装备可推进至 ${n+1}/3`);
+        }
         const itemSyns = evaluateItemSynergies(g);
         const afLines = (g.affixes || []).filter(Boolean).map(a => {
           const sp = GEAR_AFFIXES[a.id];
@@ -231,7 +237,7 @@ export function createDockUI(runtimeCtx, deps) {
   function renderBag(force){
     const game = runtimeCtx.game;
     const count = $('bagCount');
-    if (count) count.textContent = `${game.bag.length}/12`;
+    if (count) count.textContent = `${game.bag.length}/${getBagCapacity()}`;
     const key = gearListSig(game.bag) + '|' + game.hero.gear.length;
     if (!force && key === lastBagKey) return;
     lastBagKey = key;
@@ -273,7 +279,7 @@ export function createDockUI(runtimeCtx, deps) {
       btn.className = 'bag-item ' + g.rarity;
       btn.dataset.bagIdx = String(idx);
       btn.dataset.uid = g.uid;
-      btn.title = `${g.name}\n${describeGearInstance(g)}\n${(g.affixes||[]).filter(Boolean).map(a=>GEAR_AFFIXES[a.id]?.desc(a.tier||1)||'').join('\n')}\n点击选择 · 右键出售(+${sellGold}金) · Shift+右键拆解(+${disMats}锻材)`;
+      btn.title = `${g.name}\n${describeGearInstance(g)}\n${(g.affixes||[]).filter(Boolean).map(a=>GEAR_AFFIXES[a.id] ? GEAR_AFFIXES[a.id].name+'：'+GEAR_AFFIXES[a.id].desc(a.tier||1) : '').join('\n')}\n点击选择 · 右键出售(+${sellGold}金) · Shift+右键拆解(+${disMats}锻材)`;
       btn.innerHTML = `<span class="ic">${g.icon}</span><span class="nm">${g.name}</span>${g.enhanceLv > 0 ? `<span class="star-tag">+${g.enhanceLv}</span>` : ''}<span class="slot-tag">${g.slotsCount}槽</span>`;
       btn.addEventListener('click', () => { selectedBagUid = game.bag[idx]?.uid; renderBagSelection(); });
       btn.addEventListener('contextmenu', ev => {
@@ -296,9 +302,12 @@ export function createDockUI(runtimeCtx, deps) {
     const h = document.createElement('b');
     h.textContent = inst.name || '构装';
     const text = document.createElement('p');
-    text.textContent = isSeal ? ARTIFACTS[inst.kind]?.desc || '未装备灵印' : [describeGearInstance(inst),...(inst.affixes||[]).filter(Boolean).map(a=>GEAR_AFFIXES[a.id]?.desc(a.tier||1)||'')].join('\n');
+    text.textContent = isSeal ? ARTIFACTS[inst.kind]?.desc || '未装备灵印' : [describeGearInstance(inst),...(inst.affixes||[]).filter(Boolean).map(a=>GEAR_AFFIXES[a.id] ? GEAR_AFFIXES[a.id].name+'：'+GEAR_AFFIXES[a.id].desc(a.tier||1) : '')].join('\n');
     panel.append(h,text);
-    for (const [label,action] of [[isSeal?'吸收':'穿戴',equipGearFromBag],['出售 +'+getGearSellGold(inst)+'金',sellBagGear],['拆解 +'+getGearDismantleMaterials(inst)+'锻材',dismantleBagGear]]) {
+    // Seal recycle values differ from equipment; let the authoritative action report the yield.
+    const sellLabel = isSeal ? '出售灵印' : '出售 +'+getGearSellGold(inst)+'金';
+    const dismantleLabel = isSeal ? '拆解灵印' : '拆解 +'+getGearDismantleMaterials(inst)+'锻材';
+    for (const [label,action] of [[isSeal?'吸收':'穿戴',equipGearFromBag],[sellLabel,sellBagGear],[dismantleLabel,dismantleBagGear]]) {
       const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent=label;
       btn.addEventListener('click',()=>{const current=runtimeCtx.game.bag.findIndex(g=>g?.uid===selectedBagUid);if(current>=0) action(current);});
       panel.append(btn);

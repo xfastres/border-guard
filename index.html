@@ -28,6 +28,7 @@
     <span class="pill fps" id="fpsPill">60 FPS</span>
   </div>
   <div class="top-right">
+    <button class="btn gold" id="w20PrepBtn" type="button" hidden title="W16-W20 预选第二次突破方向与查看 W19 首领情报">⚡ W20 方向预选</button>
     <button class="btn" id="speedBtn" type="button">1×</button>
     <button class="btn" id="pauseBtn" type="button">暂停</button>
     <button class="btn" id="soundBtn" type="button" title="音效开关">🔊</button>
@@ -40,7 +41,6 @@
   <div class="syn-strip" id="sealStrip"></div>
   <div class="sub-actions" id="secondaryActions">
     <div class="skill-strip" id="skillStrip" title="已学领主神通（点击展开属性与伤害构成）"></div>
-    <button class="btn gold" id="w20PrepBtn" type="button" hidden title="W16-W20 预选第二次突破方向与查看 W19 首领情报">⚡ W20 方向预选</button>
     <button class="btn gold" id="destinyBtn" type="button" title="天命赌局：自由押注金币抽取灵印/构装/丹药/天命专属强化与转印符（备战期可用）">🎲 天命赌局</button>
     <button class="btn" id="transferBtn" type="button" title="词条转移台：消耗天命转印符与金币，在已穿戴与背包装备间转移词条（备战期可用）">✨ 词条转移台</button>
     <button class="btn" id="metaLegacyBtn" type="button" title="局外传承配置与解锁（开局前与结算可调整；局内只读展示并锁定配置）">💠 局外传承</button>
@@ -108,7 +108,7 @@
     <button class="act-btn ui-launch" id="bagOpen" type="button"><span class="ic">🎒</span><span class="nm">背包</span><span class="sb" id="bagCount">0/12</span></button>
     <button class="act-btn ui-launch" id="shopOpen" type="button"><span class="ic">🏪</span><span class="nm">商店</span></button>
     <button class="act-btn ui-launch" id="intelOpen" type="button"><span class="ic">📊</span><span class="nm">情报</span></button>
-    <button class="act-btn ui-launch" id="toolsOpen" type="button"><span class="ic">⚙️</span><span class="nm">功能</span></button>
+    <button class="act-btn ui-launch" id="toolsOpen" type="button"><span class="ic">⚙️</span><span class="nm">功能</span><span class="sb" id="toolsNotice" hidden>待领取</span></button>
     <button class="act-btn primary" id="waveBtn" type="button">
       <span class="k">Enter</span><span class="ic">⚔️</span><span class="nm" id="waveBtnNm">开始第 1 波</span><span class="sb" id="waveBtnSb">备战中</span>
     </button>

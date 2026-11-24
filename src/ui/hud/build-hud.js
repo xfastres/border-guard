@@ -35,8 +35,7 @@ export function createBuildHud(runtimeCtx, deps) {
   const { getActiveGearAffixSynergies, gearBase, describeGearInstance, gearLabel } = deps.equipment;
   const { isW20PreselectOpen } = deps.progression;
   const { getRealmStageLabel } = deps.unlock;
-  const { openW20PreselectModal } = deps.modals;
-  let lastLeftHudKey = '';
+    let lastLeftHudKey = '';
 
   function renderLeftHud(force){
     const body = $('leftHudBody'), game = runtimeCtx.game;
@@ -88,7 +87,7 @@ export function createBuildHud(runtimeCtx, deps) {
     if (!right) return;
     const sets=Object.entries(setCounts).filter(([k,n])=>n&&GEAR_SETS[k]).map(([k,n])=>{
       const s=GEAR_SETS[k], active=activeSets.find(a=>a.key===k);
-      return progress(s.icon+' '+s.name,n,3,s.col,[s.name+' '+n+'/3','当前：'+(active?.desc||'未激活'),'2件：'+s.d2,'3件：'+s.d3,n<2?'距两件套还差 '+(2-n)+' 件':n<3?'距完整套装还差 1 件':'完整套装已激活'].join('\n'));
+      return progress(s.icon+' '+s.name,Math.min(n,3),3,s.col,[s.name+' '+n+'/3','当前：'+(active?.desc||'未激活'),'2件：'+s.d2,'3件：'+s.d3,n<2?'距两件套还差 '+(2-n)+' 件':n<3?'距完整套装还差 1 件':'完整套装已激活'].join('\n'));
     }).join('');
     const affixes=(affix.hints||[]).map(ht=>{
       const list=[...ht.present,...ht.missing], active=affix.active.find(s=>s.id===ht.activeId);
@@ -96,7 +95,7 @@ export function createBuildHud(runtimeCtx, deps) {
       const duos=GEAR_SYNERGIES.filter(s=>s.chain===ht.chain&&s.tier===2);
       return progress(ht.chain==='fire_detonate'?'🔥 火系引爆':'❄️ 冰系护体',ht.present.length,3,ht.chain==='fire_detonate'?'#e79859':'#75c8eb',[ht.text,'当前：'+(active?.desc||'未激活'),...list.map(id=>(ht.present.includes(id)?'✓ ':'缺 ')+(GEAR_AFFIXES[id]?.name||id)), '双联动：'+(duos[0]?.desc||''),'三联动：'+(full?.desc||'')].join('\n'));
     }).join('');
-    const elements=Object.entries(ELEMENTS).filter(([k])=>syn[k]>0).map(([k,e])=>progress(e.icon+' '+e.name,syn[k],4,e.color,[e.name+' '+syn[k]+'/4','2层：'+e.t1,'4层：'+e.t2].join('\n'))).join('');
+    const elements=Object.entries(ELEMENTS).filter(([k])=>syn[k]>0).map(([k,e])=>progress(e.icon+' '+e.name,Math.min(syn[k],4),4,e.color,[e.name+' '+syn[k]+'/4','2层：'+e.t1,'4层：'+e.t2].join('\n'))).join('');
     const combos=COMBO_LIST.filter(c=>h.combos[c.key]).map(c=>iconButton(c.icon,'组合',c.name+'\n'+c.desc,'data-open-hero')).join('');
     const resonance=duals.map(d=>iconButton(d.icons,'共鸣',d.name+'\n'+d.desc,'data-open-hero')).join('');
     right.innerHTML='<div class="compact-label">套装</div>'+(sets||'<span class="ui-hint">尚无套装</span>')+'<div class="compact-label">词条联动</div>'+(affixes||'<span class="ui-hint">尚无联动</span>')+(elements?'<div class="compact-label">五行羁绊</div>'+elements:'')+((combos||resonance)?section('已激活组合',combos+resonance):'');

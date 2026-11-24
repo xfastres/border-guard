@@ -99,6 +99,8 @@ export function createHudController(runtimeCtx, deps) {
     const destinyBtn = $('destinyBtn');
     if (destinyBtn) {
       const pendingOffer = getPendingDestinyOffer();
+      const notice = $('toolsNotice');
+      if (notice) notice.hidden = !pendingOffer;
       destinyBtn.disabled = isWave || ['won', 'lost'].includes(game.phase);
       destinyBtn.textContent = pendingOffer ? '🎲 天命待领 (3选1)!' : '🎲 天命赌局';
       destinyBtn.classList.toggle('active', !!pendingOffer);
@@ -211,6 +213,8 @@ export function createHudController(runtimeCtx, deps) {
   }
 
   function resetDirtyKeys() {
+    const overlay = $('uiPanelBackdrop');
+    if (overlay && !overlay.hidden && overlay.dataset?.phase) overlay.dispatchEvent(new Event('bg-close-panel'));
     lastSynKey = '';
     deps.battleHud.resetDirty();
     deps.buildHud.resetDirty();

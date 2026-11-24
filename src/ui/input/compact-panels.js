@@ -14,7 +14,7 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
     hideTip();
     if (ownedPause && openingGame===runtimeCtx.game) runtimeCtx.setPaused(false);
     ownedPause=false;openingGame=null;
-    if (render) {previousFocus?.focus?.({preventScroll:true});renderAllUI();}
+    if (render) {document.activeElement?.blur?.();renderAllUI();}
     previousFocus=null;
   }
   function open(kind){
@@ -62,7 +62,7 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
     tip.style.left=left+'px';tip.style.top=top+'px';
   }
   document.addEventListener('pointerover',e=>showTip(readTarget(e.target)));
-  document.addEventListener('pointerout',e=>{if(target&&!target.contains(e.relatedTarget))hideTip();});
+  document.addEventListener('pointerout',e=>{if(target&&(!e.relatedTarget || !target.contains(e.relatedTarget)))hideTip();});
   document.addEventListener('focusin',e=>showTip(readTarget(e.target)));
   document.addEventListener('focusout',hideTip);
   document.addEventListener('pointerdown',hideTip);
@@ -70,5 +70,13 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
   win.addEventListener('blur',hideTip);
   // Dirty-rendered HUD nodes can be replaced while hovered; never leave an orphan tooltip.
   new MutationObserver(()=>{if(target&&!target.isConnected)hideTip();}).observe(document.body,{childList:true,subtree:true});
+  backdrop.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    const focusable = [...backdrop.querySelectorAll('button:not(:disabled)')].filter(el => el.getClientRects().length);
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length-1];
+    if (e.shiftKey && document.activeElement===first) {e.preventDefault();last.focus();}
+    else if (!e.shiftKey && document.activeElement===last) {e.preventDefault();first.focus();}
+  });
   return {isOpen,close};
 }

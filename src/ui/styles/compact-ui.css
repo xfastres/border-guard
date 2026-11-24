@@ -63,3 +63,6 @@
   .dock .act-btn .k,.dock .act-btn .sb{display:none}
   #bagOpen .sb{display:block}
 }
+
+#toolsNotice[hidden]{display:none!important}
+#toolsNotice:not([hidden]){color:#ffe694;font-weight:800;display:block}
