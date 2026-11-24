@@ -19,6 +19,10 @@
   - 迁出 36 个 Meta 业务函数与 `META_SAVE_MIGRATORS` 至 `src/systems/meta/{config,persistence,loadout,rewards,index}.js`（单向 DAG，零 DOM/浏览器全局标识符，`src/legacy/game.js` 降至 12,138 行）。
   - 对齐 `runtime-context.js` 的 `meta.storageStatus` 契约与弹窗端口，新增 `tests/unit/meta.test.mjs`（8 项无 DOM 单测）。
   - 实测结果：`npm run build` PASS（477,119 B）；`npm run test:unit` 22/22 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.2（`src/systems/equipment/` Part A 装备核心与联动）**：已完成并经主控独立审查与实测验收。
+  - 迁出 22 个装备实例、词条抽取/校验、双/三联动与描述函数至 `src/systems/equipment/{instance,synergy,describe,index}.js`（`src/legacy/game.js` 降至 11,777 行）。
+  - 新增 `tests/unit/equipment-core.test.mjs`（12 项无 DOM 单测，含固定种子 RNG 顺序校验）。
+  - 实测结果：`npm run build` PASS（478,443 B）；`npm run test:unit` 34/34 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 

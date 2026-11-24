@@ -5,6 +5,7 @@ import { mulberry32 } from '../core/rng.js';
 import { dist, clamp, xpForLevel } from '../core/math.js';
 import { createRuntimeContext } from '../core/runtime-context.js';
 import { createMetaSystem } from '../systems/meta/index.js';
+import { createEquipmentCore } from '../systems/equipment/index.js';
 import {
   getSourceStageForWave as queryGetSourceStageForWave,
   getSourceStageSpec as queryGetSourceStageSpec,
@@ -57,7 +58,6 @@ import {
   GEAR_RARITY_COLORS,
   GEAR_SALVAGE_GOLD,
   SOURCE_STAGES,
-  GEAR_MAX_STAR,
   GEAR_STAR_MULT,
   GEAR_AFFIXES,
   GEAR_AFFIX_KEYS,
@@ -145,6 +145,32 @@ const {
   retryPendingMetaSave,
 } = metaSystem;
 
+const equipmentCore = createEquipmentCore(runtimeCtx, metaSystem);
+const {
+  isGearInstance,
+  gearBase,
+  gearStar,
+  gearLabel,
+  findGearStackTarget,
+  validateGearAffixes,
+  getGearBaseMult,
+  nextGearUid,
+  ownedGearStar,
+  rollGearSlotsCount,
+  rollGearAffixes,
+  createGearInstance,
+  normalizeGearInstance,
+  evaluateSynergySetFromAffixIds,
+  evaluateItemSynergies,
+  buildChainHint,
+  evaluateEquipmentSynergies,
+  recomputeEquipmentSynergies,
+  getActiveGearAffixSynergies,
+  getGearSynergyHints,
+  describeGearEffect,
+  describeGearInstance,
+} = equipmentCore;
+
 // Keep the published BG60 argument order and options when calling the Meta system.
 function saveMetaSave(opts = {}){
   return writeMetaSave(undefined, opts);
@@ -181,393 +207,6 @@ runtimeCtx.bindPorts({
   },
 });
 loadMetaSave();
-
-function nextGearUid(){
-  const n = counters.gearUidSeq++;
-  const r = game?.rnd ? Math.floor(game.rnd() * 9000 + 1000) : Math.floor(Math.random() * 9000 + 1000);
-  return `g${n}_${r}`;
-}
-
-function isGearInstance(obj){
-  return !!(obj && typeof obj === 'object' && typeof obj.baseKey === 'string' && typeof obj.uid === 'string');
-}
-
-function gearBase(k){
-  if (!k) return '';
-  if (typeof k === 'object') return k.baseKey || k.key || '';
-  return String(k).split('#')[0];
-}
-
-function gearStar(k){
-  if (k && typeof k === 'object') return 1 + (k.enhanceLv || 0);
-  const s = parseInt(String(k || '1').split('#')[1] || '1', 10);
-  return Math.min(GEAR_MAX_STAR, Math.max(1, s || 1));
-}
-
-function gearLabel(k){
-  const spec = GEARS[gearBase(k)];
-  if (!spec) return '未知构装';
-  if (k && typeof k === 'object') {
-    const enh = k.enhanceLv > 0 ? ` +${k.enhanceLv}` : '';
-    return `${spec.name}${enh}`;
-  }
-  const s = gearStar(k);
-  return `${spec.name}${s > 1 ? ` ${s}★` : ''}`;
-}
-
-// Stage 2: Legacy auto-fusion is COMPLETELY REMOVED so duplicate gear NEVER overwrites random slots/affixes!
-function findGearStackTarget(){
-  return null;
-}
-
-function ownedGearStar(baseKey){
-  let cnt = 0;
-  for (const g of (game?.hero?.gear || [])) if (gearBase(g) === baseKey) cnt++;
-  for (const g of (game?.bag || [])) if (gearBase(g) === baseKey) cnt++;
-  return cnt;
-}
-
-function rollGearSlotsCount(rndFn = game?.rnd || Math.random){
-  const w = BALANCE.equipment?.slotWeights || { '1': 0.50, '2': 0.35, '3': 0.15 };
-  const p1 = Number(w['1'] ?? 0.50);
-  const p2 = Number(w['2'] ?? 0.35);
-  const r = rndFn();
-  if (r < p1) return 1;
-  if (r < p1 + p2) return 2;
-  return 3;
-}
-
-function validateGearAffixes(affixList, slotsCount = 3){
-  const list = Array.isArray(affixList) ? affixList : [];
-  if (list.length > slotsCount) return { ok: false, reason: 'exceeds_slots' };
-  const seenIds = new Set();
-  const seenGroups = new Set();
-  for (const entry of list) {
-    if (!entry) continue; // null allowed for future Stage 4 extracted empty slot
-    const id = typeof entry === 'string' ? entry : entry.id;
-    const spec = GEAR_AFFIXES[id];
-    if (!spec) return { ok: false, reason: `unknown_affix:${id}` };
-    if (seenIds.has(id)) return { ok: false, reason: `duplicate_affix:${id}` };
-    seenIds.add(id);
-    if (spec.conflictGroup) {
-      if (seenGroups.has(spec.conflictGroup)) return { ok: false, reason: `conflict_group:${spec.conflictGroup}` };
-      seenGroups.add(spec.conflictGroup);
-    }
-  }
-  return { ok: true, reason: null };
-}
-
-function rollGearAffixes(slotsCount, { elem = null, highRarityChance = 0.14, rndFn = game?.rnd || Math.random } = {}){
-  const count = clamp(Math.round(Number(slotsCount) || 1), 1, 3);
-  const chosen = [];
-  const usedIds = new Set();
-  const usedGroups = new Set();
-  const wantHighRarity = rndFn() < highRarityChance;
-  const activePool = getActiveRunAffixKeys();
-  const mainSpec = getActiveMetaMain();
-  const mainElem = mainSpec?.elem || null;
-  const mainTilt = mainElem ? getMetaConfig().mainRewardWeightMultiplier : 1.0;
-
-  for (let i = 0; i < count; i++) {
-    const candidates = activePool.filter(id => {
-      if (usedIds.has(id)) return false;
-      const sp = GEAR_AFFIXES[id];
-      if (!sp) return false;
-      if (sp.conflictGroup && usedGroups.has(sp.conflictGroup)) return false;
-      return true;
-    });
-    if (!candidates.length) break;
-
-    let totalWeight = 0;
-    const weighted = candidates.map(id => {
-      const sp = GEAR_AFFIXES[id];
-      let wt = sp.rarity === 'epic' ? (wantHighRarity ? 2.6 : 1.0)
-        : sp.rarity === 'rare' ? (wantHighRarity ? 2.2 : 1.5)
-        : 2.0;
-      if (elem && sp.elem === elem) wt *= 2.4;
-      if (mainElem && sp.elem === mainElem) wt *= mainTilt;
-      totalWeight += wt;
-      return { id, wt };
-    });
-
-    let pick = weighted[weighted.length - 1].id;
-    let roll = rndFn() * totalWeight;
-    for (const w of weighted) {
-      roll -= w.wt;
-      if (roll <= 0) { pick = w.id; break; }
-    }
-    const spec = GEAR_AFFIXES[pick];
-    usedIds.add(pick);
-    if (spec.conflictGroup) usedGroups.add(spec.conflictGroup);
-    chosen.push({ id: pick, tier: 1, rarity: spec.rarity });
-  }
-  return chosen;
-}
-
-function createGearInstance(baseKey, opts = {}){
-  const key = GEARS[baseKey] ? baseKey : GEAR_KEYS[0];
-  const spec = GEARS[key];
-  const rndFn = opts.rndFn || game?.rnd || Math.random;
-  const rarity = (opts.rarity && GEAR_RARITY_LABELS[opts.rarity]) ? opts.rarity : spec.rarity;
-  const sourceStage = opts.sourceStage != null
-    ? clamp(Math.round(Number(opts.sourceStage)), 1, 3)
-    : getSourceStageForWave(opts.wave ?? game?.wave ?? 1);
-  const slotsCount = opts.slotsCount != null
-    ? clamp(Math.round(Number(opts.slotsCount)), 1, 3)
-    : rollGearSlotsCount(rndFn);
-  const enhanceLv = clamp(Math.round(Number(opts.enhanceLv || 0)), 0, BALANCE.equipment?.materialEnhance?.maxEnhanceLv || 5);
-
-  let affixes;
-  if (Array.isArray(opts.affixes)) {
-    const normalized = opts.affixes.slice(0, slotsCount).map(a => {
-      if (!a) return null;
-      const id = typeof a === 'string' ? a : a.id;
-      const aSpec = GEAR_AFFIXES[id];
-      if (!aSpec) return null;
-      return { id, tier: Math.max(1, (typeof a === 'object' && a.tier ? a.tier : 1 + enhanceLv)), rarity: aSpec.rarity };
-    });
-    const check = validateGearAffixes(normalized, slotsCount);
-    if (!check.ok) {
-      throw new Error(`Invalid gear affixes (${check.reason})`);
-    }
-    affixes = normalized;
-  } else {
-    affixes = rollGearAffixes(slotsCount, {
-      elem: spec.elem,
-      highRarityChance: opts.highRarityChance ?? (BALANCE.equipment?.shopPricing?.highRarityAffixChance || 0.16),
-      rndFn
-    }).map(a => ({ ...a, tier: 1 + enhanceLv }));
-  }
-
-  return {
-    uid: opts.uid || nextGearUid(),
-    baseKey: key,
-    name: spec.name,
-    icon: spec.icon,
-    elem: spec.elem,
-    set: spec.set,
-    rarity,
-    sourceStage,
-    slotsCount,
-    affixes,
-    enhanceLv,
-    paidGold: Math.max(0, Math.round(Number(opts.paidGold || 0))),
-    extractedCount: Math.max(0, Math.round(Number(opts.extractedCount || 0))),
-    origin: opts.origin || 'drop'
-  };
-}
-
-function normalizeGearInstance(input, opts = {}){
-  if (isGearInstance(input)) {
-    const spec = GEARS[input.baseKey] || GEARS[GEAR_KEYS[0]];
-    const enhanceLv = clamp(Math.round(Number(input.enhanceLv || 0)), 0, BALANCE.equipment?.materialEnhance?.maxEnhanceLv || 5);
-    const slotsCount = clamp(Math.round(Number(input.slotsCount || (input.affixes?.length || 1))), 1, 3);
-    const affixes = (Array.isArray(input.affixes) ? input.affixes : []).slice(0, slotsCount).map(a => {
-      if (!a) return null;
-      const id = typeof a === 'string' ? a : a.id;
-      const sp = GEAR_AFFIXES[id];
-      return sp ? { id, tier: Math.max(1, Number(a.tier || (1 + enhanceLv))), rarity: sp.rarity } : null;
-    });
-    return {
-      uid: input.uid || nextGearUid(),
-      baseKey: spec.key,
-      name: input.name || spec.name,
-      icon: input.icon || spec.icon,
-      elem: input.elem || spec.elem,
-      set: input.set || spec.set,
-      rarity: (input.rarity && GEAR_RARITY_LABELS[input.rarity]) ? input.rarity : spec.rarity,
-      sourceStage: clamp(Math.round(Number(input.sourceStage || getSourceStageForWave(opts.wave ?? game?.wave ?? 1))), 1, 3),
-      slotsCount,
-      affixes,
-      enhanceLv,
-      paidGold: Math.max(0, Math.round(Number(input.paidGold || 0))),
-      extractedCount: Math.max(0, Math.round(Number(input.extractedCount || 0))),
-      origin: input.origin || opts.origin || 'drop'
-    };
-  }
-  const baseKey = gearBase(input);
-  const legacyStar = gearStar(input);
-  return createGearInstance(baseKey, {
-    ...opts,
-    enhanceLv: opts.enhanceLv != null ? opts.enhanceLv : Math.max(0, legacyStar - 1)
-  });
-}
-
-function getGearBaseMult(inst){
-  const stageSpec = getSourceStageSpec(inst?.sourceStage || 1);
-  const step = BALANCE.equipment?.materialEnhance?.baseStatStepPerLv || 0.18;
-  const enh = inst && typeof inst === 'object' ? (inst.enhanceLv || 0) : Math.max(0, gearStar(inst) - 1);
-  return (stageSpec.baseStatMult || 1) * (1 + enh * step);
-}
-
-function evaluateSynergySetFromAffixIds(affixIdSet){
-  const matched = GEAR_SYNERGIES.filter(s => s.req.every(r => affixIdSet.has(r)));
-  const activeTrios = matched.filter(s => s.tier === 3);
-  const replacedChains = new Set(activeTrios.map(s => s.chain));
-  const bestByConflictGroup = new Map();
-  const active = [...activeTrios];
-
-  for (const s of matched) {
-    if (s.tier !== 2) continue;
-    // Complete Trio STRICTLY replaces any Duo of the same chain (never both!)
-    if (replacedChains.has(s.chain)) continue;
-    const grp = s.conflictGroup || s.id;
-    const cur = bestByConflictGroup.get(grp);
-    if (!cur || s.priority > cur.priority) {
-      bestByConflictGroup.set(grp, s);
-    }
-  }
-  for (const s of bestByConflictGroup.values()) active.push(s);
-  active.sort((a, b) => (b.tier - a.tier) || (b.priority - a.priority));
-  return active;
-}
-
-function evaluateItemSynergies(inst){
-  if (!inst || !Array.isArray(inst.affixes)) return [];
-  const ids = new Set(inst.affixes.filter(Boolean).map(a => a.id));
-  return evaluateSynergySetFromAffixIds(ids);
-}
-
-function buildChainHint(chainKey, chainLabel, reqIds, affixIdSet, activeList){
-  const present = reqIds.filter(id => affixIdSet.has(id));
-  const missing = reqIds.filter(id => !affixIdSet.has(id));
-  const trio = activeList.find(s => s.chain === chainKey && s.tier === 3);
-  const duo = activeList.find(s => s.chain === chainKey && s.tier === 2);
-  if (trio) {
-    return {
-      chain: chainKey, state: 'trio', activeId: trio.id, present, missing: [],
-      text: `${trio.icon} ${chainLabel}【${trio.name}】完整三联动已激活（已替代原双联动）`
-    };
-  }
-  if (duo) {
-    const missNames = missing.map(id => `【${GEAR_AFFIXES[id]?.name || id}】`).join(' / ');
-    return {
-      chain: chainKey, state: 'duo', activeId: duo.id, present, missing,
-      text: `${duo.icon} ${chainLabel}已激活双联动【${duo.name}】· 再配 ${missNames} 升级为完整三联动！`
-    };
-  }
-  if (present.length === 1) {
-    const missNames = missing.map(id => `【${GEAR_AFFIXES[id]?.name || id}】`).join(' 或 ');
-    return {
-      chain: chainKey, state: 'partial', activeId: null, present, missing,
-      text: `${chainLabel} 1/3（已有【${GEAR_AFFIXES[present[0]]?.name}】）· 再配 ${missNames} 激活双联动`
-    };
-  }
-  return null;
-}
-
-function evaluateEquipmentSynergies(gearList = game?.hero?.gear || []){
-  const list = Array.isArray(gearList) ? gearList : [];
-  const globalAffixIds = new Set();
-  const affixCounts = {};
-  const perItem = [];
-
-  for (const g of list) {
-    if (!g || typeof g !== 'object' || !Array.isArray(g.affixes)) continue;
-    const itemSyns = evaluateItemSynergies(g);
-    perItem.push({ uid: g.uid, synergies: itemSyns });
-    for (const a of g.affixes) {
-      if (!a || !GEAR_AFFIXES[a.id]) continue;
-      globalAffixIds.add(a.id);
-      affixCounts[a.id] = (affixCounts[a.id] || 0) + 1;
-    }
-  }
-
-  // Global evaluation: each synergy activates AT MOST ONCE across all 4 gear slots; Trio strictly replaces Duo
-  const active = evaluateSynergySetFromAffixIds(globalAffixIds);
-  const byId = {};
-  for (const s of active) byId[s.id] = s;
-
-  const fireSynergy = active.find(s => s.chain === 'fire_detonate') || null;
-  const frostSynergy = active.find(s => s.chain === 'frost_aegis') || null;
-
-  const hints = [];
-  const fireHint = buildChainHint('fire_detonate', '火系引爆', ['fire_brand', 'fire_burst', 'fire_chain'], globalAffixIds, active);
-  const frostHint = buildChainHint('frost_aegis', '冰系护体', ['frost_chill', 'frost_ward', 'frost_nova_counter'], globalAffixIds, active);
-  if (fireHint) hints.push(fireHint);
-  if (frostHint) hints.push(frostHint);
-
-  return {
-    active,
-    byId,
-    perItem,
-    affixCounts,
-    affixIds: Array.from(globalAffixIds),
-    fireSynergy,
-    frostSynergy,
-    hasFireTrio: fireSynergy?.tier === 3,
-    hasFireDuo: fireSynergy?.tier === 2,
-    hasFrostTrio: frostSynergy?.tier === 3,
-    hasFrostDuo: frostSynergy?.tier === 2,
-    hints
-  };
-}
-
-function recomputeEquipmentSynergies(){
-  if (!game?.hero) return evaluateEquipmentSynergies([]);
-  const res = evaluateEquipmentSynergies(game.hero.gear);
-  game.hero.activeGearSynergies = res;
-  return res;
-}
-
-function getActiveGearAffixSynergies(){
-  if (!game?.hero) return evaluateEquipmentSynergies([]);
-  if (!game.hero.activeGearSynergies) return recomputeEquipmentSynergies();
-  return game.hero.activeGearSynergies;
-}
-
-function getGearSynergyHints(candidateInst = null){
-  const cur = evaluateEquipmentSynergies(game?.hero?.gear || []);
-  if (!candidateInst) return cur.hints;
-  const withCand = evaluateEquipmentSynergies([...(game?.hero?.gear || []), candidateInst]);
-  const changes = [];
-  if (withCand.hasFireTrio && !cur.hasFireTrio) changes.push('穿戴后升级🔥【炽炎连环引爆】完整三联动！');
-  else if (withCand.hasFireDuo && !cur.hasFireDuo && !cur.hasFireTrio) changes.push('穿戴后激活🔥火系双词条联动！');
-  if (withCand.hasFrostTrio && !cur.hasFrostTrio) changes.push('穿戴后升级❄️【凛冬寒盾反制】完整三联动！');
-  else if (withCand.hasFrostDuo && !cur.hasFrostDuo && !cur.hasFrostTrio) changes.push('穿戴后激活❄️冰系双词条联动！');
-  return changes;
-}
-
-function describeGearEffect(gk){
-  const spec = GEARS[gearBase(gk)];
-  if (!spec) return '';
-  const isInst = gk && typeof gk === 'object';
-  const mult = isInst ? getGearBaseMult(gk) : GEAR_STAR_MULT[gearStar(gk) - 1];
-  const parts = [];
-  for (const [k, v] of Object.entries(spec.mod)) {
-    const val = v * mult;
-    const sign = val >= 0 ? '+' : '';
-    if (k === 'dmgPct') parts.push(`全伤 ${sign}${Math.round(val * 100)}%`);
-    else if (k === 'aspd') parts.push(`攻速 ${sign}${Math.round((v < 0 ? v : val) * 100)}%`);
-    else if (k === 'crit') parts.push(`暴击 ${sign}${Math.round(val * 100)}%`);
-    else if (k === 'critDmg') parts.push(`暴伤 ${sign}${Math.round(val * 100)}%`);
-    else if (k === 'rangePct') parts.push(`范围/射程 ${sign}${Math.round(val * 100)}%`);
-    else if (k === 'movePct') parts.push(`移速 ${sign}${Math.round(val * 100)}%`);
-    else if (k === 'flatHp') parts.push(`最大生命 ${sign}${Math.round(val)}`);
-    else if (k === 'hpPct') parts.push(`最大生命 ${sign}${Math.round(v * 100)}%`);
-    else if (k === 'extraShot') parts.push(`额外弹道 +${Math.round(v)}`);
-    else if (k === 'splashBonus') parts.push(`溅射范围 +${val.toFixed(2)}格`);
-    else if (k === 'slowOnHit') parts.push(`攻击减速 ${Math.round(Math.min(0.65, val) * 100)}%`);
-    else if (k === 'chainProc') parts.push(`命中 ${Math.round(Math.min(0.8, val) * 100)}% 连锁雷`);
-    else if (k === 'lifesteal') parts.push(`攻击回血 +${(val * 0.5).toFixed(1)}`);
-    else if (k === 'bonusGold') parts.push(`击杀 +${Math.round(val)} 金`);
-  }
-  return parts.join(' · ');
-}
-
-function describeGearInstance(inst){
-  if (!inst || typeof inst !== 'object') return describeGearEffect(inst);
-  const stSpec = getSourceStageSpec(inst.sourceStage);
-  const baseTxt = describeGearEffect(inst);
-  const afTxt = (inst.affixes || []).map((a, idx) => {
-    if (!a) return `[空槽${idx + 1}]`;
-    const sp = GEAR_AFFIXES[a.id];
-    return sp ? `${sp.icon}${sp.name}(T${a.tier || 1})` : a.id;
-  }).join(' + ');
-  const itemSyns = evaluateItemSynergies(inst);
-  const synTxt = itemSyns.length ? ` | 联动:${itemSyns.map(s => s.name).join('/')}` : '';
-  return `[${GEAR_RARITY_LABELS[inst.rarity]}·${stSpec.label}·${inst.slotsCount}槽${inst.enhanceLv ? `·+${inst.enhanceLv}` : ''}] ${baseTxt} | 词条:${afTxt}${synTxt}`;
-}
 
 function getW10BranchSpec(skillKey, branchKey = game?.hero?.w10Branch?.[skillKey]){
   if (!skillKey || !branchKey) return null;
