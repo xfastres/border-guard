@@ -23,6 +23,10 @@
   - 迁出 22 个装备实例、词条抽取/校验、双/三联动与描述函数至 `src/systems/equipment/{instance,synergy,describe,index}.js`（`src/legacy/game.js` 降至 11,777 行）。
   - 新增 `tests/unit/equipment-core.test.mjs`（12 项无 DOM 单测，含固定种子 RNG 顺序校验）。
   - 实测结果：`npm run build` PASS（478,443 B）；`npm run test:unit` 34/34 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.3（`src/systems/economy/` Part A 资源流水账本与商店定价/回收）**：已完成并经主控独立审查与实测验收。
+  - 迁出 20 个经济账本、定价、防套利回收、强化费用、背包容量与精修掉落函数至 `src/systems/economy/{ledger,pricing,index}.js`（`src/legacy/game.js` 降至 11,552 行）。
+  - 新增 `tests/unit/economy-core.test.mjs`（12 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（479,652 B）；`npm run test:unit` 46/46 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 

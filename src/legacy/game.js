@@ -6,6 +6,7 @@ import { dist, clamp, xpForLevel } from '../core/math.js';
 import { createRuntimeContext } from '../core/runtime-context.js';
 import { createMetaSystem } from '../systems/meta/index.js';
 import { createEquipmentCore } from '../systems/equipment/index.js';
+import { createEconomyCore } from '../systems/economy/index.js';
 import {
   getSourceStageForWave as queryGetSourceStageForWave,
   getSourceStageSpec as queryGetSourceStageSpec,
@@ -170,6 +171,30 @@ const {
   describeGearEffect,
   describeGearInstance,
 } = equipmentCore;
+
+const economyCore = createEconomyCore(runtimeCtx, { meta: metaSystem, equipment: equipmentCore });
+const {
+  recordResourceFlow,
+  changeGold,
+  changeMaterials,
+  changeTransferTokens,
+  getResourceLedger,
+  resetRunMetricsResourceBaseline,
+  syncRunResourceAccounting,
+  getShopElemBuyCount,
+  calcShopGearPrice,
+  pickShopGearBaseKey,
+  getGearSellGold,
+  getGearDismantleMaterials,
+  getGearEnhanceCost,
+  getBagCapacity,
+  hasBagSpace,
+  tryStoreGearInBag,
+  isBagSeal,
+  getEndgameRefinementConfig,
+  getEnemyMaterialDrop,
+  getWaveClearMaterialBonus,
+} = economyCore;
 
 // Keep the published BG60 argument order and options when calling the Meta system.
 function saveMetaSave(opts = {}){
@@ -638,109 +663,6 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
     }
   };
   return g;
-}
-
-const RESOURCE_LEDGER_MAX = 500;
-function recordResourceFlow(resourceType, delta, reason = 'unknown'){
-  if (!game) return 0;
-  const amt = Math.round(Number(delta) || 0);
-  if (amt === 0) return 0;
-  const rm = game.runMetrics;
-  let actualDelta = 0;
-  let balanceAfter = 0;
-  if (resourceType === 'gold') {
-    const prev = Math.max(0, Number(game.gold || 0));
-    game.gold = Math.max(0, prev + amt);
-    actualDelta = game.gold - prev;
-    balanceAfter = game.gold;
-    if (rm) {
-      if (actualDelta > 0) rm.goldEarned += actualDelta;
-      else if (actualDelta < 0) rm.goldSpent += -actualDelta;
-      rm._lastGold = game.gold;
-    }
-  } else if (resourceType === 'materials') {
-    const prev = Math.max(0, Number(game.materials || 0));
-    game.materials = Math.max(0, prev + amt);
-    actualDelta = game.materials - prev;
-    balanceAfter = game.materials;
-    if (rm) {
-      if (actualDelta > 0) rm.materialsEarned += actualDelta;
-      else if (actualDelta < 0) rm.materialsSpent += -actualDelta;
-      rm._lastMaterials = game.materials;
-    }
-  } else if (resourceType === 'transferTokens') {
-    const prev = Math.max(0, Number(game.transferTokens || 0));
-    game.transferTokens = Math.max(0, prev + amt);
-    actualDelta = game.transferTokens - prev;
-    balanceAfter = game.transferTokens;
-    if (rm) {
-      if (actualDelta > 0) rm.transferTokensEarned += actualDelta;
-      else if (actualDelta < 0) rm.transferTokensSpent += -actualDelta;
-      rm._lastTokens = game.transferTokens;
-    }
-  } else {
-    return 0;
-  }
-  if (rm && actualDelta !== 0) {
-    if (!Array.isArray(rm.ledger)) rm.ledger = [];
-    const seq = rm._ledgerSeq || 1;
-    rm._ledgerSeq = seq + 1;
-    rm.ledger.push({
-      seq,
-      wave: game.wave || 1,
-      type: resourceType,
-      delta: actualDelta,
-      reason: String(reason || 'unknown'),
-      balanceAfter
-    });
-    if (rm.ledger.length > RESOURCE_LEDGER_MAX) {
-      rm.ledger.splice(0, rm.ledger.length - RESOURCE_LEDGER_MAX);
-    }
-  }
-  return actualDelta;
-}
-
-function changeGold(delta, reason = 'gold_change'){
-  return recordResourceFlow('gold', delta, reason);
-}
-function changeMaterials(delta, reason = 'materials_change'){
-  return recordResourceFlow('materials', delta, reason);
-}
-function changeTransferTokens(delta, reason = 'transfer_tokens_change'){
-  return recordResourceFlow('transferTokens', delta, reason);
-}
-function getResourceLedger(limit = 0){
-  const list = Array.isArray(game?.runMetrics?.ledger) ? game.runMetrics.ledger : [];
-  const sliced = limit > 0 ? list.slice(-limit) : list.slice();
-  return sliced.map(e => ({ ...e }));
-}
-function resetRunMetricsResourceBaseline(){
-  if (!game?.runMetrics) return;
-  const rm = game.runMetrics;
-  const g = Math.max(0, Number(game.gold || 0));
-  const m = Math.max(0, Number(game.materials || 0));
-  const t = Math.max(0, Number(game.transferTokens || 0));
-  rm.goldEarned = g;
-  rm.goldSpent = 0;
-  rm.materialsEarned = m;
-  rm.materialsSpent = 0;
-  rm.transferTokensEarned = t;
-  rm.transferTokensSpent = 0;
-  rm._lastGold = g;
-  rm._lastMaterials = m;
-  rm._lastTokens = t;
-  rm.ledger = [];
-  rm._ledgerSeq = 1;
-}
-
-function syncRunResourceAccounting(){
-  // BUG-06: Accounting is now driven strictly by changeGold/changeMaterials/changeTransferTokens ledger.
-  // Keep this helper only to sync baseline snapshots without ever overriding/canceling ledger totals.
-  if (!game?.runMetrics) return;
-  const rm = game.runMetrics;
-  rm._lastGold = Math.max(0, Number(game.gold || 0));
-  rm._lastMaterials = Math.max(0, Number(game.materials || 0));
-  rm._lastTokens = Math.max(0, Number(game.transferTokens || 0));
 }
 
 function startNewRun(seed = Math.floor(Math.random() * 1e9), showStarter = true, opts = {}){
@@ -1583,153 +1505,6 @@ function getSealStats(a = game.seal){
     slowDur: base.slowDur || ((gm.slowOnHit || frostSubSlow) ? 2.2 : 0),
     burn: Math.max(base.burn || 0, fireSubBurn), gm
   };
-}
-
-/* ==================== STAGE 2: SHOP PRICING, RECYCLE ANTI-ARBITRAGE & MATERIAL ENHANCE ==================== */
-function getShopElemBuyCount(elem){
-  if (!game) return 0;
-  const sp = BALANCE.equipment?.shopPricing || {};
-  const curStage = getSourceStageForWave(game.wave);
-  if (sp.sameElemResetByStage && game.shopElemBuyStage !== curStage) {
-    game.shopElemBuyCounts = { wind: 0, fire: 0, frost: 0, thunder: 0, holy: 0 };
-    game.shopElemBuyStage = curStage;
-  }
-  return game.shopElemBuyCounts?.[elem] || 0;
-}
-
-function calcShopGearPrice(rarity, elem, wave = game?.wave || 1){
-  const sp = BALANCE.equipment?.shopPricing || {};
-  const baseMap = sp.basePriceByRarity || { common: 26, rare: 42, epic: 64, legend: 96 };
-  const stageMap = sp.stagePriceMult || { '1': 1.0, '2': 1.3, '3': 1.65 };
-  const capMap = sp.priceCapByRarity || { common: 64, rare: 104, epic: 156, legend: 220 };
-  const step = Number(sp.sameElemStep ?? 0.18);
-  const stage = getSourceStageForWave(wave);
-  const base = baseMap[rarity] || baseMap.common || 26;
-  const stageMult = Number(stageMap[String(stage)] ?? 1.0);
-  const sameElemCount = getShopElemBuyCount(elem);
-  const raw = Math.round(base * stageMult * (1 + sameElemCount * step));
-  const cap = capMap[rarity] || Math.round(base * 2.4);
-  return Math.min(cap, Math.max(base, raw));
-}
-
-function pickShopGearBaseKey(wave = game?.wave || 1, rndFn = game?.rnd || Math.random){
-  const r = rndFn();
-  let rarity = 'common';
-  if (wave <= 5) rarity = r < 0.28 ? 'rare' : 'common';
-  else if (wave <= 10) rarity = r < 0.12 ? 'epic' : r < 0.58 ? 'rare' : 'common';
-  else if (wave <= 20) rarity = r < 0.08 ? 'legend' : r < 0.42 ? 'epic' : r < 0.85 ? 'rare' : 'common';
-  else rarity = r < 0.22 ? 'legend' : r < 0.65 ? 'epic' : 'rare';
-
-  const activePool = getActiveRunGearKeys();
-  const pool = activePool.filter(k => GEARS[k]?.rarity === rarity);
-  const list = pool.length ? pool : activePool;
-  return pickWeightedByMainLegacy(list, k => GEARS[k]?.elem || null, rndFn) || list[0];
-}
-
-// Recycle value depends STRICTLY on inst.rarity and inst.sourceStage (NEVER slotsCount or current wave!)
-// Anti-arbitrage guard: if bought from shop (paidGold > 0), sell gold is strictly < paidGold!
-function getGearSellGold(inst){
-  if (!inst) return 0;
-  const rec = BALANCE.equipment?.recycle || {};
-  const baseMap = rec.sellGoldBase || { common: 10, rare: 16, epic: 26, legend: 42 };
-  const rarity = typeof inst === 'object' ? (inst.rarity || GEARS[gearBase(inst)]?.rarity || 'common') : (GEARS[gearBase(inst)]?.rarity || 'common');
-  const sourceStage = typeof inst === 'object' ? (inst.sourceStage || 1) : 1;
-  const stageSpec = getSourceStageSpec(sourceStage);
-  let gold = Math.max(1, Math.round((baseMap[rarity] || 10) * (stageSpec.sellMult || 1)));
-  const paid = typeof inst === 'object' ? Math.max(0, Number(inst.paidGold || 0)) : 0;
-  if (paid > 0) {
-    const capRatio = Number(rec.paidGoldSellCapRatio ?? 0.72);
-    const maxAllowed = Math.max(1, Math.min(paid - 1, Math.floor(paid * capRatio)));
-    gold = Math.min(gold, maxAllowed);
-  }
-  return gold;
-}
-
-function getGearDismantleMaterials(inst){
-  if (!inst) return 0;
-  const rec = BALANCE.equipment?.recycle || {};
-  const baseMap = rec.dismantleMatBase || { common: 1, rare: 2, epic: 3, legend: 5 };
-  const rarity = typeof inst === 'object' ? (inst.rarity || GEARS[gearBase(inst)]?.rarity || 'common') : (GEARS[gearBase(inst)]?.rarity || 'common');
-  const sourceStage = typeof inst === 'object' ? (inst.sourceStage || 1) : 1;
-  const stageSpec = getSourceStageSpec(sourceStage);
-  const baseMats = Math.max(1, Math.round((baseMap[rarity] || 1) * (stageSpec.dismantleMult || 1)));
-  const craftBonus = (hasMetaAux('aux_salvage_craft') && (rarity === 'epic' || rarity === 'legend')) ? 1 : 0;
-  return baseMats + craftBonus;
-}
-
-function getGearEnhanceCost(inst){
-  if (!inst || typeof inst !== 'object' || inst.itemType === 'seal') return null;
-  const cfg = BALANCE.equipment?.materialEnhance || {};
-  const maxLv = cfg.maxEnhanceLv || 6;
-  const curLv = inst.enhanceLv || 0;
-  if (curLv >= maxLv) return null;
-  const table = Array.isArray(cfg.matCostByNextLv) ? cfg.matCostByNextLv : [2, 3, 5, 7, 10, 14];
-  return table[curLv] ?? (2 + curLv * 2);
-}
-
-function getBagCapacity(){
-  return Math.max(4, Number(BALANCE.progression?.bagCapacity || 12));
-}
-
-function hasBagSpace(need = 1){
-  if (!game || !Array.isArray(game.bag)) return false;
-  return (game.bag.length + Math.max(1, Number(need) || 1)) <= getBagCapacity();
-}
-
-function tryStoreGearInBag(inst){
-  if (!hasBagSpace(1)) {
-    return { ok: false, reason: 'bag_full', capacity: getBagCapacity() };
-  }
-  const normalized = isBagSeal(inst) ? inst : normalizeGearInstance(inst);
-  game.bag.push(normalized);
-  return { ok: true, storedIn: 'bag', item: normalized };
-}
-
-function isBagSeal(item){
-  return !!(item && typeof item === 'object' && item.itemType === 'seal');
-}
-
-function getEndgameRefinementConfig(){
-  return BALANCE.endgameRefinement || {
-    startWave: 21,
-    eliteMaterialDropW21To24: 2,
-    eliteMaterialDropW25To29: 3,
-    bossMaterialDropW21Plus: 6,
-    shrineMaterialDropW21Plus: 4,
-    waveClearMaterialsByBand: [
-      { from: 21, to: 24, materials: 1 },
-      { from: 25, to: 27, materials: 2 },
-      { from: 28, to: 29, materials: 3 }
-    ],
-    shopHighRarityAffixBonusW21Plus: 0.14,
-    shopSecondGearChanceW21Plus: 0.65,
-    chestHighRarityAffixBonusW21Plus: 0.12
-  };
-}
-
-function getEnemyMaterialDrop(e, wave = game?.wave || 1){
-  const cfg = getEndgameRefinementConfig();
-  if (e?.isShrineBoss) {
-    return wave >= (cfg.startWave || 21) ? (cfg.shrineMaterialDropW21Plus || 4) : 2;
-  }
-  if (e?.boss) {
-    return wave >= (cfg.startWave || 21) ? (cfg.bossMaterialDropW21Plus || 6) : (BALANCE.economy.bossMaterialDrop || 3);
-  }
-  if (e?.elite) {
-    if (wave >= 25) return cfg.eliteMaterialDropW25To29 || 3;
-    if (wave >= (cfg.startWave || 21)) return cfg.eliteMaterialDropW21To24 || 2;
-    return BALANCE.economy.eliteMaterialDrop || 1;
-  }
-  return 0;
-}
-
-function getWaveClearMaterialBonus(clearedWave){
-  const cfg = getEndgameRefinementConfig();
-  const bands = Array.isArray(cfg.waveClearMaterialsByBand) ? cfg.waveClearMaterialsByBand : [];
-  for (const b of bands) {
-    if (clearedWave >= b.from && clearedWave <= b.to) return Math.max(0, Number(b.materials || 0));
-  }
-  return 0;
 }
 
 /* ==================== STAGE 5: W29 FINAL PREP ATOMIC MUTEX LOCK & SHOP CONFIRM DRAFT ==================== */
