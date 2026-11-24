@@ -31,6 +31,10 @@
   - 迁出 8 个解锁/境界/待决策函数与 13 个羁绊/套装/组合技/英雄与灵印属性计算函数（`src/legacy/game.js` 降至 11,255 行）。
   - 新增 `tests/unit/hero-stats.test.mjs`（15 项无 DOM 单测，含 BUG-02 换装 0 免费回血回归）。
   - 实测结果：`npm run build` PASS（480,948 B）；`npm run test:unit` 61/61 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.5（`src/systems/equipment/` Part B 背包装卸与词条转移台）**：已完成并经主控独立审查与实测验收。
+  - 迁出 10 个背包装卸/回收/强化/安全领奖函数至 `src/systems/equipment/inventory.js` 与 7 个词条转移台函数至 `src/systems/equipment/transfer.js`（工厂依赖注入确保 0 循环依赖，`src/legacy/game.js` 降至 10,658 行）。
+  - 新增 `tests/unit/equipment-inventory-transfer.test.mjs`（16 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（483,727 B）；`npm run test:unit` 77/77 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 

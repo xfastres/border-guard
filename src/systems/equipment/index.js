@@ -16,6 +16,9 @@ import {
 } from './synergy.js';
 import { describeGearEffect, describeGearInstance } from './describe.js';
 
+export { createEquipmentInventory } from './inventory.js';
+export { createAffixTransfer, getAffixTransferCost, describeTransferError } from './transfer.js';
+
 export {
   isGearInstance,
   gearBase,
