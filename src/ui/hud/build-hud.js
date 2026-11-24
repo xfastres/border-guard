@@ -1,7 +1,7 @@
-import { getOwnedDestinyEnhancements, getSourceStageSpec } from '../../core/state-queries.js';
+import { getOwnedDestinyEnhancements } from '../../core/state-queries.js';
 import {
   ARTIFACTS, SEAL_SPECIALIZATIONS, SUB_SEAL_RESONANCE, SEAL_FUSE_NEED, ELEMENTS, HERO_GEAR_SLOTS,
-  GEARS, GEAR_AFFIXES, GEAR_RARITY_LABELS, W20_DIRECTIONS, GEAR_SETS, HERO_SKILLS, W10_SKILL_BRANCHES, COMBO_LIST, GEAR_SYNERGIES,
+  GEARS, GEAR_AFFIXES, GEAR_RARITY_LABELS, GEAR_SETS, HERO_SKILLS, W10_SKILL_BRANCHES, COMBO_LIST, GEAR_SYNERGIES,
 } from '../../data/index.js';
 import { isBagSeal } from '../../systems/economy/pricing.js';
 
@@ -16,17 +16,28 @@ export function gearListSig(list){
 
 const esc = value => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const attr = value => ' data-detail="' + esc(value) + '" aria-label="' + esc(String(value).split('\n')[0]) + '"';
-function iconButton(icon, tag, detail, action, color = '') {
-  return '<button type="button" class="compact-icon" ' + action + attr(detail) +
-    (color ? ' style="--item-color:' + esc(color) + '"' : '') + '><span>' + esc(icon) + '</span><small>' + esc(tag) + '</small></button>';
-}
-function section(name, html) {
-  return '<section class="compact-group"><div class="compact-label">' + esc(name) + '</div><div class="compact-icons">' + html + '</div></section>';
-}
-function progress(name, count, max, color, detail) {
-  return '<button type="button" class="compact-progress"' + attr(detail) + '><span>' + esc(name) +
-    '</span><b>' + count + '/' + max + '</b><span class="compact-track">' +
-    Array.from({length:max}, (_, i) => '<i style="background:' + (i < count ? color : '#34464b') + '"></i>').join('') + '</span></button>';
+
+const RARITY_SYMBOLS = {
+  common: '●',
+  rare: '◆',
+  epic: '★',
+  legend: '✦',
+};
+const RARITY_COLORS = {
+  common: '#6be596',
+  rare: '#5cc8ff',
+  epic: '#c58cff',
+  legend: '#ffbe4f',
+};
+
+function renderProgressCard(name, count, max, color, detail) {
+  const done = count >= max;
+  const bars = Array.from({ length: max }, (_, i) =>
+    `<i style="background:${i < count ? color : 'rgba(255,255,255,0.14)'}"></i>`
+  ).join('');
+  return `<button type="button" class="glance-prog"${attr(detail)}>` +
+    `<span class="glance-prog-head"><span>${esc(name)}</span><b class="${done ? 'done' : ''}">${count}/${max}${done ? ' ✓' : ''}</b></span>` +
+    `<span class="glance-track">${bars}</span></button>`;
 }
 
 export function createBuildHud(runtimeCtx, deps) {
@@ -34,73 +45,179 @@ export function createBuildHud(runtimeCtx, deps) {
   const { getSynergyCounts, getActiveGearSets, getGearSetCounts, getActiveDualResonances, getSealStats } = deps.hero;
   const { getActiveGearAffixSynergies, gearBase, describeGearInstance, gearLabel } = deps.equipment;
   const { isW20PreselectOpen } = deps.progression;
-  const { getRealmStageLabel } = deps.unlock;
-    let lastLeftHudKey = '';
+  let lastLeftHudKey = '';
+  let activeTab = 'build'; // 'build' | 'syn'
+
+  function setLeftTab(tab) {
+    activeTab = tab === 'syn' ? 'syn' : 'build';
+    $('leftTabBuild')?.classList.toggle('active', activeTab === 'build');
+    $('leftTabSyn')?.classList.toggle('active', activeTab === 'syn');
+    renderLeftHud(true);
+  }
 
   function renderLeftHud(force){
     const body = $('leftHudBody'), game = runtimeCtx.game;
     const panel = $('leftHud');
-    if (panel) panel.hidden = !!game?.inspTarget;
+    if (panel) panel.hidden = false;
     if (!body || !game) return;
     const h = game.hero;
     const syn = getSynergyCounts(), activeSets = getActiveGearSets(), setCounts = getGearSetCounts();
     const duals = getActiveDualResonances(), affix = getActiveGearAffixSynergies();
     const ownedDestiny = getOwnedDestinyEnhancements(game);
-    const key = JSON.stringify([game.seal, game.subSeals, gearListSig(h.gear), h.skills, h.w10Branch, h.breakthroughs, h.combos, h.realm, h.lv, syn, setCounts, affix.affixIds, ownedDestiny.map(d=>d.key || d.name), isW20PreselectOpen(), game.w20State?.preselectedDirection]);
+    const key = JSON.stringify([
+      activeTab, game.seal, game.subSeals, gearListSig(h.gear), h.skills, h.w10Branch,
+      h.breakthroughs, h.combos, h.realm, h.lv, syn, setCounts, affix.affixIds,
+      ownedDestiny.map(d => d.key || d.name), isW20PreselectOpen(), game.w20State?.preselectedDirection,
+    ]);
     if (!force && key === lastLeftHudKey) return;
     lastLeftHudKey = key;
-    let seals = '';
-    if (game.seal) {
-      const s = game.seal, sp = ARTIFACTS[s.kind], el = ELEMENTS[s.elem], st = getSealStats(s);
-      const route = SEAL_SPECIALIZATIONS[s.elem]?.[s.route];
-      seals += iconButton(sp.icon, '主 '+s.star+'★', [sp.name+' · 主灵印 '+s.star+'★',sp.desc,st.dmg+' 伤害 / '+st.cd.toFixed(2)+'s', '升阶进度 '+s.prog+'/'+(SEAL_FUSE_NEED[s.star] || '满阶'), route?.name, route?.desc, '3★：'+el.t1, '5★：'+el.t2].filter(Boolean).join('\n'),'data-open-seal',el.color);
-    } else seals += iconButton('＋','主印','尚未铭刻主灵印 · 打开商店购买灵印','data-open-shop');
-    for (let i=0;i<2;i++) {
-      const s=game.subSeals[i];
-      if (s) {
-        const sp=ARTIFACTS[s.kind], res=SUB_SEAL_RESONANCE[s.elem];
-        seals += iconButton(sp.icon,'辅 '+s.star+'★',[res.name+' · 辅灵印 '+s.star+'★',res.desc(s.star),s.star>=3?'已满阶':'升阶 '+s.prog+'/'+SEAL_FUSE_NEED[s.star]].join('\n'),'data-open-seal',ELEMENTS[s.elem].color);
-      } else seals += iconButton('＋','辅'+(i+1),i===0?'W6 解锁第一辅印槽':'W10 突破解锁第二辅印槽','data-open-seal');
+
+    $('leftTabBuild')?.classList.toggle('active', activeTab === 'build');
+    $('leftTabSyn')?.classList.toggle('active', activeTab === 'syn');
+
+    if (activeTab === 'build') {
+      // 1. Main + Sub Seals Compact Bar
+      let sealHtml = '';
+      const subSummary = [0, 1].map(i => {
+        const sub = game.subSeals[i];
+        if (!sub) return null;
+        const sp = ARTIFACTS[sub.kind];
+        return `${sp.icon}${sp.name.replace('灵印', '')} ${sub.star}★`;
+      }).filter(Boolean).join(' · ');
+
+      if (game.seal) {
+        const s = game.seal, sp = ARTIFACTS[s.kind], el = ELEMENTS[s.elem], st = getSealStats(s);
+        const route = SEAL_SPECIALIZATIONS[s.elem]?.[s.route];
+        const subDetails = game.subSeals.map(sub => {
+          const res = SUB_SEAL_RESONANCE[sub.elem];
+          return `辅印：${res.name} ${sub.star}★ — ${res.desc(sub.star)}`;
+        });
+        const detail = [
+          `${sp.name} · 主灵印 ${s.star}★`,
+          sp.desc,
+          `${st.dmg} 伤害 / ${st.cd.toFixed(2)}s · 升阶 ${s.prog}/${SEAL_FUSE_NEED[s.star] || '满阶'}`,
+          route ? `${route.name}：${route.desc}` : '',
+          `3★：${el.t1}`,
+          `5★：${el.t2}`,
+          ...subDetails,
+        ].filter(Boolean).join('\n');
+        sealHtml = `<button type="button" class="glance-seal" data-open-seal style="--item-color:${esc(el.color)}"${attr(detail)}>` +
+          `<span class="gs-ic">${esc(sp.icon)}</span>` +
+          `<span class="gs-main"><span class="gs-name">${esc(sp.name)} · ${s.star}★</span>` +
+          `<span class="gs-sub">${esc(subSummary ? `辅：${subSummary}` : `${st.dmg}伤 / ${st.cd.toFixed(2)}s`)}</span></span></button>`;
+      } else {
+        sealHtml = `<button type="button" class="glance-seal" data-open-shop style="--item-color:#8aa9a9"${attr('尚未铭刻主灵印 · 点击在商店购买任意五行灵印')}>` +
+          `<span class="gs-ic">✨</span><span class="gs-main"><span class="gs-name">未铭刻主灵印</span>` +
+          `<span class="gs-sub">点击前往商店购买</span></span></button>`;
+      }
+
+      // 2. 2x2 Readable Equipped Gear Tiles (colorblind-safe symbol + name + slot/enhance)
+      const gearTiles = Array.from({ length: HERO_GEAR_SLOTS }, (_, i) => {
+        const g = h.gear[i];
+        if (!g) {
+          return `<button type="button" class="glance-gear empty" data-open-bag${attr('空构装槽 · 点击切换至背包穿戴')}>＋ 空槽</button>`;
+        }
+        const sp = GEARS[gearBase(g)] || {};
+        const sym = RARITY_SYMBOLS[g.rarity] || '●';
+        const rLbl = GEAR_RARITY_LABELS[g.rarity] || '凡品';
+        const rCol = RARITY_COLORS[g.rarity] || '#8aa9a9';
+        const badge = g.enhanceLv ? `+${g.enhanceLv}` : `${g.slotsCount || 1}槽`;
+        const lines = (g.affixes || []).map((a, j) =>
+          a && GEAR_AFFIXES[a.id] ? `${GEAR_AFFIXES[a.id].name} T${a.tier || 1}：${GEAR_AFFIXES[a.id].desc(a.tier || 1)}` : `空词条槽 ${j + 1}`
+        );
+        const set = GEAR_SETS[sp.set];
+        const detail = [
+          gearLabel(g),
+          describeGearInstance(g),
+          ...lines,
+          set ? `套装：${set.name} (2件：${set.d2} / 3件：${set.d3})` : '',
+          '点击查看构装详情与操作',
+        ].filter(Boolean).join('\n');
+        return `<button type="button" class="glance-gear" data-open-hero style="--rarity-c:${rCol}"${attr(detail)}>` +
+          `<span class="gg-top"><span>${sym} ${esc(rLbl)}</span><span>${esc(badge)}</span></span>` +
+          `<span class="gg-name">${esc(sp.icon || '🧩')} ${esc(sp.name || g.name || '构装')}</span></button>`;
+      }).join('');
+
+      // 3. Compact 1-row Active Synergy & Skill Summary Chips (click switches to 羁绊 tab)
+      const chips = [];
+      for (const [k, n] of Object.entries(setCounts)) {
+        if (n > 0 && GEAR_SETS[k]) {
+          const s = GEAR_SETS[k];
+          chips.push(`<span class="glance-chip">${esc(s.icon)} ${esc(s.name.replace('套', ''))} ${Math.min(n, 3)}/3</span>`);
+        }
+      }
+      for (const ht of (affix.hints || [])) {
+        if (ht.present.length > 0) {
+          const cls = ht.chain === 'fire_detonate' ? 'fire' : 'frost';
+          const lbl = ht.chain === 'fire_detonate' ? '🔥 火爆' : '❄️ 冰护';
+          chips.push(`<span class="glance-chip ${cls}">${lbl} ${ht.present.length}/3</span>`);
+        }
+      }
+      const learnedSkills = Object.values(h.skills).filter(lv => lv > 0).length;
+      chips.push(`<span class="glance-chip muted">神通 ${learnedSkills}</span>`);
+      if (ownedDestiny.length > 0) {
+        chips.push(`<span class="glance-chip">🎲 天命 ${ownedDestiny.length}</span>`);
+      }
+
+      body.innerHTML = sealHtml +
+        `<div class="glance-gear-grid">${gearTiles}</div>` +
+        `<button type="button" class="glance-syn-row" data-switch-syn${attr('点击切换查看全部套装、词条联动与神通详情')}>${chips.slice(0, 4).join('')}</button>`;
+    } else {
+      // Tab 2: Full Synergies, Set Progress, Element Bonds & Learned Skills
+      const progCards = [];
+      for (const [k, n] of Object.entries(setCounts)) {
+        if (n > 0 && GEAR_SETS[k]) {
+          const s = GEAR_SETS[k], active = activeSets.find(a => a.key === k);
+          progCards.push(renderProgressCard(
+            `${s.icon} ${s.name}`, Math.min(n, 3), 3, s.col,
+            [`${s.name} ${n}/3`, `当前：${active?.desc || '未激活'}`, `2件：${s.d2}`, `3件：${s.d3}`].join('\n')
+          ));
+        }
+      }
+      for (const ht of (affix.hints || [])) {
+        const list = [...ht.present, ...ht.missing], active = affix.active.find(s => s.id === ht.activeId);
+        const full = GEAR_SYNERGIES.find(s => s.chain === ht.chain && s.tier === 3);
+        const duos = GEAR_SYNERGIES.filter(s => s.chain === ht.chain && s.tier === 2);
+        progCards.push(renderProgressCard(
+          ht.chain === 'fire_detonate' ? '🔥 火系引爆' : '❄️ 冰系护体',
+          ht.present.length, 3,
+          ht.chain === 'fire_detonate' ? '#ff7e47' : '#62dcff',
+          [ht.text, `当前：${active?.desc || '未激活'}`, ...list.map(id => (ht.present.includes(id) ? '✓ ' : '缺 ') + (GEAR_AFFIXES[id]?.name || id)), `双联动：${duos[0]?.desc || ''}`, `三联动：${full?.desc || ''}`].join('\n')
+        ));
+      }
+      for (const [k, e] of Object.entries(ELEMENTS)) {
+        if (syn[k] > 0) {
+          progCards.push(renderProgressCard(
+            `${e.icon} ${e.name}`, Math.min(syn[k], 4), 4, e.color,
+            [`${e.name} ${syn[k]}/4`, `2层：${e.t1}`, `4层：${e.t2}`].join('\n')
+          ));
+        }
+      }
+
+      const skillChips = Object.entries(h.skills).filter(([, lv]) => lv > 0).map(([k, lv]) => {
+        const sp = HERO_SKILLS[k], branch = (W10_SKILL_BRANCHES[k] || []).find(b => b.key === h.w10Branch?.[k]);
+        const detail = [`${sp.name} Lv.${lv}/5`, sp.desc(lv), branch?.name, branch?.desc].filter(Boolean).join('\n');
+        return `<button type="button" class="glance-skill" data-open-hero${attr(detail)}><span>${esc(sp.icon)} ${esc(sp.name.slice(0, 4))}</span><b>Lv.${lv}${branch ? '★' : ''}</b></button>`;
+      }).join('');
+
+      const comboChips = [
+        ...COMBO_LIST.filter(c => h.combos[c.key]).map(c => `<span class="glance-chip"${attr(`${c.name}\n${c.desc}`)}>${esc(c.icon)} ${esc(c.name)}</span>`),
+        ...duals.map(d => `<span class="glance-chip"${attr(`${d.name}\n${d.desc}`)}>${esc(d.icons)} ${esc(d.name)}</span>`),
+      ].join('');
+
+      body.innerHTML =
+        `<div class="glance-prog-list">${progCards.join('') || '<div class="ui-hint">穿戴构装与灵印后显示羁绊进度</div>'}</div>` +
+        (comboChips ? `<div class="glance-syn-row" style="cursor:default">${comboChips}</div>` : '') +
+        `<div class="glance-skill-grid">${skillChips || '<span class="ui-hint">尚未习得神通</span>'}</div>`;
     }
-    const skills = Object.entries(h.skills).filter(([,lv])=>lv>0).map(([k,lv])=>{
-      const sp=HERO_SKILLS[k], branch=(W10_SKILL_BRANCHES[k]||[]).find(b=>b.key===h.w10Branch?.[k]);
-      return iconButton(sp.icon,'Lv.'+lv,[sp.name+' Lv.'+lv+'/5',sp.desc(lv),branch?.name,branch?.desc].filter(Boolean).join('\n'),'data-open-hero');
-    }).join('') || '<span class="ui-hint">尚未习得神通</span>';
-    const gears = Array.from({length:HERO_GEAR_SLOTS},(_,i)=>{
-      const g=h.gear[i];
-      if (!g) return iconButton('＋','空槽','空构装槽 · 打开背包穿戴','data-open-bag');
-      const sp=GEARS[gearBase(g)]||{};
-      const lines=(g.affixes||[]).map((a,j)=>a&&GEAR_AFFIXES[a.id] ? GEAR_AFFIXES[a.id].name+' T'+(a.tier||1)+'：'+GEAR_AFFIXES[a.id].desc(a.tier||1) : '空词条槽 '+(j+1));
-      const set=GEAR_SETS[sp.set];
-      return iconButton(sp.icon||'🧩',g.enhanceLv?'+'+g.enhanceLv:(g.slotsCount||1)+'槽',[gearLabel(g),describeGearInstance(g),...lines,set?'套装：'+set.name:'',set?'2件：'+set.d2:'',set?'3件：'+set.d3:'','点击打开构装操作详情'].filter(Boolean).join('\n'),'data-open-hero','var(--rarity-'+g.rarity+', #8aa9a9)');
-    }).join('');
-    let extras = '';
-    const w20=h.breakthroughs.w20;
-    if (w20 && !w20.placeholder) extras+=iconButton(w20.directionIcon||'⚡','二破',[w20.directionName,w20.baseEffectDesc,w20.enhancementName,w20.enhancementDesc].filter(Boolean).join('\n'),'data-open-hero');
-    ownedDestiny.forEach(d=>{extras+=iconButton(d.icon||'🎲','天命',d.name+'\n'+d.desc,'data-open-hero');});
-    body.innerHTML=section('灵印',seals)+section('神通',skills)+section('构装',gears)+(extras?section('强化',extras):'')+'<div class="compact-realm">'+esc(getRealmStageLabel())+'</div>';
-    body.querySelectorAll('[data-open-seal]').forEach(btn=>btn.addEventListener('click',()=>{game.inspTarget={type:'seal'};deps.hudController.renderAllUI(true);}));
-    body.querySelectorAll('[data-open-hero]').forEach(btn=>btn.addEventListener('click',()=>{game.inspTarget={type:'hero'};deps.hudController.renderAllUI(true);}));
-    body.querySelectorAll('[data-open-shop]').forEach(btn=>btn.addEventListener('click',()=>$('shopOpen')?.click()));
-    body.querySelectorAll('[data-open-bag]').forEach(btn=>btn.addEventListener('click',()=>$('bagOpen')?.click()));
-    const right=$('progressHudBody');
-    if (!right) return;
-    const sets=Object.entries(setCounts).filter(([k,n])=>n&&GEAR_SETS[k]).map(([k,n])=>{
-      const s=GEAR_SETS[k], active=activeSets.find(a=>a.key===k);
-      return progress(s.icon+' '+s.name,Math.min(n,3),3,s.col,[s.name+' '+n+'/3','当前：'+(active?.desc||'未激活'),'2件：'+s.d2,'3件：'+s.d3,n<2?'距两件套还差 '+(2-n)+' 件':n<3?'距完整套装还差 1 件':'完整套装已激活'].join('\n'));
-    }).join('');
-    const affixes=(affix.hints||[]).map(ht=>{
-      const list=[...ht.present,...ht.missing], active=affix.active.find(s=>s.id===ht.activeId);
-      const full=GEAR_SYNERGIES.find(s=>s.chain===ht.chain&&s.tier===3);
-      const duos=GEAR_SYNERGIES.filter(s=>s.chain===ht.chain&&s.tier===2);
-      return progress(ht.chain==='fire_detonate'?'🔥 火系引爆':'❄️ 冰系护体',ht.present.length,3,ht.chain==='fire_detonate'?'#e79859':'#75c8eb',[ht.text,'当前：'+(active?.desc||'未激活'),...list.map(id=>(ht.present.includes(id)?'✓ ':'缺 ')+(GEAR_AFFIXES[id]?.name||id)), '双联动：'+(duos[0]?.desc||''),'三联动：'+(full?.desc||'')].join('\n'));
-    }).join('');
-    const elements=Object.entries(ELEMENTS).filter(([k])=>syn[k]>0).map(([k,e])=>progress(e.icon+' '+e.name,Math.min(syn[k],4),4,e.color,[e.name+' '+syn[k]+'/4','2层：'+e.t1,'4层：'+e.t2].join('\n'))).join('');
-    const combos=COMBO_LIST.filter(c=>h.combos[c.key]).map(c=>iconButton(c.icon,'组合',c.name+'\n'+c.desc,'data-open-hero')).join('');
-    const resonance=duals.map(d=>iconButton(d.icons,'共鸣',d.name+'\n'+d.desc,'data-open-hero')).join('');
-    right.innerHTML='<div class="compact-label">套装</div>'+(sets||'<span class="ui-hint">尚无套装</span>')+'<div class="compact-label">词条联动</div>'+(affixes||'<span class="ui-hint">尚无联动</span>')+(elements?'<div class="compact-label">五行羁绊</div>'+elements:'')+((combos||resonance)?section('已激活组合',combos+resonance):'');
-    right.querySelectorAll('[data-open-hero]').forEach(btn=>btn.addEventListener('click',()=>{game.inspTarget={type:'hero'};deps.hudController.renderAllUI(true);}));
+
+    body.querySelectorAll('[data-open-seal]').forEach(btn => btn.addEventListener('click', () => { game.inspTarget = { type: 'seal' }; deps.hudController.renderAllUI(true); }));
+    body.querySelectorAll('[data-open-hero]').forEach(btn => btn.addEventListener('click', () => { game.inspTarget = { type: 'hero' }; deps.hudController.renderAllUI(true); }));
+    body.querySelectorAll('[data-open-shop]').forEach(btn => btn.addEventListener('click', () => $('shopOpen')?.click()));
+    body.querySelectorAll('[data-open-bag]').forEach(btn => btn.addEventListener('click', () => $('bagOpen')?.click()));
+    body.querySelectorAll('[data-switch-syn]').forEach(btn => btn.addEventListener('click', () => setLeftTab('syn')));
   }
-  function resetDirty(){lastLeftHudKey='';}
-  return {renderLeftHud,resetDirty};
+
+  function resetDirty(){ lastLeftHudKey = ''; }
+  return { renderLeftHud, resetDirty, setLeftTab };
 }

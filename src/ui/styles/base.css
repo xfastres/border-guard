@@ -1,28 +1,51 @@
-
   :root{
-    --bg:#0d1519;
-    --panel:rgba(13,22,27,0.92);
-    --panel-strong:rgba(10,17,22,0.96);
-    --line:rgba(182,218,214,0.22);
-    --text:#eef6f4;
-    --muted:#95b3ae;
-    --gold:#ffd666;
-    --gold-deep:#d99a26;
+    --bg:#0b1419;
+    --panel:rgba(13,24,30,0.90);
+    --panel-strong:rgba(9,17,22,0.95);
+    --line:rgba(172,218,212,0.22);
+    --line-gold:rgba(246,201,103,0.44);
+    --text:#f1f8f6;
+    --muted:#9db8b3;
+    --gold:#f6c967;
+    --gold-deep:#c98620;
     --danger:#ff6b57;
-    --good:#7ce896;
-    --wind:#72f2b4;
-    --fire:#ff7b47;
-    --frost:#6ce2ff;
-    --thunder:#c68cff;
-    --holy:#ffe478;
-    --top-h:52px;
-    --sub-bottom:96px;
+    --good:#6be596;
+    --wind:#6df0b0;
+    --fire:#ff7e47;
+    --frost:#62dcff;
+    --thunder:#c58cff;
+    --holy:#ffe27a;
+    --rarity-common:#6be596;
+    --rarity-rare:#5cc8ff;
+    --rarity-epic:#c58cff;
+    --rarity-legend:#ffbe4f;
+    --safe-x:18px;
+    --safe-y:14px;
+    --top-h:72px;
+    --sub-bottom:76px;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{
     margin:0;padding:0;width:100%;height:100%;overflow:hidden;
     background:var(--bg);color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:14px;
     user-select:none;
   }
   canvas{display:block;width:100vw;height:100vh;touch-action:none;cursor:crosshair}
+  button:focus-visible{
+    outline:2px solid #ffe084;
+    outline-offset:2px;
+    box-shadow:0 0 0 4px rgba(246,201,103,0.24);
+  }
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-track{background:rgba(5,11,15,0.35);border-radius:99px}
+  ::-webkit-scrollbar-thumb{background:rgba(172,218,212,0.28);border-radius:99px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(246,201,103,0.48)}
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{
+      transition-duration:0.01ms !important;
+      animation-duration:0.01ms !important;
+      animation-iteration-count:1 !important;
+    }
+  }

@@ -290,7 +290,7 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     assert.ok(w1ShopInfo.idx >= 0, 'W1 shop must contain an affordable gear or pill card');
 
     // Real click on normal-wave shop button -> buys directly, NO confirmation modal!
-    if (await cdp.eval("document.getElementById('uiPanelBackdrop').hidden")) await cdp.clickSelector('#shopOpen');
+    if (await cdp.eval("Boolean(document.getElementById('shopOpen')) && document.getElementById('shopSec').getClientRects().length === 0")) await cdp.clickSelector('#shopOpen');
     await cdp.clickSelector(`#shopSec .shop-card[data-shop-idx="${w1ShopInfo.idx}"]`);
     const afterDirectBuy = await cdp.eval(`({
       modal: window.BG60.game.activeModal,
@@ -314,7 +314,7 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
       return { cap, gearIdx, goldBefore: window.BG60.game.gold, bagLen: window.BG60.game.bag.length };
     })()`);
     assert.ok(fullBagShop.gearIdx >= 0);
-    if (await cdp.eval("document.getElementById('uiPanelBackdrop').hidden")) await cdp.clickSelector('#shopOpen');
+    if (await cdp.eval("Boolean(document.getElementById('shopOpen')) && document.getElementById('shopSec').getClientRects().length === 0")) await cdp.clickSelector('#shopOpen');
     await cdp.clickSelector(`#shopSec .shop-card[data-shop-idx="${fullBagShop.gearIdx}"]`);
     const afterFullBagClick = await cdp.eval(`({
       bagLen: window.BG60.game.bag.length,
@@ -325,24 +325,27 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     assert.equal(afterFullBagClick.gold, fullBagShop.goldBefore, 'Full bag gear buy must deduct 0 gold');
     assert.equal(afterFullBagClick.bought, false, 'Full bag gear item must remain unbought');
 
-    // Compact HUD: inventory is opt-in; hover reveals detail and selection alone is non-destructive.
-    if (!await cdp.eval("document.getElementById('uiPanelBackdrop').hidden")) await cdp.clickSelector('#uiPanelClose');
-    assert.equal(await cdp.eval("document.getElementById('shopSec').getClientRects().length"), 0, 'Shop must be hidden on battlefield');
-    assert.equal(await cdp.eval("document.getElementById('bagTray').getClientRects().length"), 0, 'Bag must be hidden on battlefield');
-    await cdp.clickSelector('#bagOpen');
-    const bagBeforeSelection = await cdp.eval('window.BG60.game.bag.length');
-    const hoverDetail = await cdp.eval(`(() => {
-      const item = document.querySelector('#bagTray .bag-item');
-      item.dispatchEvent(new PointerEvent('pointerover', { bubbles: true }));
-      const tip = document.getElementById('uiDetailTooltip');
-      return {visible: !tip.hidden, text: tip.textContent};
-    })()`);
-    assert.equal(hoverDetail.visible, true, 'Bag hover tooltip must appear synchronously');
-    assert.ok(hoverDetail.text.length > 10, 'Tooltip should include item details');
-    await cdp.clickSelector('#bagTray .bag-item', { index: 0 });
-    assert.equal(await cdp.eval('window.BG60.game.bag.length'), bagBeforeSelection, 'Selecting an item must not equip or sell it');
-    assert.equal(await cdp.eval("document.getElementById('bagSelection').hidden"), false);
-    await cdp.clickSelector('#uiPanelClose');
+    // Modular Game UI v3: inline locked-geometry Shop <-> Bag switch, tooltip, non-destructive selection
+    if (await cdp.eval("Boolean(document.getElementById('bagOpen'))")) {
+      const shopDeckRect = await cdp.eval("(() => { const r = document.getElementById('dock').getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) }; })()");
+      assert.equal(await cdp.eval("document.getElementById('bagTray').getClientRects().length"), 0, 'Bag must start hidden while Shop tab is active');
+      await cdp.clickSelector('#bagOpen');
+      const bagDeckRect = await cdp.eval("(() => { const r = document.getElementById('dock').getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) }; })()");
+      assert.deepEqual(bagDeckRect, shopDeckRect, 'Console dock must keep identical width/height between Shop and Bag');
+      const bagBeforeSelection = await cdp.eval('window.BG60.game.bag.length');
+      const hoverDetail = await cdp.eval(`(() => {
+        const item = document.querySelector('#bagTray .bag-item');
+        item.dispatchEvent(new PointerEvent('pointerover', { bubbles: true }));
+        const tip = document.getElementById('uiDetailTooltip');
+        return { visible: !tip.hidden, text: tip.textContent };
+      })()`);
+      assert.equal(hoverDetail.visible, true, 'Bag hover tooltip must appear');
+      assert.ok(hoverDetail.text.length > 10, 'Tooltip should include item details');
+      await cdp.clickSelector('#bagTray .bag-item', { index: 0 });
+      assert.equal(await cdp.eval('window.BG60.game.bag.length'), bagBeforeSelection, 'Selecting an item must not equip or sell it');
+      assert.equal(await cdp.eval("document.getElementById('bagSelection').hidden"), false);
+      await cdp.clickSelector('#shopOpen');
+    }
 
     // Enter W29 timed final prep (90s) with controlled monotonic clock
     const w29ShopSetup = await cdp.eval(`(() => {
@@ -367,7 +370,7 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     assert.ok(w29ShopSetup.idxA >= 0);
 
     // Real click shop card in W29 -> opens confirmation modal (#shopConfirmBuyBtn / #shopConfirmCancelBtn), 0 gold deducted yet!
-    if (await cdp.eval("document.getElementById('uiPanelBackdrop').hidden")) await cdp.clickSelector('#shopOpen');
+    if (await cdp.eval("Boolean(document.getElementById('shopOpen')) && document.getElementById('shopSec').getClientRects().length === 0")) await cdp.clickSelector('#shopOpen');
     await cdp.clickSelector(`#shopSec .shop-card[data-shop-idx="${w29ShopSetup.idxA}"]`);
     await cdp.waitFor('Boolean(document.getElementById("shopConfirmBuyBtn") && document.getElementById("shopConfirmCancelBtn"))', { label: 'W29 shop confirm buttons' });
     const midConfirm = await cdp.eval('({ gold: window.BG60.game.gold, draft: !!window.BG60.game.shopConfirmDraft, modal: window.BG60.game.activeModal?.type })');
@@ -389,7 +392,7 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     assert.equal(afterCancel.bought, false);
 
     // Real click shop card again -> real click #shopConfirmBuyBtn -> purchase succeeds!
-    if (await cdp.eval("document.getElementById('uiPanelBackdrop').hidden")) await cdp.clickSelector('#shopOpen');
+    if (await cdp.eval("Boolean(document.getElementById('shopOpen')) && document.getElementById('shopSec').getClientRects().length === 0")) await cdp.clickSelector('#shopOpen');
     await cdp.clickSelector(`#shopSec .shop-card[data-shop-idx="${w29ShopSetup.idxA}"]`);
     await cdp.waitFor('Boolean(document.getElementById("shopConfirmBuyBtn"))', { label: 'W29 shop confirm buy btn' });
     await cdp.clickSelector('#shopConfirmBuyBtn');
@@ -413,7 +416,7 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
       return { idxB, goldBefore: window.BG60.game.gold };
     })()`);
     assert.ok(w29Second.idxB >= 0, 'Must have a second affordable W29 shop item');
-    if (await cdp.eval("document.getElementById('uiPanelBackdrop').hidden")) await cdp.clickSelector('#shopOpen');
+    if (await cdp.eval("Boolean(document.getElementById('shopOpen')) && document.getElementById('shopSec').getClientRects().length === 0")) await cdp.clickSelector('#shopOpen');
     await cdp.clickSelector(`#shopSec .shop-card[data-shop-idx="${w29Second.idxB}"]`);
     await cdp.waitFor('Boolean(document.getElementById("shopConfirmBuyBtn"))', { label: 'second W29 confirm modal' });
 

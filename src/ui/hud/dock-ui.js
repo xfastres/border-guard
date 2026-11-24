@@ -6,6 +6,13 @@ import {
 } from '../../data/index.js';
 import { gearListSig } from './build-hud.js';
 
+const RARITY_SYMBOLS = {
+  common: '●',
+  rare: '◆',
+  epic: '★',
+  legend: '✦',
+};
+
 export function createDockUI(runtimeCtx, deps) {
   const { getEl: $, audio, feedback: { toast } } = deps;
   const { getSealStarCap, getSubSealSlotCap } = deps.unlock;
@@ -51,7 +58,6 @@ export function createDockUI(runtimeCtx, deps) {
     }
     wrap.append(btn);
 
-    // 2 Sub-Seal Resonance Slots (unlocked at W6 and W10 breakthrough)
     for (let i = 0; i < 2; i++) {
       const sub = game.subSeals[i];
       const unlocked = i < subCap;
@@ -154,14 +160,14 @@ export function createDockUI(runtimeCtx, deps) {
       if (item.itemType === 'pill') {
         const p = PILLS[item.pillKey];
         node.btn.className = 'shop-card pill-card';
-        node.btn.style.setProperty('--elem-c', '#7ce896');
+        node.btn.style.setProperty('--elem-c', '#6be596');
         node.btn.disabled = item.bought || game.gold < item.cost;
         node.btn.title = `${p.name}：${p.desc}`;
         node.tag.hidden = item.bought;
-        node.tag.textContent = '丹药';
+        node.tag.textContent = '● 丹药';
         node.ic.textContent = p.icon;
         node.nm.textContent = item.bought ? '已购买' : p.name;
-        node.cost.textContent = item.bought ? '—' : `${item.cost} 金`;
+        node.cost.textContent = item.bought ? '—' : `🪙 ${item.cost}`;
         return;
       }
 
@@ -181,15 +187,16 @@ export function createDockUI(runtimeCtx, deps) {
           return sp ? `• ${sp.icon}${sp.name}：${sp.desc(a.tier || 1)}` : '';
         }).join('\n');
         const buyCnt = getShopElemBuyCount(g.elem);
+        const sym = RARITY_SYMBOLS[g.rarity] || '●';
         node.btn.className = `shop-card gear-card ${g.rarity}` + (synHints.length || itemSyns.length ? ' mergeable' : '');
         node.btn.style.setProperty('--elem-c', el.color);
         node.btn.disabled = item.bought || game.gold < item.cost;
-        node.btn.title = `${g.name} [${GEAR_RARITY_LABELS[g.rarity]} · ${stSpec.label} · ${g.slotsCount}槽]\n基础：${describeGearEffect(g)}\n词条：\n${afLines}${itemSyns.length ? `\n单件联动：${itemSyns.map(s => s.name).join('/')}` : ''}${synHints.length ? `\n提示：${synHints.join('；')}` : ''}\n定价：阶段${g.sourceStage} · ${el.name}系已购 ${buyCnt} 次`;
+        node.btn.title = `${g.name} [${sym} ${GEAR_RARITY_LABELS[g.rarity]} · ${stSpec.label} · ${g.slotsCount}槽]\n基础：${describeGearEffect(g)}\n词条：\n${afLines}${itemSyns.length ? `\n单件联动：${itemSyns.map(s => s.name).join('/')}` : ''}${synHints.length ? `\n提示：${synHints.join('；')}` : ''}\n定价：阶段${g.sourceStage} · ${el.name}系已购 ${buyCnt} 次`;
         node.tag.hidden = item.bought;
-        node.tag.textContent = `${GEAR_RARITY_LABELS[g.rarity]}·${g.slotsCount}槽`;
+        node.tag.textContent = `${sym} ${GEAR_RARITY_LABELS[g.rarity]}·${g.slotsCount}槽`;
         node.ic.textContent = g.icon;
         node.nm.textContent = item.bought ? '已购买' : g.name;
-        node.cost.textContent = item.bought ? '—' : `${item.cost} 金`;
+        node.cost.textContent = item.bought ? '—' : `🪙 ${item.cost}`;
         return;
       }
 
@@ -230,15 +237,22 @@ export function createDockUI(runtimeCtx, deps) {
       }
       node.ic.textContent = spec.icon;
       node.nm.textContent = item.bought ? '已购买' : `${spec.name}${item.star > 1 ? ` ${item.star}★` : ''}`;
-      node.cost.textContent = item.bought ? '—' : `${item.cost} 金${item.disc ? ' 折' : ''}`;
+      node.cost.textContent = item.bought ? '—' : `🪙 ${item.cost}${item.disc ? ' 折' : ''}`;
     });
   }
 
   function renderBag(force){
     const game = runtimeCtx.game;
+    const cap = getBagCapacity();
+    const capTxt = `${game.bag.length}/${cap}`;
     const count = $('bagCount');
-    if (count) count.textContent = `${game.bag.length}/${getBagCapacity()}`;
-    const key = gearListSig(game.bag) + '|' + game.hero.gear.length;
+    if (count) count.textContent = capTxt;
+    const capNum = $('bagCapNum');
+    if (capNum) capNum.textContent = capTxt;
+    const matNum = $('bagMatNum');
+    if (matNum) matNum.textContent = `⚙️ ${game.materials || 0} 锻材`;
+
+    const key = gearListSig(game.bag) + '|' + game.hero.gear.length + '|' + (game.materials || 0);
     if (!force && key === lastBagKey) return;
     lastBagKey = key;
 
@@ -249,7 +263,7 @@ export function createDockUI(runtimeCtx, deps) {
     if (!game.bag.length) {
       const sp = document.createElement('div');
       sp.className = 'bag-empty';
-      sp.textContent = '构装背包空\n商店/精英获装';
+      sp.textContent = '背包空空如也\n在商店购买或击败精英获取构装';
       tray.append(sp);
       return;
     }
@@ -257,12 +271,12 @@ export function createDockUI(runtimeCtx, deps) {
       if (isBagSeal(inst)) {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'bag-item ' + (inst.rarity || 'rare');
+        btn.className = 'bag-item ' + (inst.rarity || 'rare') + (inst.uid === selectedBagUid ? ' active' : '');
         btn.dataset.bagIdx = String(idx);
         btn.dataset.uid = inst.uid;
         btn.title = `未装备灵印【${inst.name} ${inst.star}★】（安全收纳，不覆盖主灵印）\n点击选择 · 右键出售换金 · Shift+右键拆解换锻材`;
-        btn.innerHTML = `<span class="ic">${inst.icon || '✨'}</span><span class="nm">${inst.name}</span><span class="star-tag">${inst.star}★</span><span class="slot-tag">灵印</span>`;
-        btn.addEventListener('click', () => { selectedBagUid = game.bag[idx]?.uid; renderBagSelection(); });
+        btn.innerHTML = `<span class="star-tag">${inst.star}★</span><span class="ic">${inst.icon || '✨'}</span><span class="nm">${inst.name}</span><span class="slot-tag">◆ 灵印</span>`;
+        btn.addEventListener('click', () => { selectedBagUid = game.bag[idx]?.uid; syncBagHighlight(); renderBagSelection(); });
         btn.addEventListener('contextmenu', ev => {
           ev.preventDefault();
           if (ev.shiftKey) dismantleBagGear(idx);
@@ -274,14 +288,15 @@ export function createDockUI(runtimeCtx, deps) {
       const g = isGearInstance(inst) ? inst : normalizeGearInstance(inst);
       const sellGold = getGearSellGold(g);
       const disMats = getGearDismantleMaterials(g);
+      const sym = RARITY_SYMBOLS[g.rarity] || '●';
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'bag-item ' + g.rarity;
+      btn.className = 'bag-item ' + g.rarity + (g.uid === selectedBagUid ? ' active' : '');
       btn.dataset.bagIdx = String(idx);
       btn.dataset.uid = g.uid;
-      btn.title = `${g.name}\n${describeGearInstance(g)}\n${(g.affixes||[]).filter(Boolean).map(a=>GEAR_AFFIXES[a.id] ? GEAR_AFFIXES[a.id].name+'：'+GEAR_AFFIXES[a.id].desc(a.tier||1) : '').join('\n')}\n点击选择 · 右键出售(+${sellGold}金) · Shift+右键拆解(+${disMats}锻材)`;
-      btn.innerHTML = `<span class="ic">${g.icon}</span><span class="nm">${g.name}</span>${g.enhanceLv > 0 ? `<span class="star-tag">+${g.enhanceLv}</span>` : ''}<span class="slot-tag">${g.slotsCount}槽</span>`;
-      btn.addEventListener('click', () => { selectedBagUid = game.bag[idx]?.uid; renderBagSelection(); });
+      btn.title = `${g.name} [${sym} ${GEAR_RARITY_LABELS[g.rarity] || '凡品'}]\n${describeGearInstance(g)}\n${(g.affixes||[]).filter(Boolean).map(a=>GEAR_AFFIXES[a.id] ? GEAR_AFFIXES[a.id].name+'：'+GEAR_AFFIXES[a.id].desc(a.tier||1) : '').join('\n')}\n点击选择 · 右键出售(+${sellGold}金) · Shift+右键拆解(+${disMats}锻材)`;
+      btn.innerHTML = `${g.enhanceLv > 0 ? `<span class="star-tag">+${g.enhanceLv}</span>` : ''}<span class="ic">${g.icon}</span><span class="nm">${g.name}</span><span class="slot-tag">${sym} ${g.slotsCount}槽</span>`;
+      btn.addEventListener('click', () => { selectedBagUid = game.bag[idx]?.uid; syncBagHighlight(); renderBagSelection(); });
       btn.addEventListener('contextmenu', ev => {
         ev.preventDefault();
         if (ev.shiftKey) dismantleBagGear(idx);
@@ -291,27 +306,50 @@ export function createDockUI(runtimeCtx, deps) {
     });
   }
 
+  function syncBagHighlight(){
+    const tray = $('bagTray');
+    if (!tray?.querySelectorAll) return;
+    tray.querySelectorAll('.bag-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.uid === selectedBagUid);
+    });
+  }
+
   function renderBagSelection(){
     const panel = $('bagSelection');
+    const placeholder = $('bagSelectionEmpty');
     if (!panel) return;
     const game = runtimeCtx.game, idx = game.bag.findIndex(g => g?.uid === selectedBagUid);
     panel.hidden = idx < 0;
+    if (placeholder) placeholder.hidden = idx >= 0;
     panel.replaceChildren();
     if (idx < 0) return;
     const inst = game.bag[idx], isSeal = isBagSeal(inst);
     const h = document.createElement('b');
-    h.textContent = inst.name || '构装';
+    h.textContent = `${inst.icon || '🧩'} ${inst.name || '构装'}`;
     const text = document.createElement('p');
-    text.textContent = isSeal ? ARTIFACTS[inst.kind]?.desc || '未装备灵印' : [describeGearInstance(inst),...(inst.affixes||[]).filter(Boolean).map(a=>GEAR_AFFIXES[a.id] ? GEAR_AFFIXES[a.id].name+'：'+GEAR_AFFIXES[a.id].desc(a.tier||1) : '')].join('\n');
-    panel.append(h,text);
-    // Seal recycle values differ from equipment; let the authoritative action report the yield.
-    const sellLabel = isSeal ? '出售灵印' : '出售 +'+getGearSellGold(inst)+'金';
-    const dismantleLabel = isSeal ? '拆解灵印' : '拆解 +'+getGearDismantleMaterials(inst)+'锻材';
-    for (const [label,action] of [[isSeal?'吸收':'穿戴',equipGearFromBag],[sellLabel,sellBagGear],[dismantleLabel,dismantleBagGear]]) {
-      const btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent=label;
-      btn.addEventListener('click',()=>{const current=runtimeCtx.game.bag.findIndex(g=>g?.uid===selectedBagUid);if(current>=0) action(current);});
-      panel.append(btn);
+    text.textContent = isSeal
+      ? ARTIFACTS[inst.kind]?.desc || '未装备灵印'
+      : [describeGearInstance(inst), ...(inst.affixes || []).filter(Boolean).map(a => GEAR_AFFIXES[a.id] ? GEAR_AFFIXES[a.id].name + '：' + GEAR_AFFIXES[a.id].desc(a.tier || 1) : '')].join(' · ');
+    const btnRow = document.createElement('div');
+    btnRow.className = 'bag-act-btns';
+    const sellLabel = isSeal ? '出售' : `卖+${getGearSellGold(inst)}金`;
+    const dismantleLabel = isSeal ? '拆解' : `拆+${getGearDismantleMaterials(inst)}材`;
+    for (const [label, action, isPrimary] of [
+      [isSeal ? '吸收' : '穿戴', equipGearFromBag, true],
+      [sellLabel, sellBagGear, false],
+      [dismantleLabel, dismantleBagGear, false],
+    ]) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = isPrimary ? 'btn equip-btn' : 'btn';
+      btn.textContent = label;
+      btn.addEventListener('click', () => {
+        const current = runtimeCtx.game.bag.findIndex(g => g?.uid === selectedBagUid);
+        if (current >= 0) action(current);
+      });
+      btnRow.append(btn);
     }
+    panel.append(h, text, btnRow);
   }
 
   function resetDirty() {

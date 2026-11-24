@@ -1,22 +1,26 @@
   /* Toast & Banner */
   .toast{
-    position:fixed;left:50%;bottom:98px;transform:translateX(-50%);z-index:28;
-    padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:800;
-    background:rgba(10,18,22,0.95);border:1px solid rgba(255,214,102,0.55);color:#fff3c4;
-    box-shadow:0 10px 26px rgba(0,0,0,0.48);pointer-events:none;white-space:nowrap;max-width:92vw;
+    position:fixed;left:50%;bottom:226px;transform:translateX(-50%);z-index:32;
+    padding:9px 18px;border-radius:999px;font-size:14px;font-weight:800;
+    background:rgba(8,16,21,0.95);border:1px solid rgba(246,201,103,0.58);color:#fff3c4;
+    box-shadow:0 12px 28px rgba(0,0,0,0.55);pointer-events:none;white-space:nowrap;max-width:92vw;
     overflow:hidden;text-overflow:ellipsis;
+    text-shadow:0 1px 2px rgba(0,0,0,0.85);
   }
-  .toast.warn{border-color:rgba(255,112,92,0.75);color:#ffd4cc}
+  body[data-phase="wave"] .toast,
+  body[data-phase="harvest"] .toast{bottom:108px}
+  .toast.warn{border-color:rgba(255,112,92,0.78);color:#ffd6ce}
   .toast[hidden]{display:none}
 
   .banner{
-    position:fixed;top:calc(var(--sub-bottom) + 14px);left:50%;transform:translateX(-50%);z-index:26;
-    padding:10px 22px;border-radius:14px;text-align:center;pointer-events:none;
-    background:rgba(14,24,30,0.94);border:1px solid rgba(255,214,102,0.55);
-    box-shadow:0 14px 36px rgba(0,0,0,0.55);
+    position:fixed;top:calc(var(--top-h) + 22px);left:50%;transform:translateX(-50%);z-index:30;
+    padding:12px 26px;border-radius:16px;text-align:center;pointer-events:none;
+    background:rgba(11,21,27,0.94);border:1px solid rgba(246,201,103,0.58);
+    box-shadow:0 16px 38px rgba(0,0,0,0.58);
+    text-shadow:0 1px 2px rgba(0,0,0,0.85);
   }
   .banner.boss{background:rgba(95,22,22,0.95);border-color:rgba(255,126,102,0.85)}
   .banner.good{background:rgba(20,66,44,0.95);border-color:rgba(124,232,150,0.75)}
   .banner[hidden]{display:none}
-  .banner .bt{font-size:17px;font-weight:900;color:#fff6d0}
-  .banner .bs{font-size:12px;color:#d6e9e4;margin-top:2px}
+  .banner .bt{font-size:18px;font-weight:900;color:#fff6d0}
+  .banner .bs{font-size:13.5px;color:#d6e9e4;margin-top:3px}

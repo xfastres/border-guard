@@ -8,73 +8,90 @@
 <title>边境守卫 v0.60 · 30波试玩版（阶段 1）</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23121e24'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38'%3E%E2%9A%94%EF%B8%8F%3C/text%3E%3C/svg%3E" />
 </head>
-<body>
+<body data-phase="prep" data-dock-tab="shop">
 <canvas id="gameCanvas"></canvas>
 
+<!-- Floating Safe-Zone Top HUD Islands (no full-width web navbar) -->
 <header class="topbar" id="topbar">
-  <div class="top-left">
-    <div class="brand">⚔️ 边境守卫</div>
+  <!-- Top-Left Island: Brand + Wave + Hero Vitals/Realm -->
+  <div class="top-left hud-island">
+    <div class="brand" title="边境守卫 v0.60">⚔️</div>
     <span class="pill wave-prep" id="wavePill">第 1 / 30 波 · 备战</span>
-    <span class="pill gold" id="goldPill">💰 55</span>
-    <span class="pill" id="matPill" title="普通材料（用于常规装备优化与W20突破强化重抽）">⚙️ 0 锻材</span>
-    <span class="pill" id="tokenPill" title="天命转印符（仅通过天命赌局特殊强化子池获取，用于词条转移台）">🔮 0 转印符</span>
-    <span class="pill" id="shardPill" title="局外传承碎片（仅用于局外横向解锁，不与局内金币互换）">💠 0 碎片</span>
-    <span class="pill hp" id="heroHpPill">❤️ 220/220</span>
-    <button class="pill realm-btn" id="heroPill" type="button" title="当前成长阶段与等级（点击查看属性与W10/W20突破详情）">
-      <span id="heroLvTxt">炼气·初探 Lv.1</span>
-      <span class="xp-bar"><span class="xp-fill" id="xpFill"></span></span>
+    <button class="hero-vitals-btn" id="heroPill" type="button" title="当前生命、境界与经验（点击查看属性与突破详情）">
+      <span class="hv-row">
+        <span class="pill hp" id="heroHpPill">❤️ 220/220</span>
+        <span class="hv-lv" id="heroLvTxt">炼气·初探 Lv.1</span>
+      </span>
+      <span class="hv-bars">
+        <span class="hp-bar"><span class="hp-fill" id="heroHpFill" style="width:100%"></span></span>
+        <span class="xp-bar"><span class="xp-fill" id="xpFill"></span></span>
+      </span>
     </button>
-    <span class="pill" id="enemyPill" hidden>👾 0</span>
-    <span class="pill fps" id="fpsPill">60 FPS</span>
   </div>
+
+  <!-- Top-Center Contextual Boss & Wave Status Banner (visible during wave) -->
+  <div class="wave-boss-banner hud-island" id="waveBossBanner" hidden>
+    <div class="wbb-row">
+      <span class="wbb-title" id="waveBossTitle">⚔️ 敌潮交战中</span>
+      <span class="pill" id="enemyPill">👾 剩余 0</span>
+    </div>
+    <div class="wbb-track" id="waveBossTrack" hidden>
+      <div class="wbb-fill" id="waveBossFill" style="width:100%"></div>
+    </div>
+  </div>
+
+  <!-- Top-Right Islands: Active Currencies + Quiet System Controls -->
   <div class="top-right">
-    <button class="btn gold" id="w20PrepBtn" type="button" hidden title="W16-W20 预选第二次突破方向与查看 W19 首领情报">⚡ W20 方向预选</button>
-    <button class="btn" id="speedBtn" type="button">1×</button>
-    <button class="btn" id="pauseBtn" type="button">暂停</button>
-    <button class="btn" id="soundBtn" type="button" title="音效开关">🔊</button>
-    <button class="btn" id="helpBtn" type="button">玩法</button>
-    <button class="btn" id="resetBtn" type="button">重开</button>
+    <div class="hud-island res-island">
+      <span class="pill gold" id="goldPill" title="金币（商店购买、刷新与天命赌局）">💰 55</span>
+      <span class="res-sep" aria-hidden="true"></span>
+      <span class="pill" id="matPill" title="锻材（用于构装强化与 W20 突破强化重抽）">⚙️ 0</span>
+      <span class="pill" id="tokenPill" hidden title="天命转印符（用于词条转移台）">🔮 0</span>
+      <span class="pill" id="shardPill" hidden title="局外传承碎片（仅用于局外横向解锁）">💠 0</span>
+      <span class="pill fps" id="fpsPill" hidden>60 FPS</span>
+    </div>
+    <div class="hud-island sys-island">
+      <button class="btn sys-meta" id="metaLegacyBtn" type="button" title="局外传承配置与解锁（局内只读展示并锁定配置）">💠 传承</button>
+      <button class="btn" id="speedBtn" type="button" title="战斗倍速 [F]">1×</button>
+      <button class="btn" id="pauseBtn" type="button" title="暂停/继续">暂停</button>
+      <button class="btn" id="soundBtn" type="button" title="音效开关">🔊</button>
+      <button class="btn" id="helpBtn" type="button" title="玩法说明">玩法</button>
+      <button class="btn" id="resetBtn" type="button" title="重新开始本局">重开</button>
+    </div>
   </div>
 </header>
 
-<section class="subbar" id="subbar">
+<!-- Legacy hidden anchors preserved for zero-flicker dirty render compatibility -->
+<section class="subbar" id="subbar" hidden>
   <div class="syn-strip" id="sealStrip"></div>
   <div class="sub-actions" id="secondaryActions">
-    <div class="skill-strip" id="skillStrip" title="已学领主神通（点击展开属性与伤害构成）"></div>
-    <button class="btn gold" id="destinyBtn" type="button" title="天命赌局：自由押注金币抽取灵印/构装/丹药/天命专属强化与转印符（备战期可用）">🎲 天命赌局</button>
-    <button class="btn" id="transferBtn" type="button" title="词条转移台：消耗天命转印符与金币，在已穿戴与背包装备间转移词条（备战期可用）">✨ 词条转移台</button>
-    <button class="btn" id="metaLegacyBtn" type="button" title="局外传承配置与解锁（开局前与结算可调整；局内只读展示并锁定配置）">💠 局外传承</button>
-    <button class="meta-badge" id="metaBadge" type="button" title="查看W10/W20突破与配方组合技">✨ 突破 0/2 · 组合 0/4</button>
+    <div class="skill-strip" id="skillStrip"></div>
+    <button class="meta-badge" id="metaBadge" type="button">✨ 突破 0/2 · 组合 0/4</button>
     <button class="btn" id="heroPanelBtn" type="button">👑 属性/神通 [C]</button>
-    <button class="btn" id="autoWaveBtn" type="button">自动下波：关</button>
   </div>
 </section>
 
 <div class="hp-vignette" id="hpVignette"></div>
 <div class="trib-flash" id="tribFlash"></div>
 
-<aside class="battle-hud" id="battleHud" hidden>
-  <div class="lh-head" id="battleHudHead" title="战场状态、敌潮威胁与本局战绩">
-    <span>⚔️ 战场情报</span>
-    <button class="btn" id="battleHudToggle" type="button" style="padding:2px 7px;font-size:10.5px">折叠</button>
-  </div>
-  <div class="lh-body" id="battleHudBody"></div>
-</aside>
-
-<aside class="left-hud build-hud" id="leftHud">
+<!-- Unified Single Left Build Glance Card (auto-collapses in Wave for clean arena) -->
+<aside class="left-hud build-hud hud-island" id="leftHud">
   <div class="lh-head" id="leftHudHead" title="按 [Tab] 或点击折叠/展开构筑总览">
-    <span>🧩 构筑总览</span>
-    <button class="btn" id="leftHudToggle" type="button" style="padding:2px 7px;font-size:10.5px">折叠 [Tab]</button>
+    <span class="lh-collapsed-lbl">🧩 构筑</span>
+    <div class="lh-tabs" id="leftHudTabs">
+      <button class="lh-tab active" id="leftTabBuild" type="button" data-left-tab="build">🧩 构筑</button>
+      <button class="lh-tab" id="leftTabSyn" type="button" data-left-tab="syn">✨ 羁绊</button>
+    </div>
+    <button class="btn lh-toggle" id="leftHudToggle" type="button">折叠 [Tab]</button>
   </div>
   <div class="lh-body" id="leftHudBody"></div>
 </aside>
 
-<aside class="progress-hud" id="progressHud"><div class="lh-head"><span>构筑进度</span><button class="btn" id="progressToggle" type="button">折叠</button></div><div class="lh-body" id="progressHudBody"></div></aside>
-
-<aside class="inspector" id="inspector" hidden>
+<!-- Layer-3 On-Demand Right Inspector Drawer -->
+<aside class="inspector hud-island" id="inspector" hidden>
   <div class="insp-head">
     <div class="insp-title" id="inspTitle">领主</div>
-    <button class="btn" id="inspClose" type="button" style="padding:3px 8px">关闭</button>
+    <button class="btn" id="inspClose" type="button">关闭</button>
   </div>
   <div class="insp-sub" id="inspSub"></div>
   <div class="stat-grid" id="inspStats"></div>
@@ -92,40 +109,115 @@
   <div class="bs" id="bannerSub"></div>
 </div>
 
+<!-- Phase-Aware Bottom Command Console -->
 <div class="dock-wrap">
-  <div class="dock" id="dock">
-    <div class="dock-sec" id="heroSkillSec">
-      <button class="act-btn" id="dashBtn" type="button">
-        <span class="k">Space</span><span class="ic">🔥</span><span class="nm">烈焰冲刺</span><span class="sb">位移+火径</span>
-        <span class="cd-mask" id="dashCd" hidden></span>
-      </button>
-      <button class="act-btn" id="ultBtn" type="button">
-        <span class="k">R</span><span class="ic">⚡</span><span class="nm">全军超载</span><span class="sb">5s 狂暴</span>
-        <span class="cd-mask" id="ultCd" hidden></span>
+  <!-- PREP MODE: Floating Mode Strip + Locked-Geometry Shop/Bag Console -->
+  <div class="prep-console-wrap" id="prepConsoleWrap">
+    <div class="prep-strip">
+      <div class="hud-island seg-group" role="tablist" aria-label="备战操作台切换">
+        <button class="seg-tab active" id="shopOpen" type="button" role="tab" aria-selected="true">
+          <span>🏪</span><span>商店</span>
+        </button>
+        <button class="seg-tab" id="bagOpen" type="button" role="tab" aria-selected="false">
+          <span>🎒</span><span>背包</span><span class="seg-badge" id="bagCount">0/12</span>
+        </button>
+      </div>
+      <div class="hud-island prep-tools">
+        <button class="btn prep-tool-gold" id="destinyBtn" type="button" title="天命赌局：自由押注金币抽取灵印/构装/丹药/天命专属强化与转印符（备战期可用）">🎲 天命赌局</button>
+        <button class="btn prep-tool-purple" id="transferBtn" type="button" title="词条转移台：消耗天命转印符与金币，在已穿戴与背包装备间转移词条（备战期可用）">✨ 词条转移</button>
+        <button class="btn gold" id="w20PrepBtn" type="button" hidden title="W16-W20 预选第二次突破方向与查看 W19 首领情报">⚡ W20 方向预选</button>
+        <span class="res-sep" aria-hidden="true"></span>
+        <button class="btn" id="intelOpen" type="button" title="查看本波敌情、首领机制与战绩统计">📊 情报</button>
+        <button class="btn" id="autoWaveBtn" type="button" title="备战结束后自动开启下一波">自动下波：关</button>
+        <span id="uiPanelTimer" class="pill gold" hidden></span>
+      </div>
+    </div>
+
+    <div class="dock hud-island console-deck" id="dock">
+      <!-- Shop View (Locked 156px height) -->
+      <div class="deck-view" id="uiShopPanel">
+        <div class="deck-anchor">
+          <div class="dock-gold" id="dockGold">
+            <span class="lbl">可用金币</span>
+            <b id="dockGoldNum">55</b>
+          </div>
+          <button class="act-btn reroll-btn" id="rerollBtn" type="button" title="刷新商店商品 [Q]">
+            <span class="rr-top">🎲 刷新 <kbd class="kbd-cap">Q</kbd></span>
+            <span class="sb" id="rerollCost">5 金币</span>
+          </button>
+        </div>
+        <div class="dock-sec shop-grid" id="shopSec"></div>
+      </div>
+
+      <!-- Bag View (IDENTICAL 156px height — 0px jump!) -->
+      <div class="deck-view" id="uiBagPanel" hidden>
+        <div class="deck-anchor">
+          <div class="dock-gold bag-cap-card">
+            <span class="lbl">背包容量</span>
+            <b id="bagCapNum">0/12</b>
+          </div>
+          <div class="bag-mat-pill" id="bagMatNum">⚙️ 0 锻材</div>
+        </div>
+        <div class="bag-deck-main">
+          <div class="bag-tray" id="bagTray"></div>
+          <div id="bagSelection" class="bag-selection" hidden></div>
+          <div id="bagSelectionEmpty" class="bag-selection-placeholder">点击左侧装备查看操作<br>右键快卖 · Shift+右键拆材</div>
+        </div>
+      </div>
+
+      <!-- Right Primary CTA -->
+      <button class="act-btn primary wave-cta" id="waveBtn" type="button">
+        <kbd class="kbd-cap">Enter</kbd>
+        <span class="ic">⚔️</span>
+        <span class="nm" id="waveBtnNm">开始第 1 波</span>
+        <span class="sb" id="waveBtnSb">备战中</span>
       </button>
     </div>
-    <div class="dock-div"></div>
-    <button class="act-btn ui-launch" id="bagOpen" type="button"><span class="ic">🎒</span><span class="nm">背包</span><span class="sb" id="bagCount">0/12</span></button>
-    <button class="act-btn ui-launch" id="shopOpen" type="button"><span class="ic">🏪</span><span class="nm">商店</span></button>
-    <button class="act-btn ui-launch" id="intelOpen" type="button"><span class="ic">📊</span><span class="nm">情报</span></button>
-    <button class="act-btn ui-launch" id="toolsOpen" type="button"><span class="ic">⚙️</span><span class="nm">功能</span><span class="sb" id="toolsNotice" hidden>待领取</span></button>
-    <button class="act-btn primary" id="waveBtn" type="button">
-      <span class="k">Enter</span><span class="ic">⚔️</span><span class="nm" id="waveBtnNm">开始第 1 波</span><span class="sb" id="waveBtnSb">备战中</span>
+  </div>
+
+  <!-- WAVE MODE: Clean Spacious Combat Action Bar (Shop/Bag auto-hidden!) -->
+  <div class="wave-dock hud-island" id="heroSkillSec">
+    <button class="act-btn skill-btn dash-skill" id="dashBtn" type="button">
+      <span class="ic">🔥</span>
+      <span class="sk-txt">
+        <span class="nm">烈焰冲刺 <kbd class="kbd-cap">Space</kbd></span>
+        <span class="sb">位移 + 留火径</span>
+      </span>
+      <span class="cd-mask" id="dashCd" hidden></span>
     </button>
+    <button class="act-btn skill-btn ult-skill" id="ultBtn" type="button">
+      <span class="ic">⚡</span>
+      <span class="sk-txt">
+        <span class="nm">全军超载 <kbd class="kbd-cap">R</kbd></span>
+        <span class="sb">5s 全队狂暴</span>
+      </span>
+      <span class="cd-mask" id="ultCd" hidden></span>
+    </button>
+    <div class="dock-div"></div>
+    <button class="btn wave-peek-btn" id="waveIntelBtn" type="button" title="查看战场情报与首领机制">📊 情报</button>
+    <button class="btn wave-peek-btn" id="waveHeroBtn" type="button" title="查看领主属性与神通 [C]">👑 属性</button>
   </div>
 </div>
 
+<!-- On-Demand Battle Intel Overlay (replaces permanent left battle-hud wall) -->
 <div class="ui-panel-backdrop" id="uiPanelBackdrop" hidden>
-  <section class="ui-panel" role="dialog" aria-modal="true" aria-labelledby="uiPanelTitle">
-    <header><h2 id="uiPanelTitle">背包</h2><span id="uiPanelTimer" class="pill gold" hidden></span><button class="btn" id="uiPanelClose" type="button" aria-label="关闭">关闭 ×</button></header>
-    <section id="uiBagPanel" hidden><div class="bag-tray" id="bagTray"></div><div id="bagSelection" class="bag-selection" hidden></div><p class="ui-hint">悬停查看完整信息，点击选择后操作。</p></section>
-    <section id="uiShopPanel" hidden><div class="ui-shop-head"><div class="dock-gold" id="dockGold"><span class="lbl">💰 金币</span><b id="dockGoldNum">55</b></div><button class="act-btn" id="rerollBtn" type="button">
-      <span class="k">Q</span><span class="ic">🎲</span><span class="nm">刷新商店</span><span class="sb" id="rerollCost">5 金币</span>
-    </button></div><div class="dock-sec" id="shopSec"></div><p class="ui-hint">悬停查看商品效果与联动，点击购买。</p></section>
-    <section id="uiIntelPanel" hidden></section>
-    <section id="uiToolsPanel" hidden></section>
+  <section class="ui-panel hud-island" role="dialog" aria-modal="true" aria-labelledby="uiPanelTitle">
+    <header>
+      <h2 id="uiPanelTitle">⚔️ 战场情报</h2>
+      <button class="btn" id="uiPanelClose" type="button" aria-label="关闭">关闭 ×</button>
+    </header>
+    <section id="uiIntelPanel">
+      <aside class="battle-hud" id="battleHud">
+        <div class="lh-head" id="battleHudHead" hidden>
+          <span>⚔️ 战场情报</span>
+          <button class="btn" id="battleHudToggle" type="button">折叠</button>
+        </div>
+        <div class="lh-body" id="battleHudBody"></div>
+      </aside>
+    </section>
   </section>
 </div>
+
 <div id="uiDetailTooltip" role="tooltip" hidden></div>
 <div class="modal-backdrop" id="modalBackdrop" hidden>
   <div class="modal" id="modalBox"></div>

@@ -29,7 +29,7 @@ export function createInputController(runtimeCtx, deps) {
   function bindListeners(){
     const { canvas, win, getEl: $, audio } = deps;
     const { screenToWorld, fitCamera } = deps.viewport;
-    const { renderAllUI, toggleLeftHud, toggleBattleHud, syncOffsets, syncHudResponsiveMode } = deps.hud;
+    const { renderAllUI, toggleLeftHud, toggleBattleHud, syncOffsets, syncHudResponsiveMode, setLeftTab } = deps.hud;
     const {
       closeModal, showIntroModal, renderW10BreakthroughModal, openW20BreakthroughModal,
       openW20PreselectModal, openDestinyGambleModal, openAffixTransferModal, openMetaLegacyModal,
@@ -43,7 +43,7 @@ export function createInputController(runtimeCtx, deps) {
     const { hasPendingDecision } = deps.unlock;
     const { isW20PreselectOpen } = deps.w20;
 
-    const panels = bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clearInput: () => { keys.clear(); pointerDown = false; } });
+    const panels = bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, setLeftTab, clearInput: () => { keys.clear(); pointerDown = false; } });
 
     canvas.addEventListener('pointerdown', e => {
       if (panels.isOpen()) return;
@@ -56,7 +56,7 @@ export function createInputController(runtimeCtx, deps) {
       handleCanvasClick(w.x, w.y);
     });
     win.addEventListener('pointermove', e => {
-      if (e.target !== canvas || panels.isOpen()) { pointerDown = false; return; }
+      if (panels.isOpen() || (e.target && e.target !== canvas && e.target !== win)) { pointerDown = false; return; }
       pointerScreen = { x: e.clientX, y: e.clientY };
       pointerWorld = screenToWorld(e.clientX, e.clientY);
     });

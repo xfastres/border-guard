@@ -23,11 +23,11 @@ export function createHudSystem(runtimeCtx, deps) {
   const inspectorUI = createInspectorUI(runtimeCtx, hudDeps);
 
   const { renderBattleHud } = battleHud;
-  const { renderLeftHud } = buildHud;
+  const { renderLeftHud, setLeftTab } = buildHud;
   const { renderSealStrip, renderSkillStrip, renderShop, renderBag } = dockUI;
   const { renderInspector } = inspectorUI;
   return {
-    ...hudController, gearListSig, renderBattleHud, renderLeftHud,
+    ...hudController, gearListSig, renderBattleHud, renderLeftHud, setLeftTab,
     renderSealStrip, renderSkillStrip, renderShop, renderBag, renderInspector,
   };
 }
