@@ -48,7 +48,7 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
   const readTarget=el=>el?.closest?.('[data-detail], [title]');
   function showTip(el){
     if(!el || !el.isConnected) {hideTip();return;}
-    const value=el.dataset.detail || el.getAttribute('title');
+    const value=el.getAttribute('title') || el.dataset.detail;
     if(!value){hideTip();return;}
     if(el.hasAttribute('title')){el.dataset.detail=value;el.removeAttribute('title');}
     if(target===el && currentText===value && !tip.hidden)return;
@@ -62,7 +62,7 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
     tip.style.left=left+'px';tip.style.top=top+'px';
   }
   document.addEventListener('pointerover',e=>showTip(readTarget(e.target)));
-  document.addEventListener('pointerout',e=>{if(target&&(!e.relatedTarget || !target.contains(e.relatedTarget)))hideTip();});
+  document.addEventListener('pointerout',e=>{if(target&&(!e.relatedTarget?.nodeType || !target.contains(e.relatedTarget)))hideTip();});
   document.addEventListener('focusin',e=>showTip(readTarget(e.target)));
   document.addEventListener('focusout',hideTip);
   document.addEventListener('pointerdown',hideTip);

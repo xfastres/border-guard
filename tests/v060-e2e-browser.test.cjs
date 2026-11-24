@@ -325,6 +325,25 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     assert.equal(afterFullBagClick.gold, fullBagShop.goldBefore, 'Full bag gear buy must deduct 0 gold');
     assert.equal(afterFullBagClick.bought, false, 'Full bag gear item must remain unbought');
 
+    // Compact HUD: inventory is opt-in; hover reveals detail and selection alone is non-destructive.
+    if (!await cdp.eval("document.getElementById('uiPanelBackdrop').hidden")) await cdp.clickSelector('#uiPanelClose');
+    assert.equal(await cdp.eval("document.getElementById('shopSec').getClientRects().length"), 0, 'Shop must be hidden on battlefield');
+    assert.equal(await cdp.eval("document.getElementById('bagTray').getClientRects().length"), 0, 'Bag must be hidden on battlefield');
+    await cdp.clickSelector('#bagOpen');
+    const bagBeforeSelection = await cdp.eval('window.BG60.game.bag.length');
+    const hoverDetail = await cdp.eval(`(() => {
+      const item = document.querySelector('#bagTray .bag-item');
+      item.dispatchEvent(new PointerEvent('pointerover', { bubbles: true }));
+      const tip = document.getElementById('uiDetailTooltip');
+      return {visible: !tip.hidden, text: tip.textContent};
+    })()`);
+    assert.equal(hoverDetail.visible, true, 'Bag hover tooltip must appear synchronously');
+    assert.ok(hoverDetail.text.length > 10, 'Tooltip should include item details');
+    await cdp.clickSelector('#bagTray .bag-item', { index: 0 });
+    assert.equal(await cdp.eval('window.BG60.game.bag.length'), bagBeforeSelection, 'Selecting an item must not equip or sell it');
+    assert.equal(await cdp.eval("document.getElementById('bagSelection').hidden"), false);
+    await cdp.clickSelector('#uiPanelClose');
+
     // Enter W29 timed final prep (90s) with controlled monotonic clock
     const w29ShopSetup = await cdp.eval(`(() => {
       window.__e2eNowMs = 10000;

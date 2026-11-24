@@ -26,6 +26,11 @@ export function createHudController(runtimeCtx, deps) {
     if (overlay && !overlay.hidden && overlay.dataset?.phase && (overlay.dataset.phase !== game.phase || overlay.dataset.wave !== String(game.wave) || game.activeModal)) {
       overlay.dispatchEvent(new Event('bg-close-panel'));
     }
+    const panelTimer = $('uiPanelTimer');
+    if (panelTimer) {
+      panelTimer.hidden = !(game.finalPrep?.active && game.finalPrep?.started);
+      if (!panelTimer.hidden) panelTimer.textContent = `终局整备 ${Math.ceil(game.finalPrep.timer)}s`;
+    }
     const isWave = game.phase === 'wave' || game.phase === 'harvest';
     const meta = getWavePhaseMeta(game.wave);
 
