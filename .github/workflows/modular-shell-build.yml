@@ -1,0 +1,46 @@
+name: Modular shell build
+
+on:
+  push:
+    branches:
+      - refactor/modular-v060-phase1
+  pull_request:
+    branches:
+      - feat/v060-30wave
+    paths:
+      - "index.html"
+      - "package.json"
+      - "vite.config.js"
+      - "src/**"
+      - "scripts/verify-single-file.mjs"
+      - ".github/workflows/modular-shell-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build offline single-file shell
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build and verify single HTML
+        run: npm run build
+
+      - name: Upload modular shell artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: border-guard-modular-shell
+          path: release/Border-Guard-v0.60-modular-shell.html
+          if-no-files-found: error
+          retention-days: 14
