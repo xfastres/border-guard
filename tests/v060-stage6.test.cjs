@@ -16,6 +16,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
+const { resolveChromeBin, toFileUrl } = require('./helpers/chrome-bin.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const HTML_PATH = path.join(ROOT, 'Border-Guard-v0.60.html');
@@ -731,9 +732,9 @@ test('4. [Real-Rule Automated Cruise] W1 -> W30 full flow via 0-gamble route: st
 // TEST 5: Real Headless Chrome Smoke Test (Desktop 1440x900 & Narrow 390x844)
 // =========================================================================
 test('5. Real headless Chrome offline smoke test (1440x900 desktop & 390x844 narrow viewport, zero JS runtime errors)', () => {
-  const chromeBin = '/usr/bin/google-chrome';
+  const chromeBin = resolveChromeBin();
   assert.ok(fs.existsSync(chromeBin), 'google-chrome binary must exist for real browser smoke verification');
-  const fileUrl = `file://${HTML_PATH}`;
+  const fileUrl = toFileUrl(HTML_PATH);
 
   const runChromeDump = (width, height) => {
     const out = execFileSync(chromeBin, [

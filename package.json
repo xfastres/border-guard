@@ -1,0 +1,27 @@
+{
+  "name": "border-guard",
+  "private": true,
+  "version": "0.60.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/verify-single-file.mjs",
+    "preview": "vite preview",
+    "check:single-file": "node scripts/verify-single-file.mjs",
+    "test:baseline": "node --test tests/v060-audit-phaseA.test.cjs tests/v060-audit-phaseB.test.cjs tests/v060-stage1.test.cjs tests/v060-stage2.test.cjs tests/v060-stage3.test.cjs tests/v060-stage4.test.cjs tests/v060-stage5.test.cjs && node --test tests/v060-stage6.test.cjs && node --test tests/v060-e2e-browser.test.cjs",
+    "test:modular-game": "node --test tests/modular-game-browser.test.cjs",
+    "test:arch": "node --test tests/unit/architecture-guard.test.mjs",
+    "test:parity": "node --test tests/parity/v060-modular-parity.test.cjs",
+    "test:unit": "node --test tests/unit/*.test.mjs",
+    "test:integration": "node --test tests/integration/*.test.mjs",
+    "test:e2e:modular": "node -e \"const result = require('node:child_process').spawnSync(process.execPath, ['--test', 'tests/v060-e2e-browser.test.cjs'], { stdio: 'inherit', env: { ...process.env, BG_GAME_HTML: 'release/Border-Guard-v0.60.html' } }); if (result.error) throw result.error; process.exitCode = result.status ?? 1;\"",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:arch && npm run test:parity && npm run test:modular-game && npm run test:e2e:modular && npm run test:baseline"
+  },
+  "devDependencies": {
+    "vite": "8.3.8",
+    "vite-plugin-singlefile": "2.3.4"
+  }
+}

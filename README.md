@@ -1,5 +1,44 @@
 # 边境守卫 · Border Guard
 
+## 当前版本：v0.60（30 波模块化工程版 · 离线单文件 HTML）
+
+`v0.60` 是 30 波修仙肉鸽防守试玩版（含初始技能、装备词条双/三联动、W10/W20 突破与预选重抽、W29 90 秒终局整备、天命赌局、词条转移台、W30 首领三阶段锁血与局外 Meta 传承）。
+
+仓库已完成 **v0.60 阶段一纯工程模块化重构（零玩法改动）**：
+- **冻结原版基线**：根目录 `Border-Guard-v0.60.html` 与 `balance/v060-baseline.json` 保持字节不变，作为回归与等价校验黄金对照。
+- **模块化源码（`src/`）**：`src/legacy/game.js` 已彻底拆分并删除，全量源码按严格单向分层组织为 90 个 ES 模块：
+  - `src/data/`：静态数据与配置（零运行时状态、零 DOM）。
+  - `src/core/`：唯一权威状态容器 `runtime-context.js`、对局状态工厂 `state.js`、只读查询 `state-queries.js`、RNG / 数学 / 地形纯函数。
+  - `src/systems/`：7 个纯业务子域（`meta` / `equipment` / `economy` / `progression` / `hero` / `combat` / `run`），零浏览器标识符，通过 `ports` 依赖反转解耦表现层。
+  - `src/ui/`：样式（8 份 CSS）、Web Audio 音频、VFX、提示反馈、Canvas 2D 渲染与相机、共享格式化、弹窗系统、零闪烁 HUD 协调器与输入控制器。
+  - `src/debug/`：测试预设 `presets.js` 与 `window.BG60` / `window.BG52` 公开调试 API `test-api.js`。
+  - `src/app/`：根装配 `bootstrap.js`（提供零 DOM 纯系统工厂 `createGameSystems` 与浏览器启动 `bootBrowserGame`）与主循环 `game-loop.js`。
+- **离线单文件构建**：使用 Vite + `vite-plugin-singlefile` 将全部源码与样式内联打包为单个可离线双击打开的正式交付 HTML：`release/Border-Guard-v0.60.html`（521,949 字节，1 个内联 `<script>`，0 外部静态资源依赖；`release/` 已被 `.gitignore` 忽略，运行 `npm run build` 即可生成）。
+
+### 开发、构建与验证命令（要求 Node.js >= 22.12，浏览器测试需本机 Chrome/Chromium）
+
+```sh
+npm run dev                 # 启动开发服务器
+npm run build               # 构建并校验离线单文件 HTML
+npm run preview             # 预览构建产物
+npm run test:unit           # 298 项 ES 模块单元测试（含 AST 架构边界门禁）
+npm run test:integration    # 12 项零 DOM/零浏览器纯 ES 模块 W1→W30 全链路与 BUG-01~10 集成测试
+npm run test:arch           # AST 零循环依赖、单向分层、纯层无 DOM、legacy 退役与冻结原版哈希门禁
+npm run test:parity         # 真实 Chrome CDP 同种子（2026 / 1337 / 9527）原版 vs 模块版全量等价校验
+npm run test:modular-game   # 真实 Chrome file:// 桌面（1440×900）+ 手机（390×844）离线启动校验
+npm run test:e2e:modular    # 真实 Chrome 交互 E2E（6 场景，0 未捕获异常）
+npm run test:baseline       # 原版 Border-Guard-v0.60.html 全部 43 项回归测试
+npm run test:all            # 依次运行以上全部 7 组测试套件
+```
+
+如需手动指定 Chrome 路径，可设置环境变量 `CHROME_BIN`（如 Windows 下 `C:/Program Files/Google/Chrome/Application/chrome.exe`）。协同规范见 [AGENTS.md](AGENTS.md)，阶段记录见 [progress.md](progress.md) 与 [findings.md](findings.md)，阶段二优化计划见 [docs/v0.60-review/stage2-optimization-plan.md](docs/v0.60-review/stage2-optimization-plan.md)，v0.16–v0.52 历史版本与归档文档见 [archive/README.md](archive/README.md)。
+
+---
+
+## 历史版本说明（v0.17–v0.32 格子策略经营线）
+
+> 以下内容为早期五夜格子策略经营版本（已归档至 `archive/versions/Border-Guard-v0.17.html` … `archive/versions/Border-Guard-v0.32.html`）的历史说明，所有历史版本、归档文档与 `tests/artifacts/` 证据均完整保留，零删除。
+
 > 一款**单机、离线可玩、横屏优先**的格子策略经营游戏：白天探索、建城与布防，夜间守住边境，目标是在**五夜**之后击退首领；一局约 15 分钟。
 
 不需要服务器，不需要联网，也不需要安装。所有内容都在本仓库的单个 HTML 文件里。
@@ -21,11 +60,11 @@
 - **上一稳定对照：`Border-Guard-v0.26.html`** —— 同样可独立双击打开。
 - 历史版本 `Border-Guard-v0.17.html` … `Border-Guard-v0.28.html` 全部保留，每个都能独立打开，历史文件与历史验证证据均未改动。
 
-> **v0.30 打磨（已合并到 `main` 并推送）**：上一版的 `Border-Guard-v0.29.html` 已完成 WP1–WP5 打磨——明亮卡通渲染与金边玻璃 HUD、首日六步引导与悬停放置预览、七视口与触控适配、1.5 秒昼夜过渡 / 刷兵烟尘 / 三个新音效 / 圈墙受击火花与效果弱化。**入口文件名保持不变，仍是双击即可离线试玩的单文件**。设计方向、取舍、前后截图索引、测试命令与结果、自然试玩记录及剩余未验证项见 [`docs/v030-polish-report.md`](docs/v030-polish-report.md)；逐包进度与质量门结论见 [`docs/v030-polish-progress.md`](docs/v030-polish-progress.md)。
+> **v0.30 打磨（已合并到 `main` 并推送）**：上一版的 `archive/versions/Border-Guard-v0.29.html` 已完成 WP1–WP5 打磨——明亮卡通渲染与金边玻璃 HUD、首日六步引导与悬停放置预览、七视口与触控适配、1.5 秒昼夜过渡 / 刷兵烟尘 / 三个新音效 / 圈墙受击火花与效果弱化。**入口文件名保持不变，仍是双击即可离线试玩的单文件**。设计方向、取舍、前后截图索引、测试命令与结果、自然试玩记录及剩余未验证项见 [`archive/docs/v018-v030/v030-polish-report.md`](archive/docs/v018-v030/v030-polish-report.md)；逐包进度与质量门结论见 [`archive/docs/v018-v030/v030-polish-progress.md`](archive/docs/v018-v030/v030-polish-progress.md)。
  
 > **v0.31 画面基线（2026-11-16）**：更新为明亮饱和的卡通地图、蓝顶城堡、圆冠松林、HiDPI Canvas、柔化迷雾、资源胶囊和建筑详情插画，提交为 `bca3ccc`。
 >
-> **v0.32 界面打磨与六项玩法优化（本次）**：在 `Border-Guard-v0.32.html` 上完成深青玻璃 HUD 细节修复（顶栏资源名与净产胶囊、横幅防遮挡、竖屏紧凑详情、折叠面板去重框、命令栏独立 SVG 图标、三选一卡牌分色、飘字防叠），并落地六项玩法优化：主城居民驻场提产与守卫协防、第 1→2 夜换向预警与「明夜」入口标记、白天城墙部分修复与经营栏快捷「加固城防」、城墙破墙 1.2 秒碎石阻滞 + 紧急号令 + 急修 50% 减伤盾、远征营地降本（6 材料 + 3 金币）+ 5×5 点亮 + 首名驻员免首周期维护 + 选址高亮、以及 `1× / 2×` 倍速切换与智能资源开发工具。无需外部资源，仍可离线双击打开。详见 [`Border-Guard-v0.32-更新说明.md`](Border-Guard-v0.32-更新说明.md)。
+> **v0.32 界面打磨与六项玩法优化（本次）**：在 `archive/versions/Border-Guard-v0.32.html` 上完成深青玻璃 HUD 细节修复（顶栏资源名与净产胶囊、横幅防遮挡、竖屏紧凑详情、折叠面板去重框、命令栏独立 SVG 图标、三选一卡牌分色、飘字防叠），并落地六项玩法优化：主城居民驻场提产与守卫协防、第 1→2 夜换向预警与「明夜」入口标记、白天城墙部分修复与经营栏快捷「加固城防」、城墙破墙 1.2 秒碎石阻滞 + 紧急号令 + 急修 50% 减伤盾、远征营地降本（6 材料 + 3 金币）+ 5×5 点亮 + 首名驻员免首周期维护 + 选址高亮、以及 `1× / 2×` 倍速切换与智能资源开发工具。无需外部资源，仍可离线双击打开。详见 [`archive/docs/Border-Guard-v0.32-更新说明.md`](archive/docs/Border-Guard-v0.32-更新说明.md)。
 
 ### v0.29 本轮试玩默认与限制
 
@@ -122,11 +161,13 @@ CHROME_BIN="C:/Program Files/Google/Chrome/Application/chrome.exe" node tests/ru
 
 ## 相关文档
 
-- [v0.26 更新说明](Border-Guard-v0.26-更新说明.md)
-- [v0.26 体验审查报告](Border-Guard-v0.26-体验审查报告.md)
-- [v0.26 独立浏览器验收报告](Border-Guard-v0.26-独立浏览器验收报告.md)
+- [阶段二优化与分批实施计划](docs/v0.60-review/stage2-optimization-plan.md)
+- [历史版本与文档归档索引](archive/README.md)
+- [v0.26 更新说明](archive/docs/Border-Guard-v0.26-更新说明.md)
+- [v0.26 体验审查报告](archive/docs/Border-Guard-v0.26-体验审查报告.md)
+- [v0.26 独立浏览器验收报告](archive/docs/Border-Guard-v0.26-独立浏览器验收报告.md)
 - [13 视口截图索引](tests/artifacts/v026/SCREENSHOT_INDEX.md)
 - [项目交接说明](PROJECT_HANDOFF.md)
-- [v0.25 更新说明](Border-Guard-v0.25-更新说明.md)
+- [v0.25 更新说明](archive/docs/Border-Guard-v0.25-更新说明.md)
 
-`PROJECT_HANDOFF.md` 已在文件头补上 v0.30 当前状态；其下 v0.24 / v0.25 / v0.26 段落均为历史交接记录，不再作为当前入口。当前入口以本 README 与 [v0.30 交付报告](docs/v030-polish-report.md) 为准。
+`PROJECT_HANDOFF.md` 已同步至 v0.60 当前状态；其下 v0.32 / v0.26 / v0.25 段落均为历史交接记录，历史版本 HTML 与早期说明已归档至 `archive/versions/` 与 `archive/docs/`。

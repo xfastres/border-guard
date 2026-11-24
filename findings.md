@@ -1,4 +1,24 @@
 # Findings
+
+## v0.60 阶段一模块化重构记录（只记录、阶段一严禁顺手改玩法/数值）
+
+### 工程与测试基线发现
+- **Windows CRLF 与硬编码 Chrome 路径**：原 `tests/v060-stage1.test.cjs` 正则写死 `\n`，且 `tests/v060-stage6.test.cjs` / `tests/v060-e2e-browser.test.cjs` 硬编码 `/usr/bin/google-chrome` 与 `file://${HTML_PATH}`（已在 Phase 2.4a 修复为跨平台解析）。
+- **前期测试盲区**：Phase 0–2.3 期间 42 项核心规则测试仅针对根目录 `Border-Guard-v0.60.html`，未验证 `src/` 与模块单文件产物（已在 Phase 2.4a 补齐双会话同种子等价门禁与 AST 架构门禁）。
+- **`src/data/destiny-data.js` 未使用导入**：第 1 行存在未使用的 `PILLS` import（已在 Phase 2.4a 清理）。
+
+### 阶段二待诊断问题池（仅记录，严禁在阶段一修改）
+- **RNG 与视觉/回退边界混用风险**：静态审计显示 14 个函数存在 `Math.random`（含部分回退默认值、屏幕震动/绘制抖动、装备 UID 与部分随机候选），阶段二需逐一审视是否影响确定性复现或产生无意耦合。
+- **高频 DOM 与 Canvas 渲染负载**：HUD 与 Canvas 绘制已拆入 `src/ui/hud/` 与 `src/ui/canvas/`，但主循环仍每 0.14s 触发 `renderAllUI(false)`，且 `hud-controller.js` 中预留状态键 `lastSynKey` 未被读取，阶段二需做帧率、DOM 重绘与 GC 抖动专项性能诊断。
+- **调试预设 `nextTowerId` 未初始化**：`src/debug/presets.js`（沿用原版 `loadTestPreset`）读取 `game.nextTowerId++` 给测试预设灵印分配 `id`，但 `createRunState`（原 `makeGame`）未初始化 `nextTowerId`，导致预设中 `seal.id` / `subSeals[i].id` 实为 `NaN`（原版即如此，阶段一严格保留，阶段二可评估修复）。
+- **无障碍与移动端折叠细节**：HUD 折叠按钮（`toggleLeftHud` / `toggleBattleHud`）当前缺少 `aria-expanded` 属性同步，响应式折叠阈值固定为 `<= 980px`，阶段二可结合移动端与平板视口体验一并评估优化。
+- **W29 倒计时时钟回退显示跳变**：Phase 5 无头集成测试发现，若底层时钟在 W29 终局整备期间发生回退，`finalPrep.deadlineMs` 仍保持锁定不变，但显示用的 `finalPrep.timer` 会从 70s 回升至 80s（沿用原版实现，阶段二可评估单调下界钳制）。
+- **Meta 损坏存档备份仅驻留内存**：Phase 5 集成测试确认，损坏 JSON 的原始文本当前保存在运行时 `storageStatus.rawCorruptedBackup` 并拒绝覆盖原 key，但未自动落盘至独立 backup key（刷新后依赖原 key 保持不动），阶段二可评估交互与持久化备份体验。
+- **标题版本文案残留**：原版 `Border-Guard-v0.60.html` `<title>` 仍为 `边境守卫 v0.60 · 30波试玩版（阶段 1）`（阶段一为保持零差异暂保留，阶段二一并评估修订）。
+
+---
+
+## 历史记录（v0.16–v0.20）
 - v0.16 地图32×20，白天35秒/首日60秒，夜晚17秒，清场8秒超时。
 - 全部 dialog 暂停；地点 inspector 允许继续移动，均与v0.11字面规则有差异。
 - v0.11交接三项历史问题已有针对性实现：10秒预告窗口、leaving实际离营、全员无路撤离失败。

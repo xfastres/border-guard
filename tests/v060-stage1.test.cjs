@@ -100,7 +100,7 @@ test('1. v0.60 config & embedded BALANCE are synced and configure 30-wave contro
   assert.equal(diskConfig.wave.mainWaves, 30);
 
   const { B, html } = bootBG60();
-  const embeddedMatch = html.match(/const BALANCE = ([\s\S]*?);\n\/\* BALANCE_CONFIG_END/);
+  const embeddedMatch = html.match(/const BALANCE = ([\s\S]*?);\r?\n\/\* BALANCE_CONFIG_END/);
   assert.ok(embeddedMatch, 'Embedded BALANCE block must exist in Border-Guard-v0.60.html');
   assert.deepEqual(JSON.parse(embeddedMatch[1]), diskConfig);
 

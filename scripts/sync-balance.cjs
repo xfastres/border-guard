@@ -27,7 +27,8 @@ function syncGameHtml(relConfig, relHtml, checkOnly) {
   if (a < 0 || b < 0 || html.indexOf(begin, a + begin.length) >= 0) {
     throw new Error(`Invalid/missing BALANCE_CONFIG markers in ${relHtml} (expected "${begin}")`);
   }
-  const replacement = begin + '\nconst BALANCE = ' + JSON.stringify(config, null, 2) + ';\n' + end;
+  const eol = html.includes('\r\n') ? '\r\n' : '\n';
+  const replacement = (begin + '\nconst BALANCE = ' + JSON.stringify(config, null, 2) + ';\n' + end).replace(/\n/g, eol);
   const output = html.slice(0, a) + replacement + html.slice(b + end.length);
   return { config, htmlPath, html, output, matched: output === html };
 }
@@ -48,7 +49,10 @@ if (customConfig && customHtml) {
 }
 
 if (!onlyV060) {
-  const v52 = syncGameHtml('balance/v052-baseline.json', 'Border-Guard-v0.52.html', isCheck);
+  const v52RelHtml = fs.existsSync(path.join(root, 'Border-Guard-v0.52.html'))
+    ? 'Border-Guard-v0.52.html'
+    : 'archive/versions/Border-Guard-v0.52.html';
+  const v52 = syncGameHtml('balance/v052-baseline.json', v52RelHtml, isCheck);
   const labPath = path.join(root, 'balance/v052-lab.html');
   const lab = fs.readFileSync(labPath, 'utf8');
   const labBegin = '<script id="baselineData" type="application/json">';

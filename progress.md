@@ -1,5 +1,104 @@
 # Progress
 
+## 2026-11-24 · v0.60 阶段一模块化重构（分支 `refactor/modular-v060-phase1`）
+
+- **Step 0（仓库现状深度审计与路线修订）**：完成真实仓库与本地 Windows 实测盘点，确认 `Border-Guard-v0.60.html`（Blob `46049dcc8ca119f79dcc7e8b6e482a797dd794e2`）与 `balance/v060-baseline.json` 未被篡改，`index.html` 与 8 份 CSS 规则 100% 等价；盘点 `src/legacy/game.js` 精确为 13,031 行 / 297 顶层函数 / 30 顶层变量（`systems` 仅 2 处直接 DOM/Storage、20 个 UI 回调端口 + `AudioKit.play`）。
+- **Phase 2.4a（测试基线跨平台修复、同种子等价校验与架构边界门禁）**：已完成并经主控独立审查与实测验收。
+  - 新增 `tests/helpers/chrome-bin.cjs`，最小化适配 4 个既有测试文件兼容 Windows CRLF 与跨平台 Chrome 路径（零削弱断言）。
+  - 新增 `tests/parity/v060-modular-parity.test.cjs`（真实 Chrome CDP 对照原版与模块版，种子 `2026` / `1337` 全量快照 `deepEqual`，0 JS 异常 / 0 `console.error`）。
+  - 新增 `tests/unit/architecture-guard.test.mjs`（AST 校验 0 循环依赖、严格单向分层、纯层零浏览器标识符、legacy 目录约束、基线哈希锁定）。
+  - 清理 `src/data/destiny-data.js` 未使用导入，`.gitignore` 忽略 `release/`，`package.json` 新增 `test:arch` / `test:parity` / `test:unit`。
+  - 实测结果：`npm run build` PASS（471,116 B，1 内联脚本）；`npm run test:baseline` 43/43 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 场景 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS。
+- **Phase 2.4b（`RuntimeContext` + `Ports` 底座与纯状态查询叶模块）**：已完成并经主控独立审查与实测验收。
+  - 新增 `src/core/runtime-context.js`（唯一权威状态容器：`game`、`terrainProps`、`paused`、`meta`、`counters` 与 8 组依赖反转 `ports`）。
+  - 新增 `src/core/state-queries.js`（迁出 13 个纯只读状态查询函数，消除向上/循环依赖）。
+  - `src/data/balance.js` 补充 `with { type: 'json' }` 支持 Node 直接导入单测；`src/legacy/game.js` 接入 `runtimeCtx` 桥接（13,031 → 12,998 行）。
+  - 新增 `tests/unit/runtime-context.test.mjs`（11 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（474,626 B）；`npm run test:unit` 14/14 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.1（`src/systems/meta/` 局外传承与版本化持久化）**：已完成并经主控独立审查与实测验收。
+  - 迁出 36 个 Meta 业务函数与 `META_SAVE_MIGRATORS` 至 `src/systems/meta/{config,persistence,loadout,rewards,index}.js`（单向 DAG，零 DOM/浏览器全局标识符，`src/legacy/game.js` 降至 12,138 行）。
+  - 对齐 `runtime-context.js` 的 `meta.storageStatus` 契约与弹窗端口，新增 `tests/unit/meta.test.mjs`（8 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（477,119 B）；`npm run test:unit` 22/22 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.2（`src/systems/equipment/` Part A 装备核心与联动）**：已完成并经主控独立审查与实测验收。
+  - 迁出 22 个装备实例、词条抽取/校验、双/三联动与描述函数至 `src/systems/equipment/{instance,synergy,describe,index}.js`（`src/legacy/game.js` 降至 11,777 行）。
+  - 新增 `tests/unit/equipment-core.test.mjs`（12 项无 DOM 单测，含固定种子 RNG 顺序校验）。
+  - 实测结果：`npm run build` PASS（478,443 B）；`npm run test:unit` 34/34 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.3（`src/systems/economy/` Part A 资源流水账本与商店定价/回收）**：已完成并经主控独立审查与实测验收。
+  - 迁出 20 个经济账本、定价、防套利回收、强化费用、背包容量与精修掉落函数至 `src/systems/economy/{ledger,pricing,index}.js`（`src/legacy/game.js` 降至 11,552 行）。
+  - 新增 `tests/unit/economy-core.test.mjs`（12 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（479,652 B）；`npm run test:unit` 46/46 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.4（`src/systems/progression/unlock.js` + `src/systems/hero/stats.js` 解锁节点与属性计算）**：已完成并经主控独立审查与实测验收。
+  - 迁出 8 个解锁/境界/待决策函数与 13 个羁绊/套装/组合技/英雄与灵印属性计算函数（`src/legacy/game.js` 降至 11,255 行）。
+  - 新增 `tests/unit/hero-stats.test.mjs`（15 项无 DOM 单测，含 BUG-02 换装 0 免费回血回归）。
+  - 实测结果：`npm run build` PASS（480,948 B）；`npm run test:unit` 61/61 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.5（`src/systems/equipment/` Part B 背包装卸与词条转移台）**：已完成并经主控独立审查与实测验收。
+  - 迁出 10 个背包装卸/回收/强化/安全领奖函数至 `src/systems/equipment/inventory.js` 与 7 个词条转移台函数至 `src/systems/equipment/transfer.js`（工厂依赖注入确保 0 循环依赖，`src/legacy/game.js` 降至 10,658 行）。
+  - 新增 `tests/unit/equipment-inventory-transfer.test.mjs`（16 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（483,727 B）；`npm run test:unit` 77/77 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.6（`src/systems/economy/` Part B 商店刷新/购买与 W29 二次确认）**：已完成并经主控独立审查与实测验收。
+  - 迁出 7 个商店与灵印交易函数至 `src/systems/economy/shop.js` 及 3 个 W29 购买草稿函数至 `src/systems/economy/shop-confirm.js`（`src/legacy/game.js` 降至 10,315 行）。
+  - 新增 `tests/unit/economy-shop.test.mjs`（18 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（485,970 B）；`npm run test:unit` 95/95 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.7（`src/systems/progression/{w10,w20,rewards}.js` W10/W20 突破与奖励）**：已完成并经主控独立审查与实测验收。
+  - 迁出 26 个 W10 突破、W20/W30 预选/Boss 情报/阶梯重抽与 Perk/宝箱奖励函数（`src/legacy/game.js` 降至 9,740 行，首次跌破万行）。
+  - 新增 `tests/unit/progression-breakthrough.test.mjs`（13 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（489,064 B）；`npm run test:unit` 108/108 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.8（`src/systems/progression/destiny.js` 天命赌局）**：已完成并经主控独立审查与实测验收。
+  - 迁出 13 个天命赌局配置、押注档位、品质与类别抽样、候选构建、轮盘开奖与单次安全领奖函数（`src/legacy/game.js` 降至 9,094 行）。
+  - 新增 `tests/unit/destiny.test.mjs`（14 项无 DOM 单测，含 4 档押注边界、专属互斥降级、空劫保底与固定种子 RNG 顺序回归）。
+  - 实测结果：`npm run build` PASS（491,293 B）；`npm run test:unit` 122/122 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.9a（`src/systems/combat/{hooks,damage,index}.js` 战斗钩子与生成/伤害结算核心）**：已完成并经主控独立审查与实测验收。
+  - 迁出 10 个战斗状态钩子与 11 个敌军生成、W30 锁血/末段、伤害结算、击杀与连锁闪电函数（`src/legacy/game.js` 降至 7,842 行，商店与天命系统已直连 `combatCore`）。
+  - 新增 `tests/unit/combat-core.test.mjs`（30 项无 DOM 单测，覆盖火/冰三联动严格替代二联动、W30 80% 截断锁血与 35% 末段、绝对零度封顶、图腾/晶柱破盾与固定种子 RNG 顺序）。
+  - 实测结果：`npm run build` PASS（496,808 B）；`npm run test:unit` 152/152 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.9b（`src/systems/combat/simulation.js` 灵印、弹幕/区域与敌军/首领状态机）**：已完成并经主控独立审查与实测验收。
+  - 迁出 6 个战斗模拟函数（`pushProjectile`、`updateSeal`、`triggerSealOnHeroHit`、`pointToSegDist`、`updateProjectilesAndZones`、`updateEnemies`），`createCombatSystem` 统一装配全部 27 个战斗方法（`src/legacy/game.js` 降至 6,802 行）。
+  - 新增 `tests/unit/combat-simulation.test.mjs`（48 项无 DOM 单测，覆盖 5 系主/辅印与专精、弹幕/W10 分支/区域、W20/W30 全辅助机制、W30 招牌锁血释放与 6 首领核心循环）。
+  - 实测结果：`npm run build` PASS（500,121 B）；`npm run test:unit` 200/200 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.10（`src/systems/hero/{skills,vitals,index}.js` 英雄技能、拾取升级与受击归因）**：已完成并经主控独立审查与实测验收。
+  - 迁出 5 个英雄动作与技能循环函数及 5 个拾取/升级/受击归因函数，剥离 `damageHero` 中 2 处直接 DOM 暗角操作至 `ports.ui.setDangerVignette`，补齐 `ports.input.setPointerWorld`（`src/legacy/game.js` 降至 5,564 行）。
+  - 新增 `tests/unit/hero-skills-vitals.test.mjs`（52 项无 DOM 单测，覆盖智能瞄准、冲刺/超载/破阵、6 主动技能全 W10 分支与组合技、拾取/升级奇偶分支、奇门偏折/金刚反震/不灭金身与 160 条真实受击归因日志）。
+  - 实测结果：`npm run build` PASS（502,727 B）；`npm run test:unit` 252/252 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.11（`src/core/state.js` + `src/systems/run/` 状态工厂与波次/W29 终局整备/生命周期/主步进 · Phase 3 业务层收官）**：已完成并经主控独立审查与全量实测验收。
+  - 迁出对局状态工厂 `makeGame`/`createRunState` 至 `src/core/state.js`，迁出 25 个波次、遥测、W29 终局整备、开局/清波/结算与 `tick(dt)` 主模拟函数至 `src/systems/run/{waves,telemetry,final-prep,lifecycle,tick,index}.js`，补齐 6 个默认端口。
+  - **Phase 3 里程碑达成**：全部 6 大业务子域（`meta`/`equipment`/`economy`/`progression`/`hero`/`combat`/`run`）100% 脱离 `src/legacy/game.js`，`src/legacy/game.js` 从 13,031 行降至 4,266 行（仅余 86 个 UI/Canvas/弹窗/HUD/输入/预设/RAF 壳层函数）。
+  - 新增 `tests/unit/run-lifecycle.test.mjs`（23 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（509,042 B，63 模块，1 内联脚本）；`npm run test:unit` 275/275 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS（种子 `2026` & `1337`）；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS；`npm run test:baseline` 43/43 PASS。
+- **Phase 4.1（`src/ui/{vfx,feedback,canvas}/` VFX、反馈提示、相机与 Canvas 2D 渲染层）**：已完成并经主控独立审查与实测验收。
+  - 迁出 23 个 VFX/反馈/相机/Canvas 绘制函数至 `src/ui/vfx/vfx.js`、`src/ui/feedback/feedback.js` 与 `src/ui/canvas/{camera,draw-arena,draw-entities,draw-effects,draw-overlays,renderer,index}.js`（`src/legacy/game.js` 降至 3,496 行）。
+  - 新增 `tests/unit/ui-vfx-camera.test.mjs`（6 项无浏览器单测）。
+  - 实测结果：`npm run build` PASS（510,908 B，72 模块）；`npm run test:unit` 281/281 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 4.2（`src/ui/shared/formatters.js` + `src/ui/modals/` 共享格式化与全部弹窗系统）**：已完成并经主控独立审查与实测验收。
+  - 迁出 3 个共享格式化函数与 22 个弹窗队列/渲染函数至 `src/ui/shared/formatters.js` 与 `src/ui/modals/{modal-manager,shop-confirm-modals,progression-modals,meta-modal,intro-end-modals,destiny-transfer-modals,index}.js`，`modalsSystem` 已直连 `runtimeCtx.ports.modals`（`src/legacy/game.js` 降至 2,325 行）。
+  - 新增 `tests/unit/ui-formatters-modals.test.mjs`（5 项单测）。
+  - 实测结果：`npm run build` PASS（516,200 B，80 模块）；`npm run test:unit` 286/286 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 4.3（`src/ui/hud/` 全部 HUD 面板与零闪烁协调器）**：已完成并经主控独立审查与实测验收（审查期间拦截并回退响应式折叠阈值至原版 980px 且保留原按钮属性，确保零行为差异）。
+  - 迁出 13 个 HUD 函数至 `src/ui/hud/{battle-hud,build-hud,dock-ui,inspector,hud-controller,index}.js`，统一封装 8 个脏检查键重置（`src/legacy/game.js` 降至 1,191 行）。
+  - 新增 `tests/unit/ui-hud.test.mjs`（6 项无浏览器单测）。
+  - 实测结果：`npm run build` PASS（519,987 B，86 模块）；`npm run test:unit` 292/292 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 4.4（输入控制器、调试预设/公开 API、主循环与根装配、彻底删除 `src/legacy/game.js` · Phase 4 UI/App 壳层收官）**：已完成并经主控独立审查与全量实测验收。
+  - **彻底退役并删除 `src/legacy/game.js`**，`src/legacy/` 仅保留退役说明 `README.md`（0 个 `.js` 文件）；`tests/unit/architecture-guard.test.mjs` 升级门禁，新增 `ui` / `debug` 分层边界校验与 `src/legacy/` 零 `.js` 强约束。
+  - 新增 `src/ui/input/input.js`、`src/debug/{presets,test-api}.js`、`src/app/{game-loop,bootstrap}.js`；`src/main.js` 精简为 19 行纯启动入口；`window.BG60`（258 键严格同序 + 3 getter + 34 常量）与 `window.BG52 === window.BG60` 100% 兼容；`createGameSystems(runtimeCtx)` 达成零 DOM 纯系统组装。
+  - 新增 `tests/unit/app-loop-input.test.mjs`（6 项无浏览器单测）。
+  - 实测结果：`npm run build` PASS（521,949 B，90 模块，1 内联脚本）；`npm run test:unit` 298/298 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS（种子 `2026` & `1337`）；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS（0 异常）；`npm run test:baseline` 43/43 PASS。
+- **Phase 5（纯 ES 模块无头全链路集成测试、同种子对照加固与 CI 升级）**：已完成并经主控独立审查与 `test:all` 全量实测验收（`src/` 零改动）。
+  - 新增 `tests/integration/headless-w1-to-w30.test.mjs`（12 项零 DOM/零浏览器纯 ES 模块集成用例：两次种子 `2026` 真实战斗帧跑通 W1→W30 通关+W30 6 阶段验证+Meta 存档回读逐项 `deepEqual`、种子 `1337` 差异校验，以及跨系统 BUG-01～BUG-10 完整回归矩阵；主控审查时将全链路用例超时由 10s 放宽至 30s 防止 CI 抖动）。
+  - 加固 `tests/parity/v060-modular-parity.test.cjs`（默认超时升至 20s、`t.after` 销毁 stderr + `SIGKILL` 兜底防挂起，并扩充至 `2026` / `1337` / `9527` 三组种子）。
+  - 更新 `package.json` 新增 `test:integration`、跨平台 `test:e2e:modular` 与全量串联 `test:all`；升级 `.github/workflows/modular-shell-build.yml` 补齐模块化全套门禁与路径触发。
+  - 实测结果：`npm run build` PASS（90 模块，521,949 B）；`npm run test:all` 七组全绿退出码 0（`test:unit` 298/298、`test:integration` 12/12、`test:arch` 3/3、`test:parity` 1/1 三种子、`test:modular-game` 1/1、`test:e2e:modular` 6 场景 0 异常、`test:baseline` 43/43）；GitHub Actions 远程作业未运行。
+- **Phase 6（工程规范与交接文档刷新）**：已完成。
+  - 更新 `AGENTS.md`、`README.md`、`PROJECT_HANDOFF.md`、`task_plan.md` 与 `progress.md`，全面同步 v0.60 模块化分层、命令清单与测试现状，完整保留全部历史版本与交接段落（`src/`、构建脚本与冻结文件零修改）。
+- **Phase 7（正式单文件交付 `release/Border-Guard-v0.60.html` 与阶段一终验）**：已完成并经全量实测验收。
+  - 将构建输出、校验脚本、测试脚本与 CI 工作流正式切换至 `release/Border-Guard-v0.60.html`（`vite.config.js`、`scripts/verify-single-file.mjs`、`package.json`、`tests/modular-game-browser.test.cjs`、`tests/parity/v060-modular-parity.test.cjs`、`.github/workflows/modular-shell-build.yml`），根目录原版 `Border-Guard-v0.60.html` 与 `balance/v060-baseline.json` 保持字节未变。
+  - 在 `tests/parity/v060-modular-parity.test.cjs` 新增真实 Chrome 双向 `localStorage` Meta 存档兼容用例（原版写入 → 模块版加载并推进结算 → 原版回读逐字段 `deepEqual`）。
+  - 最终实测结果：`npm run build` PASS（`release/Border-Guard-v0.60.html`，90 模块，521,949 B，1 内联脚本）；`npm run test:all` 七组全绿退出码 0（`test:unit` 298/298、`test:integration` 12/12、`test:arch` 3/3、`test:parity` 2/2 含三种子等价与双向 `localStorage` 兼容、`test:modular-game` 1/1 桌面+手机、`test:e2e:modular` 6 场景 0 异常、`test:baseline` 43/43）；冻结基线零改动；GitHub Actions 远程作业未运行。
+- **Opus 5.5 独立页面验收 + 阶段二优化计划落盘 + 历史版本/文档无损归档**：已完成。
+  - **Claude Opus 5.5 双端视觉验收通过**：桌面 `1440×900`（56 点）与手机 `390×844`（17 点）共 73 组真实点击双边像素对比，0 报错、0 阶段一回归缺陷，60/73 纯 DOM 截图像素差 0.00%，零闪烁刷新 24/24 节点保留。
+  - **阶段二优化计划落盘**：整合三路只读审计与 Opus 5.5 视觉发现，写入 `docs/v0.60-review/stage2-optimization-plan.md`（43 项发现，分 Batch 1–5，待用户勾选后开分支实施）。
+  - **无损归档整理**：用 `git mv` 将 19 份历史 HTML（v0.17–v0.52）迁至 `archive/versions/`、28 份根目录历史文档与 14 份 `docs/` 历史报告迁至 `archive/docs/`（新增 `archive/README.md`），根目录保留冻结原版 `Border-Guard-v0.60.html` 不变；`scripts/sync-balance.cjs` 兼容 `archive/versions/Border-Guard-v0.52.html` 回退路径。
+
+---
+
 ## 2026-11-14 · v0.26
 
 - 基线 `main@f4de3bf`，从 v0.25 派生独立 HTML。保留所有旧版、会话归档、既有测试与候选立项稿。

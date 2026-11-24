@@ -1,4 +1,22 @@
-# 当前任务 · v0.26 全局体验迭代
+# 当前任务 · v0.60 阶段一模块化重构（分支 `refactor/modular-v060-phase1`）
+
+> 历史 v0.16–v0.26 任务记录完整保留在下方；当前有效任务状态以本节为准。
+
+| 阶段 | 范围与产出 | 状态 | 实测门禁 |
+| --- | --- | --- | --- |
+| Phase 0–2.3 | Vite 单文件壳层、`index.html`、8 份 CSS、`src/data/*`、`src/core/{rng,math,terrain}`、`src/ui/audio` | 已完成 | 单文件构建 + 原版基线通过 |
+| Phase 2.4a–2.4b | Windows 跨平台 Chrome 适配、`tests/parity`、`tests/unit/architecture-guard`、`RuntimeContext` + `Ports`、`state-queries` | 已完成 | 14 unit + 3 arch + parity + baseline |
+| Phase 3.1–3.11 | 全部 7 大业务子域（`meta`/`equipment`/`economy`/`progression`/`hero`/`combat`/`run`）与 `core/state.js` 迁出 | 已完成 | 275 unit + 3 arch + parity + E2E + 43 baseline |
+| Phase 4.1–4.4 | `ui/{vfx,feedback,canvas,shared,modals,hud,input}`、`debug/{presets,test-api}`、`app/{game-loop,bootstrap}`，彻底删除 `src/legacy/game.js` | 已完成 | 298 unit + 3 arch + parity + E2E + 43 baseline |
+| Phase 5 | 零 DOM `headless-w1-to-w30.test.mjs`（12 用例）、`test:parity` 三种子与清理加固、`package.json` `test:all`、CI 工作流升级 | 已完成 | `npm run build` + `npm run test:all` 七组全绿 |
+| Phase 6 | 刷新 `AGENTS.md`、`README.md`、`PROJECT_HANDOFF.md`、`task_plan.md`、`progress.md`（保留历史记录） | 已完成 | 文档与仓库现状核对一致 |
+| Phase 7 | 构建产物切换至 `release/Border-Guard-v0.60.html`、双向 `localStorage` Meta 存档兼容校验与阶段一最终验收 | 已完成 | `npm run build` + `npm run test:all` 七组全绿（含 `test:parity` 2/2） |
+| 归档与整理 | 将 v0.17–v0.52 历史 HTML（19 份）与历史文档（42 份）无损 `git mv` 至 `archive/versions/` 与 `archive/docs/`，并建立 `archive/README.md` | 已完成 | `sync-balance --check` + `npm run test:all` 全绿 |
+| 阶段二规划 | 三路只读源码/数值审计 + Claude Opus 5.5 双端 73 点页面视觉验收（0 回归），输出 `docs/v0.60-review/stage2-optimization-plan.md`（Batch 1–5 / 43 项） | 计划已落盘，待选批实施 | — |
+
+---
+
+# 历史任务 · v0.26 全局体验迭代
 
 | 批次 | 实施 | 已执行的检查 | 待执行 |
 | --- | --- | --- | --- |

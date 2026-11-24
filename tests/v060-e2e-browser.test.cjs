@@ -2,7 +2,7 @@
 /**
  * Border-Guard v0.60 Real Headless Chrome Interactive E2E Test Suite
  *
- * Uses local /usr/bin/google-chrome + Node 22 native fetch & WebSocket over CDP
+ * Uses local Chrome + Node 22 native fetch & WebSocket over CDP
  * (ZERO external npm dependencies). Exercises real DOM clicks (Input.dispatchMouseEvent)
  * and real keyboard events (Input.dispatchKeyEvent) against Border-Guard-v0.60.html
  * and asserts 0 uncaught JS exceptions and 0 console.error entries across all 6 scenarios.
@@ -13,11 +13,14 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
+const { resolveChromeBin, toFileUrl } = require('./helpers/chrome-bin.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
-const HTML_PATH = path.join(ROOT, 'Border-Guard-v0.60.html');
-const FILE_URL = `file://${HTML_PATH}`;
-const CHROME_BIN = '/usr/bin/google-chrome';
+const HTML_PATH = process.env.BG_GAME_HTML
+  ? path.resolve(ROOT, process.env.BG_GAME_HTML)
+  : path.join(ROOT, 'Border-Guard-v0.60.html');
+const FILE_URL = toFileUrl(HTML_PATH);
+const CHROME_BIN = resolveChromeBin();
 
 class CDPClient {
   constructor(wsUrl) {
