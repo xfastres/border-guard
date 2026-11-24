@@ -36,6 +36,8 @@
 - `npm run dev`：开发服务器。
 - `npm run build`：构建并验证单文件 HTML。
 - `npm run preview`：预览构建结果。
+- `npm run test:baseline`：运行原版 v0.60 回归测试。
+- `npm run test:modular-game`：用 Chrome 检查模块化单文件在桌面和手机视口启动。
 
 当前构建产物为 `release/Border-Guard-v0.60-modular-preview.html`，它是从原版迁移出来的可玩预览；业务代码仍处于 legacy 模块，不能宣称最终模块化完成。
 

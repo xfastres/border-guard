@@ -5,6 +5,18 @@
 - 适用基线：`feat/v060-30wave@98932a2918ed22f17ea176b4209de76b839160bc`
 - 本方案不授权玩法重做或数值调整。
 
+## 当前执行状态（2026-11-24）
+
+- Phase 0：原版 v0.60 基线冻结与归档完成。
+- Phase 1：Vite、ES Modules、单文件 HTML 构建和 CI 门禁完成。
+- Phase 2.1：HTML / CSS / JavaScript 分离完成。
+- Phase 2.2：静态数据迁入 core、equipment、progression、destiny 数据模块。
+- Phase 2.3：RNG、数学、地形纯函数、音频服务和 CSS 区域拆分完成。
+- 当前 `src/legacy/game.js` 仍保留约 13,032 行运行时逻辑；尚未完成 combat / economy / meta / progression / UI 业务模块迁移。
+- 原版基线测试 43 项、原版与模块版 Chrome E2E 各 6 个场景，最近一次 CI 均通过。
+- 当前可试玩预览：`release/Border-Guard-v0.60-modular-preview.html`。
+- 下一阶段：先解决共享状态/context 所有权，再迁移 Meta persistence 和业务系统。
+
 ## 1. 改造目标
 
 把当前集中在单个 HTML 中的游戏源码拆成有明确职责的 ES Modules，同时保留“构建后是一个可双击、离线运行的 HTML”这一交付方式。
@@ -25,11 +37,12 @@
 
 ## 3. 目标目录
 
-以下是最终目标结构。Phase 1 只创建构建骨架；业务目录将在对应模块迁移阶段按需创建，不创建空目录来制造“已完成”的假象。
+以下结构同时标注已存在的迁移文件和后续目标。带有“过渡”说明的文件不能被当作最终模块边界。
 
 ```text
 border-guard/
 ├── index.html
+├── Border-Guard-v0.60.html       # frozen playable baseline
 ├── package.json
 ├── package-lock.json
 ├── vite.config.js
@@ -39,21 +52,22 @@ border-guard/
 │
 ├── src/
 │   ├── main.js
-│   ├── app/
-│   │   ├── bootstrap.js
-│   │   └── game-loop.js
 │   ├── core/
-│   │   ├── state.js
-│   │   ├── context.js
-│   │   ├── rng.js
-│   │   ├── clock.js
-│   │   └── math.js
+│   │   ├── math.js               # migrated
+│   │   ├── rng.js                # migrated
+│   │   ├── terrain.js            # migrated
+│   │   ├── state.js              # planned
+│   │   └── context.js            # planned
 │   ├── data/
-│   │   ├── hero-data.js
-│   │   ├── seal-data.js
+│   │   ├── balance.js
+│   │   ├── core-data.js
 │   │   ├── equipment-data.js
 │   │   ├── progression-data.js
-│   │   └── boss-data.js
+│   │   ├── destiny-data.js
+│   │   └── index.js
+│   ├── legacy/
+│   │   ├── game.js               # temporary migration bridge
+│   │   └── README.md
 │   ├── systems/
 │   │   ├── run/
 │   │   ├── combat/
@@ -68,8 +82,17 @@ border-guard/
 │   │   ├── modals/
 │   │   ├── input/
 │   │   ├── audio/
+│   │   │   └── audio.js          # migrated
 │   │   ├── vfx/
 │   │   └── styles/
+│   │       ├── base.css
+│   │       ├── topbar.css
+│   │       ├── subbar.css
+│   │       ├── hud.css
+│   │       ├── dock.css
+│   │       ├── feedback.css
+│   │       ├── modals.css
+│   │       └── meta.css
 │   └── debug/
 │       ├── test-api.js
 │       └── presets.js
