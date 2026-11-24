@@ -1,12 +1,7 @@
-# Legacy game runtime
+# Legacy game runtime（已退役）
 
-`game.js` 是迁移期间保留的原版 IIFE 运行时，不是最终模块边界。
+Phase 4.4 完成了过渡脚本 `game.js` 的模块化迁移并删除了该文件。本目录禁止再存放运行时 `.js` 文件。
 
-## 规则
-
-- 不再向此文件新增静态游戏数据；新增数据放到 `src/data/`。
-- 不在这里复制 `BALANCE`；唯一数值来源是 `balance/v060-baseline.json`。
-- 暂时保留现有共享状态、函数顺序和副作用，避免破坏行为。
-- 已经迁出的数据、RNG、数学、地形和音频服务不得在本文件重复定义。后续按依赖审计逐个迁移函数簇；迁移后从本文件删除旧实现，并通过原版基线与模块版 E2E 验证。
-- 不改变 RNG 算法和调用顺序。
-- 保留 `window.BG60` / `window.BG52` 兼容接口，直到单独完成 API 迁移决策。
+- `src/app/bootstrap.js` 装配系统与浏览器端口，`src/app/game-loop.js` 负责主循环。
+- `src/ui/input/input.js` 负责按键、指针和静态按钮监听。
+- `src/debug/presets.js` 提供调试预设，`src/debug/test-api.js` 提供 `window.BG60` / `window.BG52` 兼容接口。

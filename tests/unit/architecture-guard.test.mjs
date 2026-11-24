@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -15,7 +15,10 @@ const forbiddenLayers = new Map([
   ['data', ['core', 'systems', ...runtimeLayers]],
   ['core', ['systems', ...runtimeLayers]],
   ['systems', runtimeLayers],
+  ['ui', ['app', 'debug', 'legacy']],
+  ['debug', ['app', 'legacy']],
 ]);
+const pureLayers = new Set(['data', 'core', 'systems']);
 const browserIdentifiers = new Set([
   'document', 'window', 'localStorage', 'sessionStorage',
   'requestAnimationFrame', 'cancelAnimationFrame', 'AudioContext', 'webkitAudioContext',
@@ -68,7 +71,7 @@ test('src has no circular dependencies, forbidden layer imports, or browser iden
     const forbidden = forbiddenLayers.get(layer);
     const { program, errors } = parseSync(file, readFileSync(file, 'utf8'));
     assert.deepEqual(errors, [], `Failed to parse ${label}`);
-    if (forbidden) assertPure(program, label);
+    if (pureLayers.has(layer)) assertPure(program, label);
 
     for (const node of program.body) {
       // The source field is present on static imports and re-exports with a module specifier.
@@ -87,10 +90,9 @@ test('src has no circular dependencies, forbidden layer imports, or browser iden
   assertAcyclic(graph);
 });
 
-test('legacy contains only the transitional game file and its optional README', () => {
-  const files = filesUnder(legacy).map(file => path.relative(legacy, file));
-  assert.ok(files.includes('game.js'), 'src/legacy/game.js is missing');
-  assert.deepEqual(files.filter(file => file !== 'game.js' && file !== 'README.md'), []);
+test('legacy is retired and contains at most its README', () => {
+  const files = existsSync(legacy) ? filesUnder(legacy).map(file => path.relative(legacy, file)) : [];
+  assert.deepEqual(files.filter(file => file !== 'README.md'), []);
 });
 
 test('the original v0.60 HTML matches its frozen Git hash and archive, and balance schema is v1', () => {

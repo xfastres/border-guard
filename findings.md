@@ -9,7 +9,9 @@
 
 ### 阶段二待诊断问题池（仅记录，严禁在阶段一修改）
 - **RNG 与视觉/回退边界混用风险**：静态审计显示 14 个函数存在 `Math.random`（含部分回退默认值、屏幕震动/绘制抖动、装备 UID 与部分随机候选），阶段二需逐一审视是否影响确定性复现或产生无意耦合。
-- **高频 DOM 与 Canvas 渲染负载**：`src/legacy/game.js` 仍含 ~1,866 行 HUD DOM 拼接与 704 行 Canvas 绘制，且主循环每 0.14s 触发 `renderAllUI(false)`，阶段二需做帧率与 GC 抖动专项性能诊断。
+- **高频 DOM 与 Canvas 渲染负载**：HUD 与 Canvas 绘制已拆入 `src/ui/hud/` 与 `src/ui/canvas/`，但主循环仍每 0.14s 触发 `renderAllUI(false)`，且 `hud-controller.js` 中预留状态键 `lastSynKey` 未被读取，阶段二需做帧率、DOM 重绘与 GC 抖动专项性能诊断。
+- **调试预设 `nextTowerId` 未初始化**：`src/debug/presets.js`（沿用原版 `loadTestPreset`）读取 `game.nextTowerId++` 给测试预设灵印分配 `id`，但 `createRunState`（原 `makeGame`）未初始化 `nextTowerId`，导致预设中 `seal.id` / `subSeals[i].id` 实为 `NaN`（原版即如此，阶段一严格保留，阶段二可评估修复）。
+- **无障碍与移动端折叠细节**：HUD 折叠按钮（`toggleLeftHud` / `toggleBattleHud`）当前缺少 `aria-expanded` 属性同步，响应式折叠阈值固定为 `<= 980px`，阶段二可结合移动端与平板视口体验一并评估优化。
 - **标题版本文案残留**：原版 `Border-Guard-v0.60.html` `<title>` 仍为 `边境守卫 v0.60 · 30波试玩版（阶段 1）`（阶段一为保持零差异暂保留，阶段二一并评估修订）。
 
 ---

@@ -76,6 +76,11 @@
   - 迁出 13 个 HUD 函数至 `src/ui/hud/{battle-hud,build-hud,dock-ui,inspector,hud-controller,index}.js`，统一封装 8 个脏检查键重置（`src/legacy/game.js` 降至 1,191 行）。
   - 新增 `tests/unit/ui-hud.test.mjs`（6 项无浏览器单测）。
   - 实测结果：`npm run build` PASS（519,987 B，86 模块）；`npm run test:unit` 292/292 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 4.4（输入控制器、调试预设/公开 API、主循环与根装配、彻底删除 `src/legacy/game.js` · Phase 4 UI/App 壳层收官）**：已完成并经主控独立审查与全量实测验收。
+  - **彻底退役并删除 `src/legacy/game.js`**，`src/legacy/` 仅保留退役说明 `README.md`（0 个 `.js` 文件）；`tests/unit/architecture-guard.test.mjs` 升级门禁，新增 `ui` / `debug` 分层边界校验与 `src/legacy/` 零 `.js` 强约束。
+  - 新增 `src/ui/input/input.js`、`src/debug/{presets,test-api}.js`、`src/app/{game-loop,bootstrap}.js`；`src/main.js` 精简为 19 行纯启动入口；`window.BG60`（258 键严格同序 + 3 getter + 34 常量）与 `window.BG52 === window.BG60` 100% 兼容；`createGameSystems(runtimeCtx)` 达成零 DOM 纯系统组装。
+  - 新增 `tests/unit/app-loop-input.test.mjs`（6 项无浏览器单测）。
+  - 实测结果：`npm run build` PASS（521,949 B，90 模块，1 内联脚本）；`npm run test:unit` 298/298 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS（种子 `2026` & `1337`）；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS（0 异常）；`npm run test:baseline` 43/43 PASS。
 
 ---
 

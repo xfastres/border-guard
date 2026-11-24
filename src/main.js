@@ -6,7 +6,9 @@ import './ui/styles/dock.css';
 import './ui/styles/feedback.css';
 import './ui/styles/modals.css';
 import './ui/styles/meta.css';
-import './legacy/game.js';
+import { bootBrowserGame } from './app/bootstrap.js';
+
+bootBrowserGame();
 
 const gameApi = window.BG60;
 if (!gameApi || gameApi.version !== '0.60.0-stage6') {
