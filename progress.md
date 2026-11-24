@@ -68,6 +68,10 @@
   - 迁出 23 个 VFX/反馈/相机/Canvas 绘制函数至 `src/ui/vfx/vfx.js`、`src/ui/feedback/feedback.js` 与 `src/ui/canvas/{camera,draw-arena,draw-entities,draw-effects,draw-overlays,renderer,index}.js`（`src/legacy/game.js` 降至 3,496 行）。
   - 新增 `tests/unit/ui-vfx-camera.test.mjs`（6 项无浏览器单测）。
   - 实测结果：`npm run build` PASS（510,908 B，72 模块）；`npm run test:unit` 281/281 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 4.2（`src/ui/shared/formatters.js` + `src/ui/modals/` 共享格式化与全部弹窗系统）**：已完成并经主控独立审查与实测验收。
+  - 迁出 3 个共享格式化函数与 22 个弹窗队列/渲染函数至 `src/ui/shared/formatters.js` 与 `src/ui/modals/{modal-manager,shop-confirm-modals,progression-modals,meta-modal,intro-end-modals,destiny-transfer-modals,index}.js`，`modalsSystem` 已直连 `runtimeCtx.ports.modals`（`src/legacy/game.js` 降至 2,325 行）。
+  - 新增 `tests/unit/ui-formatters-modals.test.mjs`（5 项单测）。
+  - 实测结果：`npm run build` PASS（516,200 B，80 模块）；`npm run test:unit` 286/286 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 
