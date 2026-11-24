@@ -5797,6 +5797,7 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
       totalHitsTaken: 0,
       totalHpLost: 0,
       totalShieldAbsorbed: 0,
+      settledAtRunClock: null,
       bySource: {}
     },
     runMetrics: {
@@ -5806,12 +5807,15 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
       w29FinalPrepSec: 0,
       harvestSec: 0,
       totalEffectiveSec: 0,
+      hpLost: 0,
       goldEarned: BALANCE.progression.initialGold,
       goldSpent: 0,
       materialsEarned: BALANCE.progression.initialMaterials || 0,
       materialsSpent: 0,
       transferTokensEarned: BALANCE.progression.initialTransferTokens || 0,
       transferTokensSpent: 0,
+      ledger: [],
+      _ledgerSeq: 1,
       _lastGold: BALANCE.progression.initialGold,
       _lastMaterials: BALANCE.progression.initialMaterials || 0,
       _lastTokens: BALANCE.progression.initialTransferTokens || 0
@@ -5820,38 +5824,119 @@ function makeGame(seed = Math.floor(Math.random() * 1e9)){
     stats: {
       kills: 0, elites: 0, merges: 0, dmgTotal: 0,
       bossKills: 0, breakthroughsCompleted: 0,
-      fireMarksApplied: 0, fireDetonations: 0, frostSlowsApplied: 0, frostShieldGained: 0,
+      fireMarksApplied: 0, fireDetonations: 0, frostSlowsApplied: 0, frostShieldGained: 0, shieldGained: 0,
       gearFireDuoProcs: 0, gearFireTrioProcs: 0, fireChainTransfers: 0, fireFocusedDetonations: 0,
       gearFrostDuoProcs: 0, gearFrostTrioProcs: 0, frostHitPulses: 0, frostDashPulses: 0, frostFullShieldPulses: 0,
       w20BaseProcs: 0, w20EnhancementProcs: 0, w20FirePulls: 0, w20FrostCounterProcs: 0, w20BreakerSlams: 0,
       w20BossAuxTriggers: 0, w20TotemsDestroyed: 0,
       destinyRolls: 0, destinyEmptyTribulations: 0, destinyClaims: 0, destinyEnhancementProcs: 0, affixTransfers: 0,
-      skillDmg: { blades:0, firewave:0, thunder:0, nova:0, stomp:0, berserk:0, dash:0, spirit:0, combo:0, perk:0 }
+      skillDmg: { blades:0, firewave:0, thunder:0, nova:0, stomp:0, berserk:0, dash:0, spirit:0, combo:0, perk:0, burn:0 }
     }
   };
   return g;
 }
 
-function syncRunResourceAccounting(){
+const RESOURCE_LEDGER_MAX = 500;
+function recordResourceFlow(resourceType, delta, reason = 'unknown'){
+  if (!game) return 0;
+  const amt = Math.round(Number(delta) || 0);
+  if (amt === 0) return 0;
+  const rm = game.runMetrics;
+  let actualDelta = 0;
+  let balanceAfter = 0;
+  if (resourceType === 'gold') {
+    const prev = Math.max(0, Number(game.gold || 0));
+    game.gold = Math.max(0, prev + amt);
+    actualDelta = game.gold - prev;
+    balanceAfter = game.gold;
+    if (rm) {
+      if (actualDelta > 0) rm.goldEarned += actualDelta;
+      else if (actualDelta < 0) rm.goldSpent += -actualDelta;
+      rm._lastGold = game.gold;
+    }
+  } else if (resourceType === 'materials') {
+    const prev = Math.max(0, Number(game.materials || 0));
+    game.materials = Math.max(0, prev + amt);
+    actualDelta = game.materials - prev;
+    balanceAfter = game.materials;
+    if (rm) {
+      if (actualDelta > 0) rm.materialsEarned += actualDelta;
+      else if (actualDelta < 0) rm.materialsSpent += -actualDelta;
+      rm._lastMaterials = game.materials;
+    }
+  } else if (resourceType === 'transferTokens') {
+    const prev = Math.max(0, Number(game.transferTokens || 0));
+    game.transferTokens = Math.max(0, prev + amt);
+    actualDelta = game.transferTokens - prev;
+    balanceAfter = game.transferTokens;
+    if (rm) {
+      if (actualDelta > 0) rm.transferTokensEarned += actualDelta;
+      else if (actualDelta < 0) rm.transferTokensSpent += -actualDelta;
+      rm._lastTokens = game.transferTokens;
+    }
+  } else {
+    return 0;
+  }
+  if (rm && actualDelta !== 0) {
+    if (!Array.isArray(rm.ledger)) rm.ledger = [];
+    const seq = rm._ledgerSeq || 1;
+    rm._ledgerSeq = seq + 1;
+    rm.ledger.push({
+      seq,
+      wave: game.wave || 1,
+      type: resourceType,
+      delta: actualDelta,
+      reason: String(reason || 'unknown'),
+      balanceAfter
+    });
+    if (rm.ledger.length > RESOURCE_LEDGER_MAX) {
+      rm.ledger.splice(0, rm.ledger.length - RESOURCE_LEDGER_MAX);
+    }
+  }
+  return actualDelta;
+}
+
+function changeGold(delta, reason = 'gold_change'){
+  return recordResourceFlow('gold', delta, reason);
+}
+function changeMaterials(delta, reason = 'materials_change'){
+  return recordResourceFlow('materials', delta, reason);
+}
+function changeTransferTokens(delta, reason = 'transfer_tokens_change'){
+  return recordResourceFlow('transferTokens', delta, reason);
+}
+function getResourceLedger(limit = 0){
+  const list = Array.isArray(game?.runMetrics?.ledger) ? game.runMetrics.ledger : [];
+  const sliced = limit > 0 ? list.slice(-limit) : list.slice();
+  return sliced.map(e => ({ ...e }));
+}
+function resetRunMetricsResourceBaseline(){
   if (!game?.runMetrics) return;
   const rm = game.runMetrics;
-  const gNow = Math.max(0, Number(game.gold || 0));
-  const mNow = Math.max(0, Number(game.materials || 0));
-  const tNow = Math.max(0, Number(game.transferTokens || 0));
-  const dg = gNow - rm._lastGold;
-  if (dg > 0) rm.goldEarned += dg;
-  else if (dg < 0) rm.goldSpent += -dg;
-  rm._lastGold = gNow;
+  const g = Math.max(0, Number(game.gold || 0));
+  const m = Math.max(0, Number(game.materials || 0));
+  const t = Math.max(0, Number(game.transferTokens || 0));
+  rm.goldEarned = g;
+  rm.goldSpent = 0;
+  rm.materialsEarned = m;
+  rm.materialsSpent = 0;
+  rm.transferTokensEarned = t;
+  rm.transferTokensSpent = 0;
+  rm._lastGold = g;
+  rm._lastMaterials = m;
+  rm._lastTokens = t;
+  rm.ledger = [];
+  rm._ledgerSeq = 1;
+}
 
-  const dm = mNow - rm._lastMaterials;
-  if (dm > 0) rm.materialsEarned += dm;
-  else if (dm < 0) rm.materialsSpent += -dm;
-  rm._lastMaterials = mNow;
-
-  const dt = tNow - rm._lastTokens;
-  if (dt > 0) rm.transferTokensEarned += dt;
-  else if (dt < 0) rm.transferTokensSpent += -dt;
-  rm._lastTokens = tNow;
+function syncRunResourceAccounting(){
+  // BUG-06: Accounting is now driven strictly by changeGold/changeMaterials/changeTransferTokens ledger.
+  // Keep this helper only to sync baseline snapshots without ever overriding/canceling ledger totals.
+  if (!game?.runMetrics) return;
+  const rm = game.runMetrics;
+  rm._lastGold = Math.max(0, Number(game.gold || 0));
+  rm._lastMaterials = Math.max(0, Number(game.materials || 0));
+  rm._lastTokens = Math.max(0, Number(game.transferTokens || 0));
 }
 
 function startNewRun(seed = Math.floor(Math.random() * 1e9), showStarter = true, opts = {}){
@@ -6411,19 +6496,27 @@ function gainFrostShield(amount, arg2 = 5.0, arg3 = 90){
   const noFullShieldPulse = isObj ? !!arg2.noFullShieldPulse : false;
   const maxShield = Math.max(getHeroMaxFrostShield(90), reqMax);
   const gain = Math.round(amount);
-  const prev = h.shield || 0;
-  const overflow = Math.max(0, prev + gain - maxShield);
-  const wasFullOrOverflow = prev >= maxShield * 0.92 || (prev + gain >= maxShield);
-  h.shield = Math.min(maxShield, prev + gain);
+  const prevShield = h.shield || 0;
+  const overflow = Math.max(0, prevShield + gain - maxShield);
+  const wasFullOrOverflow = prevShield >= maxShield * 0.92 || (prevShield + gain >= maxShield);
+  h.shield = Math.min(maxShield, prevShield + gain);
+  const actualGain = Math.max(0, Math.round(h.shield - prevShield));
   h.shieldTimer = Math.max(h.shieldTimer || 0, duration);
   h.frostShieldActive = true;
-  if (game.stats) game.stats.frostShieldGained = (game.stats.frostShieldGained || 0) + gain;
-  if (h.combatStateStats) {
-    h.combatStateStats.frostShieldGained += gain;
-    h.combatStateStats.w10BranchProcs++;
+  if (actualGain > 0) {
+    if (game.stats) {
+      game.stats.frostShieldGained = (game.stats.frostShieldGained || 0) + actualGain;
+      game.stats.shieldGained = (game.stats.shieldGained || 0) + actualGain;
+    }
+    if (h.combatStateStats) {
+      h.combatStateStats.frostShieldGained += actualGain;
+    }
+    if (game?.w30Battle?.signatureLockActive && game.w30Battle.signatureStatusHitsDuringLock) {
+      game.w30Battle.signatureStatusHitsDuringLock.frostShieldGained += actualGain;
+    }
   }
-  if (game?.w30Battle?.signatureLockActive && game.w30Battle.signatureStatusHitsDuringLock) {
-    game.w30Battle.signatureStatusHitsDuringLock.frostShieldGained += gain;
+  if (h.combatStateStats) {
+    h.combatStateStats.w10BranchProcs++;
   }
   // Stage 3 W20 Enhancement [w20_frost_pillar_ward]: every 40 cumulative frost shield drops a 3.2s frost ward zone
   if (hasW20Enhancement('w20_frost_pillar_ward') && arg2?.source !== 'w20_frost_pillar_ward') {
@@ -6444,7 +6537,7 @@ function gainFrostShield(amount, arg2 = 5.0, arg3 = 90){
     const overflowBonusDmg = hasW20Enhancement('w20_frost_overflow_nova') ? Math.round(overflow * 1.4) : 0;
     triggerFrostPulse(sc.frostTrioActivePulseRadius || 3.25, sc.frostTrioActivePulseDmg || 46, 0.95, 'full_shield_refresh', { overflowBonusDmg });
   }
-  return h.shield - prev;
+  return actualGain;
 }
 
 /* ==================== SYNERGY, COMBO & STAT COMPUTATION ==================== */
@@ -6932,16 +7025,29 @@ function renderShopConfirmModal(){
   if (!draft || !item || item.bought) { cancelShopPurchaseConfirm(); return; }
   const box = $('modalBox');
   const w29Note = game.finalPrep?.active ? ` · <span style="color:#ff9090">⏳ W29 整备倒计时继续运行 (${Math.ceil(game.finalPrep.timer)}s)</span>` : '';
+  let detailLine = '';
+  if (item.itemType === 'pill') {
+    const p = PILLS[item.pillKey];
+    detailLine = p ? `${p.icon} ${p.name}：${p.desc}` : draft.label;
+  } else if (item.itemType === 'gear' && item.gear) {
+    const g = item.gear;
+    const stSpec = getSourceStageSpec(g.sourceStage);
+    const afTxt = (g.affixes || []).filter(Boolean).map(a => GEAR_AFFIXES[a.id]?.name || a.id).join(' / ') || '无词条';
+    detailLine = `${g.icon} ${g.name} [${GEAR_RARITY_LABELS[g.rarity]} · ${stSpec.label} · ${g.slotsCount}槽] · 词条：${afTxt}`;
+  } else {
+    const spec = ARTIFACTS[item.kind];
+    detailLine = spec ? `${spec.name} ${item.star || 1}★：${spec.desc}` : draft.label;
+  }
   box.innerHTML = `
     <h2>🛒 确认购买【${draft.label}】</h2>
-    <p class="lead">花费 <strong>💰 ${item.cost} 金币</strong>（当前持有 💰 ${game.gold}）${w29Note}。未确认的草稿在倒计时归零时自动清空、零扣款。</p>
+    <p class="lead">${detailLine}<br>花费 <strong>💰 ${item.cost} 金币</strong>（当前持有 💰 ${game.gold}）${w29Note}。未确认的草稿在倒计时归零时自动清空、零扣款。</p>
     <div class="modal-footer">
-      <button class="btn" id="shopConfCancel" type="button">取消（零扣款）</button>
-      <button class="btn gold" id="shopConfOk" type="button" ${game.gold < item.cost ? 'disabled' : ''}>确认购买（💰${item.cost}）</button>
+      <button class="btn" id="shopConfirmCancelBtn" type="button">取消（零扣款）</button>
+      <button class="btn gold" id="shopConfirmBuyBtn" type="button" ${game.gold < item.cost ? 'disabled' : ''}>确认购买（💰${item.cost}）</button>
     </div>
   `;
-  box.querySelector('#shopConfCancel')?.addEventListener('click', () => { cancelShopPurchaseConfirm(); renderAllUI(true); });
-  box.querySelector('#shopConfOk')?.addEventListener('click', () => { confirmShopPurchase(); });
+  box.querySelector('#shopConfirmCancelBtn')?.addEventListener('click', () => { cancelShopPurchaseConfirm(); renderAllUI(true); });
+  box.querySelector('#shopConfirmBuyBtn')?.addEventListener('click', () => { confirmShopPurchase(); });
   $('modalBackdrop').hidden = false;
 }
 
@@ -6958,7 +7064,7 @@ function rollShop(free = false){
       const freeProc = perkLv('gold_power') >= 2 && game.rnd() < 0.25;
       if (!freeProc) {
         if (game.gold < game.rerollCost) { toast(`需要 ${game.rerollCost} 金币才能刷新商店！`, true); return false; }
-        game.gold -= game.rerollCost;
+        changeGold(-game.rerollCost, 'shop_reroll');
         game.rerollCost += BALANCE.economy.rerollIncrement;
         AudioKit.play('coin', 0.9);
       } else {
@@ -7061,7 +7167,7 @@ function chooseSealRoute(routeKey){
     toast(`选择【${spec.name}】需要 ${spec.cost} 金币！`, true);
     return { ok: false, reason: 'insufficient_gold', need: spec.cost };
   }
-  if (spec.cost > 0) game.gold -= spec.cost;
+  if (spec.cost > 0) changeGold(-spec.cost, 'seal_route');
   s.route = routeKey;
   AudioKit.play('merge', 1.2);
   addRing(game.hero.x, game.hero.y, ELEMENTS[s.elem].color, 2.4);
@@ -7081,7 +7187,7 @@ function buyShopItem(shopIdx){
   if (item.itemType === 'pill') {
     const pSpec = PILLS[item.pillKey];
     if (!pSpec) return false;
-    game.gold -= item.cost;
+    changeGold(-item.cost, `shop_buy_pill_${item.pillKey}`);
     item.bought = true;
     game.pills[item.pillKey] = (game.pills[item.pillKey] || 0) + 1;
     AudioKit.play('chest', 1.1);
@@ -7094,7 +7200,7 @@ function buyShopItem(shopIdx){
       gainFrostShield(25, { maxShield: 90, duration: 6.0, source: 'pill_heal' });
       toast('服下【回春丹】！恢复 65 生命并凝结 25 护盾！');
     } else if (item.pillKey === 'temper') {
-      game.materials += 2;
+      changeMaterials(2, 'pill_temper');
       game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + 25);
       toast(`服下【淬灵丹】！普通材料 +2（当前 ${game.materials}）并恢复 25 生命！`);
     }
@@ -7117,7 +7223,7 @@ function buyShopItem(shopIdx){
       renderAllUI(true);
       return { ok: false, reason: 'bag_full' };
     }
-    game.gold -= item.cost;
+    changeGold(-item.cost, 'shop_buy_gear');
     item.bought = true;
     // Increment same-element purchase count (respecting sameElemResetByStage)
     const curStage = getSourceStageForWave(game.wave);
@@ -7148,7 +7254,7 @@ function buyShopItem(shopIdx){
   const subIdx = game.subSeals.findIndex(s => s.kind === item.kind);
 
   if (!game.seal) {
-    game.gold -= item.cost;
+    changeGold(-item.cost, 'shop_buy_main_seal');
     item.bought = true;
     const initStar = Math.min(cap, item.star);
     game.seal = { kind: item.kind, elem: spec.elem, star: initStar, prog: 0, route: null, cd: 0, dmgDealt: 0, kills: 0 };
@@ -7163,7 +7269,7 @@ function buyShopItem(shopIdx){
       toast(game.seal.star >= 5 ? '【主灵印】已达 5★ 仙印巅峰！' : `当前阶段主印上限 ${cap}★，达成【${nextNode?.name || '下一阶段'}】节点后解锁 ${cap + 1}★！`, true);
       return false;
     }
-    game.gold -= item.cost;
+    changeGold(-item.cost, 'shop_upgrade_main_seal');
     item.bought = true;
     game.seal.prog += cardPts;
     let leveled = false;
@@ -7192,7 +7298,7 @@ function buyShopItem(shopIdx){
       toast(`辅印【${spec.name}】已达 3★ 阵眼巅峰！`, true);
       return false;
     }
-    game.gold -= item.cost;
+    changeGold(-item.cost, 'shop_upgrade_sub_seal');
     item.bought = true;
     sub.prog += cardPts;
     let leveled = false;
@@ -7213,7 +7319,7 @@ function buyShopItem(shopIdx){
       toast(`强化辅印【${spec.name}】进度 ${sub.prog}/${SEAL_FUSE_NEED[sub.star]}`);
     }
   } else if (game.subSeals.length < subCap) {
-    game.gold -= item.cost;
+    changeGold(-item.cost, 'shop_buy_sub_seal');
     item.bought = true;
     const initStar = Math.min(3, item.star);
     game.subSeals.push({ kind: item.kind, elem: spec.elem, star: initStar, prog: 0, dmgDealt: 0 });
@@ -7226,7 +7332,8 @@ function buyShopItem(shopIdx){
     // Switch Main Seal: refund 80% of old main seal invested value and equip new element!
     const oldSpec = ARTIFACTS[game.seal.kind];
     const refund = Math.round(oldSpec.cost * sealTotalPoints(game.seal) * 0.8);
-    game.gold = game.gold - item.cost + refund;
+    changeGold(-item.cost, 'shop_switch_main_seal');
+    if (refund > 0) changeGold(refund, 'switch_main_seal_refund');
     item.bought = true;
     const initStar = Math.min(cap, item.star);
     game.seal = { kind: item.kind, elem: spec.elem, star: initStar, prog: 0, route: null, cd: 0, dmgDealt: 0, kills: 0 };
@@ -7246,7 +7353,7 @@ function sellSeal(){
   if (!game.seal) return false;
   const oldSpec = ARTIFACTS[game.seal.kind];
   const refund = Math.round(oldSpec.cost * sealTotalPoints(game.seal) * 0.8);
-  game.gold += refund;
+  changeGold(refund, 'sell_main_seal');
   game.seal = null;
   if (!game.subSeals.length) game.inspTarget = null;
   addFloat(game.hero.x, game.hero.y - 0.5, `+${refund} 金`, '#ffe27a');
@@ -7262,7 +7369,7 @@ function sellSubSeal(idx){
   if (!sub) return false;
   const spec = ARTIFACTS[sub.kind];
   const refund = Math.round(spec.cost * sealTotalPoints(sub) * 0.8);
-  game.gold += refund;
+  changeGold(refund, 'sell_sub_seal');
   game.subSeals.splice(idx, 1);
   addFloat(game.hero.x, game.hero.y - 0.5, `卸辅印 +${refund} 金`, '#ffe27a');
   AudioKit.play('coin');
@@ -7309,12 +7416,12 @@ function equipGearFromBag(bagIdx){
 }
 
 function replaceEquippedGear(slotIdx, bagIdx){
-  if (isFinalPrepActionLocked()) return false;
-  if (slotIdx < 0 || slotIdx >= game.hero.gear.length) return false;
-  if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
+  if (isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
+  if (slotIdx < 0 || slotIdx >= game.hero.gear.length) return { ok: false, reason: 'invalid_slot_idx' };
+  if (bagIdx < 0 || bagIdx >= game.bag.length) return { ok: false, reason: 'invalid_bag_idx' };
   if (isBagSeal(game.bag[bagIdx])) {
     toast('灵印物品无法替换领主构装槽！', true);
-    return false;
+    return { ok: false, reason: 'bag_item_is_seal' };
   }
   const incoming = normalizeGearInstance(game.bag[bagIdx]);
   const outgoing = game.hero.gear[slotIdx];
@@ -7325,7 +7432,7 @@ function replaceEquippedGear(slotIdx, bagIdx){
   AudioKit.play('chest', 1.05);
   toast(`已用【${gearLabel(incoming)}】替换【${gearLabel(outgoing)}】，联动已实时重算！`);
   renderAllUI(true);
-  return true;
+  return { ok: true, slotIdx, bagIdx, incoming, outgoing };
 }
 
 function unequipGear(slotIdx){
@@ -7356,7 +7463,7 @@ function sellBagGear(bagIdx){
     const pts = inst.star === 3 ? 4 : inst.star === 2 ? 2 : 1;
     const gold = Math.max(8, Math.round(spec.cost * pts * 0.65));
     game.bag.splice(bagIdx, 1);
-    game.gold += gold;
+    changeGold(gold, 'sell_bag_seal');
     AudioKit.play('coin', 1.1);
     addFloat(game.hero.x, game.hero.y - 0.5, `售灵印 +${gold} 金`, '#ffe27a');
     toast(`💰 已出售未装备灵印【${spec.name} ${inst.star}★】，获得 +${gold} 金币！`);
@@ -7365,7 +7472,7 @@ function sellBagGear(bagIdx){
   }
   const gold = getGearSellGold(inst);
   game.bag.splice(bagIdx, 1);
-  game.gold += gold;
+  changeGold(gold, 'sell_bag_gear');
   AudioKit.play('coin', 1.1);
   addFloat(game.hero.x, game.hero.y - 0.5, `出售 +${gold} 金`, '#ffe27a');
   toast(`💰 已出售【${gearLabel(inst)}】(${GEAR_RARITY_LABELS[inst.rarity]}·阶段${inst.sourceStage})，获得 +${gold} 金币！`);
@@ -7381,7 +7488,7 @@ function dismantleBagGear(bagIdx){
     // Dismantling seals yields ONLY ordinary materials, NEVER transfer tokens!
     const mats = Math.max(1, (inst.star || 1) * 2);
     game.bag.splice(bagIdx, 1);
-    game.materials = (game.materials || 0) + mats;
+    changeMaterials(mats, 'dismantle_bag_seal');
     AudioKit.play('merge', 0.9);
     addFloat(game.hero.x, game.hero.y - 0.5, `拆灵印 +${mats} 锻材`, '#8ef4ff');
     toast(`🔧 已拆解未装备灵印【${inst.name} ${inst.star}★】，获得 +${mats} 普通材料！`);
@@ -7390,7 +7497,7 @@ function dismantleBagGear(bagIdx){
   }
   const mats = getGearDismantleMaterials(inst);
   game.bag.splice(bagIdx, 1);
-  game.materials = (game.materials || 0) + mats;
+  changeMaterials(mats, 'dismantle_bag_gear');
   AudioKit.play('merge', 0.9);
   addFloat(game.hero.x, game.hero.y - 0.5, `拆解 +${mats} 锻材`, '#8ef4ff');
   toast(`🔧 已拆解【${gearLabel(inst)}】(${GEAR_RARITY_LABELS[inst.rarity]}·阶段${inst.sourceStage})，获得 +${mats} 普通材料！`);
@@ -7570,7 +7677,7 @@ function enhanceGear(target){
     toast(`材料强化需要 ⚙️${cost} 普通材料（当前 ${game.materials || 0}）！`, true);
     return { ok: false, reason: 'insufficient_materials', need: cost };
   }
-  game.materials -= cost;
+  changeMaterials(-cost, 'enhance_gear');
   inst.enhanceLv = (inst.enhanceLv || 0) + 1;
   // Upgrade numeric tier of existing affixes while strictly preserving affix IDs, slotsCount, rarity, sourceStage!
   for (const a of (inst.affixes || [])) {
@@ -8562,7 +8669,8 @@ function onEnemyKilled(e, opts){
   const affixGold = (gm.bonusGoldChance > 0 && game.rnd() < gm.bonusGoldChance) ? 1 : 0;
   const bonusGold = (opts.bonusGold || 0) + affixGold;
   const baseGold = (e.elite || e.boss || e.gold >= 2) ? e.gold : (game.rnd() < BALANCE.economy.singleGoldDropChance ? e.gold : 0);
-  game.gold += baseGold + bonusGold;
+  const killGold = baseGold + bonusGold;
+  if (killGold > 0) changeGold(killGold, e.boss ? 'kill_boss' : e.elite ? 'kill_elite' : 'kill_enemy');
 
   if (gm.burnKillHeal > 0 && (e.burnT > 0 || e.fireMarkT > 0)) {
     applyHeroLifesteal(gm.burnKillHeal);
@@ -8606,7 +8714,7 @@ function onEnemyKilled(e, opts){
   // Material drops for v0.60 equipment & crafting loop (scales up in W21-W29 endgame refinement!)
   if (e.boss || e.elite) {
     const matDrop = getEnemyMaterialDrop(e, game.wave);
-    game.materials = (game.materials || 0) + matDrop;
+    if (matDrop > 0) changeMaterials(matDrop, e.boss ? 'drop_boss_materials' : 'drop_elite_materials');
   }
 
   // Stage 5: Depleting W30 Final Boss (boss6) HP bar in Final Phase triggers IMMEDIATE 3D Victory Settlement!
@@ -8695,8 +8803,8 @@ function onEnemyKilled(e, opts){
     if (game.shrine) game.shrine.cleared = true;
     if (game.curWaveTel) game.curWaveTel.shrineCleared = true;
     const shrineMats = getEnemyMaterialDrop(e, game.wave);
-    game.gold += 25;
-    game.materials = (game.materials || 0) + shrineMats;
+    changeGold(25, 'shrine_clear');
+    if (shrineMats > 0) changeMaterials(shrineMats, 'shrine_clear');
     if (hasMetaAux('aux_shrine_compass') && game.hero) {
       const healAmt = Math.round(game.hero.maxHp * 0.20);
       game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + healAmt);
@@ -8722,7 +8830,7 @@ function onEnemyKilled(e, opts){
       AudioKit.play('chest');
       game.shake = Math.max(game.shake, e.boss ? 10 : 5);
     } else {
-      game.gold += 14;
+      changeGold(14, 'elite_bounty');
       addFloat(e.x, e.y - 0.5, '💰 精英赏金 +14', '#ffe478', true);
       AudioKit.play('coin', 1.1);
     }
@@ -8840,7 +8948,10 @@ function castHeroDash(){
   h.y = clamp(h.y + dy * dashDist, 1.2, H - 1.2);
   const dashCadenceAux = hasMetaAux('aux_dash_cadence');
   h.invuln = 0.6 + (dashCadenceAux ? 0.06 : 0);
-  h.shield = Math.max(h.shield, 35);
+  const prevDashShield = h.shield || 0;
+  h.shield = Math.max(prevDashShield, 35);
+  const dashShieldGain = Math.max(0, Math.round(h.shield - prevDashShield));
+  if (dashShieldGain > 0 && game.stats) game.stats.shieldGained = (game.stats.shieldGained || 0) + dashShieldGain;
   h.shieldTimer = Math.max(h.shieldTimer || 0, 3.5);
   const wgLv = perkLv('wind_gale');
   const be = BALANCE.w20Breakthrough?.baseEffects || {};
@@ -9819,7 +9930,10 @@ function triggerSealOnHeroHit(hitEnemy){
     }
   }
   if (hasDualRes('holy_omni')) {
-    h.shield = Math.min(75, h.shield + 6);
+    const prevHolyShield = h.shield || 0;
+    h.shield = Math.min(75, prevHolyShield + 6);
+    const holyShieldGain = Math.max(0, Math.round(h.shield - prevHolyShield));
+    if (holyShieldGain > 0 && game.stats) game.stats.shieldGained = (game.stats.shieldGained || 0) + holyShieldGain;
     h.shieldTimer = Math.max(h.shieldTimer, 4.0);
   }
 
@@ -10141,20 +10255,42 @@ function updateEnemies(dt){
     else if (e.slowT > 0) { e.slowT = Math.max(0, e.slowT - dt); if (e.slowT === 0) e.slow = 0; }
     if (e.burnT > 0) {
       e.burnT = Math.max(0, e.burnT - dt);
-      const burnTick = e.burnDps * dt;
+      const burnTick = Math.max(0, (e.burnDps || 0) * dt);
       if (e.kind === 'boss6' && e.signatureLockActive) {
-        // STRICT HP LOCK during signature: burn timer ticks, 0 HP deducted!
+        // STRICT HP LOCK during signature: burn timer ticks, 0 HP deducted, 0 burn dmg recorded!
         e.hp = Math.max(e.hp, e.signatureThresholdHp);
-      } else if (e.kind === 'boss6' && !e.signatureTriggered && e.signatureThresholdHp > 0 && (e.hp - burnTick) <= e.signatureThresholdHp) {
-        const trunc = Math.max(0, burnTick - Math.max(0, e.hp - e.signatureThresholdHp));
-        e.hp = e.signatureThresholdHp;
-        triggerW30BossSignature(e, trunc);
-      } else {
-        e.hp -= burnTick;
-        if (e.kind === 'boss6' && e.signatureTriggered && !e.signatureLockActive && !e.finalPhaseEntered && e.hp > 0 && e.hp <= e.finalThresholdHp) {
-          enterW30BossFinalPhase(e);
+      } else if (burnTick > 0) {
+        let remBurn = burnTick;
+        let actualBurnDmg = 0;
+        if (e.shield > 0) {
+          const shAbs = Math.min(e.shield, remBurn);
+          e.shield -= shAbs;
+          remBurn -= shAbs;
+          actualBurnDmg += shAbs;
         }
-        if (e.hp <= 0) { onEnemyKilled(e, {}); continue; }
+        if (e.kind === 'boss6' && !e.signatureTriggered && e.signatureThresholdHp > 0 && (e.hp - remBurn) <= e.signatureThresholdHp) {
+          const allowedHp = Math.max(0, e.hp - e.signatureThresholdHp);
+          const trunc = Math.max(0, remBurn - allowedHp);
+          e.hp = e.signatureThresholdHp;
+          actualBurnDmg += allowedHp;
+          if (actualBurnDmg > 0 && game.stats) {
+            game.stats.dmgTotal += actualBurnDmg;
+            if (game.stats.skillDmg) game.stats.skillDmg.burn = (game.stats.skillDmg.burn || 0) + actualBurnDmg;
+          }
+          triggerW30BossSignature(e, trunc);
+        } else {
+          const prevHp = Math.max(0, e.hp);
+          e.hp -= remBurn;
+          actualBurnDmg += Math.min(prevHp, remBurn);
+          if (actualBurnDmg > 0 && game.stats) {
+            game.stats.dmgTotal += actualBurnDmg;
+            if (game.stats.skillDmg) game.stats.skillDmg.burn = (game.stats.skillDmg.burn || 0) + actualBurnDmg;
+          }
+          if (e.kind === 'boss6' && e.signatureTriggered && !e.signatureLockActive && !e.finalPhaseEntered && e.hp > 0 && e.hp <= e.finalThresholdHp) {
+            enterW30BossFinalPhase(e);
+          }
+          if (e.hp <= 0) { onEnemyKilled(e, {}); continue; }
+        }
       }
     }
     if (e.freezeT > 0 && !isEnemyUnstoppable(e)) { e.freezeT = Math.max(0, e.freezeT - dt); continue; }
@@ -10771,7 +10907,10 @@ function updatePickups(dt){
           h.hp = Math.min(h.maxHp, h.hp + healAmt);
           const actualHeal = Math.round(h.hp - prevHp);
           if ((orb.shield || 0) > 0 && h.shield < orb.shield) {
-            h.shield = Math.max(h.shield, orb.shield);
+            const prevOrbShield = h.shield || 0;
+            h.shield = Math.max(prevOrbShield, orb.shield);
+            const orbShieldGain = Math.max(0, Math.round(h.shield - prevOrbShield));
+            if (orbShieldGain > 0 && game.stats) game.stats.shieldGained = (game.stats.shieldGained || 0) + orbShieldGain;
             h.shieldTimer = Math.max(h.shieldTimer || 0, 4.5);
           }
           if (game.w30Battle) game.w30Battle.healOrbsCollected = (game.w30Battle.healOrbsCollected || 0) + 1;
@@ -10816,14 +10955,27 @@ function gainHeroXp(amt){
   }
 }
 
+function getCombatLogNowSec(){
+  if (!game) return 0;
+  if (game.combatLog && Number.isFinite(game.combatLog.settledAtRunClock)) {
+    return game.combatLog.settledAtRunClock;
+  }
+  const rmSec = Number(game.runMetrics?.totalEffectiveSec || 0);
+  const waveSec = Number(game.waveClock || 0);
+  return Number(Math.max(rmSec, waveSec).toFixed(2));
+}
+
 function getRecentThreatSummary(windowSec = 5.0){
   const log = game?.combatLog;
+  const nowT = getCombatLogNowSec();
+  const cutoff = Math.max(0, nowT - windowSec);
   if (!log || !log.hits.length) {
-    return { windowSec, hitCount: 0, totalHpLost: 0, topThreats: [], fatalSource: log?.fatalSource || null };
+    return { windowSec, anchorSec: nowT, hitCount: 0, totalHpLost: 0, totalDmg: 0, hits: [], topThreats: [], fatalSource: log?.fatalSource || null };
   }
-  const latestRunClock = log.hits[log.hits.length - 1].runClock ?? 0;
-  const cutoff = Math.max(0, latestRunClock - windowSec);
-  const recent = log.hits.filter(h => (h.runClock ?? 0) >= cutoff);
+  const recent = log.hits.filter(h => {
+    const t = Number(h.runClock ?? 0);
+    return t >= cutoff && t <= nowT + 1e-6;
+  });
   const agg = new Map();
   let totalHpLost = 0;
   for (const h of recent) {
@@ -10844,7 +10996,16 @@ function getRecentThreatSummary(windowSec = 5.0){
     agg.set(key, cur);
   }
   const topThreats = Array.from(agg.values()).sort((a, b) => (b.totalHpLost - a.totalHpLost) || (b.hits - a.hits));
-  return { windowSec, hitCount: recent.length, totalHpLost, topThreats, fatalSource: log.fatalSource || null };
+  return {
+    windowSec,
+    anchorSec: nowT,
+    hitCount: recent.length,
+    totalHpLost,
+    totalDmg: totalHpLost,
+    hits: recent.map(h => ({ ...h })),
+    topThreats,
+    fatalSource: log.fatalSource || null
+  };
 }
 
 function damageHero(amt, sourceMeta = null){
@@ -10869,6 +11030,7 @@ function damageHero(amt, sourceMeta = null){
     addRing(h.x, h.y, '#8ef4ff', 1.9);
     addFloat(h.x, h.y - 0.72, '🛡️ 奇门偏折 -35%!', '#8ef4ff', true);
   }
+  const rawDamageAfterMitigation = Math.max(0, Math.round(rem));
   const hadFrostShield = h.shield > 0 && h.frostShieldActive;
   const gearSyn = getActiveGearAffixSynergies();
   if (hadFrostShield && (gearSyn.hasFrostTrio || hasW20Direction('frost_bastion_counter'))) {
@@ -10892,27 +11054,33 @@ function damageHero(amt, sourceMeta = null){
       triggerFrostPulse(3.2, 42, 1.0, 'w10');
     }
   }
+  const prevHp = h.hp;
+  let actualHpLoss = 0;
   if (rem > 0) {
     h.hp = Math.max(0, h.hp - rem);
+    actualHpLoss = Math.max(0, Math.round(prevHp - h.hp));
     game.shake = Math.max(game.shake, 5.2);
     flashScreen('dmg');
-    addFloat(h.x, h.y - 0.45, `-${rem}`, '#ff7666', rem >= 18);
+    addFloat(h.x, h.y - 0.45, `-${actualHpLoss || Math.round(rem)}`, '#ff7666', actualHpLoss >= 18);
     AudioKit.play('hit');
     if (game.curWaveTel) {
       game.curWaveTel.hitsTaken++;
-      game.curWaveTel.dmgTaken += rem;
+      game.curWaveTel.dmgTaken += actualHpLoss;
       game.curWaveTel.minHpPct = Math.min(game.curWaveTel.minHpPct, Math.round(h.hp * 100 / Math.max(1, h.maxHp)));
+    }
+    if (game.runMetrics) {
+      game.runMetrics.hpLost = (game.runMetrics.hpLost || 0) + actualHpLoss;
     }
   }
   $('hpVignette')?.classList.toggle('danger', h.hp > 0 && h.hp < h.maxHp * 0.35);
 
-  // Stage 6: Real combat hit & fatal attribution log (NEVER fabricates entries)
+  // Stage 6: Real combat hit & fatal attribution log (NEVER fabricates entries; strictly records actualHpLoss!)
   const meta = sourceMeta && typeof sourceMeta === 'object' ? sourceMeta : {};
   const hpPctAfter = Math.round(h.hp * 100 / Math.max(1, h.maxHp));
   const hitEntry = {
     wave: game.wave,
     waveClock: Number((game.waveClock || 0).toFixed(2)),
-    runClock: Number((game.runMetrics?.totalEffectiveSec || game.waveClock || 0).toFixed(2)),
+    runClock: getCombatLogNowSec(),
     attackerName: meta.attackerName || '战场敌人',
     attackerKind: meta.attackerKind || 'unknown',
     skillName: meta.skillName || '攻击命中',
@@ -10921,8 +11089,9 @@ function damageHero(amt, sourceMeta = null){
     isBossAux: !!meta.isBossAux,
     auxKey: meta.auxKey || null,
     rawAmt: Math.round(amt),
+    rawDamageAfterMitigation,
     shieldAbsorbed: Math.round(shieldAbsorbed),
-    hpLost: Math.round(rem),
+    hpLost: actualHpLoss,
     hpAfter: Math.round(h.hp),
     hpPctAfter,
     deflected,
@@ -10955,7 +11124,10 @@ function damageHero(amt, sourceMeta = null){
   const btLv = perkLv('body_thorns');
   if (btLv > 0 && h.thornsCd <= 0 && h.hp > 0) {
     h.thornsCd = 3.0;
-    h.shield = Math.max(h.shield, btLv >= 2 ? 60 : 28);
+    const prevBtShield = h.shield || 0;
+    h.shield = Math.max(prevBtShield, btLv >= 2 ? 60 : 28);
+    const btShieldGain = Math.max(0, Math.round(h.shield - prevBtShield));
+    if (btShieldGain > 0 && game.stats) game.stats.shieldGained = (game.stats.shieldGained || 0) + btShieldGain;
     h.shieldTimer = 4.0;
     if (btLv >= 2) h.hp = Math.min(h.maxHp, h.hp + 15);
     addRing(h.x, h.y, '#ffe478', 3.0);
@@ -11364,8 +11536,9 @@ function completeWaveClear(){
   const clearBonus = BALANCE.economy.waveClearBase + clearedWave * BALANCE.economy.waveClearPerWave + greedBonus;
   const interest = perkLv('gold_power') >= 1 ? Math.min(25, Math.floor(game.gold * 0.10)) : 0;
   const clearMatBonus = getWaveClearMaterialBonus(clearedWave);
-  game.gold += clearBonus + interest;
-  if (clearMatBonus > 0) game.materials = (game.materials || 0) + clearMatBonus;
+  if (clearBonus > 0) changeGold(clearBonus, 'wave_clear_bonus');
+  if (interest > 0) changeGold(interest, 'wave_clear_interest');
+  if (clearMatBonus > 0) changeMaterials(clearMatBonus, 'wave_clear_materials');
   game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + BALANCE.progression.waveClearHeal);
   $('hpVignette')?.classList.toggle('danger', game.hero.hp < game.hero.maxHp * 0.35);
 
@@ -11502,6 +11675,9 @@ function completeWaveClear(){
 
 function finishGame(victory){
   if (game.curWaveTel) finalizeCurrentTelemetry();
+  if (game.combatLog && !Number.isFinite(game.combatLog.settledAtRunClock)) {
+    game.combatLog.settledAtRunClock = getCombatLogNowSec();
+  }
   syncRunResourceAccounting();
   if (game.w30Battle && game.w30Battle.active) {
     const boss = game.enemies.find(e => e.kind === 'boss6');
@@ -11822,7 +11998,7 @@ function renderLevelUpModal(){
   if (!choices.length) {
     const unlockedKeys = getUnlockedSkillPool();
     const pool = unlockedKeys.map(k => HERO_SKILLS[k]).filter(s => s && (game.hero.skills[s.key] || 0) < 5);
-    if (!pool.length) { game.gold += 20; toast('当前阶段神通池已全满级！额外奖励 +20 金币！'); closeModal(); return; }
+    if (!pool.length) { changeGold(20, 'max_skill_pool_bonus'); toast('当前阶段神通池已全满级！额外奖励 +20 金币！'); closeModal(); return; }
     const copy = pool.slice();
     while (choices.length < 3 && copy.length) {
       choices.push(copy.splice(Math.floor(game.rnd() * copy.length), 1)[0]);
@@ -12409,7 +12585,7 @@ function rerollW20Enhancements(){
 
   const prevIds = draft.candidates.slice();
   const nextIds = draw.cards.map(c => c.key);
-  game.materials -= cost;
+  changeMaterials(-cost, 'w20_reroll');
   draft.prevCandidates = prevIds;
   draft.candidates = nextIds;
   draft.rerollCount += 1;
@@ -12613,7 +12789,7 @@ function pickPerk(key){
     syncHeroMaxHp();
   } else if (key === 'dao_fortune') {
     if (nextLv === 1) {
-      game.gold += 35;
+      changeGold(35, 'perk_dao_fortune');
       const rares = GEAR_KEYS.filter(k => GEARS[k].rarity === 'rare');
       const rk = rares[Math.floor(game.rnd() * rares.length)];
       grantGear(rk);
@@ -13058,7 +13234,7 @@ function showEndModal(victory){
       </div>
       <div class="settle-card">
         <h4>② 本局表现与真实受击归因</h4>
-        <p>击杀：<b>${game.stats.kills}</b>（首领 <b>${game.stats.bossKills || 0}</b> / 精英 <b>${game.stats.elites}</b>） · 总输出：<b>${game.stats.dmgTotal.toLocaleString()}</b><br>
+        <p>击杀：<b>${game.stats.kills}</b>（首领 <b>${game.stats.bossKills || 0}</b> / 精英 <b>${game.stats.elites}</b>） · 总输出：<b>${Math.round(game.stats.dmgTotal).toLocaleString()}</b><br>
         最低血线：<b>${lowestHp}%</b> · 受击总计：<b>${game.combatLog?.totalHitsTaken || 0}</b> 次（失血 ${game.combatLog?.totalHpLost || 0} / 护盾吸收 ${game.combatLog?.totalShieldAbsorbed || 0}）<br>
         W10：<b>${w10Info}</b> · W20：<b>${w20Info}</b><br>
         装备联动：<b>${synNames}</b>（火标${game.stats.fireMarksApplied||0}/引爆${game.stats.fireDetonations||0}/传递${game.stats.fireChainTransfers||0} · 冰缓${game.stats.frostSlowsApplied||0}/冰盾+${game.stats.frostShieldGained||0}/冰环${(game.stats.frostHitPulses||0)+(game.stats.frostDashPulses||0)+(game.stats.frostFullShieldPulses||0)}）<br>
@@ -13519,7 +13695,7 @@ function rollDestinyGamble(betAmount, opts = {}){
 
   // ATOMIC DEDUCTION (irreversible once confirmed)
   const rndFn = opts.rndFn || game.rnd;
-  game.gold -= bet;
+  changeGold(-bet, 'destiny_gamble_bet');
   game.destiny.totalRolls++;
   game.destiny.totalGoldBet += bet;
   if (game.stats) game.stats.destinyRolls = (game.stats.destinyRolls || 0) + 1;
@@ -13534,7 +13710,7 @@ function rollDestinyGamble(betAmount, opts = {}){
     game.destiny.emptyTribulations++;
     game.destiny.pendingOffer = null;
     const stopLossRefund = hasMetaAux('aux_destiny_foresight') ? Math.floor(bet * 0.25) : 0;
-    if (stopLossRefund > 0) game.gold += stopLossRefund;
+    if (stopLossRefund > 0) changeGold(stopLossRefund, 'destiny_stop_loss_refund');
     game.destiny.lastOutcome = { outcome: 'empty_tribulation', bet, stopLossRefund, wave: game.wave };
     game.destiny.history.push({ outcome: 'empty_tribulation', bet, stopLossRefund, wave: game.wave });
     if (game.stats) game.stats.destinyEmptyTribulations = (game.stats.destinyEmptyTribulations || 0) + 1;
@@ -13590,7 +13766,7 @@ function applyDestinyPillReward(pillKey){
     return { effect: '生命 +65, 护盾 +25' };
   }
   if (pillKey === 'temper') {
-    game.materials = (game.materials || 0) + 2;
+    changeMaterials(2, 'destiny_pill_temper');
     h.hp = Math.min(h.maxHp, h.hp + 25);
     return { effect: '锻材 +2, 生命 +25' };
   }
@@ -13605,7 +13781,7 @@ function applyDestinyPillReward(pillKey){
     return { effect: '生命 +105, 护盾 +45' };
   }
   if (pillKey === 'rare_temper') {
-    game.materials = (game.materials || 0) + 4;
+    changeMaterials(4, 'destiny_pill_rare_temper');
     h.hp = Math.min(h.maxHp, h.hp + 40);
     return { effect: '锻材 +4, 生命 +40' };
   }
@@ -13623,7 +13799,7 @@ function applyDestinyPillReward(pillKey){
     return { effect: '永久最大生命 +35, 生命 +130, 护盾 +60' };
   }
   if (pillKey === 'epic_temper') {
-    game.materials = (game.materials || 0) + 6;
+    changeMaterials(6, 'destiny_pill_epic_temper');
     h.hp = Math.min(h.maxHp, h.hp + 55);
     return { effect: '锻材 +6, 生命 +55' };
   }
@@ -13635,7 +13811,7 @@ function applyDestinyPillReward(pillKey){
     return { effect: '直升 1 级, 永久最大生命 +45, 生命全满' };
   }
   if (pillKey === 'legend_temper') {
-    game.materials = (game.materials || 0) + 9;
+    changeMaterials(9, 'destiny_pill_legend_temper');
     h.baseMaxHp += 25;
     syncHeroMaxHp();
     h.hp = Math.min(h.maxHp, h.hp + 80);
@@ -13702,7 +13878,7 @@ function claimDestinyReward(choiceIndex, opts = {}){
   } else if (chosen.category === 'special') {
     if (chosen.subType === 'transfer_token') {
       const cnt = Math.max(1, Number(chosen.tokenCount || 1));
-      game.transferTokens = (game.transferTokens || 0) + cnt;
+      changeTransferTokens(cnt, 'destiny_transfer_token');
       grantResult = { ok: true, action: 'transfer_token_granted', tokenCount: cnt, totalTokens: game.transferTokens };
       AudioKit.play('level', 1.15);
       if (!opts.silent) toast(`🔮 获得【${chosen.name}】！当前天命转印符：${game.transferTokens} 枚！`);
@@ -13711,7 +13887,7 @@ function claimDestinyReward(choiceIndex, opts = {}){
       game.hero.destinyEnhancements = game.hero.destinyEnhancements || {};
       game.hero.destinyEnhancements[ek] = true;
       if (ek === 'destiny_aegis_bulwark') syncHeroMaxHp();
-      if (ek === 'destiny_golden_temper') game.materials = (game.materials || 0) + 4;
+      if (ek === 'destiny_golden_temper') changeMaterials(4, 'destiny_golden_temper');
       grantResult = { ok: true, action: 'destiny_exclusive_granted', enhancementKey: ek };
       AudioKit.play('level', 1.25);
       addRing(game.hero.x, game.hero.y, '#e4c4ff', 2.8);
@@ -13719,7 +13895,7 @@ function claimDestinyReward(choiceIndex, opts = {}){
     } else if (chosen.subType === 'special_boon') {
       const spec = DESTINY_SPECIAL_BOONS[chosen.boonKey] || DESTINY_SPECIAL_BOONS.boon_forge_bundle;
       const r = chosen.rarity || 'common';
-      if (spec.materialsByRarity?.[r]) game.materials = (game.materials || 0) + spec.materialsByRarity[r];
+      if (spec.materialsByRarity?.[r]) changeMaterials(spec.materialsByRarity[r], 'destiny_special_boon');
       if (spec.hpByRarity?.[r]) {
         game.hero.baseMaxHp += spec.hpByRarity[r];
         syncHeroMaxHp();
@@ -13995,8 +14171,8 @@ function commitAffixTransfer(params = null){
   }
 
   // ATOMIC COMMIT BLOCK (all checks passed!)
-  game.transferTokens -= check.costTokens;
-  game.gold -= check.costGold;
+  if (check.costTokens > 0) changeTransferTokens(-check.costTokens, 'affix_transfer');
+  if (check.costGold > 0) changeGold(-check.costGold, 'affix_transfer');
 
   while (check.src.inst.affixes.length < check.src.inst.slotsCount) check.src.inst.affixes.push(null);
   while (check.tgt.inst.affixes.length < check.tgt.inst.slotsCount) check.tgt.inst.affixes.push(null);
@@ -15672,7 +15848,8 @@ function renderShop(force){
   const subCap = getSubSealSlotCap();
   const sealSig = game.seal ? `${game.seal.kind}:${game.seal.star}:${game.seal.prog}:${game.seal.route || ''}` : 'none';
   const subSig = game.subSeals.map(x => `${x.kind}:${x.star}:${x.prog}`).join(',');
-  const key = `${sealSig}:${cap}:${subCap}:${subSig}:${game.wave}|` + game.shop.map(s=>`${s.uid}:${s.itemType}:${s.bought?1:0}:${s.cost}:${s.star||0}:${s.pillKey||''}:${s.gear?.uid||''}:${game.gold>=s.cost?1:0}`).join('|');
+  const inW29TimedPrep = !!(game.finalPrep?.active && game.finalPrep?.started);
+  const key = `${sealSig}:${cap}:${subCap}:${subSig}:${game.wave}:${inW29TimedPrep ? 1 : 0}|` + game.shop.map(s=>`${s.uid}:${s.itemType}:${s.bought?1:0}:${s.cost}:${s.star||0}:${s.pillKey||''}:${s.gear?.uid||''}:${game.gold>=s.cost?1:0}`).join('|');
   if (!force && key === lastShopKey) return;
   lastShopKey = key;
 
@@ -15689,6 +15866,10 @@ function renderShop(force){
       btn.addEventListener('click', () => {
         AudioKit.unlock();
         if (game.shop[idx]?.bought) return;
+        if (game.finalPrep?.active && game.finalPrep?.started) {
+          openShopPurchaseConfirm(idx);
+          return;
+        }
         buyShopItem(idx);
       });
       sec.append(btn);
@@ -16557,6 +16738,7 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
   game.transferTokens = transferTokens !== undefined
     ? Math.max(0, Math.round(Number(transferTokens)))
     : defaultTokens;
+  resetRunMetricsResourceBaseline();
 
   syncHeroMaxHp();
   const activeSynergies = recomputeEquipmentSynergies();
@@ -16661,6 +16843,7 @@ function importBuildPreset(snapshot){
   game.gold = Math.max(0, Math.round(Number(data.gold ?? BALANCE.progression.initialGold)));
   game.materials = Math.max(0, Math.round(Number(data.materials ?? 0)));
   game.transferTokens = Math.max(0, Math.round(Number(data.transferTokens ?? 0)));
+  resetRunMetricsResourceBaseline();
   game.shopElemBuyCounts = { wind:0, fire:0, frost:0, thunder:0, holy:0, ...(data.shopElemBuyCounts || {}) };
   game.shopElemBuyStage = Number(data.shopElemBuyStage || getSourceStageForWave(game.wave));
   if (data.w20State) {
@@ -16825,7 +17008,7 @@ window.BG60 = {
   syncW29FinalPrepClock, getMonotonicNowMs, setMonotonicClockForTest, setPaused,
   isCancelablePrepModal, closeCancelablePrepModals,
   startW30Early, resolveW29FinalPrepTimeout,
-  openShopPurchaseConfirm, confirmShopPurchase, cancelShopPurchaseConfirm,
+  openShopPurchaseConfirm, confirmShopPurchase, cancelShopPurchaseConfirm, renderShopConfirmModal,
   isW30BossIntelRevealed, getW30BossIntel, getW30BattleState, spawnHealOrb,
   // Stage 6: Meta Progression, Fixed 4-Pt Budget, Anti-Dilution Pools, Versioned Persistence, Anti-Farm Rewards & Real Attribution
   getMetaConfig, getMetaMainSpec, getMetaAuxSpec, getMetaPackSpec,
@@ -16837,7 +17020,8 @@ window.BG60 = {
   buildActiveRunPools, syncRunActivePools, getActiveRunGearKeys, getActiveRunAffixKeys,
   getMainLegacyWeightTable, pickWeightedByMainLegacy, pickShopGearBaseKey,
   calculateRunShardRewards, checkEligibleNewMilestones, settleRunMetaRewards,
-  getRecentThreatSummary, syncRunResourceAccounting,
+  getCombatLogNowSec, getRecentThreatSummary, syncRunResourceAccounting,
+  changeGold, changeMaterials, changeTransferTokens, getResourceLedger,
   openMetaLegacyModal, renderMetaLegacyModal, showIntroModal, showEndModal,
   applyFireMark, triggerFireDetonation, applyFrostSlow, triggerFrostPulse, gainFrostShield, getHeroMaxFrostShield,
   rollPerkChoices, pickPerk, refreshCombos, hasCombo, perkLv,

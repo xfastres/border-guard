@@ -1,4 +1,16 @@
 'use strict';
+/**
+ * Border-Guard v0.60 Stage 6 Test Suite
+ *
+ * Test Classification (BUG-07 transparency):
+ * - Tests 1, 2, 3: [Isolated Mechanism Unit Tests] Meta progression budget, versioned save/replay
+ *   protection, anti-farm reward formula, real combat hit/fatal attribution, and clean restart.
+ * - Test 4: [Real-Rule Automated Cruise / Test-Driver Full 30-Wave Flow] Strictly obeys real game
+ *   rules (0 Destiny Gambles, real random 3-choice level-up & chest modals via activeModal.choices,
+ *   real shop/gear economy, real equip/replace API). Combat positioning uses an automated orbital /
+ *   safe-zone test driver (NOT claiming unassisted human mechanical skill).
+ * - Test 5: [Real Headless Chrome Smoke Test] Offline DOM boot on desktop 1440x900 & narrow 390x844.
+ */
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -427,21 +439,26 @@ test('3. Real combat hit & fatal attribution (Boss core/aux + normal threats), 3
 });
 
 // =========================================================================
-// TEST 4: Natural Full 30-Wave Playthrough (W1 -> W30) with ZERO Destiny Gambles
-//         (Verifies 0-gamble regular route clearability, 25-35 min pacing metrics,
-//          real W10/W20/gear synergy progression, and resource accounting)
+// TEST 4: [Real-Rule Automated Cruise / Test-Driver] Full 30-Wave Flow (W1 -> W30)
+//         with ZERO Destiny Gambles & Strict Real activeModal.choices Picking
+//         (Note: combat kiting/safe-zone movement is driven by an automated cruise
+//          script; this verifies 30-wave system continuity, real 3-choice modals,
+//          real W10/W20/gear synergy progression, and unified ledger accounting —
+//          not unassisted human execution.)
 // =========================================================================
-test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing breakdown, synergies, materials, attribution & W30 victory', () => {
+test('4. [Real-Rule Automated Cruise] W1 -> W30 full flow via 0-gamble route: strict real modal choices, valid gear swaps, ledger & W30 victory', () => {
   const storage = createMockLocalStorage();
   const { B } = bootBG60({ storage });
 
   // Start naturally from W1 with default 0-unlock loadout (main_flame + 1+1+2=4 aux!)
   B.startNewRun(6060, true);
-  B.pickHeroSkill('firewave');
+  assert.equal(B.game.activeModal?.type, 'starter', 'Starter skill modal must open on run start');
+  assert.ok(B.game.activeModal.choices.includes('firewave'), 'firewave must be in real starter choices');
+  assert.equal(B.pickHeroSkill('firewave'), true);
   assert.equal(B.game.wave, 1);
   assert.equal(B.game.metaRunLocked, true);
 
-  // Helper: handle any pending level-up / chest / breakthrough modals naturally as a player would
+  // Helper: handle any pending level-up / chest / breakthrough modals strictly from REAL activeModal.choices
   const resolveModalsNaturally = () => {
     let guard = 0;
     while (guard++ < 30) {
@@ -456,12 +473,17 @@ test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing b
       if (!m) break;
 
       if (m.type === 'levelup') {
-        // Prefer firewave -> blades -> berserk -> nova -> thunder -> stomp from real offered choices
+        // Strictly pick ONLY from current modal's real generated m.choices (NEVER bypass or regenerate!)
         const order = ['firewave', 'blades', 'berserk', 'nova', 'thunder', 'stomp'];
-        const offered = (m.choices || []).filter(k => (B.game.hero.skills[k] || 0) < 5);
+        const realChoices = Array.isArray(m.choices) ? m.choices : [];
+        const offered = realChoices.filter(k => (B.game.hero.skills[k] || 0) < 5);
         const pick = order.find(k => offered.includes(k)) || offered[0];
-        if (pick) B.pickHeroSkill(pick);
-        else B.closeModal();
+        if (pick) {
+          assert.ok(realChoices.includes(pick), 'Level-up pick must strictly belong to current activeModal.choices');
+          assert.equal(B.pickHeroSkill(pick), true);
+        } else {
+          B.closeModal();
+        }
       } else if (m.type === 'w10_breakthrough') {
         if (!B.game.w10Draft?.skillKey) {
           B.selectW10BreakthroughSkill('firewave');
@@ -477,7 +499,9 @@ test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing b
         if (bestKey) B.pickW20Enhancement(bestKey);
         else B.closeModal();
       } else if (m.type === 'chest') {
-        const choices = (m.choices || []).slice();
+        // Strictly pick ONLY from current chest modal's real generated m.choices!
+        const realChoices = Array.isArray(m.choices) ? m.choices : [];
+        const choices = realChoices.slice();
         // Score choices favoring fire synergy affixes & higher rarity
         const scoreInst = (inst) => {
           let sc = ({ common: 10, rare: 25, epic: 50, legend: 90 }[inst.rarity] || 10) + inst.slotsCount * 12;
@@ -488,8 +512,13 @@ test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing b
           return sc;
         };
         choices.sort((a, b) => scoreInst(b) - scoreInst(a));
-        if (choices[0]) B.pickGearReward(choices[0]);
-        else B.closeModal();
+        if (choices[0]) {
+          assert.ok(realChoices.includes(choices[0]), 'Chest pick must strictly belong to current activeModal.choices');
+          const res = B.pickGearReward(choices[0]);
+          assert.ok(res && res.ok !== false, 'Valid chest pick from activeModal.choices must succeed');
+        } else {
+          B.closeModal();
+        }
       } else {
         B.closeModal();
       }
@@ -579,7 +608,9 @@ test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing b
         if (sc < worstSc) { worstSc = sc; worstIdx = s; }
       }
       if (gearScore(cand) > worstSc + 18) {
-        B.replaceEquippedGear(i, worstIdx);
+        // BUG-07 fix: replaceEquippedGear(slotIdx, bagIdx) -> (worstIdx, i)
+        const rep = B.replaceEquippedGear(worstIdx, i);
+        assert.equal(rep.ok, true, `replaceEquippedGear(${worstIdx}, ${i}) must succeed`);
       }
     }
 
@@ -605,7 +636,7 @@ test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing b
       if (!upgraded) break;
     }
 
-    // Simulate realistic human prep thinking time (~12s normal wave, ~45s in W29 final prep)
+    // Simulate prep thinking time (~12s normal wave, ~45s in W29 final prep)
     const prepSimSec = wave === 30 ? 45 : (wave === 11 || wave === 21) ? 24 : 12;
     for (let s = 0; s < prepSimSec; s++) {
       if (B.game.phase !== 'prep') break;
@@ -615,7 +646,7 @@ test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing b
     resolveModalsNaturally();
   };
 
-  // Run all 30 waves naturally from W1 to W30!
+  // Run all 30 waves from W1 to W30 under automated cruise test driver!
   for (let w = 1; w <= 30; w++) {
     assert.equal(B.game.wave, w, `Expected wave ${w}, got ${B.game.wave}`);
     optimizeInPrepZeroGamble(w);
@@ -626,7 +657,7 @@ test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing b
       assert.equal(B.startWave(), true, `Failed to start wave ${w}`);
     }
 
-    // Simulate active kiting & skill combat until wave ends (harvest -> prep or won/lost)
+    // Automated cruise / test-driver positioning until wave ends (harvest -> prep or won/lost)
     let elapsed = 0;
     const maxWaveSec = w === 30 ? 480 : 120;
     const dt = 0.1;
@@ -639,9 +670,9 @@ test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing b
       const boss = B.game.enemies.find(e => e.boss && e.hp > 0);
       const sigZone = B.game.zones.find(z => z.kind === 'w30SigTelegraph' || z.kind === 'w30SigShockwave');
 
-      // Active kiting & telegraph avoidance (realistic desktop player positioning: 55% engage / 45% dodge on Boss waves)
+      // Automated test-driver positioning (direct coordinate cruise: 55% engage / 45% orbit + W30 safe-zone entry)
       if (sigZone) {
-        // Move into W30 signature safe zone during telegraph/shockwave!
+        // Automated driver moves into W30 signature safe zone during telegraph/shockwave
         h.x = sigZone.safeX;
         h.y = sigZone.safeY;
       } else if (boss) {
@@ -652,7 +683,7 @@ test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing b
         h.x = Math.max(3, Math.min(B.W - 3, boss.x + Math.cos(ang) * orbitR));
         h.y = Math.max(3, Math.min(B.H - 3, boss.y + Math.sin(ang) * orbitR));
       } else if (B.game.enemies.length > 0) {
-        // Kite near nearest enemy cluster at ~2.5 cells while avoiding direct contact & hazard zones
+        // Automated driver kites near nearest enemy cluster at ~2.5 cells
         const tgt = B.game.enemies[0];
         ang += 0.25;
         h.x = Math.max(3, Math.min(B.W - 3, tgt.x + Math.cos(ang) * 2.5));

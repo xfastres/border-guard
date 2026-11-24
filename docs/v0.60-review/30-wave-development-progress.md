@@ -629,3 +629,150 @@ node --test tests/v060-stage1.test.cjs tests/v060-stage2.test.cjs tests/v060-sta
   3. **局外传承初版数值与解锁定价**：当前主传承权重 `×1.35`、5 主 8 辅 3 扩展包的碎片定价（`60–160`）与里程碑额度属首版可配置参数（全在 `balance/v060-baseline.json` 的 `metaProgression` 区块），可根据实际 3–5 局节奏继续微调。
   4. **窄屏触控操作**：已在 `390×844` 验证无报错且侧边栏自动折叠，但完整操作与词条对比体验仍以桌面鼠键为优先交付基准。
 
+---
+
+## 独立源码审计修复记录（阶段 A + 阶段 B · 已完成）
+
+### 0. 审计基线与红线核对
+- **工作分支**：`feat/v060-30wave`
+- **阶段 A 提交**：`1277369`（`fix(v0.60): audit phase A - real-time W29 clock, HP equip fix, bag cap, reward safety, save error & claim validation`）
+- **阶段 B 提交**：本轮独立提交（覆盖 BUG-06、BUG-07、BUG-08、BUG-09 与真实无头 Chrome 端到端交互测试）
+- **严格红线核对**：
+  - `main` 分支未修改；
+  - `Border-Guard-v0.52.html` 与 `balance/v052-baseline.json` 零改动，v0.52 全部三套测试（`7 + 81 + 5 = 93/93`）与 `scripts/sync-balance.cjs --check` 100% 通过；
+  - 未修改任何未经用户确认的核心玩法、战斗数值、经济参数或掉落概率（`balance/v060-baseline.json` 零改动）。
+
+---
+
+### 1. 阶段 A 缺陷修复明细（BUG-01 ～ BUG-05、BUG-10）
+
+#### BUG-01：W29 90 秒最终整备倒计时受低帧率 `dt` 截断、后台切页及暂停冻结影响
+- **原始问题与复现条件**：在 5 FPS（200ms/帧）、10 FPS（100ms/帧）+ 2× 倍速、浏览器切后台 45s、或点击暂停按钮的场景下，W29 90s 最终整备倒计时变慢甚至被彻底冻结。
+- **实际根因**：原实现在 `tick(dt)` 中位于 `if (paused) return;` 之后按模拟步长 `realDt = dt / speed` 累加扣除，而主循环将每帧 `dt` 截断在上限内，导致低帧率/切后台时真实时间大量丢失，暂停直接冻结倒计时。
+- **修改文件与位置**：`Border-Guard-v0.60.html`（`getMonotonicNowMs` L11242、`syncW29FinalPrepClock` L11281、`tick` 入口与 `loop` 主循环）、`tests/v060-audit-phaseA.test.cjs`（BUG-01 用例）。
+- **修复前后测试证据**：修复前 5 FPS / 切后台 / 暂停均无法在真实 90s 到期进入 W30；修复后在 `tests/v060-audit-phaseA.test.cjs` 中 5 FPS（450×200ms）、10 FPS + 2×、两次 45s 后台跳转及强制 `paused = true` 均在真实 90.0s 精确归零进入 W30，并在真实 Chrome E2E 场景 2/5 中验证通过。
+- **是否影响现有游戏规则**：否，严格回归“W29 90 秒按真实时间运行且不被暂停/倍速改变”的既定规则。
+- **尚未解决的风险**：若在极端情况下系统时钟倒退，依赖 `performance.now()` 单调递增时钟已避免回退问题；无头 Node 沙箱中无真实时钟时仍保留仅用于单元测试的 `fallbackRealDt` 兼容分支。
+
+#### BUG-02：反复穿脱 `+HP` 装备或强化 `+HP` 装备可免费回血
+- **原始问题与复现条件**：残血时（如 `50 / maxHp`）反复穿戴/卸下带 `flatHp` 或 `hpPct` 的装备，或强化已穿戴的 `+HP` 装备，领主当前生命 `hero.hp` 会随 `maxHp` 差额白嫖增长。
+- **实际根因**：`syncHeroMaxHp()` 无条件将 `maxHp` 的正向增幅直接加到 `hero.hp`，未区分“升级/突破显式回血”与“装备属性重算”。
+- **修改文件与位置**：`Border-Guard-v0.60.html`（`syncHeroMaxHp` L6675）、`tests/v060-audit-phaseA.test.cjs`（BUG-02 用例）、`tests/v060-e2e-browser.test.cjs`（场景 3）。
+- **修复前后测试证据**：修复前穿脱 10 次 `+HP` 装备会持续免费回血；修复后 `tests/v060-audit-phaseA.test.cjs` 连续穿脱 10 次与强化 `+HP` 装备均保持 `hp === 50`（严格 0 回血），合法升级回血与满血卸装封顶仍正常；真实 Chrome E2E 场景 3 通过真实点击 `[C]` 面板 `穿戴`/`卸回背包` 实测确认零回血。
+- **是否影响现有游戏规则**：否，修复明显的免费回血漏洞，保留升级/丹药/灵气球/过波等全部合法回血途径。
+- **尚未解决的风险**：无。
+
+#### BUG-03：商店购买、确认购买、卸下装备与宝箱领奖存在背包上限突破风险
+- **原始问题与复现条件**：当 `game.bag.length >= getBagCapacity()`（12 格）时，商店购买装备、卸下已穿戴装备或领取宝箱装备可能把背包撑超 12 格，或扣款后丢件。
+- **实际根因**：多处写入 `game.bag.push(...)` 未统一做容量门禁与满溢分流。
+- **修改文件与位置**：`Border-Guard-v0.60.html`（`tryStoreGearInBag` L6904、`buyShopItem`、`confirmShopPurchase`、`unequipGear`、`pickGearReward`）、`tests/v060-audit-phaseA.test.cjs`（BUG-03 用例）、`tests/v060-e2e-browser.test.cjs`（场景 2、3）。
+- **修复前后测试证据**：修复后满包（12/12）下商店购买装备与卸下装备均原子拒绝、零扣款、背包保持 `12`；宝箱领奖满溢时安全分流至 `game.rewardStash`；Node 单元测试与真实 Chrome DOM 点击均 100% 通过。
+- **是否影响现有游戏规则**：否，严格执行 `bagCapacity = 12` 与满溢进暂存箱的既有设计。
+- **尚未解决的风险**：无。
+
+#### BUG-04：W29 倒计时归零或提前开战自动领取天命经验丹触发升级时，升级三选一弹窗被误清
+- **原始问题与复现条件**：W29 90s 整备期间存在未领取的天命赌局奖励（如经验丹/飞升丹），在倒计时归零或提前开战随机领取后触发偶数级升级，但紧随其后的 `closeAllPrepModals()` 无差别清空弹窗，导致合法升级选卡被吞掉。
+- **实际根因**：原清窗逻辑未区分“可取消的备战 UI 弹窗”与“合法奖励弹窗（`levelup` / `chest` / `w10_breakthrough` / `w20_breakthrough`）”。
+- **修改文件与位置**：`Border-Guard-v0.60.html`（`isCancelablePrepModal`、`closeCancelablePrepModals` L11347、`startW30Early`、`resolveW29FinalPrepTimeout`）、`tests/v060-audit-phaseA.test.cjs`（BUG-04 用例）、`tests/v060-e2e-browser.test.cjs`（场景 5）。
+- **修复前后测试证据**：修复后无论超时自动领奖还是提前开战随机领奖触发升级，进入 W30 后 `activeModal.type === 'levelup'` 严格保留且可正常点击选卡；真实 Chrome E2E 场景 5 在浏览器 rAF 循环超时进入 W30 后真实点击 `#modalChoices .choice-card` 验证通过。
+- **是否影响现有游戏规则**：否，保障合法奖励永不丢失。
+- **尚未解决的风险**：无。
+
+#### BUG-05：局外存档写入失败被静默吞掉，损坏/高版本存档可能被覆盖
+- **原始问题与复现条件**：浏览器 `localStorage.setItem` 抛出 `QuotaExceededError` 时玩家无任何感知且界面假装已保存；存档 JSON 损坏或 `schemaVersion` 高于当前版本时可能被静默重置覆盖。
+- **实际根因**：`saveMetaSave` 吞掉异常仅返回布尔值，结算界面未展示写盘失败状态及重试/导出入口；加载阶段未隔离损坏或未来版本原始存档。
+- **修改文件与位置**：`Border-Guard-v0.60.html`（`saveMetaSave` L3964、`retryPendingMetaSave` L4517、`loadMetaSave`、`showEndModal`）、`tests/v060-audit-phaseA.test.cjs`（BUG-05 用例）、`tests/v060-e2e-browser.test.cjs`（场景 6）。
+- **修复前后测试证据**：修复后写盘失败会在结算弹窗明确展示红色告警与 `#endRetrySaveBtn` / `#endExportBackupBtn`，恢复存储后点击重试即可真实落盘并清除告警；损坏/未来版本存档拒绝覆盖并保留原始快照供导出；真实 Chrome E2E 场景 6 通过劫持 `Storage.prototype.setItem` 抛出真实 `DOMException('QuotaExceededError')` 并点击 `#endRetrySaveBtn` 验证成功落盘。
+- **是否影响现有游戏规则**：否，仅增强持久化可靠性与诚实报错。
+- **尚未解决的风险**：隐私模式完全禁用 `localStorage` 时仍无法跨刷新持久保存，但已通过显式告警与 JSON 导出备份提供兜底。
+
+#### BUG-10：`pickHeroSkill` 与 `pickGearReward` 缺乏业务层模态/候选校验与原子防连点锁
+- **原始问题与复现条件**：无弹窗、弹窗类型不匹配、传入非当前 `activeModal.choices` 的候选、超过 Lv.5 上限或快速双击卡片时，旧业务函数未在入口拦截，可能越权发奖或重复领奖。
+- **实际根因**：校验仅依赖 UI 按钮绑定，业务函数本身未验证 `activeModal.type`、`activeModal.choices` 归属及原子单次领取标记。
+- **修改文件与位置**：`Border-Guard-v0.60.html`（`pickHeroSkill` L12056、`pickGearReward` L12938）、`tests/v060-audit-phaseA.test.cjs`（BUG-10 用例）、`tests/v060-e2e-browser.test.cjs`（场景 4）。
+- **修复前后测试证据**：修复后非对应弹窗、伪造候选、超 Lv.5 与重复点击均在业务层原子拒绝返回 `false`；真实 Chrome E2E 场景 4 通过真实快速双击 `#modalChoices .choice-card` 验证所选技能严格只升 `+1`。
+- **是否影响现有游戏规则**：否，严格收紧业务层一致性与幂等性。
+- **尚未解决的风险**：无。
+
+---
+
+### 2. 阶段 B 缺陷修复明细（BUG-06 ～ BUG-09 + 真实浏览器 E2E）
+
+#### BUG-06：建立统一资源交易流水函数，取代余额净差轮询统计
+- **原始问题与复现条件**：同一轮询帧内同时发生买入（-80 金）与卖出（+50 金）、或拆解得锻材（+5）与强化耗锻材（-3）、或转印符收支共存（+2 / -1）时，结算统计被净差抵消为 `收入 0 / 支出 30`（或转修换主印同时扣费+返还时收支互相抵消）。
+- **实际根因**：旧 `syncRunResourceAccounting()` 在 `tick()` 轮询时仅用当前余额与上次快照的差值 `gNow - rm._lastGold` 累加 `goldEarned`/`goldSpent`，同一轮询窗口内的双向流水完全丢失。
+- **修改文件与位置**：`Border-Guard-v0.60.html`（`recordResourceFlow` L5840、`changeGold` L5899、`changeMaterials`、`changeTransferTokens`、`getResourceLedger`、`resetRunMetricsResourceBaseline`、`syncRunResourceAccounting`；全文件全部业务资源变更点：`rollShop`、`chooseSealRoute`、`buyShopItem`（含转修主印分记扣费与返还）、`sellSeal`、`sellSubSeal`、`sellBagGear`、`dismantleBagGear`、`enhanceGear`、`onEnemyKilled`、`completeWaveClear`、`openLevelUpModal`、`rerollW20Enhancements`、`pickPerk`、`rollDestinyGamble`、`applyDestinyPillReward`、`claimDestinyReward`、`commitAffixTransfer`，以及 `window.BG60` 导出）、`tests/v060-audit-phaseB.test.cjs`（BUG-06 用例）。
+- **修复前后测试证据**：
+  - 修复前（TDD 红阶段）：`BG60.changeGold` 未定义，同帧收支互抵；30 波巡航统计金币 `+9144/-7896`，锻材 `+457/-32`。
+  - 修复后（TDD 绿阶段）：同帧 `100 金` 买 `80` + 卖 `50` 精确记为 `goldSpent === 80`、`goldEarned === +50`、`余额 70`；同帧锻材 `+5 / -3`、转印符 `+2 / -1` 与真实业务操作均精确入账且流水上限严格控制在 `<= 500` 条；30 波全流程流水严格满足 `earned - spent === balance`（实测金币 `+17290 / -9472 = 7818`，锻材 `+581 / -212 = 369`）。
+- **是否影响现有游戏规则**：否，仅修复资源统计口径，不改变任何经济价格、掉落或余额结算规则。
+- **尚未解决的风险**：若外部调试脚本直接赋值 `BG60.game.gold = X` 而非调用 `changeGold`，不会写入流水账本（符合预期，避免污染业务流水）；`syncRunResourceAccounting()` 已保留为仅同步 `_last*` 基线的兼容空操作。
+
+#### BUG-07：修正自动化测试参数顺序错误、候选真实性与测试口径透明化
+- **原始问题与复现条件**：`tests/v060-stage6.test.cjs` 原 L582 调用 `B.replaceEquippedGear(i, worstIdx)` 将 `bagIdx` 与 `slotIdx` 传反，导致多数换装静默失败或错槽替换；同时旧注释将自动化坐标巡航脚本泛称为“自然真人游玩”。
+- **实际根因**：`replaceEquippedGear(slotIdx, bagIdx)` 参数顺序与测试调用相反，且原函数返回布尔值未作严格断言；测试文件顶部未清晰区分机制单元测试与自动化巡航驱动测试。
+- **修改文件与位置**：`Border-Guard-v0.60.html`（`replaceEquippedGear` L7418 升级为返回结构化 `{ ok, slotIdx, bagIdx, incoming, outgoing }` / `{ ok: false, reason }`）、`tests/v060-stage6.test.cjs`（顶部测试分类说明、Test 4 改为 `const rep = B.replaceEquippedGear(worstIdx, i); assert.equal(rep.ok, true);`，显式断言 starter/levelup/chest 严格仅从当前 `activeModal.choices` 择一领取，并如实标注 Test 4 为 `[Real-Rule Automated Cruise]` 测试驱动流程）。
+- **修复前后测试证据**：修复后 `replaceEquippedGear(worstIdx, i)` 每次换装均 `rep.ok === true` 真实生效，30 波巡航中强力后期装备正常换装并消耗 212 锻材强化（此前仅消耗 32 锻材），全部 5 项 Stage 6 测试 100% 通过。
+- **是否影响现有游戏规则**：否，仅修复测试脚本与返回结构。
+- **尚未解决的风险**：自动化巡航脚本仍使用坐标轨道/安全区驱动模拟走位，无法替代真人在桌面端的真实手感与操作容错测试（已在测试注释中明确声明）。
+
+#### BUG-08：接通商店购买确认流程与真实商店 UI（普通波直购 / W29 限时整备二次确认）
+- **原始问题与复现条件**：阶段 5 已实现 `openShopPurchaseConfirm` / `confirmShopPurchase` / `cancelShopPurchaseConfirm` 与 `shopConfirmDraft`，但真实商店卡片按钮（`renderShop`）仍无条件直接调用 `buyShopItem(idx)`，真实 UI 完全未接通确认流。
+- **实际根因**：`renderShop` 按钮事件未判断 W29 终局整备状态，且确认弹窗按钮 ID 尚未统一规范为 `#shopConfirmBuyBtn` / `#shopConfirmCancelBtn`。
+- **修改文件与位置**：`Border-Guard-v0.60.html`（`renderShopConfirmModal` L7022 补全商品/词条/价格详情与 `#shopConfirmBuyBtn` / `#shopConfirmCancelBtn` 按钮；`renderShop` L15846 按钮点击接线）、`tests/v060-audit-phaseB.test.cjs`（BUG-08 用例）、`tests/v060-e2e-browser.test.cjs`（场景 2）。
+- **修复前后测试证据**：
+  - 修复前：无论普通波还是 W29 整备期点击商店卡片都直接扣款，`shopConfirmDraft` 从未被真实 UI 触发。
+  - 修复后：普通波（W1–W28）点击真实商店卡片仍一键直购（无多余弹窗）；进入 W29 90s 最终整备（`finalPrep.active && finalPrep.started`）后点击真实商店卡片自动弹出确认窗，含 `#shopConfirmBuyBtn` 与 `#shopConfirmCancelBtn`，期间 W29 倒计时持续运行，取消零扣款、确认正常扣款、留窗超时自动清草稿零扣款。Node 单元测试与真实 Chrome E2E 场景 2 均 100% 通过。
+- **是否影响现有游戏规则（⚠️ 接线策略请用户确认）**：
+  - **已落地策略**：**普通波（W1–W28）保持一键直购**（不增加常规备战操作负担），**仅在 W29 终局 90 秒限时整备期间开启二次确认弹窗**（防止紧张倒计时中误点高价商品，且不暂停倒计时、超时自动清草稿零扣款）。若后续希望改为全波次仅对高价/转修商品弹确认或完全直购，仅需调整 `renderShop` L15867 一行条件即可。
+- **尚未解决的风险**：无。
+
+#### BUG-09：修复四项战斗统计与伤害归因偏差
+- **原始问题与复现条件**：
+  1. 领主仅剩 10 血承受 100 致死伤时，遥测 `dmgTaken` 与受击日志 `hpLost` 虚记为 100；
+  2. 护盾已满（或接近上限）时再次触发 `gainFrostShield`，统计仍按请求值 `gain` 虚增；
+  3. 玩家 15 秒前受击一次且最近 5 秒未受击时，`getRecentThreatSummary(5)` 仍将该旧受击算入“近 5 秒威胁”；
+  4. 敌人持续燃烧 DoT（`e.burnT > 0`）实际扣血未计入 `game.stats.dmgTotal` 与 `game.stats.skillDmg`。
+- **实际根因**：
+  1. `damageHero` 直接累加 `rem` 而未取扣血前后差值 `prevHp - h.hp`；
+  2. `gainFrostShield` 直接累加 `gain` 而未取加盾前后差值 `h.shield - prevShield`；
+  3. `getRecentThreatSummary` 以“最后一次受击时间戳”倒推窗口而非“当前运行/结算战斗时钟”；
+  4. 敌方燃烧结算分支直接 `e.hp -= burnTick` 且 `skillDmg` 缺少 `burn` 项。
+- **修改文件与位置**：`Border-Guard-v0.60.html`（`makeGame` L5797–5829、`gainFrostShield` L6489、其余加盾路径 `castHeroDash` / `holy_omni` / `healOrbs` / `body_thorns`、燃烧结算 L10255、`getCombatLogNowSec` L10958、`getRecentThreatSummary` L10968、`damageHero` L11011、`finishGame` L11675、`showEndModal` L13234）、`tests/v060-audit-phaseB.test.cjs`（BUG-09.1 ～ BUG-09.4）。
+- **修复前后测试证据**：
+  - BUG-09.1：10 血吃 100 致死伤，`curWaveTel.dmgTaken === 10`、`combatLog.totalHpLost === 10`、`hits[0].hpLost === 10`、`hits[0].rawDamageAfterMitigation === 100`、`runMetrics.hpLost === 10`；
+  - BUG-09.2：0→30 记 30，差 10 满盾再加 40 仅记 10，满盾再加 40 在 `stats.frostShieldGained`、`combatStateStats.frostShieldGained` 与 `w30Battle.signatureStatusHitsDuringLock.frostShieldGained` 均严格 `+0`；
+  - BUG-09.3：受击后 15s 无新受击，`getRecentThreatSummary(5)` 返回 `hitCount: 0, hits: [], totalDmg: 0, totalHpLost: 0`，结算时定格时钟并显示 `近 5 秒无受击记录`；
+  - BUG-09.4：60 FPS（`60 × 1/60s`）下 40 DPS 燃烧精确入账 `skillDmg.burn ≈ 40` 且与 `dmgTotal` 增量一致；W30 首领锁血期间燃烧记 `0`。
+- **是否影响现有游戏规则**：否，纯统计与归因口径修正，不改动任何战斗扣血、护盾触发或锁血机制。
+- **尚未解决的风险**：若未来新增其他 DoT 类型（如独立中毒/流血），需沿用与燃烧 DoT 相同的实际扣血入账规范。
+
+---
+
+### 3. 真实无头 Chrome 端到端交互测试（`tests/v060-e2e-browser.test.cjs`）
+- **运行方式**：启动本机 `/usr/bin/google-chrome --headless=new --no-sandbox --disable-gpu --remote-debugging-port=0`，使用 Node 22 原生 `fetch` + 原生 `WebSocket` 直连 CDP（零第三方 npm 依赖），通过真实 `Input.dispatchMouseEvent` 与 `Input.dispatchKeyEvent` 驱动 `file:///home/antigravity/xfastres/border-guard/Border-Guard-v0.60.html`，并全程监听 `Runtime.exceptionThrown` 与 `console.error`。
+- **6 大真实用户交互场景全部通过（0 未捕获异常，0 `console.error`）**：
+  1. 开局点击 `#introMetaBtn` → 切换辅助传承验证 4 点预算约束 → 点击 `#metaConfirmPreBtn` → 点击 `#modalChoices .choice-card` 选本命神通；
+  2. 普通波点击 `#shopSec .shop-card` 一键直购 → 12/12 满包点击商店装备被拒零扣款 → 进入 W29 90s 整备点击商店卡弹出 `#shopConfirmBuyBtn` / `#shopConfirmCancelBtn` → 验证取消零扣款、确认成功扣款及留窗超时自动清草稿零扣款；
+  3. 按真实键盘 `[C]` 打开 `#inspector` → 残血下真实点击 `穿戴` / `卸回背包` 穿脱 `+HP` 装备验证严格 0 免费回血 → 满包点击 `卸回背包` 被拒；
+  4. 触发升级后对 `#modalChoices .choice-card` 执行真实快速双击，验证所点技能严格只升 `+1` 且重复领取被拒；
+  5. W29 超时自动领经验丹升级进入 W30 后，验证真实 DOM `#modalBackdrop` 与 `#modalChoices .choice-card` 仍保留并可真实点击领卡；
+  6. 真实浏览器劫持 `Storage.prototype.setItem` 抛出 `QuotaExceededError` 后触发结算 → 验证结算 DOM 显示写盘失败告警与 `#endRetrySaveBtn` / `#endExportBackupBtn` → 恢复 `setItem` 后真实点击 `#endRetrySaveBtn` 验证成功落盘 `localStorage` 且告警消失。
+
+---
+
+### 4. 全量回归实测命令与结果（100% 通过）
+
+```bash
+node scripts/sync-balance.cjs --check
+node --test tests/v052-balance-lab.test.cjs
+node tests/v052-survivor-cultivation.test.cjs
+node tests/v052-ui-c-hybrid.test.cjs
+node --test tests/v060-stage1.test.cjs tests/v060-stage2.test.cjs tests/v060-stage3.test.cjs tests/v060-stage4.test.cjs tests/v060-stage5.test.cjs tests/v060-stage6.test.cjs tests/v060-audit-phaseA.test.cjs tests/v060-audit-phaseB.test.cjs tests/v060-e2e-browser.test.cjs
+```
+
+- `scripts/sync-balance.cjs --check`：v0.52 与 v0.60 内嵌 `BALANCE` 均 `PASS`
+- `tests/v052-balance-lab.test.cjs`：`7/7 pass`
+- `tests/v052-survivor-cultivation.test.cjs`：`81/81 pass`
+- `tests/v052-ui-c-hybrid.test.cjs`：`5/5 pass`
+- `tests/v060-stage1..stage6` + `v060-audit-phaseA` + `v060-audit-phaseB` + `v060-e2e-browser`：**`43/43 pass, 0 fail`**（全仓库合计 **136/136 pass, 0 fail**）
