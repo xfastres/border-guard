@@ -41,6 +41,7 @@ export function createNoopPorts() {
       getKeys: () => new Set(),
       getPointerScreen: () => null,
       getPointerWorld: () => null,
+      setPointerWorld: noop,
       isPointerDown: () => false,
     },
     clock: {

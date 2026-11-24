@@ -55,6 +55,10 @@
   - 迁出 6 个战斗模拟函数（`pushProjectile`、`updateSeal`、`triggerSealOnHeroHit`、`pointToSegDist`、`updateProjectilesAndZones`、`updateEnemies`），`createCombatSystem` 统一装配全部 27 个战斗方法（`src/legacy/game.js` 降至 6,802 行）。
   - 新增 `tests/unit/combat-simulation.test.mjs`（48 项无 DOM 单测，覆盖 5 系主/辅印与专精、弹幕/W10 分支/区域、W20/W30 全辅助机制、W30 招牌锁血释放与 6 首领核心循环）。
   - 实测结果：`npm run build` PASS（500,121 B）；`npm run test:unit` 200/200 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.10（`src/systems/hero/{skills,vitals,index}.js` 英雄技能、拾取升级与受击归因）**：已完成并经主控独立审查与实测验收。
+  - 迁出 5 个英雄动作与技能循环函数及 5 个拾取/升级/受击归因函数，剥离 `damageHero` 中 2 处直接 DOM 暗角操作至 `ports.ui.setDangerVignette`，补齐 `ports.input.setPointerWorld`（`src/legacy/game.js` 降至 5,564 行）。
+  - 新增 `tests/unit/hero-skills-vitals.test.mjs`（52 项无 DOM 单测，覆盖智能瞄准、冲刺/超载/破阵、6 主动技能全 W10 分支与组合技、拾取/升级奇偶分支、奇门偏折/金刚反震/不灭金身与 160 条真实受击归因日志）。
+  - 实测结果：`npm run build` PASS（502,727 B）；`npm run test:unit` 252/252 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 
