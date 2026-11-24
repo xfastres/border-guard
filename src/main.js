@@ -1,4 +1,11 @@
-import './ui/styles/game.css';
+import './ui/styles/base.css';
+import './ui/styles/topbar.css';
+import './ui/styles/subbar.css';
+import './ui/styles/hud.css';
+import './ui/styles/dock.css';
+import './ui/styles/feedback.css';
+import './ui/styles/modals.css';
+import './ui/styles/meta.css';
 import './legacy/game.js';
 
 const gameApi = window.BG60;
