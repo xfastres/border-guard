@@ -7,26 +7,39 @@
 - 原分支：`feat/v060-30wave`
 - 原提交：`98932a2918ed22f17ea176b4209de76b839160bc`
 - 重构分支：`refactor/modular-v060-phase1`
-- 原版 HTML、Blob SHA、SHA-256 和文件规模见 [v060-baseline.md](./v060-baseline.md)。
-- 原版文件保存在根目录，并通过 `archive/baselines/Border-Guard-v0.60-before-modular.html` 保留同一 Git Blob 的归档入口。
+- 基线文件指纹、数值来源和保护规则见 [v060-baseline.md](./v060-baseline.md)。
+- 原版 HTML 保留在根目录，并在 `archive/baselines/Border-Guard-v0.60-before-modular.html` 建立归档路径；两者复用同一 Git Blob。
 
-## Phase 0
+## Phase 0｜完成
 
 - [x] 记录源分支和提交。
 - [x] 记录原版 HTML 的 Git Blob SHA、SHA-256、文件大小和行数。
-- [x] 创建独立重构分支。
-- [x] 在归档路径保留原版 HTML，不改写原始内容。
+- [x] 创建独立重构分支，不改原分支。
+- [x] 归档原版 HTML，确认归档 Blob SHA 与根目录原件一致。
 
-## Phase 1
+## Phase 1｜构建骨架完成，浏览器实机验证待补
 
 - [x] 创建 Vite + ES Modules 工程入口。
 - [x] 创建 app bootstrap 和基础样式。
 - [x] 配置单文件 HTML 输出命名。
 - [x] 增加构建产物检查脚本。
 - [x] 增加 GitHub Actions 构建门禁。
-- [ ] 等待 GitHub Actions 实际构建结果。
-- [ ] 下载并检查 CI 生成的单文件构建产物。
-- [ ] 在本地 Chrome 中通过 `file://` 打开验证。
+- [x] 生成并提交 `package-lock.json`（lockfileVersion 3，49 个 package entries）。
+- [x] CI 改用 `npm ci`，确保依赖锁定。
+- [x] GitHub Actions Push 构建通过：run `45328005404`。
+- [x] GitHub Actions Pull Request 构建通过：run `45328012512`。
+- [x] 下载 CI Artifact 并检查归档内容：只包含一个 HTML 文件，大小 3,661 字节；一个内联 script；无外部 script / stylesheet 引用；build marker 和 bootstrap 文案存在。
+- [ ] 在真实桌面 Chrome 中以 `file://` 打开并检查运行时控制台。当前执行容器的 Chromium headless 启动超时，故不将此项标记为通过。
+
+## 构建技术基线
+
+- Node.js：22.12.0
+- Vite：8.3.8
+- vite-plugin-singlefile：2.3.4
+- 开发：`npm run dev`
+- 构建：`npm run build`
+- 锁定安装：`npm ci`
+- 产物：`release/Border-Guard-v0.60-modular-shell.html`
 
 ## 明确未完成
 
