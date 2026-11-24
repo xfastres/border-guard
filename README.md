@@ -31,13 +31,13 @@ npm run test:baseline       # 原版 Border-Guard-v0.60.html 全部 43 项回归
 npm run test:all            # 依次运行以上全部 7 组测试套件
 ```
 
-如需手动指定 Chrome 路径，可设置环境变量 `CHROME_BIN`（如 Windows 下 `C:/Program Files/Google/Chrome/Application/chrome.exe`）。协同规范见 [AGENTS.md](AGENTS.md)，阶段记录见 [progress.md](progress.md) 与 [findings.md](findings.md)。
+如需手动指定 Chrome 路径，可设置环境变量 `CHROME_BIN`（如 Windows 下 `C:/Program Files/Google/Chrome/Application/chrome.exe`）。协同规范见 [AGENTS.md](AGENTS.md)，阶段记录见 [progress.md](progress.md) 与 [findings.md](findings.md)，阶段二优化计划见 [docs/v0.60-review/stage2-optimization-plan.md](docs/v0.60-review/stage2-optimization-plan.md)，v0.16–v0.52 历史版本与归档文档见 [archive/README.md](archive/README.md)。
 
 ---
 
 ## 历史版本说明（v0.17–v0.32 格子策略经营线）
 
-> 以下内容为早期五夜格子策略经营版本（`Border-Guard-v0.17.html` … `Border-Guard-v0.32.html`）的历史说明，所有历史版本与 `tests/artifacts/` 证据均完整保留。
+> 以下内容为早期五夜格子策略经营版本（已归档至 `archive/versions/Border-Guard-v0.17.html` … `archive/versions/Border-Guard-v0.32.html`）的历史说明，所有历史版本、归档文档与 `tests/artifacts/` 证据均完整保留，零删除。
 
 > 一款**单机、离线可玩、横屏优先**的格子策略经营游戏：白天探索、建城与布防，夜间守住边境，目标是在**五夜**之后击退首领；一局约 15 分钟。
 
@@ -60,11 +60,11 @@ npm run test:all            # 依次运行以上全部 7 组测试套件
 - **上一稳定对照：`Border-Guard-v0.26.html`** —— 同样可独立双击打开。
 - 历史版本 `Border-Guard-v0.17.html` … `Border-Guard-v0.28.html` 全部保留，每个都能独立打开，历史文件与历史验证证据均未改动。
 
-> **v0.30 打磨（已合并到 `main` 并推送）**：上一版的 `Border-Guard-v0.29.html` 已完成 WP1–WP5 打磨——明亮卡通渲染与金边玻璃 HUD、首日六步引导与悬停放置预览、七视口与触控适配、1.5 秒昼夜过渡 / 刷兵烟尘 / 三个新音效 / 圈墙受击火花与效果弱化。**入口文件名保持不变，仍是双击即可离线试玩的单文件**。设计方向、取舍、前后截图索引、测试命令与结果、自然试玩记录及剩余未验证项见 [`docs/v030-polish-report.md`](docs/v030-polish-report.md)；逐包进度与质量门结论见 [`docs/v030-polish-progress.md`](docs/v030-polish-progress.md)。
+> **v0.30 打磨（已合并到 `main` 并推送）**：上一版的 `archive/versions/Border-Guard-v0.29.html` 已完成 WP1–WP5 打磨——明亮卡通渲染与金边玻璃 HUD、首日六步引导与悬停放置预览、七视口与触控适配、1.5 秒昼夜过渡 / 刷兵烟尘 / 三个新音效 / 圈墙受击火花与效果弱化。**入口文件名保持不变，仍是双击即可离线试玩的单文件**。设计方向、取舍、前后截图索引、测试命令与结果、自然试玩记录及剩余未验证项见 [`archive/docs/v018-v030/v030-polish-report.md`](archive/docs/v018-v030/v030-polish-report.md)；逐包进度与质量门结论见 [`archive/docs/v018-v030/v030-polish-progress.md`](archive/docs/v018-v030/v030-polish-progress.md)。
  
 > **v0.31 画面基线（2026-11-16）**：更新为明亮饱和的卡通地图、蓝顶城堡、圆冠松林、HiDPI Canvas、柔化迷雾、资源胶囊和建筑详情插画，提交为 `bca3ccc`。
 >
-> **v0.32 界面打磨与六项玩法优化（本次）**：在 `Border-Guard-v0.32.html` 上完成深青玻璃 HUD 细节修复（顶栏资源名与净产胶囊、横幅防遮挡、竖屏紧凑详情、折叠面板去重框、命令栏独立 SVG 图标、三选一卡牌分色、飘字防叠），并落地六项玩法优化：主城居民驻场提产与守卫协防、第 1→2 夜换向预警与「明夜」入口标记、白天城墙部分修复与经营栏快捷「加固城防」、城墙破墙 1.2 秒碎石阻滞 + 紧急号令 + 急修 50% 减伤盾、远征营地降本（6 材料 + 3 金币）+ 5×5 点亮 + 首名驻员免首周期维护 + 选址高亮、以及 `1× / 2×` 倍速切换与智能资源开发工具。无需外部资源，仍可离线双击打开。详见 [`Border-Guard-v0.32-更新说明.md`](Border-Guard-v0.32-更新说明.md)。
+> **v0.32 界面打磨与六项玩法优化（本次）**：在 `archive/versions/Border-Guard-v0.32.html` 上完成深青玻璃 HUD 细节修复（顶栏资源名与净产胶囊、横幅防遮挡、竖屏紧凑详情、折叠面板去重框、命令栏独立 SVG 图标、三选一卡牌分色、飘字防叠），并落地六项玩法优化：主城居民驻场提产与守卫协防、第 1→2 夜换向预警与「明夜」入口标记、白天城墙部分修复与经营栏快捷「加固城防」、城墙破墙 1.2 秒碎石阻滞 + 紧急号令 + 急修 50% 减伤盾、远征营地降本（6 材料 + 3 金币）+ 5×5 点亮 + 首名驻员免首周期维护 + 选址高亮、以及 `1× / 2×` 倍速切换与智能资源开发工具。无需外部资源，仍可离线双击打开。详见 [`archive/docs/Border-Guard-v0.32-更新说明.md`](archive/docs/Border-Guard-v0.32-更新说明.md)。
 
 ### v0.29 本轮试玩默认与限制
 
@@ -161,11 +161,13 @@ CHROME_BIN="C:/Program Files/Google/Chrome/Application/chrome.exe" node tests/ru
 
 ## 相关文档
 
-- [v0.26 更新说明](Border-Guard-v0.26-更新说明.md)
-- [v0.26 体验审查报告](Border-Guard-v0.26-体验审查报告.md)
-- [v0.26 独立浏览器验收报告](Border-Guard-v0.26-独立浏览器验收报告.md)
+- [阶段二优化与分批实施计划](docs/v0.60-review/stage2-optimization-plan.md)
+- [历史版本与文档归档索引](archive/README.md)
+- [v0.26 更新说明](archive/docs/Border-Guard-v0.26-更新说明.md)
+- [v0.26 体验审查报告](archive/docs/Border-Guard-v0.26-体验审查报告.md)
+- [v0.26 独立浏览器验收报告](archive/docs/Border-Guard-v0.26-独立浏览器验收报告.md)
 - [13 视口截图索引](tests/artifacts/v026/SCREENSHOT_INDEX.md)
 - [项目交接说明](PROJECT_HANDOFF.md)
-- [v0.25 更新说明](Border-Guard-v0.25-更新说明.md)
+- [v0.25 更新说明](archive/docs/Border-Guard-v0.25-更新说明.md)
 
-`PROJECT_HANDOFF.md` 已在文件头补上 v0.30 当前状态；其下 v0.24 / v0.25 / v0.26 段落均为历史交接记录，不再作为当前入口。当前入口以本 README 与 [v0.30 交付报告](docs/v030-polish-report.md) 为准。
+`PROJECT_HANDOFF.md` 已同步至 v0.60 当前状态；其下 v0.32 / v0.26 / v0.25 段落均为历史交接记录，历史版本 HTML 与早期说明已归档至 `archive/versions/` 与 `archive/docs/`。

@@ -92,6 +92,10 @@
   - 将构建输出、校验脚本、测试脚本与 CI 工作流正式切换至 `release/Border-Guard-v0.60.html`（`vite.config.js`、`scripts/verify-single-file.mjs`、`package.json`、`tests/modular-game-browser.test.cjs`、`tests/parity/v060-modular-parity.test.cjs`、`.github/workflows/modular-shell-build.yml`），根目录原版 `Border-Guard-v0.60.html` 与 `balance/v060-baseline.json` 保持字节未变。
   - 在 `tests/parity/v060-modular-parity.test.cjs` 新增真实 Chrome 双向 `localStorage` Meta 存档兼容用例（原版写入 → 模块版加载并推进结算 → 原版回读逐字段 `deepEqual`）。
   - 最终实测结果：`npm run build` PASS（`release/Border-Guard-v0.60.html`，90 模块，521,949 B，1 内联脚本）；`npm run test:all` 七组全绿退出码 0（`test:unit` 298/298、`test:integration` 12/12、`test:arch` 3/3、`test:parity` 2/2 含三种子等价与双向 `localStorage` 兼容、`test:modular-game` 1/1 桌面+手机、`test:e2e:modular` 6 场景 0 异常、`test:baseline` 43/43）；冻结基线零改动；GitHub Actions 远程作业未运行。
+- **Opus 5.5 独立页面验收 + 阶段二优化计划落盘 + 历史版本/文档无损归档**：已完成。
+  - **Claude Opus 5.5 双端视觉验收通过**：桌面 `1440×900`（56 点）与手机 `390×844`（17 点）共 73 组真实点击双边像素对比，0 报错、0 阶段一回归缺陷，60/73 纯 DOM 截图像素差 0.00%，零闪烁刷新 24/24 节点保留。
+  - **阶段二优化计划落盘**：整合三路只读审计与 Opus 5.5 视觉发现，写入 `docs/v0.60-review/stage2-optimization-plan.md`（43 项发现，分 Batch 1–5，待用户勾选后开分支实施）。
+  - **无损归档整理**：用 `git mv` 将 19 份历史 HTML（v0.17–v0.52）迁至 `archive/versions/`、28 份根目录历史文档与 14 份 `docs/` 历史报告迁至 `archive/docs/`（新增 `archive/README.md`），根目录保留冻结原版 `Border-Guard-v0.60.html` 不变；`scripts/sync-balance.cjs` 兼容 `archive/versions/Border-Guard-v0.52.html` 回退路径。
 
 ---
 
