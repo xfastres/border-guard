@@ -17,7 +17,7 @@
 - [x] 创建独立重构分支，不改原分支。
 - [x] 归档原版 HTML，确认归档 Blob SHA 与根目录原件一致。
 
-## Phase 1｜构建骨架完成，浏览器实机验证待补
+## Phase 1｜完成
 
 - [x] 创建 Vite + ES Modules 工程入口。
 - [x] 创建 app bootstrap 和基础样式。
@@ -25,11 +25,14 @@
 - [x] 增加构建产物检查脚本。
 - [x] 增加 GitHub Actions 构建门禁。
 - [x] 生成并提交 `package-lock.json`（lockfileVersion 3，49 个 package entries）。
-- [x] CI 改用 `npm ci`，确保依赖锁定。
-- [x] GitHub Actions Push 构建通过：run `45328005404`。
-- [x] GitHub Actions Pull Request 构建通过：run `45328012512`。
-- [x] 下载 CI Artifact 并检查归档内容：只包含一个 HTML 文件，大小 3,661 字节；一个内联 script；无外部 script / stylesheet 引用；build marker 和 bootstrap 文案存在。
-- [ ] 在真实桌面 Chrome 中以 `file://` 打开并检查运行时控制台。当前执行容器的 Chromium headless 启动超时，故不将此项标记为通过。
+- [x] CI 使用 `npm ci`，依赖版本可复现。
+- [x] 单 HTML 构建通过：Vite 8.3.8；输出一个 3,661 字节 HTML；1 个内联 script；无外部 JS/CSS 引用。
+- [x] 原版 v0.60 回归套件通过：37 + 5 + 1 = 43 个 Node 测试项，全部通过。
+- [x] 原版 Stage 6 Chrome smoke test 通过：1440×900 和 390×844。
+- [x] 原版真实 Chrome E2E 通过：6 个交互场景，0 个未捕获 JS 异常。
+- [x] 模块化 shell 使用真实 Chrome 通过 `file://` 打开：桌面 1440×900、移动 390×844；bootstrap 执行，页面标记和非可玩提示均存在。
+- [x] GitHub Actions 最终 Push run：`45328652574`，成功。
+- [x] 构建产物 Artifact：`border-guard-modular-shell`，ID `14889779651`。
 
 ## 构建技术基线
 
@@ -39,12 +42,14 @@
 - 开发：`npm run dev`
 - 构建：`npm run build`
 - 锁定安装：`npm ci`
-- 产物：`release/Border-Guard-v0.60-modular-shell.html`
+- 原版回归：`npm run test:baseline`
+- 模块化 shell 浏览器检查：`npm run test:modular-shell`
+- 构建产物：`release/Border-Guard-v0.60-modular-shell.html`
 
 ## 明确未完成
 
 - 尚未迁移任何 v0.60 游戏业务逻辑。
-- 尚未运行 v0.60 原版完整测试套件。
+- 尚未把原版 HTML 的测试从“提取内嵌 script + VM”迁移为直接 import ES Modules。
 - 尚未生成可玩的模块化游戏版本。
 - `release/Border-Guard-v0.60-modular-shell.html` 是构建骨架验证页，不得当成可玩游戏发布。
 
