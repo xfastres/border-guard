@@ -7,7 +7,7 @@ import { createRuntimeContext } from '../core/runtime-context.js';
 import { createMetaSystem } from '../systems/meta/index.js';
 import { createAffixTransfer, createEquipmentCore, createEquipmentInventory } from '../systems/equipment/index.js';
 import { createEconomyCore, createShopConfirm, createShopSystem } from '../systems/economy/index.js';
-import { createUnlockSystem } from '../systems/progression/index.js';
+import { createUnlockSystem, createW10Breakthrough, createW20Breakthrough, createRewardsSystem } from '../systems/progression/index.js';
 import { createHeroStats } from '../systems/hero/index.js';
 import {
   getSourceStageForWave as queryGetSourceStageForWave,
@@ -47,7 +47,6 @@ import {
   COMBOS,
   COMBO_LIST,
   PERKS,
-  PERK_LIST,
   PILLS,
   HERO_SKILLS,
   W10_SKILL_BRANCHES,
@@ -264,6 +263,40 @@ const {
   commitAffixTransfer,
 } = affixTransfer;
 
+const {
+  getW10BranchSpec,
+  pickHeroSkill,
+  getLearnedSkillKeys,
+  rollW10BranchChoices,
+  selectW10BreakthroughSkill,
+  pickW10BreakthroughBranch,
+} = createW10Breakthrough(runtimeCtx, { meta: metaSystem, unlock: unlockSystem, hero: heroStats });
+
+const {
+  isW20PreselectOpen,
+  isW20BossIntelRevealed,
+  getW20BossIntel,
+  isW30BossIntelRevealed,
+  getW30BossIntel,
+  getW30BattleState,
+  getRecommendedW20Direction,
+  selectW20PreselectDirection,
+  lockW20DirectionForBattle,
+  getValidW20EnhancementPool,
+  getW20RerollCost,
+  drawW20CandidateGroup,
+  initW20EnhancementDraft,
+  rerollW20Enhancements,
+  pickW20Enhancement,
+} = createW20Breakthrough(runtimeCtx, { equipment: equipmentCore, economy: economyCore });
+
+const { rollPerkChoices, pickPerk, pickChestGearChoices, grantGear, pickGearReward } = createRewardsSystem(runtimeCtx, {
+  meta: metaSystem,
+  equipment: { createGearInstance, grantGearSafely },
+  economy: economyCore,
+  hero: heroStats,
+});
+
 // Keep the published BG60 argument order and options when calling the Meta system.
 function saveMetaSave(opts = {}){
   return writeMetaSave(undefined, opts);
@@ -300,11 +333,6 @@ runtimeCtx.bindPorts({
   },
 });
 loadMetaSave();
-
-function getW10BranchSpec(skillKey, branchKey = game?.hero?.w10Branch?.[skillKey]){
-  if (!skillKey || !branchKey) return null;
-  return (W10_SKILL_BRANCHES[skillKey] || []).find(b => b.key === branchKey) || null;
-}
 
 function getSkillBreakdown(key, lv, hs){
   const spec = HERO_SKILLS[key];
@@ -5614,111 +5642,7 @@ function renderLevelUpModal(){
   $('modalBackdrop').hidden = false;
 }
 
-function pickHeroSkill(key){
-  if (!game || !HERO_SKILLS[key]) return false;
-  const m = game.activeModal;
-  if (!m || (m.type !== 'starter' && m.type !== 'levelup')) return false;
-  if (m.claimed) return false;
-  if (!Array.isArray(m.choices) || !m.choices.includes(key)) return false;
-  if ((game.hero.skills[key] || 0) >= 5) return false;
-
-  // ATOMIC SINGLE-CLAIM LOCK BEFORE STATE MUTATION
-  m.claimed = true;
-  m.claimedChoice = key;
-
-  if (!game.metaRunLocked) lockMetaLoadoutForRun();
-  game.hero.skills[key] = (game.hero.skills[key] || 0) + 1;
-  AudioKit.play('merge', 1.1);
-  toast(`领主习得【${HERO_SKILLS[key].name} Lv.${game.hero.skills[key]}】！`);
-  refreshCombos(true);
-  closeModal();
-  renderAllUI(true);
-  return true;
-}
-
 /* ==================== W10 FIRST MAJOR BREAKTHROUGH (DESIGNATE LEARNED SKILL -> 3 RANDOM BRANCHES) ==================== */
-function getLearnedSkillKeys(){
-  const h = game.hero;
-  const learned = Object.keys(h.skills).filter(k => (h.skills[k] || 0) > 0 && W10_SKILL_BRANCHES[k]?.length);
-  if (learned.length) return learned;
-  return ['firewave'];
-}
-
-function rollW10BranchChoices(skillKey){
-  const pool = (W10_SKILL_BRANCHES[skillKey] || []).slice();
-  const out = [];
-  while (out.length < 3 && pool.length) {
-    out.push(pool.splice(Math.floor(game.rnd() * pool.length), 1)[0]);
-  }
-  return out;
-}
-
-function selectW10BreakthroughSkill(skillKey){
-  if (!game) return { ok: false, reason: 'no_game' };
-  const learned = getLearnedSkillKeys();
-  if (!learned.includes(skillKey)) {
-    return { ok: false, reason: 'skill_not_learned', learned };
-  }
-  const branches = rollW10BranchChoices(skillKey);
-  game.w10Draft = {
-    skillKey,
-    choices: branches.map(b => b.key),
-    branches
-  };
-  if (game.activeModal && game.activeModal.type === 'w10_breakthrough') {
-    game.activeModal.step = 'pick_branch';
-    renderW10BreakthroughModal();
-  }
-  return { ok: true, skillKey, choices: branches };
-}
-
-function pickW10BreakthroughBranch(branchKey){
-  if (!game || !game.w10Draft || !game.w10Draft.skillKey) {
-    return { ok: false, reason: 'no_w10_skill_selected' };
-  }
-  const skillKey = game.w10Draft.skillKey;
-  const allBranches = W10_SKILL_BRANCHES[skillKey] || [];
-  const branch = allBranches.find(b => b.key === branchKey);
-  if (!branch) {
-    return { ok: false, reason: 'invalid_branch_key', skillKey };
-  }
-  const h = game.hero;
-  h.w10Branch[skillKey] = branch.key;
-  h.breakthroughs.w10 = {
-    wave: 10,
-    completed: true,
-    skillKey,
-    skillName: HERO_SKILLS[skillKey]?.name || skillKey,
-    branchKey: branch.key,
-    branchName: branch.name,
-    tag: branch.tag,
-    hook: branch.hook || branch.hookType,
-    hookType: branch.hookType || branch.hook,
-    desc: branch.desc
-  };
-  game.pendingBreakthrough = null;
-  game.w10Draft = null;
-  game.stats.breakthroughsCompleted = (game.stats.breakthroughsCompleted || 0) + 1;
-  h.realm = getActiveUnlockNode().idx;
-  h.baseMaxHp += 40;
-  syncHeroMaxHp();
-  h.hp = Math.min(h.maxHp, h.hp + 80);
-  flashScreen('gold');
-  AudioKit.play('level', 1.25);
-  addRing(h.x, h.y, '#ffd666', 4.2);
-  showBanner(
-    `⚡ W10 大型突破完成 · 【${HERO_SKILLS[skillKey]?.name} · ${branch.name}】！`,
-    `主灵印上限升至 ${getSealStarCap()}★ · 辅灵印扩至 ${getSubSealSlotCap()} 槽 · 解锁【重锤震地】神通池！`,
-    'good'
-  );
-  if (game.activeModal && game.activeModal.type === 'w10_breakthrough') {
-    closeModal();
-  }
-  refreshCombos(true);
-  renderAllUI(true);
-  return { ok: true, breakthrough: h.breakthroughs.w10 };
-}
-
 function renderW10BreakthroughModal(){
   const h = game.hero;
   const box = $('modalBox');
@@ -5793,159 +5717,6 @@ function renderW10BreakthroughModal(){
 }
 
 /* ==================== STAGE 3: W16-W19 PRESELECT, W19 BOSS INTEL & W20 BREAKTHROUGH + PAID REROLL ==================== */
-function isW20PreselectOpen(){
-  if (!game) return false;
-  const openWave = BALANCE.w20Breakthrough?.preselectOpenWave || 16;
-  return game.wave >= openWave && game.wave <= 20 && !game.w20State?.locked && !game.hero?.breakthroughs?.w20;
-}
-
-function isW20BossIntelRevealed(){
-  if (!game) return false;
-  const revealWave = BALANCE.w20Breakthrough?.bossIntelRevealWave || 19;
-  return game.wave >= revealWave || !!game.bossIntel?.w20Revealed;
-}
-
-function getW20BossIntel(){
-  if (!game?.bossIntel) return null;
-  const revealed = isW20BossIntelRevealed();
-  if (!revealed) {
-    return {
-      revealed: false,
-      revealWave: BALANCE.w20Breakthrough?.bossIntelRevealWave || 19,
-      wave: 20,
-      bossName: '天劫魔尊',
-      coreName: null,
-      coreDesc: '第 19 波备战时揭晓 W20 首领固定核心机制与本局随机辅助机制',
-      auxKey: null,
-      auxName: null,
-      auxDesc: null,
-      auxFairness: null
-    };
-  }
-  return {
-    revealed: true,
-    revealWave: BALANCE.w20Breakthrough?.bossIntelRevealWave || 19,
-    wave: 20,
-    bossName: '天劫魔尊',
-    coreName: game.bossIntel.w20Core,
-    coreDesc: game.bossIntel.w20CoreDesc,
-    auxKey: game.bossIntel.w20AuxKey,
-    auxName: game.bossIntel.w20Aux,
-    auxDesc: game.bossIntel.w20AuxDesc,
-    auxFairness: game.bossIntel.w20AuxFairness
-  };
-}
-
-function isW30BossIntelRevealed(){
-  if (!game) return false;
-  const revealWave = BALANCE.w30Boss?.intelRevealWave || 29;
-  return game.wave >= revealWave || !!game.bossIntel?.w30Revealed || !!game.finalPrep?.w30IntelShown;
-}
-
-function getW30BossIntel(){
-  if (!game?.bossIntel) return null;
-  const revealed = isW30BossIntelRevealed();
-  const w30Cfg = BALANCE.w30Boss || {};
-  const revealWave = w30Cfg.intelRevealWave || 29;
-  if (!revealed) {
-    return {
-      revealed: false,
-      revealWave,
-      wave: 30,
-      bossName: w30Cfg.name || '深渊主宰',
-      coreName: null,
-      coreDesc: '第 29 波备战时揭晓 W30 终局首领固定核心机制与本局随机辅助机制',
-      auxKey: null,
-      auxName: null,
-      auxDesc: null,
-      auxFairness: null,
-      signatureThresholdPct: w30Cfg.signatureThresholdPct ?? 0.80,
-      finalPhaseThresholdPct: w30Cfg.finalPhaseThresholdPct ?? 0.35
-    };
-  }
-  return {
-    revealed: true,
-    revealWave,
-    wave: 30,
-    bossName: w30Cfg.name || '深渊主宰',
-    coreName: game.bossIntel.w30Core,
-    coreDesc: game.bossIntel.w30CoreDesc,
-    auxKey: game.bossIntel.w30AuxKey,
-    auxName: game.bossIntel.w30Aux,
-    auxDesc: game.bossIntel.w30AuxDesc,
-    auxFairness: game.bossIntel.w30AuxFairness,
-    signatureThresholdPct: w30Cfg.signatureThresholdPct ?? 0.80,
-    finalPhaseThresholdPct: w30Cfg.finalPhaseThresholdPct ?? 0.35
-  };
-}
-
-function getW30BattleState(){
-  if (!game?.w30Battle) return null;
-  const boss = game.enemies?.find(e => e.kind === 'boss6') || null;
-  return {
-    ...JSON.parse(JSON.stringify(game.w30Battle)),
-    bossHp: boss ? Math.max(0, Math.round(boss.hp)) : (game.w30Battle.outcome === 'victory' ? 0 : null),
-    bossHpPct: boss ? Number((clamp(boss.hp, 0, boss.maxHp) * 100 / Math.max(1, boss.maxHp)).toFixed(2)) : (game.w30Battle.outcome === 'victory' ? 0 : null)
-  };
-}
-
-function getRecommendedW20Direction(){
-  if (!game?.hero) return 'fire_chain_surge';
-  const syn = getActiveGearAffixSynergies();
-  if (syn.hasFrostTrio || syn.hasFrostDuo || (game.hero.skills?.nova || 0) > (game.hero.skills?.firewave || 0)) {
-    return 'frost_bastion_counter';
-  }
-  if (syn.hasFireTrio || syn.hasFireDuo || (game.hero.skills?.firewave || 0) > 0) {
-    return 'fire_chain_surge';
-  }
-  return 'breaker_momentum';
-}
-
-function selectW20PreselectDirection(directionKey){
-  if (!game) return { ok: false, reason: 'no_game' };
-  const openWave = BALANCE.w20Breakthrough?.preselectOpenWave || 16;
-  if (game.wave < openWave) {
-    return { ok: false, reason: 'not_unlocked_yet', openWave };
-  }
-  if (game.w20State?.locked || game.hero?.breakthroughs?.w20) {
-    return { ok: false, reason: 'direction_locked', lockedDirection: game.w20State?.lockedDirection || game.hero?.breakthroughs?.w20?.directionKey };
-  }
-  const spec = W20_DIRECTIONS[directionKey];
-  if (!spec) {
-    return { ok: false, reason: 'invalid_direction', validKeys: W20_DIRECTION_KEYS };
-  }
-  game.w20State.preselectedDirection = spec.key;
-  AudioKit.play('coin', 1.15);
-  toast(`已预选 W20 突破方向【${spec.icon} ${spec.name}】（击败 W20 首领拿到突破凭证后才会生效）`);
-  if (game.activeModal?.type === 'w20_preselect') {
-    renderW20PreselectModal(game.activeModal);
-  }
-  renderAllUI(true);
-  return {
-    ok: true,
-    preselectedDirection: spec.key,
-    directionName: spec.name,
-    locked: false,
-    baseEffectActive: false
-  };
-}
-
-function lockW20DirectionForBattle(){
-  if (!game) return { ok: false, reason: 'no_game' };
-  const dirKey = game.w20State?.preselectedDirection || getRecommendedW20Direction();
-  if (!W20_DIRECTIONS[dirKey]) return { ok: false, reason: 'invalid_direction' };
-  game.w20State.preselectedDirection = dirKey;
-  game.w20State.lockedDirection = dirKey;
-  game.w20State.locked = true;
-  game.w20State.lockedAtWave = game.wave;
-  return {
-    ok: true,
-    lockedDirection: dirKey,
-    directionName: W20_DIRECTIONS[dirKey].name,
-    baseEffectActive: false // Still NOT active until defeating W20 Boss!
-  };
-}
-
 function openW20PreselectModal(opts = {}){
   if (!game) return false;
   if (!isW20PreselectOpen()) {
@@ -6028,181 +5799,6 @@ function renderW20PreselectModal(modalState = {}){
   $('modalBackdrop').hidden = false;
 }
 
-function getValidW20EnhancementPool(directionKey, ownedKeys = []){
-  if (!directionKey || !W20_DIRECTIONS[directionKey]) return [];
-  const ownedSet = new Set(ownedKeys || []);
-  if (game?.hero?.breakthroughs?.w20?.enhancementKey) {
-    ownedSet.add(game.hero.breakthroughs.w20.enhancementKey);
-  }
-  const ownedMutex = new Set();
-  for (const ok of ownedSet) {
-    const sp = W20_ENHANCEMENTS[ok];
-    if (sp?.mutex) ownedMutex.add(sp.mutex);
-  }
-  return Object.values(W20_ENHANCEMENTS).filter(c => {
-    if (!c || !Array.isArray(c.directions) || !c.directions.includes(directionKey)) return false;
-    if (ownedSet.has(c.key)) return false;
-    if (c.mutex && ownedMutex.has(c.mutex)) return false;
-    if (typeof c.applicable === 'function' && !c.applicable(game?.hero)) return false;
-    return true;
-  });
-}
-
-function getW20RerollCost(rerollCount = null){
-  const cfg = BALANCE.w20Breakthrough || {};
-  const base = Number.isFinite(Number(cfg.rerollBaseCost)) ? Number(cfg.rerollBaseCost) : 4;
-  const step = Number.isFinite(Number(cfg.rerollStep)) ? Number(cfg.rerollStep) : 2;
-  const cnt = rerollCount !== null && rerollCount !== undefined ? Number(rerollCount) : (game?.w20Draft?.rerollCount || 0);
-  return base + Math.max(0, cnt) * step;
-}
-
-function drawW20CandidateGroup(directionKey, excludeKeys = [], groupSize = null){
-  const cfg = BALANCE.w20Breakthrough || {};
-  const K = Math.max(1, Number(groupSize || cfg.groupSize || 2));
-  const minRequired = 2 * K + (cfg.minPoolBuffer ?? 2);
-  const validPool = getValidW20EnhancementPool(directionKey);
-  if (validPool.length < minRequired) {
-    return { ok: false, reason: 'insufficient_pool', required: minRequired, available: validPool.length, cards: [] };
-  }
-  const exSet = new Set(excludeKeys || []);
-  const eligible = validPool.filter(c => !exSet.has(c.key));
-  if (eligible.length < K) {
-    return { ok: false, reason: 'insufficient_pool', required: minRequired, available: eligible.length, cards: [] };
-  }
-  const poolCopy = eligible.slice();
-  const picked = [];
-  while (picked.length < K && poolCopy.length) {
-    const idx = Math.floor((game?.rnd ? game.rnd() : Math.random()) * poolCopy.length);
-    picked.push(poolCopy.splice(idx, 1)[0]);
-  }
-  return { ok: true, cards: picked, validPoolSize: validPool.length, requiredMinPool: minRequired };
-}
-
-function initW20EnhancementDraft(directionKey = null){
-  if (!game) return { ok: false, reason: 'no_game' };
-  const dirKey = directionKey || game.hero?.breakthroughs?.w20?.directionKey || game.w20State?.lockedDirection || 'fire_chain_surge';
-  const cfg = BALANCE.w20Breakthrough || {};
-  const K = Math.max(1, Number(cfg.groupSize || 2));
-  const draw = drawW20CandidateGroup(dirKey, [], K);
-  if (!draw.ok) {
-    // Fallback without blocking base effect if config was deliberately shrunk in a test
-    const rawPool = getValidW20EnhancementPool(dirKey).slice(0, K);
-    game.w20Draft = {
-      directionKey: dirKey,
-      groupSize: K,
-      rerollCount: 0,
-      nextRerollCost: getW20RerollCost(0),
-      candidates: rawPool.map(c => c.key),
-      history: [rawPool.map(c => c.key)],
-      prevCandidates: [],
-      poolUnderCapacity: true
-    };
-    return { ok: false, reason: draw.reason, required: draw.required, available: draw.available, draft: game.w20Draft };
-  }
-  const ids = draw.cards.map(c => c.key);
-  game.w20Draft = {
-    directionKey: dirKey,
-    groupSize: K,
-    rerollCount: 0,
-    nextRerollCost: getW20RerollCost(0),
-    candidates: ids,
-    history: [ids.slice()],
-    prevCandidates: [],
-    poolUnderCapacity: false
-  };
-  return { ok: true, draft: game.w20Draft, candidates: draw.cards, validPoolSize: draw.validPoolSize };
-}
-
-function rerollW20Enhancements(){
-  if (!game || !game.w20Draft) return { ok: false, reason: 'no_active_draft' };
-  const draft = game.w20Draft;
-  const K = draft.groupSize || (BALANCE.w20Breakthrough?.groupSize || 2);
-  const cost = getW20RerollCost(draft.rerollCount);
-
-  // Strict 2K+2 capacity redline check BEFORE deducting any materials!
-  const draw = drawW20CandidateGroup(draft.directionKey, draft.candidates, K);
-  if (!draw.ok) {
-    toast(`候选池容量不足（需至少 ${draw.required} 张，当前 ${draw.available} 张），已保留当前候选与锻材余额！`, true);
-    return {
-      ok: false,
-      reason: 'insufficient_pool',
-      required: draw.required,
-      available: draw.available,
-      materialsLeft: game.materials,
-      candidates: draft.candidates.slice()
-    };
-  }
-
-  if ((game.materials || 0) < cost) {
-    toast(`锻材不足！本次整组重抽需 ${cost} 锻材（当前 ⚙️ ${game.materials || 0}）`, true);
-    return {
-      ok: false,
-      reason: 'insufficient_materials',
-      cost,
-      materialsLeft: game.materials || 0,
-      candidates: draft.candidates.slice()
-    };
-  }
-
-  const prevIds = draft.candidates.slice();
-  const nextIds = draw.cards.map(c => c.key);
-  changeMaterials(-cost, 'w20_reroll');
-  draft.prevCandidates = prevIds;
-  draft.candidates = nextIds;
-  draft.rerollCount += 1;
-  draft.nextRerollCost = getW20RerollCost(draft.rerollCount);
-  draft.history.push(nextIds.slice());
-
-  AudioKit.play('merge', 1.15);
-  toast(`🎲 已消耗 ${cost} 锻材整组重抽！下次重抽需 ${draft.nextRerollCost} 锻材（剩余 ⚙️ ${game.materials}）`);
-  if (game.activeModal?.type === 'w20_breakthrough') {
-    renderW20BreakthroughModal();
-  }
-  renderAllUI(true);
-  return {
-    ok: true,
-    costPaid: cost,
-    materialsLeft: game.materials,
-    rerollCount: draft.rerollCount,
-    nextRerollCost: draft.nextRerollCost,
-    prevCandidates: prevIds,
-    candidates: draw.cards
-  };
-}
-
-function pickW20Enhancement(enhKey){
-  if (!game || !game.w20Draft) return { ok: false, reason: 'no_active_draft' };
-  const draft = game.w20Draft;
-  const spec = W20_ENHANCEMENTS[enhKey];
-  if (!spec || !draft.candidates.includes(enhKey)) {
-    return { ok: false, reason: 'invalid_enhancement_choice', candidates: draft.candidates.slice() };
-  }
-  const w20 = game.hero.breakthroughs.w20;
-  if (!w20) return { ok: false, reason: 'w20_not_unlocked' };
-  w20.enhancementKey = spec.key;
-  w20.enhancementName = spec.name;
-  w20.enhancementIcon = spec.icon;
-  w20.enhancementDesc = spec.desc;
-  w20.enhancementBehaviorTag = spec.behaviorTag;
-  w20.rerollCount = draft.rerollCount;
-
-  game.pendingBreakthrough = null;
-  game.w20Draft = null;
-  flashScreen('gold');
-  AudioKit.play('level', 1.3);
-  addRing(game.hero.x, game.hero.y, '#ffd666', 4.5);
-  showBanner(
-    `⚡ W20 突破强化完成 · 【${w20.directionName} × ${spec.name}】！`,
-    `即将进入第 21 波强势体验！${spec.behaviorTag}`,
-    'good'
-  );
-  if (game.activeModal?.type === 'w20_breakthrough') {
-    closeModal();
-  }
-  renderAllUI(true);
-  return { ok: true, breakthrough: { ...w20 } };
-}
-
 function openW20BreakthroughModal(){
   if (!game || !game.w20Draft) return false;
   game.activeModal = { type: 'w20_breakthrough' };
@@ -6260,53 +5856,6 @@ function renderW20BreakthroughModal(){
 }
 
 /* ---- DESTINY PERK DRAFT (3 / 4 / 6 CHOICES + LV.1->LV.2 UPGRADE CHAINS) ---- */
-function rollPerkChoices(quality = 'ren'){
-  const count = quality === 'tian' ? 6 : quality === 'di' ? 4 : 3;
-  const available = PERK_LIST.filter(p => (game.hero.perks[p.key] || 0) < 2);
-  const ownedLv1 = available.filter(p => game.hero.perks[p.key] === 1);
-  const commons = available.filter(p => p.rarity === 'common');
-  const rares   = available.filter(p => p.rarity === 'rare');
-  const epics   = available.filter(p => p.rarity === 'epic');
-
-  const picked = [];
-  const takeFrom = arr => {
-    const rem = arr.filter(p => !picked.includes(p));
-    if (!rem.length) return null;
-    const item = rem[Math.floor(game.rnd() * rem.length)];
-    picked.push(item);
-    return item;
-  };
-
-  if (quality === 'tian') {
-    takeFrom(epics); takeFrom(epics);
-    if (ownedLv1.length && game.rnd() < 0.8) takeFrom(ownedLv1);
-    while (picked.length < count) {
-      const r = game.rnd();
-      if (r < 0.38 && takeFrom(epics)) continue;
-      if (r < 0.80 && takeFrom(rares)) continue;
-      if (!takeFrom(available)) break;
-    }
-  } else if (quality === 'di') {
-    takeFrom(rares); takeFrom(rares);
-    if (game.rnd() < 0.15) takeFrom(epics);
-    if (ownedLv1.length && game.rnd() < 0.65) takeFrom(ownedLv1);
-    while (picked.length < count) {
-      if (game.rnd() < 0.55 && takeFrom(rares)) continue;
-      if (!takeFrom(commons) && !takeFrom(available)) break;
-    }
-  } else {
-    if (ownedLv1.length && game.rnd() < 0.45) {
-      const nonEpic = ownedLv1.filter(p => p.rarity !== 'epic');
-      takeFrom(nonEpic);
-    }
-    while (picked.length < count) {
-      if (game.rnd() < 0.20 && takeFrom(rares)) continue;
-      if (!takeFrom(commons) && !takeFrom(rares) && !takeFrom(available)) break;
-    }
-  }
-  return picked;
-}
-
 function renderPerkModal(quality = 'ren'){
   const choices = rollPerkChoices(quality);
   if (!choices.length) { closeModal(); return; }
@@ -6338,100 +5887,6 @@ function renderPerkModal(quality = 'ren'){
     grid.append(card);
   }
   $('modalBackdrop').hidden = false;
-}
-
-function pickPerk(key){
-  const p = PERKS[key];
-  if (!p) return;
-  const nextLv = (game.hero.perks[key] || 0) + 1;
-  game.hero.perks[key] = Math.min(2, nextLv);
-  if (key === 'blood_oath') {
-    game.hero.baseMaxHp += 80;
-    syncHeroMaxHp();
-  } else if (key === 'dao_fortune') {
-    if (nextLv === 1) {
-      changeGold(35, 'perk_dao_fortune');
-      const rares = GEAR_KEYS.filter(k => GEARS[k].rarity === 'rare');
-      const rk = rares[Math.floor(game.rnd() * rares.length)];
-      grantGear(rk);
-    } else if (nextLv === 2) {
-      const epics = GEAR_KEYS.filter(k => GEARS[k].rarity === 'epic');
-      const rk = epics[Math.floor(game.rnd() * epics.length)];
-      grantGear(rk);
-    }
-  }
-  AudioKit.play('level', 1.15);
-  toast(`词条生效！【${p.name} Lv.${game.hero.perks[key]}】`);
-  closeModal();
-  renderAllUI(true);
-}
-
-function pickChestGearChoices(legendBias = false, shrineTier = false){
-  const activePool = getActiveRunGearKeys();
-  const byRarity = {
-    common: activePool.filter(k => GEARS[k]?.rarity === 'common').map(k => GEARS[k]),
-    rare:   activePool.filter(k => GEARS[k]?.rarity === 'rare').map(k => GEARS[k]),
-    epic:   activePool.filter(k => GEARS[k]?.rarity === 'epic').map(k => GEARS[k]),
-    legend: activePool.filter(k => GEARS[k]?.rarity === 'legend').map(k => GEARS[k])
-  };
-  const specs = [];
-  const takeRarity = r => {
-    const pool = byRarity[r].filter(g => !specs.includes(g));
-    if (!pool.length) return null;
-    const g = pickWeightedByMainLegacy(pool, item => item?.elem || null, game.rnd) || pool[0];
-    specs.push(g);
-    return g;
-  };
-  const w = game.wave || 1;
-  if (legendBias) {
-    if (w <= 6) takeRarity('epic');
-    else takeRarity('legend');
-  } else if (shrineTier) {
-    if (w <= 6) takeRarity('rare');
-    else if (w <= 15) takeRarity('epic');
-    else takeRarity('legend');
-  }
-  while (specs.length < 3) {
-    const r = game.rnd();
-    let tier = 'common';
-    if (legendBias) {
-      if (w <= 6) tier = r < 0.30 ? 'epic' : 'rare';
-      else if (w <= 15) tier = r < 0.25 ? 'legend' : 'epic';
-      else tier = r < 0.45 ? 'legend' : 'epic';
-    } else if (shrineTier) {
-      if (w <= 6) tier = r < 0.65 ? 'rare' : 'common';
-      else if (w <= 11) tier = r < 0.35 ? 'epic' : 'rare';
-      else if (w <= 18) tier = r < 0.20 ? 'legend' : r < 0.75 ? 'epic' : 'rare';
-      else tier = r < 0.35 ? 'legend' : 'epic';
-    } else {
-      if (w <= 5) tier = r < 0.25 ? 'rare' : 'common';
-      else if (w <= 10) tier = r < 0.10 ? 'epic' : r < 0.55 ? 'rare' : 'common';
-      else if (w <= 18) tier = r < 0.28 ? 'epic' : r < 0.80 ? 'rare' : 'common';
-      else tier = r < 0.15 ? 'legend' : r < 0.65 ? 'epic' : 'rare';
-    }
-    if (!takeRarity(tier)) {
-      const fallbackOrder = w <= 5 ? ['rare', 'common'] : w <= 10 ? ['epic', 'rare', 'common'] : ['epic', 'rare', 'legend', 'common'];
-      let picked = null;
-      for (const ft of fallbackOrder) {
-        picked = takeRarity(ft);
-        if (picked) break;
-      }
-      if (!picked) break;
-    }
-  }
-  // Generate 3 real independent gear instances (independent rarity & 1/2/3 slots, locked sourceStage, filled affixes)
-  const refCfg = getEndgameRefinementConfig();
-  const endgameBonus = w >= (refCfg.startWave || 21) ? (refCfg.chestHighRarityAffixBonusW21Plus || 0.12) : 0;
-  return specs.map(sp => {
-    const inst = createGearInstance(sp.key, {
-      wave: w,
-      origin: legendBias ? 'boss_chest' : shrineTier ? 'shrine_chest' : 'elite_chest',
-      highRarityChance: Math.min(0.70, (legendBias ? 0.32 : shrineTier ? 0.24 : 0.14) + endgameBonus),
-      rndFn: game.rnd
-    });
-    inst.key = inst.baseKey; // keep .key alias for UI/tests
-    return inst;
-  });
 }
 
 function renderAffixChipsHtml(inst){
@@ -6489,36 +5944,6 @@ function renderChestModal(legendBias = false, shrineTier = false){
     grid.append(card);
   }
   $('modalBackdrop').hidden = false;
-}
-
-function grantGear(input, opts = {}){
-  const res = grantGearSafely(input, { origin: opts.origin || 'drop', ...opts });
-  return res?.item || null;
-}
-
-function pickGearReward(itemOrKey){
-  if (!game) return false;
-  const m = game.activeModal;
-  if (!m || m.type !== 'chest') return false;
-  if (m.claimed) return false;
-  if (!Array.isArray(m.choices) || !m.choices.length) return false;
-
-  let matched = null;
-  if (itemOrKey && typeof itemOrKey === 'object') {
-    matched = m.choices.find(c => c === itemOrKey || (itemOrKey.uid && c.uid === itemOrKey.uid)) || null;
-  } else if (typeof itemOrKey === 'string') {
-    matched = m.choices.find(c => c.uid === itemOrKey || c.baseKey === itemOrKey) || null;
-  }
-  if (!matched) return false;
-
-  // ATOMIC SINGLE-CLAIM LOCK BEFORE STATE MUTATION
-  m.claimed = true;
-  m.claimedChoice = matched.uid;
-
-  if (!game.metaRunLocked) lockMetaLoadoutForRun();
-  const grantRes = grantGearSafely(matched, { origin: 'chest' });
-  closeModal();
-  return grantRes?.item || matched;
 }
 
 function formatDurationMMSS(sec){

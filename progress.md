@@ -39,6 +39,10 @@
   - 迁出 7 个商店与灵印交易函数至 `src/systems/economy/shop.js` 及 3 个 W29 购买草稿函数至 `src/systems/economy/shop-confirm.js`（`src/legacy/game.js` 降至 10,315 行）。
   - 新增 `tests/unit/economy-shop.test.mjs`（18 项无 DOM 单测）。
   - 实测结果：`npm run build` PASS（485,970 B）；`npm run test:unit` 95/95 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.7（`src/systems/progression/{w10,w20,rewards}.js` W10/W20 突破与奖励）**：已完成并经主控独立审查与实测验收。
+  - 迁出 26 个 W10 突破、W20/W30 预选/Boss 情报/阶梯重抽与 Perk/宝箱奖励函数（`src/legacy/game.js` 降至 9,740 行，首次跌破万行）。
+  - 新增 `tests/unit/progression-breakthrough.test.mjs`（13 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（489,064 B）；`npm run test:unit` 108/108 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 
