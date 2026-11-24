@@ -9,6 +9,9 @@ node_modules/
 dist/
 build/
 
+# npm run build 生成的离线单文件产物，未验收的预览不直接提交
+release/
+
 # 本地临时文件与敏感配置
 .env
 .env.*

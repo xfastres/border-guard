@@ -1,5 +1,17 @@
 # Progress
 
+## 2026-11-24 · v0.60 阶段一模块化重构（分支 `refactor/modular-v060-phase1`）
+
+- **Step 0（仓库现状深度审计与路线修订）**：完成真实仓库与本地 Windows 实测盘点，确认 `Border-Guard-v0.60.html`（Blob `46049dcc8ca119f79dcc7e8b6e482a797dd794e2`）与 `balance/v060-baseline.json` 未被篡改，`index.html` 与 8 份 CSS 规则 100% 等价；盘点 `src/legacy/game.js` 精确为 13,031 行 / 297 顶层函数 / 30 顶层变量（`systems` 仅 2 处直接 DOM/Storage、20 个 UI 回调端口 + `AudioKit.play`）。
+- **Phase 2.4a（测试基线跨平台修复、同种子等价校验与架构边界门禁）**：已完成并经主控独立审查与实测验收。
+  - 新增 `tests/helpers/chrome-bin.cjs`，最小化适配 4 个既有测试文件兼容 Windows CRLF 与跨平台 Chrome 路径（零削弱断言）。
+  - 新增 `tests/parity/v060-modular-parity.test.cjs`（真实 Chrome CDP 对照原版与模块版，种子 `2026` / `1337` 全量快照 `deepEqual`，0 JS 异常 / 0 `console.error`）。
+  - 新增 `tests/unit/architecture-guard.test.mjs`（AST 校验 0 循环依赖、严格单向分层、纯层零浏览器标识符、legacy 目录约束、基线哈希锁定）。
+  - 清理 `src/data/destiny-data.js` 未使用导入，`.gitignore` 忽略 `release/`，`package.json` 新增 `test:arch` / `test:parity` / `test:unit`。
+  - 实测结果：`npm run build` PASS（471,116 B，1 内联脚本）；`npm run test:baseline` 43/43 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 场景 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS。
+
+---
+
 ## 2026-11-14 · v0.26
 
 - 基线 `main@f4de3bf`，从 v0.25 派生独立 HTML。保留所有旧版、会话归档、既有测试与候选立项稿。

@@ -5,11 +5,11 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
-const { pathToFileURL } = require('node:url');
+const { resolveChromeBin, toFileUrl } = require('./helpers/chrome-bin.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const HTML_PATH = path.join(ROOT, 'release', 'Border-Guard-v0.60-modular-preview.html');
-const CHROME_BIN = process.env.CHROME_BIN || '/usr/bin/google-chrome';
+const CHROME_BIN = resolveChromeBin();
 
 test('Modular v0.60 game opens from file:// and boots on desktop and mobile viewports', () => {
   assert.ok(fs.existsSync(CHROME_BIN), `Chrome binary not found: ${CHROME_BIN}`);
@@ -24,7 +24,7 @@ test('Modular v0.60 game opens from file:// and boots on desktop and mobile view
       [
         '--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage',
         `--window-size=${viewport.width},${viewport.height}`, '--virtual-time-budget=1800', '--dump-dom',
-        pathToFileURL(HTML_PATH).href,
+        toFileUrl(HTML_PATH),
       ],
       { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] },
     );

@@ -1,5 +1,3 @@
-import { PILLS } from './core-data.js';
-
 /* ==================== STAGE 4: DESTINY GAMBLE EXCLUSIVE ENHANCEMENTS, BOONS & PILLS ====================
    - DESTINY_ENHANCEMENTS: Obtainable STRICTLY via Destiny Gamble (special category when bet >= destinyExclusive threshold).
      NEVER appear in regular shop, level-up skill pool, chests, or W20 enhancement pool!

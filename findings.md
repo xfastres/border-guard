@@ -1,4 +1,20 @@
 # Findings
+
+## v0.60 阶段一模块化重构记录（只记录、阶段一严禁顺手改玩法/数值）
+
+### 工程与测试基线发现
+- **Windows CRLF 与硬编码 Chrome 路径**：原 `tests/v060-stage1.test.cjs` 正则写死 `\n`，且 `tests/v060-stage6.test.cjs` / `tests/v060-e2e-browser.test.cjs` 硬编码 `/usr/bin/google-chrome` 与 `file://${HTML_PATH}`（已在 Phase 2.4a 修复为跨平台解析）。
+- **前期测试盲区**：Phase 0–2.3 期间 42 项核心规则测试仅针对根目录 `Border-Guard-v0.60.html`，未验证 `src/` 与模块单文件产物（已在 Phase 2.4a 补齐双会话同种子等价门禁与 AST 架构门禁）。
+- **`src/data/destiny-data.js` 未使用导入**：第 1 行存在未使用的 `PILLS` import（已在 Phase 2.4a 清理）。
+
+### 阶段二待诊断问题池（仅记录，严禁在阶段一修改）
+- **RNG 与视觉/回退边界混用风险**：静态审计显示 14 个函数存在 `Math.random`（含部分回退默认值、屏幕震动/绘制抖动、装备 UID 与部分随机候选），阶段二需逐一审视是否影响确定性复现或产生无意耦合。
+- **高频 DOM 与 Canvas 渲染负载**：`src/legacy/game.js` 仍含 ~1,866 行 HUD DOM 拼接与 704 行 Canvas 绘制，且主循环每 0.14s 触发 `renderAllUI(false)`，阶段二需做帧率与 GC 抖动专项性能诊断。
+- **标题版本文案残留**：原版 `Border-Guard-v0.60.html` `<title>` 仍为 `边境守卫 v0.60 · 30波试玩版（阶段 1）`（阶段一为保持零差异暂保留，阶段二一并评估修订）。
+
+---
+
+## 历史记录（v0.16–v0.20）
 - v0.16 地图32×20，白天35秒/首日60秒，夜晚17秒，清场8秒超时。
 - 全部 dialog 暂停；地点 inspector 允许继续移动，均与v0.11字面规则有差异。
 - v0.11交接三项历史问题已有针对性实现：10秒预告窗口、leaving实际离营、全员无路撤离失败。
