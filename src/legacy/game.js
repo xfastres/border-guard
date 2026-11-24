@@ -1,8 +1,6 @@
 import BALANCE from '../data/balance.js';
 import AudioKit from '../ui/audio/audio.js';
-import { buildTerrainProps } from '../core/terrain.js';
-import { mulberry32 } from '../core/rng.js';
-import { dist, clamp, xpForLevel } from '../core/math.js';
+import { clamp, xpForLevel } from '../core/math.js';
 import { createRuntimeContext } from '../core/runtime-context.js';
 import { createMetaSystem } from '../systems/meta/index.js';
 import { createAffixTransfer, createEquipmentCore, createEquipmentInventory } from '../systems/equipment/index.js';
@@ -10,6 +8,7 @@ import { createEconomyCore, createShopConfirm, createShopSystem } from '../syste
 import { createUnlockSystem, createW10Breakthrough, createW20Breakthrough, createRewardsSystem, createDestinyGamble } from '../systems/progression/index.js';
 import { createHeroStats, createHeroSkills, createHeroVitals } from '../systems/hero/index.js';
 import { createCombatSystem } from '../systems/combat/index.js';
+import { createRunSystem } from '../systems/run/index.js';
 import {
   getSourceStageForWave as queryGetSourceStageForWave,
   getSourceStageSpec as queryGetSourceStageSpec,
@@ -132,7 +131,6 @@ const {
   lockMetaLoadoutForRun,
   getMainLegacyWeightTable,
   pickWeightedByMainLegacy,
-  generateRunId,
   calculateRunShardRewards,
   checkEligibleNewMilestones: findNewMetaMilestones,
   settleRunMetaRewards,
@@ -178,7 +176,6 @@ const {
 const heroStats = createHeroStats(runtimeCtx, { unlock: unlockSystem, meta: metaSystem });
 const {
   getSynergyCounts,
-  getSynergyTier,
   getSubSeal,
   getGearSetCounts,
   gearSetTier,
@@ -221,7 +218,7 @@ const combatSystem = createCombatSystem(runtimeCtx, {
   hero: heroStats,
   economy: economyCore,
   heroVitals: { damageHero: (...args) => heroVitals.damageHero(...args) },
-  run: { completeWaveClear: (...args) => completeWaveClear(...args) },
+  run: { completeWaveClear: (...args) => runSystem.completeWaveClear(...args) },
 });
 const {
   recordW20Proc,
@@ -235,7 +232,6 @@ const {
   triggerFrostPulse,
   gainFrostShield,
   spawnPosAroundHero,
-  pickEliteAffixes,
   spawnEnemy,
   spawnHealOrb,
   triggerW30BossSignature,
@@ -246,11 +242,8 @@ const {
   onEnemyKilled,
   fireChainLightning,
   pushProjectile,
-  updateSeal,
   triggerSealOnHeroHit,
   pointToSegDist,
-  updateProjectilesAndZones,
-  updateEnemies,
 } = combatSystem;
 
 const heroVitals = createHeroVitals(runtimeCtx, {
@@ -259,14 +252,14 @@ const heroVitals = createHeroVitals(runtimeCtx, {
   equipment: equipmentCore,
   hero: heroStats,
   combat: combatSystem,
-  run: { finishGame: (...args) => finishGame(...args) },
+  run: { finishGame: (...args) => runSystem.finishGame(...args) },
 });
-const { updatePickups, gainHeroXp, getCombatLogNowSec, getRecentThreatSummary, damageHero } = heroVitals;
+const { gainHeroXp, getCombatLogNowSec, getRecentThreatSummary, damageHero } = heroVitals;
 
 const heroSkills = createHeroSkills(runtimeCtx, {
   meta: metaSystem, equipment: equipmentCore, hero: heroStats, combat: combatSystem,
 });
-const { executeBreakerShockwave, castHeroDash, castHeroOverdrive, pickAimTarget, updateHero } = heroSkills;
+const { executeBreakerShockwave, castHeroDash, castHeroOverdrive, pickAimTarget } = heroSkills;
 
 const shopSystem = createShopSystem(runtimeCtx, {
   meta: metaSystem,
@@ -319,6 +312,7 @@ const {
   pickW10BreakthroughBranch,
 } = createW10Breakthrough(runtimeCtx, { meta: metaSystem, unlock: unlockSystem, hero: heroStats });
 
+const w20Breakthrough = createW20Breakthrough(runtimeCtx, { equipment: equipmentCore, economy: economyCore });
 const {
   isW20PreselectOpen,
   isW20BossIntelRevealed,
@@ -335,7 +329,7 @@ const {
   initW20EnhancementDraft,
   rerollW20Enhancements,
   pickW20Enhancement,
-} = createW20Breakthrough(runtimeCtx, { equipment: equipmentCore, economy: economyCore });
+} = w20Breakthrough;
 
 const { rollPerkChoices, pickPerk, pickChestGearChoices, grantGear, pickGearReward } = createRewardsSystem(runtimeCtx, {
   meta: metaSystem,
@@ -368,6 +362,44 @@ const {
   autoClaimPendingDestinyReward,
 } = destinySystem;
 
+const runSystem = createRunSystem(runtimeCtx, {
+  meta: metaSystem,
+  unlock: unlockSystem,
+  equipment: { ...equipmentCore, ...affixTransfer },
+  economy: { ...economyCore, ...shopSystem, ...shopConfirm },
+  hero: { ...heroStats, ...heroVitals, ...heroSkills },
+  progression: { ...w20Breakthrough, ...destinySystem },
+  combat: combatSystem,
+});
+const {
+  makeGame,
+  getWavePhaseMeta,
+  getW22To24Theme,
+  getW25To28Pool,
+  rollW25To28Encounter,
+  getWaveEncounterInfo,
+  getEndgameOmenState,
+  buildWaveQueue,
+  startWave,
+  finalizeCurrentTelemetry,
+  getTelemetryReport,
+  beginWaveHarvest,
+  getMonotonicNowMs,
+  setMonotonicClockForTest,
+  syncW29FinalPrepStart,
+  syncW29FinalPrepClock,
+  isCancelablePrepModal,
+  closeCancelablePrepModals,
+  closeAllPrepModals,
+  startW30Early,
+  resolveW29FinalPrepTimeout,
+  enterW29FinalPrep,
+  startNewRun,
+  completeWaveClear,
+  finishGame,
+  tick,
+} = runSystem;
+
 // Keep the published BG60 argument order and options when calling the Meta system.
 function saveMetaSave(opts = {}){
   return writeMetaSave(undefined, opts);
@@ -386,16 +418,31 @@ function checkEligibleNewMilestones(victory, g = game, save = getMetaSave()){
 runtimeCtx.bindPorts({
   storage: { getStorage: getMetaStorage },
   audio: { play: AudioKit.play.bind(AudioKit), unlock: AudioKit.unlock.bind(AudioKit) },
-  vfx: { addRing, addFloat },
-  ui: { toast, showBanner, flashScreen, renderAllUI, setDangerVignette, setPaused },
+  vfx: { addRing, addFloat, update: updateVfx },
+  ui: {
+    toast, showBanner, flashScreen, renderAllUI, setDangerVignette, setPaused,
+    resetRunUI() {
+      lastShopKey = lastSynKey = lastBagKey = lastInspKey = lastArtKey = lastSkillKey = lastLeftHudKey = lastBattleHudKey = '';
+      $('banner').hidden = true;
+      $('toast').hidden = true;
+      setDangerVignette(false);
+    },
+  },
   modals: {
     queueModal, closeModal, openNextModal, showEndModal, showIntroModal,
     openW20PreselectModal, openDestinyGambleModal, openAffixTransferModal, openMetaLegacyModal,
     renderW10BreakthroughModal, renderW20PreselectModal, renderW20BreakthroughModal,
     renderDestinyGambleModal, renderAffixTransferModal, renderShopConfirmModal, renderW30EarlyConfirmModal,
     renderMetaLegacyModal,
+    hideBackdrop: () => { $('modalBackdrop').hidden = true; },
   },
-  viewport: { screenToWorld, worldToScreen, getCamera: () => cam },
+  viewport: {
+    screenToWorld, worldToScreen, getCamera: () => cam, updateCamera,
+    resetCamera: () => { fitCamera(); updateCamera(0, true); },
+  },
+  clock: {
+    syncLoopTimestamp: nowMs => { if (typeof lastTs !== 'undefined') lastTs = nowMs; },
+  },
   input: {
     getKeys: () => keys,
     getPointerScreen: () => pointerScreen,
@@ -525,277 +572,6 @@ function setDangerVignette(active){ $('hpVignette')?.classList.toggle('danger', 
 function perkLv(k){ return queryPerkLv(game, k); }
 function hasCombo(k){ return queryHasCombo(game, k); }
 
-function makeGame(seed = Math.floor(Math.random() * 1e9)){
-  const rnd = mulberry32(seed);
-  runtimeCtx.setTerrainProps(buildTerrainProps(seed));
-  const w20AuxEntry = W20_BOSS_AUX_POOL.length
-    ? W20_BOSS_AUX_POOL[Math.floor(rnd() * W20_BOSS_AUX_POOL.length)]
-    : { key: 'oppression_ring', name: '领域压迫环', desc: '周期释放带预警的压迫光环。', fairnessNote: '有清晰预警与走位窗口' };
-  const w30AuxEntry = W30_BOSS_AUX_POOL.length
-    ? W30_BOSS_AUX_POOL[Math.floor(rnd() * W30_BOSS_AUX_POOL.length)]
-    : { key: 'abyss_pillars', name: '护界晶柱', desc: '周期召唤可击破的护界晶柱，击破破盾易伤并掉回复灵气球。', fairnessNote: '全流派可击破且提供续航' };
-  const w22Themes = Object.keys(BALANCE.wave?.w22To24Themes || {});
-  const w22ThemeKey = w22Themes.length ? w22Themes[Math.floor(rnd() * w22Themes.length)] : 'mobile_rush';
-  const g = {
-    seed, rnd,
-    phase: 'prep', // 'prep' | 'wave' | 'harvest' | 'won' | 'lost'
-    subPhase: null, // null | 'w29_final_prep'
-    autoWave: false,
-    autoWaveTimer: 0,
-    autoWavePausedForDecision: false,
-    harvestTimer: 0,
-    wave: 1,
-    waveClock: 0,
-    stormWarnAt: 999,
-    stormWarned: false,
-    speed: 1,
-    gold: BALANCE.progression.initialGold,
-    materials: BALANCE.progression.initialMaterials || 0,
-    transferTokens: BALANCE.progression.initialTransferTokens || 0,
-    rerollCost: BALANCE.economy.rerollStart,
-    shopTierBonus: 0,
-    shake: 0,
-    thunderSynTimer: 3.0,
-    holyRegenTimer: 1.0,
-    xpCombo: 0, xpComboTimer: 0,
-
-    pendingBreakthrough: null, // null | 'w10' | 'w20'
-    w20State: {
-      preselectedDirection: null,
-      lockedDirection: null,
-      locked: false,
-      lockedAtWave: null
-    },
-    w20Draft: null,
-    destiny: {
-      pendingOffer: null, // { offerId, bet, wave, choices: [...], claimed: false, claimedChoiceIndex: null }
-      lastOffer: null,
-      lastOutcome: null,
-      claimedOfferIds: [],
-      totalRolls: 0,
-      emptyTribulations: 0,
-      wins: 0,
-      totalGoldBet: 0,
-      history: [],
-      nextOfferSeq: 1
-    },
-    transferDraft: null,     // Preview-only draft, zero side effects on cancel
-    shopConfirmDraft: null,  // Uncommitted shop purchase draft, zero side effects on cancel / timeout
-    rewardStash: [],         // Overflow safe storage when bag is full (Stage 4 & Stage 5 W29 timeout handoff)
-    healOrbs: [],            // Stage 5 W30 arena healing spirit orbs for sustain across 3-5 min boss fight
-    finalPrep: {
-      active: false,
-      awaitingWaveRewards: false,
-      started: false,
-      locked: false,
-      transitioning: false,
-      timer: BALANCE.progression.w29FinalPrepSeconds || 90,
-      duration: BALANCE.progression.w29FinalPrepSeconds || 90,
-      maxSeconds: BALANCE.progression.w29FinalPrepSeconds || 90,
-      w30IntelShown: false,
-      lastResolution: null
-    },
-    w30Battle: null,
-    bossIntel: {
-      w20Core: BALANCE.w20Breakthrough?.bossCore?.name || '天劫三重雷域 + 扇形紫电弹幕',
-      w20CoreDesc: BALANCE.w20Breakthrough?.bossCore?.desc || '周期落下 3 处带 1.2s 预警雷域并齐射 6 枚扇形紫电弹幕。',
-      w20AuxKey: w20AuxEntry.key,
-      w20Aux: w20AuxEntry.name,
-      w20AuxDesc: w20AuxEntry.desc,
-      w20AuxFairness: w20AuxEntry.fairnessNote || '公平可读预警机制',
-      w20Revealed: false,
-      w30Core: BALANCE.w30Boss?.core?.name || '终焉锁血冲击波 + 三段复合压制',
-      w30CoreDesc: BALANCE.w30Boss?.core?.desc || '80% 血线强制锁血释放终焉裂空冲击波（锁血期命中可挂状态/叠盾，扣血与吸血为 0），35% 进入末段组合压制，打空即胜！',
-      w30AuxKey: w30AuxEntry.key,
-      w30Aux: w30AuxEntry.name,
-      w30AuxDesc: w30AuxEntry.desc,
-      w30AuxFairness: w30AuxEntry.fairnessNote || '公平可反制辅助机制',
-      w30Revealed: false,
-      tempStage1: false
-    },
-    wavePlan: {
-      w22To24ThemeKey: w22ThemeKey,
-      w25To28Rolled: {},
-      currentEncounter: null
-    },
-    endgameOmen: {
-      triggered: false,
-      wave: 28,
-      midWaveTriggered: false,
-      clearTriggered: false,
-      label: ''
-    },
-
-    // Selection & modes
-    mode: null,
-    inspTarget: null, // null | {type:'seal'} | {type:'hero'}
-
-    // 1 Main Elemental Seal (1★ -> 5★) + up to 2 Sub-Seals (1★ -> 3★ resonance)
-    seal: null,
-    subSeals: [],
-    shrine: null,
-    shop: [],
-    shopElemBuyCounts: { wind: 0, fire: 0, frost: 0, thunder: 0, holy: 0 },
-    shopElemBuyStage: 1,
-    bag: [], // array of independent gear instances (and safely stored unequipped seals if any)
-    pills: { xp: 0, heal: 0, temper: 0 },
-
-    hero: {
-      x: W / 2, y: H / 2,
-      hp: BALANCE.progression.initialHp, maxHp: BALANCE.progression.initialHp, baseMaxHp: BALANCE.progression.initialHp, shield: 0, shieldTimer: 0,
-      lv: 1, xp: 0, xpNext: xpForLevel(1),
-      realm: 0,
-      face: 1, goal: null, moving: false,
-      invuln: 0, armorBreakT: 0, frostShieldActive: false, frostPulseCd: 0, frostActivePulseCd: 0, gearFrostShieldCd: 0,
-      dashCd: 0, ultCd: 0, ultTimer: 0, dashBuffT: 0,
-      thornsCd: 0, undyingUsedWave: -1,
-      swordRainHits: 0, ultKillCounter: 0,
-      wanjianTimer: 2.4, frostDomainTick: 0.4, swordSetTimer: 1.2, bloodKills: 0,
-      w10AuraTimer: 0.55, w10SecondaryTimer: 0.85,
-      w20FrostAuraTimer: 1.6, w20ShieldPillarAccum: 0, w20EchoFireCnt: 0, w20EchoFrostCnt: 0, w20TacticalReadyT: 0, w20AftershockQueue: [],
-      destinyEnhancements: {},
-      sealEssenceBonus: 0,
-      destinyDashBuffT: 0,
-      destinyFrostMoveT: 0,
-      destinyEmberNextBoost: false,
-      destinyEmberCd: 0,
-      destinyBreakerCd: 0,
-      destinyBulwarkTimer: 8.0,
-      leechUsed: 0, leechTimer: 0,
-      gear: [], // up to 4 independent gear instances
-      activeGearSynergies: null,
-      skills: {}, // Chosen via 3-choice starter active skill modal!
-      w10Branch: {}, // { [skillKey]: branchKey }
-      breakthroughs: {
-        w10: null,
-        w20: null
-      },
-      vouchers: {
-        w10: false,
-        w20: false
-      },
-      combatStateStats: {
-        fireMarksApplied: 0,
-        fireDetonations: 0,
-        frostSlowsApplied: 0,
-        frostShieldGained: 0,
-        frostPulsesTriggered: 0,
-        w10BranchProcs: 0,
-        w20BaseProcs: 0,
-        w20EnhancementProcs: 0,
-        destinyEnhancementProcs: 0
-      },
-      combos: {},
-      perks: {},
-      skillTimers: { firewave: 0.3, thunder: 0.4, nova: 0.4, stomp: 0.5, spirit: 0 },
-      bladeAngle: 0,
-      bladeHitMap: new Map(),
-      shatterCdMap: new Map()
-    },
-
-    enemies: [],
-    nextEnemyId: 1,
-    waveQueue: [],
-    projectiles: [],
-    beams: [],
-    bolts: [],
-    zones: [],
-    gems: [],
-    chests: [],
-    rings: [],
-    floats: [],
-
-    pendingModals: [],
-    activeModal: null,
-
-    telemetry: [],
-    curWaveTel: null,
-    endSummary: null,
-
-    // Stage 6: Unique Run ID, Locked Meta Loadout Snapshot, Real Damage Attribution Log & Effective Run Metrics
-    runId: generateRunId(seed),
-    metaLoadout: (() => {
-      const sv = getMetaSave();
-      return { main: sv.loadout.main, aux: sv.loadout.aux.slice() };
-    })(),
-    metaRunLocked: false,
-    metaRunState: {
-      activeGearKeys: BASE_GEAR_KEYS.slice(),
-      activeAffixKeys: BASE_AFFIX_KEYS.slice(),
-      unlockedGearExtras: [],
-      unlockedAffixExtras: [],
-      freeRefreshUsedThisWave: false,
-      deflectReady: true,
-      deflectTriggers: 0,
-      freeRefreshUses: 0
-    },
-    metaSettlement: null,
-    combatLog: {
-      hits: [],
-      fatalSource: null,
-      lowestHpPct: 100,
-      totalHitsTaken: 0,
-      totalHpLost: 0,
-      totalShieldAbsorbed: 0,
-      settledAtRunClock: null,
-      bySource: {}
-    },
-    runMetrics: {
-      normalCombatSec: 0,
-      bossCombatSec: 0,
-      prepSec: 0,
-      w29FinalPrepSec: 0,
-      harvestSec: 0,
-      totalEffectiveSec: 0,
-      hpLost: 0,
-      goldEarned: BALANCE.progression.initialGold,
-      goldSpent: 0,
-      materialsEarned: BALANCE.progression.initialMaterials || 0,
-      materialsSpent: 0,
-      transferTokensEarned: BALANCE.progression.initialTransferTokens || 0,
-      transferTokensSpent: 0,
-      ledger: [],
-      _ledgerSeq: 1,
-      _lastGold: BALANCE.progression.initialGold,
-      _lastMaterials: BALANCE.progression.initialMaterials || 0,
-      _lastTokens: BALANCE.progression.initialTransferTokens || 0
-    },
-
-    stats: {
-      kills: 0, elites: 0, merges: 0, dmgTotal: 0,
-      bossKills: 0, breakthroughsCompleted: 0,
-      fireMarksApplied: 0, fireDetonations: 0, frostSlowsApplied: 0, frostShieldGained: 0, shieldGained: 0,
-      gearFireDuoProcs: 0, gearFireTrioProcs: 0, fireChainTransfers: 0, fireFocusedDetonations: 0,
-      gearFrostDuoProcs: 0, gearFrostTrioProcs: 0, frostHitPulses: 0, frostDashPulses: 0, frostFullShieldPulses: 0,
-      w20BaseProcs: 0, w20EnhancementProcs: 0, w20FirePulls: 0, w20FrostCounterProcs: 0, w20BreakerSlams: 0,
-      w20BossAuxTriggers: 0, w20TotemsDestroyed: 0,
-      destinyRolls: 0, destinyEmptyTribulations: 0, destinyClaims: 0, destinyEnhancementProcs: 0, affixTransfers: 0,
-      skillDmg: { blades:0, firewave:0, thunder:0, nova:0, stomp:0, berserk:0, dash:0, spirit:0, combo:0, perk:0, burn:0 }
-    }
-  };
-  return g;
-}
-
-function startNewRun(seed = Math.floor(Math.random() * 1e9), showStarter = true, opts = {}){
-  runtimeCtx.setGame(makeGame(seed));
-  syncRunActivePools();
-  if (!opts?.preRunSetup) {
-    game.metaRunLocked = true;
-  }
-  recomputeEquipmentSynergies();
-  runtimeCtx.setPaused(false);
-  lastShopKey = lastSynKey = lastBagKey = lastInspKey = lastArtKey = lastSkillKey = lastLeftHudKey = lastBattleHudKey = '';
-  $('banner').hidden = true;
-  $('toast').hidden = true;
-  $('hpVignette')?.classList.remove('danger');
-  closeModal();
-  rollShop(true);
-  fitCamera();
-  updateCamera(0, true);
-  if (showStarter) queueModal({ type: 'starter' });
-  renderAllUI(true);
-}
-
 /* ==================== CROSS-STAGE COMBAT STATE HOOKS (W10 / GEAR / W20 SHARED) ==================== */
 function getW20ActiveState(){ return queryGetW20ActiveState(game); }
 function hasW20Direction(dirKey){ return queryHasW20Direction(game, dirKey); }
@@ -839,617 +615,9 @@ function renderShopConfirmModal(){
   $('modalBackdrop').hidden = false;
 }
 
-/* ==================== WAVE GENERATION (30-WAVE CONTROLLED CURVE) & SHRINE ==================== */
-function getWavePhaseMeta(w){
-  const phase = BALANCE.wave.phases.find(p => w >= p.from && w <= p.to) || BALANCE.wave.phases[BALANCE.wave.phases.length - 1];
-  return {
-    tag: phase.tag,
-    kind: phase.kind,
-    mobMult: phase.mobMult,
-    hpMult: phase.hpBase + (w - phase.offset) * phase.hpSlope
-  };
-}
-
-function getW22To24Theme(themeKey = null){
-  const themes = BALANCE.wave?.w22To24Themes || {};
-  const key = themeKey || game?.wavePlan?.w22To24ThemeKey || 'mobile_rush';
-  return themes[key] || themes.mobile_rush || Object.values(themes)[0] || null;
-}
-
-function getW25To28Pool(w){
-  const pools = BALANCE.wave?.w25To28Pools || {};
-  return (pools[String(w)] || []).slice();
-}
-
-function rollW25To28Encounter(w, commitToGame = true){
-  const pool = getW25To28Pool(w);
-  if (!pool.length) return null;
-  const pick = pool[Math.floor(game.rnd() * pool.length)];
-  const enc = {
-    wave: w,
-    type: 'w25_28_random',
-    id: pick.id,
-    name: pick.name,
-    primaryThreat: pick.primaryThreat,
-    mobMultAdj: pick.mobMultAdj ?? 1,
-    hpMultAdj: pick.hpMultAdj ?? 1,
-    normal: pick.normal,
-    heavy: pick.heavy
-  };
-  if (commitToGame && game?.wavePlan) {
-    game.wavePlan.w25To28Rolled[String(w)] = enc;
-    game.wavePlan.currentEncounter = enc;
-  }
-  return enc;
-}
-
-function getWaveEncounterInfo(w = game?.wave){
-  if (!game) return null;
-  const waveNum = Number(w || game.wave || 1);
-  if (waveNum >= 22 && waveNum <= 24) {
-    const theme = getW22To24Theme();
-    const wSpec = theme?.waves?.[String(waveNum)] || null;
-    if (!theme || !wSpec) return null;
-    return {
-      wave: waveNum,
-      type: 'w22_24_shared_threat',
-      revealed: true,
-      themeKey: theme.key,
-      themeName: theme.name,
-      primaryThreat: theme.primaryThreat,
-      threatLabel: theme.threatLabel,
-      counterHint: theme.counterHint,
-      comboLabel: wSpec.comboLabel,
-      pressureLevel: wSpec.pressureLevel
-    };
-  }
-  if (waveNum >= 25 && waveNum <= 28) {
-    // STRICTLY NO pre-wave spoilers during prep phase!
-    const isCurrentPrep = waveNum === game.wave && game.phase === 'prep';
-    const rolled = game.wavePlan?.w25To28Rolled?.[String(waveNum)] || null;
-    if (isCurrentPrep || !rolled) {
-      return {
-        wave: waveNum,
-        type: 'w25_28_random',
-        revealed: false,
-        id: null,
-        name: '开战后揭晓',
-        primaryThreat: null
-      };
-    }
-    return {
-      wave: waveNum,
-      type: 'w25_28_random',
-      revealed: true,
-      id: rolled.id,
-      name: rolled.name,
-      primaryThreat: rolled.primaryThreat
-    };
-  }
-  return null;
-}
-
-function getEndgameOmenState(){
-  return game?.endgameOmen ? { ...game.endgameOmen } : { triggered: false, wave: 28, midWaveTriggered: false, clearTriggered: false, label: '' };
-}
-
-function buildWaveQueue(w, customEncounter = null){
-  const q = [];
-  const meta = getWavePhaseMeta(w);
-  const bw = BALANCE.wave;
-  const lateScale = w >= bw.lateHpGrowthSecondStart
-    ? Math.pow(bw.lateHpGrowthSecond, w - (bw.lateHpGrowthSecondStart - 1))
-    : w >= bw.lateHpGrowthStart
-      ? Math.pow(bw.lateHpGrowthFirst, w - (bw.lateHpGrowthStart - 1)) : 1;
-
-  // Stage 3 & Stage 5 Wave-specific encounter mixes (W21 showcase, W22-24 shared-threat, W25-28 independent draws, W29 compact outpost)
-  let encounterSpec = customEncounter;
-  let packBonus = 0;
-  let mobMultAdj = 1;
-  let hpMultAdj = 1;
-  let durationMult = 1;
-  let packOffsetMult = 1;
-  let spawnJitterMult = 1;
-  let activeMix = bw.mobMix.find(m => w <= m.to) || bw.mobMix[bw.mobMix.length - 1];
-
-  if (w === 21 && bw.w21ShowcaseMix) {
-    activeMix = bw.w21ShowcaseMix;
-    packBonus = 1;
-  } else if (w >= 22 && w <= 24) {
-    const theme = getW22To24Theme();
-    const wSpec = theme?.waves?.[String(w)];
-    if (wSpec) {
-      activeMix = wSpec;
-      packBonus = wSpec.packBonus || 0;
-      mobMultAdj = wSpec.mobMultAdj ?? 1;
-    }
-  } else if (w >= 25 && w <= 28) {
-    if (!encounterSpec) encounterSpec = rollW25To28Encounter(w, false);
-    if (encounterSpec) {
-      activeMix = encounterSpec;
-      mobMultAdj = encounterSpec.mobMultAdj ?? 1;
-      hpMultAdj = encounterSpec.hpMultAdj ?? 1;
-    }
-  } else if (w === 29 && bw.w29Outpost) {
-    // Stage 5: W29 same-direction modest escalation over W28 — tighter spawn pacing/denser batches AND slightly tougher enemies!
-    const w29 = bw.w29Outpost;
-    activeMix = w29;
-    packBonus = w29.packBonus || 2;
-    mobMultAdj = w29.mobMultAdj ?? 1.04;
-    hpMultAdj = w29.hpMultAdj ?? 1.06;
-    durationMult = w29.durationMult ?? 0.84;
-    packOffsetMult = w29.packOffsetMult ?? 0.72;
-    spawnJitterMult = w29.spawnJitterMult ?? 0.75;
-  }
-
-  const scale = Math.pow(bw.normalHpGrowth, w - 1) * meta.hpMult * lateScale * hpMultAdj;
-  const sides = w <= 2 ? ['west','east','north'] : ['west','east','north','south'];
-  const baseMobs = Math.min(bw.mobsBaseCap, Math.round(bw.mobsBase + w * bw.mobsPerWave));
-  const totalMobs = w === MAIN_WAVES
-    ? Math.max(8, Number(bw.w30VanguardMobs || 16))
-    : Math.min(bw.mobsFinalCap, Math.round(baseMobs * meta.mobMult * mobMultAdj));
-  const baseDuration = Math.min(bw.durationCap, bw.durationBase + w * bw.durationPerWave);
-  const duration = w === MAIN_WAVES ? 12.0 : Number((baseDuration * durationMult).toFixed(2));
-
-  const pickMobKind = (forceHeavy = false) => {
-    const r = game.rnd();
-    const distribution = forceHeavy && activeMix.heavy ? activeMix.heavy : activeMix.normal;
-    for (const [kind, upper] of distribution) if (r < upper) return kind;
-    return distribution[distribution.length - 1][0];
-  };
-
-  // Arknights-style 3-stage waveform inside each wave (W30 uses a crisp opening vanguard for the Final Boss arena)
-  const stage = bw.stages;
-  const effJitter = stage.spawnJitter * spawnJitterMult;
-  const effPackOffset = stage.packOffset * packOffsetMult;
-
-  if (w === MAIN_WAVES) {
-    // Focused W30 Boss Arena: small vanguard starting at 0.35s + Final Boss (boss6) arriving at 1.0s
-    for (let i = 0; i < totalMobs; i++) {
-      const at = Number((0.35 + (i / Math.max(1, totalMobs - 1)) * 10.5).toFixed(3));
-      q.push({ at, side: sides[i % sides.length], kind: pickMobKind(i >= totalMobs / 2), scale, spawned: false });
-    }
-    const bossKind = bw.bossByWave?.[String(w)] || 'boss6';
-    const w30SpawnAt = BALANCE.w30Boss?.bossSpawnAt ?? 1.0;
-    q.push({ at: w30SpawnAt, side: 'west', kind: bossKind, scale: 1, spawned: false });
-    q.sort((a, b) => a.at - b.at);
-    return q;
-  }
-
-  const s1Count = Math.round(totalMobs * stage.fractionOne);
-  const s2Count = Math.min(stage.quietMax, Math.max(stage.quietMin, Math.round(totalMobs * stage.fractionTwo)));
-  const s3Count = Math.max(0, totalMobs - s1Count - s2Count);
-
-  const pushPacks = (count, tStart, tEnd, packSz, heavy) => {
-    const effPack = Math.max(1, packSz + packBonus);
-    for (let i = 0; i < count; ) {
-      const pack = Math.min(effPack, count - i);
-      const frac = count <= effPack ? 0.5 : i / count;
-      const t = tStart + frac * (tEnd - tStart) + game.rnd() * effJitter;
-      const side = sides[Math.floor(game.rnd() * sides.length)];
-      for (let k = 0; k < pack; k++) {
-        q.push({ at: t + k * effPackOffset, side, kind: pickMobKind(heavy), scale, spawned: false });
-      }
-      i += pack;
-    }
-  };
-
-  const [a1,b1,p1,h1] = stage.first;
-  const [a2,b2,p2,h2] = stage.second;
-  const [a3,b3,p3,h3] = stage.third;
-  pushPacks(s1Count, a1, duration * b1, p1, h1);
-  pushPacks(s2Count, duration * a2, duration * b2, p2, h2);
-  pushPacks(s3Count, duration * a3, duration * b3, p3, h3);
-
-  // Elites from Wave 2 onward: 1 elite W2-11, 2 elites W12-21, 3 elites W22+
-  if (w >= bw.eliteFirstWave) {
-    const eliteCount = (bw.eliteCountLateWave && w >= bw.eliteCountLateWave)
-      ? (bw.eliteCountEndgame || bw.eliteCountLate)
-      : (w >= bw.eliteCountIncreasedWave ? (bw.eliteCountMid || bw.eliteCountLate) : bw.eliteCountEarly);
-    const eliteWaveScale = Math.pow(bw.eliteHpGrowth, w - bw.eliteFirstWave) * (w === 29 ? hpMultAdj : 1);
-    for (let e = 0; e < eliteCount; e++) {
-      q.push({
-        at: duration * (0.24 + e * 0.24),
-        side: sides[e % sides.length],
-        kind: 'elite', scale: eliteWaveScale, spawned: false
-      });
-    }
-  }
-
-  // 6 Major Bosses on Wave 5, 10, 15, 20, 25, 30
-  if (w % bw.bossPeriod === 0) {
-    const bossKind = bw.bossByWave?.[String(w)] || (w === 5 ? 'boss1' : w === 10 ? 'boss2' : w === 15 ? 'boss3' : w === 20 ? 'boss4' : w === 25 ? 'boss5' : 'boss6');
-    q.push({ at: bw.bossSpawnAt, side: 'west', kind: bossKind, scale: 1, spawned: false });
-  }
-
-  q.sort((a, b) => a.at - b.at);
-  return q;
-}
-
-function startWave(opts = {}){
-  if (game.phase !== 'prep') return false;
-  const fromFinalPrep = !!(opts && (opts.fromFinalPrepTimeout || opts.fromFinalPrepEarly));
-
-  // Stage 5: Active W29 90s final prep routes manual startWave clicks through startW30Early() for full boundary safety!
-  if (game.finalPrep?.active && !fromFinalPrep) {
-    const res = startW30Early({ acceptRandomClaim: !!opts?.acceptRandomClaim });
-    return !!res?.ok;
-  }
-
-  AudioKit.unlock();
-  // Safety net: auto-collect any unpicked ground chests from prep before starting next wave!
-  if (game.chests.length) {
-    for (const c of game.chests) queueModal({ type:'chest', legend: c.legend, shrineTier: !!c.shrineTier });
-    game.chests = [];
-    toast('已自动收起地面遗留的构装宝箱！');
-    renderAllUI();
-    return false;
-  }
-  if (!fromFinalPrep && game.destiny?.pendingOffer && !game.destiny.pendingOffer.claimed) {
-    openDestinyGambleModal();
-    toast('🎲 天命赌局尚有未领取的三选一奖励，请先领取再开战！', true);
-    renderAllUI(true);
-    return false;
-  }
-  if (!fromFinalPrep && (game.pendingBreakthrough || game.activeModal || game.pendingModals.length > 0)) {
-    toast('请先完成当前待选突破或奖励！', true);
-    renderAllUI();
-    return false;
-  }
-  if (game.transferDraft) {
-    cancelAffixTransferPreview();
-  }
-  if (game.shopConfirmDraft) {
-    cancelShopPurchaseConfirm();
-  }
-
-  // Stage 3: W20 start requires a confirmed preselected direction and locks it immediately!
-  if (game.wave === 20 && !game.hero.breakthroughs.w20) {
-    if (!game.w20State?.preselectedDirection) {
-      openW20PreselectModal({ requireConfirmStart: true });
-      toast('请先选定并锁定 W20 第二次突破方向后再迎战天劫魔尊！', true);
-      renderAllUI(true);
-      return false;
-    }
-    lockW20DirectionForBattle();
-  }
-
-  if (game.finalPrep && game.finalPrep.active) {
-    game.finalPrep.active = false;
-    game.finalPrep.awaitingWaveRewards = false;
-    game.finalPrep.transitioning = false;
-    game.subPhase = null;
-  }
-  const meta = getWavePhaseMeta(game.wave);
-  const w29DurMult = (game.wave === 29 && BALANCE.wave?.w29Outpost?.durationMult) ? BALANCE.wave.w29Outpost.durationMult : 1;
-  const duration = Math.min(BALANCE.wave.durationCap, BALANCE.wave.durationBase + game.wave * BALANCE.wave.durationPerWave) * w29DurMult;
-  if (!game.metaRunLocked) lockMetaLoadoutForRun();
-  if (game.metaRunState) game.metaRunState.deflectReady = true;
-  game.phase = 'wave';
-  game.subPhase = null;
-  game.waveClock = 0;
-  game.stormWarnAt = game.wave === MAIN_WAVES ? 9999 : duration * 0.44;
-  game.stormWarned = false;
-  game.eliteChestDropped = false;
-  game.healOrbs = [];
-  game.inspTarget = null;
-  game.mode = null;
-
-  // Stage 3 & Stage 5: Reveal W20 Boss intel on W19+ and W30 Boss intel on W29+; roll W25-W28 encounter ONLY at wave start!
-  if (game.wave >= (BALANCE.w20Breakthrough?.bossIntelRevealWave || 19)) {
-    game.bossIntel.w20Revealed = true;
-  }
-  if (game.wave >= (BALANCE.w30Boss?.intelRevealWave || 29)) {
-    game.bossIntel.w30Revealed = true;
-  }
-  let rolledEncounter = null;
-  if (game.wave >= 25 && game.wave <= 28) {
-    rolledEncounter = rollW25To28Encounter(game.wave, true);
-  } else if (game.wave >= 22 && game.wave <= 24) {
-    game.wavePlan.currentEncounter = getWaveEncounterInfo(game.wave);
-  } else {
-    game.wavePlan.currentEncounter = null;
-  }
-
-  game.waveQueue = buildWaveQueue(game.wave, rolledEncounter);
-  game.autoWaveTimer = 0;
-  game.autoWavePausedForDecision = false;
-
-  // Stage 5: Start unified W30 Final Boss battle timer the exact moment player gains control in W30!
-  if (game.wave === MAIN_WAVES) {
-    const w30Cfg = BALANCE.w30Boss || {};
-    const fixedMaxHp = BALANCE.enemies?.boss6?.hp || 320000;
-    const sigPct = w30Cfg.signatureThresholdPct ?? 0.80;
-    const finPct = w30Cfg.finalPhaseThresholdPct ?? 0.35;
-    game.w30Battle = {
-      active: true,
-      startedAtWaveClock: 0,
-      elapsedSeconds: 0,
-      phase: 'opening',
-      outcome: null,
-      bossId: null,
-      bossMaxHp: fixedMaxHp,
-      signatureThresholdPct: sigPct,
-      signatureThresholdHp: Math.round(fixedMaxHp * sigPct),
-      finalThresholdPct: finPct,
-      finalThresholdHp: Math.round(fixedMaxHp * finPct),
-      signatureTriggered: false,
-      signatureLockActive: false,
-      signatureLockStartedAt: null,
-      signatureLockEndedAt: null,
-      signatureTruncatedDmg: 0,
-      signatureHitsDuringLock: 0,
-      signatureHpDamageDuringLock: 0,
-      signatureLifestealDuringLock: 0,
-      signatureStatusHitsDuringLock: {
-        fireMarks: 0,
-        fireDetonations: 0,
-        frostSlows: 0,
-        frostShieldGained: 0,
-        frostPulses: 0
-      },
-      auxKey: game.bossIntel?.w30AuxKey || 'abyss_pillars',
-      auxName: game.bossIntel?.w30Aux || '护界晶柱',
-      auxTriggers: 0,
-      healOrbsSpawned: 0,
-      healOrbsCollected: 0,
-      phaseTimeline: [
-        { phase: 'opening', at: 0, bossHpPct: 100 }
-      ]
-    };
-  } else {
-    game.w30Battle = null;
-  }
-
-  // Spawn optional Black-Myth-style Blood Shrine (W3/W7/W12/W17/W22/W27)
-  if (SHRINE_WAVES.includes(game.wave)) {
-    const ang = game.rnd() * Math.PI * 2;
-    const d = 10 + game.rnd() * 3.5;
-    game.shrine = {
-      x: clamp(game.hero.x + Math.cos(ang) * d, 3.2, W - 3.2),
-      y: clamp(game.hero.y + Math.sin(ang) * d, 3.2, H - 3.2),
-      r: 1.45, active: false, cleared: false, charge: 0, wave: game.wave
-    };
-  } else {
-    game.shrine = null;
-  }
-
-  // Start Wave Telemetry sampler
-  const h = game.hero;
-  game.curWaveTel = {
-    wave: game.wave, phaseTag: meta.tag, kind: meta.kind,
-    encounterId: rolledEncounter?.id || game.wavePlan.currentEncounter?.themeKey || (game.wave === 29 ? 'w29_outpost' : game.wave === 30 ? 'w30_boss6' : null),
-    duration: 0, minHpPct: Math.round(h.hp * 100 / Math.max(1, h.maxHp)),
-    dmgTaken: 0, hitsTaken: 0, moveDist: 0, dashCount: 0, ultCount: 0,
-    shrineTried: false, shrineCleared: false, ehpTotal: 0,
-    dmgDealtStart: game.stats.dmgTotal, goldStart: game.gold
-  };
-
-  // Stage 3: W28 Endgame Omen trigger at wave start
-  const isBoss = game.wave % 5 === 0;
-  if (game.wave === 28) {
-    const om = BALANCE.wave?.w28Omen || {};
-    game.endgameOmen = {
-      triggered: true,
-      wave: 28,
-      midWaveTriggered: false,
-      clearTriggered: false,
-      label: om.startTitle || '🌑 第 28 波 · 终局预兆降临！',
-      encounterName: rolledEncounter?.name || ''
-    };
-    AudioKit.play('boss', 0.92);
-    flashScreen('fail');
-    showBanner(
-      om.startTitle || '🌑 第 28 波 · 终局预兆降临！',
-      `${rolledEncounter ? `【${rolledEncounter.name}】来袭 · ` : ''}${om.startSub || 'W29 将公布 W30 情报并进入 90 秒最终整备！'}`,
-      'boss'
-    );
-  } else {
-    AudioKit.play(isBoss ? 'boss' : 'merge', isBoss ? 1 : 0.85);
-    const lockedDir = game.w20State?.lockedDirection ? W20_DIRECTIONS[game.w20State.lockedDirection] : null;
-    const w22Info = (game.wave >= 22 && game.wave <= 24) ? getWaveEncounterInfo(game.wave) : null;
-    const subMsg = isBoss
-      ? (game.wave === 10 ? '击败首领后触发【W10 首次大型突破】！'
-        : game.wave === 20 ? `已锁定二破方向【${lockedDir?.name || '未定'}】！击败天劫魔尊（辅助：${game.bossIntel.w20Aux}）当场激活基础效果！`
-        : game.wave === 25 ? `玄冥妖皇携【${rolledEncounter?.name || '成型敌群'}】降临！注意走位躲避寒潮与弹幕！`
-        : game.wave === 30 ? `终局决战 · 深渊主宰（本局辅助：${game.bossIntel.w30Aux}）！80% 血线锁血冲击波请入安全区，末段打空即胜！`
-        : '高能首领战！注意走位躲避破阵重击，斩首必爆高阶宝箱！')
-      : game.wave === 21 ? '⚡ 第二次大型突破已生效！畅快体验聚焰连爆 / 凛冬反制 / 破阵蓄势与已有装备的实战联动！'
-      : game.wave === 29 ? `前哨紧凑强敌来袭（W30 情报已揭晓 · 辅助：${game.bossIntel.w30Aux}）！通关后开启 90 秒独立最终整备！`
-      : w22Info ? `同源威胁【${w22Info.themeName}】· ${w22Info.comboLabel}（${w22Info.counterHint}）`
-      : rolledEncounter ? `本波独立抽中敌群【${rolledEncounter.name}】！检验成型构筑！`
-      : (game.shrine ? '本章【🩸血煞妖碑】已现身远端！试炼赢金币、锻材与高阶构装宝箱！' : '注意走位切入外圈弓巫并避开重击破阵！');
-    showBanner(
-      isBoss ? `⚠️ 第 ${game.wave} / ${MAIN_WAVES} 波 [${meta.tag}] · 首领降临！`
-             : `第 ${game.wave} / ${MAIN_WAVES} 波 · ${meta.tag}`,
-      subMsg,
-      isBoss ? 'boss' : (meta.kind === 'relief' ? 'good' : '')
-    );
-  }
-  renderAllUI(true);
-  return true;
-}
-
-/* ==================== HERO SKILLS (SMART TARGETING + SPIRIT SWORD + COMBOS) ==================== */
-function finalizeCurrentTelemetry(){
-  if (!game?.curWaveTel) return;
-  const tel = game.curWaveTel;
-  tel.duration = Number(game.waveClock.toFixed(1));
-  tel.dmgDealt = game.stats.dmgTotal - tel.dmgDealtStart;
-  tel.dps = tel.duration > 0 ? Math.round(tel.dmgDealt / tel.duration) : 0;
-  tel.goldEarned = Math.max(0, game.gold - tel.goldStart);
-  tel.moveDist = Number(tel.moveDist.toFixed(1));
-  game.telemetry.push(tel);
-  game.curWaveTel = null;
-}
-
-function getTelemetryReport(){
-  if (!game) return { waves: [], current: null, summary: {} };
-  const waves = game.telemetry.slice();
-  const avgDuration = waves.length ? Number((waves.reduce((s, w) => s + w.duration, 0) / waves.length).toFixed(1)) : 0;
-  const minHp = waves.length ? Math.min(...waves.map(w => w.minHpPct)) : 100;
-  const shrineClears = waves.filter(w => w.shrineCleared).length;
-  return {
-    waves,
-    current: game.curWaveTel,
-    summary: { wavesCleared: waves.length, avgDuration, lowestHpPct: minHp, shrineClears }
-  };
-}
-
-function beginWaveHarvest(){
-  // Clear combat leftovers immediately, then run 1.15s visual gem-vacuum harvest!
-  game.projectiles = [];
-  game.zones = [];
-  game.beams = [];
-  game.bolts = [];
-  game.shrine = null;
-  game.hero.bladeHitMap.clear();
-  game.hero.shatterCdMap.clear();
-
-  if (game.gems.length > 0) {
-    game.phase = 'harvest';
-    game.harvestTimer = 1.15;
-    for (const g of game.gems) g.magnetized = true;
-    addFloat(game.hero.x, game.hero.y - 0.7, '✨ 灵气归体 · 收取修为！', '#8cf4ff', true);
-  } else {
-    completeWaveClear();
-  }
-}
-
 function isW29WaveRewardModal(m){ return queryIsW29WaveRewardModal(m); }
 function hasPendingW29WaveRewards(){ return queryHasPendingW29WaveRewards(game); }
 function getFinalPrepState(){ return queryGetFinalPrepState(game); }
-
-function getMonotonicNowMs(){
-  const override = counters.monotonicClockOverride;
-  if (typeof override === 'function') {
-    const v = Number(override());
-    if (Number.isFinite(v)) return v;
-  }
-  return (typeof performance !== 'undefined' && typeof performance.now === 'function')
-    ? performance.now()
-    : Date.now();
-}
-
-function setMonotonicClockForTest(fn){
-  counters.monotonicClockOverride = typeof fn === 'function' ? fn : null;
-  if (typeof lastTs !== 'undefined') lastTs = getMonotonicNowMs();
-}
-
-function syncW29FinalPrepStart(){
-  const fp = game?.finalPrep;
-  if (!fp || !fp.active || fp.started) return false;
-  if (!hasPendingW29WaveRewards()) {
-    const nowMs = getMonotonicNowMs();
-    const remSec = Number.isFinite(fp.timer) && fp.timer > 0 ? fp.timer : (fp.duration || fp.maxSeconds || 90);
-    fp.awaitingWaveRewards = false;
-    fp.started = true;
-    fp.startedAtMs = nowMs;
-    fp.deadlineMs = nowMs + remSec * 1000;
-    fp.lastClockMs = nowMs;
-    fp.lastObservedTimer = remSec;
-    fp.usesWallClock = false;
-    showBanner(
-      `⏳ W29 终局整备正式倒计时（${Math.round(fp.duration || 90)} 秒）！`,
-      `波末奖励已结清！真实时间走表（不受倍速、面板或暂停影响），迎战 W30 深渊主宰（辅助：${game.bossIntel?.w30Aux || '未知'}）！`,
-      'boss'
-    );
-    renderAllUI(true);
-    return true;
-  }
-  return false;
-}
-
-function syncW29FinalPrepClock({ nowMs = null, fallbackRealDt = 0, allowFallbackDt = true } = {}){
-  if (!game || game.phase !== 'prep') return false;
-  const fp = game.finalPrep;
-  if (!fp || !fp.active) return false;
-
-  // Phase A: Settle W29 wave-end rewards (levelup / ground chests) FIRST; 90s timer stays frozen until last wave-end reward closes!
-  if (!fp.started) {
-    syncW29FinalPrepStart();
-    if (!fp.started) return false;
-  }
-  if (fp.locked || fp.transitioning) return false;
-
-  const curNowMs = Number.isFinite(nowMs) ? nowMs : getMonotonicNowMs();
-  if (!Number.isFinite(fp.deadlineMs)) {
-    const remSec = Math.max(0, Number(fp.timer || 0));
-    fp.startedAtMs = curNowMs;
-    fp.deadlineMs = curNowMs + remSec * 1000;
-    fp.lastClockMs = curNowMs;
-    fp.lastObservedTimer = remSec;
-  }
-
-  // Compatibility: if a test directly mutates game.finalPrep.timer, re-anchor deadlineMs to that value before ticking.
-  if (Number.isFinite(fp.lastObservedTimer) && Math.abs(fp.timer - fp.lastObservedTimer) > 1e-4) {
-    fp.deadlineMs = curNowMs + Math.max(0, Number(fp.timer || 0)) * 1000;
-    fp.lastClockMs = curNowMs;
-    fp.lastObservedTimer = fp.timer;
-  }
-
-  const prevClockMs = Number.isFinite(fp.lastClockMs) ? fp.lastClockMs : curNowMs;
-  const wallDeltaMs = Math.max(0, curNowMs - prevClockMs);
-  const hasExplicitClock = typeof counters.monotonicClockOverride === 'function';
-  let elapsedSec = 0;
-
-  if (wallDeltaMs > 0) {
-    // Real monotonic clock advanced: ALWAYS use exact wall-clock delta (NEVER clamped to 0.05s, NEVER frozen by paused!)
-    fp.usesWallClock = true;
-    fp.lastClockMs = curNowMs;
-    const prevTimer = fp.timer;
-    fp.timer = Math.max(0, (fp.deadlineMs - curNowMs) / 1000);
-    elapsedSec = Math.max(0, prevTimer - fp.timer);
-  } else if (allowFallbackDt && !hasExplicitClock && !fp.usesWallClock && fallbackRealDt > 0) {
-    // Node sandbox compatibility when performance.now() is static (0) and tests invoke tick(dt)/stepFrame(dt) directly
-    const prevTimer = fp.timer;
-    fp.deadlineMs -= fallbackRealDt * 1000;
-    fp.timer = Math.max(0, (fp.deadlineMs - curNowMs) / 1000);
-    elapsedSec = Math.max(0, prevTimer - fp.timer);
-  } else {
-    fp.timer = Math.max(0, (fp.deadlineMs - curNowMs) / 1000);
-  }
-
-  fp.lastObservedTimer = fp.timer;
-  if (elapsedSec > 0 && game.runMetrics) {
-    game.runMetrics.w29FinalPrepSec += elapsedSec;
-    game.runMetrics.totalEffectiveSec += elapsedSec;
-  }
-  if (fp.timer <= 0) {
-    resolveW29FinalPrepTimeout();
-    return true;
-  }
-  return false;
-}
-
-function isCancelablePrepModal(m){
-  return !!(m && ['destiny_gamble', 'affix_transfer', 'shop_confirm', 'w30_early_confirm', 'meta_legacy'].includes(m.type));
-}
-
-function closeCancelablePrepModals(){
-  if (!game) return;
-  game.inspTarget = null;
-  game.mode = null;
-  // Strictly preserve legal reward modals (levelup, chest, perk, w10_breakthrough, w20_breakthrough)!
-  if (Array.isArray(game.pendingModals)) {
-    game.pendingModals = game.pendingModals.filter(m => !isCancelablePrepModal(m));
-  }
-  if (isCancelablePrepModal(game.activeModal)) {
-    game.activeModal = null;
-    $('modalBackdrop').hidden = true;
-    if (game.pendingModals && game.pendingModals.length > 0) {
-      openNextModal();
-    }
-  } else if (!game.activeModal && game.pendingModals && game.pendingModals.length > 0) {
-    openNextModal();
-  } else if (!game.activeModal) {
-    $('modalBackdrop').hidden = true;
-  }
-}
-
-function closeAllPrepModals(){
-  closeCancelablePrepModals();
-}
 
 function renderW30EarlyConfirmModal(){
   const offer = getPendingDestinyOffer();
@@ -1474,472 +642,6 @@ function renderW30EarlyConfirmModal(){
   box.querySelector('#w30EarlyClaimBtn')?.addEventListener('click', () => { openDestinyGambleModal(); });
   box.querySelector('#w30EarlyRandomBtn')?.addEventListener('click', () => { startW30Early({ acceptRandomClaim: true }); });
   $('modalBackdrop').hidden = false;
-}
-
-function startW30Early({ acceptRandomClaim = false } = {}){
-  if (!game || game.phase !== 'prep') return { ok: false, reason: 'not_in_prep' };
-  const fp = game.finalPrep;
-  if (!fp || !fp.active) {
-    const started = startWave();
-    return { ok: !!started, reason: started ? null : 'start_wave_blocked' };
-  }
-  if (fp.locked || fp.transitioning) {
-    return { ok: false, reason: 'final_prep_locked' };
-  }
-  if (fp.awaitingWaveRewards || hasPendingW29WaveRewards()) {
-    toast('⏳ 请先结清 W29 波末奖励（升级 / 遗留宝箱）后再进入 W30！', true);
-    return { ok: false, reason: 'awaiting_wave_rewards' };
-  }
-  const pendingOffer = getPendingDestinyOffer();
-  if (pendingOffer && !acceptRandomClaim) {
-    game.activeModal = { type: 'w30_early_confirm', offerId: pendingOffer.offerId };
-    renderW30EarlyConfirmModal();
-    toast('🎲 天命赌局尚有未领取的三选一奖励：请先领取，或明确点击“接受随机领取并立即开战”！', true);
-    renderAllUI(true);
-    return { ok: false, reason: 'pending_destiny_offer_requires_choice', offerId: pendingOffer.offerId };
-  }
-
-  // ATOMIC SINGLE-FRAME TRANSITION MUTEX LOCK
-  fp.locked = true;
-  fp.transitioning = true;
-  const clearedTransferDraft = !!game.transferDraft;
-  const clearedShopDraft = !!game.shopConfirmDraft;
-  if (game.transferDraft) cancelAffixTransferPreview();
-  if (game.shopConfirmDraft) game.shopConfirmDraft = null;
-  // Close cancelable prep UI modals FIRST so any legal levelup reward triggered by auto-claim is preserved!
-  closeCancelablePrepModals();
-
-  let autoClaimedOffer = null;
-  if (pendingOffer && acceptRandomClaim) {
-    autoClaimedOffer = autoClaimPendingDestinyReward(game.rnd, { allowDuringFinalPrepResolve: true });
-  }
-  // Close only any residual cancelable prep UI while strictly keeping legal reward modals (e.g. newly triggered levelup)!
-  closeCancelablePrepModals();
-  fp.lastResolution = {
-    trigger: pendingOffer ? 'early_start_random_claim' : 'early_start',
-    clearedTransferDraft,
-    clearedShopDraft,
-    autoClaimedOffer,
-    resolvedAtWave: game.wave
-  };
-  const started = startWave({ fromFinalPrepEarly: true });
-  return { ok: !!started, startedW30: !!started, autoClaimed: autoClaimedOffer, resolution: fp.lastResolution };
-}
-
-function resolveW29FinalPrepTimeout(){
-  const fp = game?.finalPrep;
-  if (!fp || !fp.active) return { ok: false, reason: 'not_active' };
-  if (fp.locked || fp.transitioning) return { ok: false, reason: 'already_locked' };
-
-  // ATOMIC SINGLE-FRAME TRANSITION MUTEX LOCK (rejects all duplicate/post-expiry clicks with 0 deduction!)
-  fp.locked = true;
-  fp.transitioning = true;
-  fp.timer = 0;
-
-  const clearedTransferDraft = !!game.transferDraft;
-  const clearedShopDraft = !!game.shopConfirmDraft;
-  if (game.transferDraft) cancelAffixTransferPreview();
-  if (game.shopConfirmDraft) game.shopConfirmDraft = null;
-  // Close cancelable prep UI modals FIRST so any legal levelup reward triggered by auto-claim is preserved!
-  closeCancelablePrepModals();
-
-  let autoClaimedOffer = null;
-  if (game.destiny?.pendingOffer && !game.destiny.pendingOffer.claimed) {
-    autoClaimedOffer = autoClaimPendingDestinyReward(game.rnd, { allowDuringFinalPrepResolve: true });
-  }
-
-  // Close only any residual cancelable prep UI while strictly keeping legal reward modals (e.g. newly triggered levelup)!
-  closeCancelablePrepModals();
-  fp.lastResolution = {
-    trigger: 'timeout',
-    clearedTransferDraft,
-    clearedShopDraft,
-    autoClaimedOffer,
-    resolvedAtWave: game.wave
-  };
-  const started = startWave({ fromFinalPrepTimeout: true });
-  return { ok: !!started, startedW30: !!started, autoClaimed: autoClaimedOffer, resolution: fp.lastResolution };
-}
-
-function enterW29FinalPrep(seconds = 90){
-  const dur = Number(seconds) > 0 ? Number(seconds) : (BALANCE.progression.w29FinalPrepSeconds || 90);
-  // Reveal W30 Boss intel if not already shown
-  if (game.bossIntel) game.bossIntel.w30Revealed = true;
-  // Auto-collect any remaining ground chests from W29 into reward modals so wave-end rewards settle BEFORE 90s timer starts!
-  if (game.chests.length) {
-    for (const c of game.chests) queueModal({ type:'chest', legend: c.legend, shrineTier: !!c.shrineTier });
-    game.chests = [];
-  }
-  const awaiting = hasPendingW29WaveRewards();
-  const nowMs = getMonotonicNowMs();
-  game.subPhase = 'w29_final_prep';
-  game.finalPrep = {
-    active: true,
-    awaitingWaveRewards: awaiting,
-    started: !awaiting,
-    locked: false,
-    transitioning: false,
-    timer: dur,
-    duration: dur,
-    maxSeconds: dur,
-    startedAtMs: awaiting ? null : nowMs,
-    deadlineMs: awaiting ? null : (nowMs + dur * 1000),
-    lastClockMs: awaiting ? null : nowMs,
-    lastObservedTimer: dur,
-    usesWallClock: false,
-    w30IntelShown: true,
-    lastResolution: null
-  };
-  if (awaiting) {
-    showBanner(
-      '📦 W29 波末奖励结清中（90 秒倒计时暂未开始）',
-      '请先完成 W29 升级选择与遗留宝箱领取；最后一个波末奖励关闭后将立即开启 90 秒终局整备倒计时！',
-      'good'
-    );
-  } else {
-    showBanner(
-      `⏳ W29 终局整备开启（限时 ${Math.round(dur)} 秒）！`,
-      `W30 深渊主宰情报（辅助：${game.bossIntel?.w30Aux || '未知'}）常驻右侧战况栏！真实时间走表（不可暂停），归零或提前开战将进入 W30 终局决战！`,
-      'boss'
-    );
-  }
-}
-
-function completeWaveClear(){
-  finalizeCurrentTelemetry();
-  // Finish absorbing any final straggler gems; LEAVE chests on ground for manual prep pickup!
-  for (const g of game.gems) gainHeroXp(g.xp);
-  game.gems = [];
-  game.shrine = null;
-  game.healOrbs = [];
-
-  const clearedWave = game.wave;
-  const greedBonus = gearSetTier('greed') >= 2 ? 12 : 0;
-  const clearBonus = BALANCE.economy.waveClearBase + clearedWave * BALANCE.economy.waveClearPerWave + greedBonus;
-  const interest = perkLv('gold_power') >= 1 ? Math.min(25, Math.floor(game.gold * 0.10)) : 0;
-  const clearMatBonus = getWaveClearMaterialBonus(clearedWave);
-  if (clearBonus > 0) changeGold(clearBonus, 'wave_clear_bonus');
-  if (interest > 0) changeGold(interest, 'wave_clear_interest');
-  if (clearMatBonus > 0) changeMaterials(clearMatBonus, 'wave_clear_materials');
-  game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + BALANCE.progression.waveClearHeal);
-  $('hpVignette')?.classList.toggle('danger', game.hero.hp < game.hero.maxHp * 0.35);
-
-  // W30 Final Boss cleared -> Run Victory!
-  if (clearedWave >= MAIN_WAVES) {
-    finishGame(true);
-    return;
-  }
-
-  game.wave = clearedWave + 1;
-  game.phase = 'prep';
-  game.subPhase = null;
-  game.rerollCost = BALANCE.economy.rerollStart;
-  if (game.wavePlan) game.wavePlan.currentEncounter = null;
-  if (game.metaRunState) {
-    game.metaRunState.freeRefreshUsedThisWave = false;
-    game.metaRunState.deflectReady = true;
-  }
-  syncRunResourceAccounting();
-
-  // Stage progression & Major Breakthrough triggers (W5->W6, W10, W15->W16 preselect, W18->W19 intel, W20 breakthrough, W28 omen+W30 intel, W29->W30 final prep)
-  if (clearedWave === 5) {
-    game.shopTierBonus = Math.max(game.shopTierBonus, 1);
-  } else if (clearedWave === 10) {
-    game.hero.vouchers.w10 = true;
-    game.shopTierBonus = Math.max(game.shopTierBonus, 2);
-    if (!game.hero.breakthroughs.w10) {
-      game.pendingBreakthrough = 'w10';
-      if (game.chests.length) {
-        for (const c of game.chests) queueModal({ type:'chest', legend: c.legend, shrineTier: !!c.shrineTier });
-        game.chests = [];
-      }
-      queueModal({ type: 'w10_breakthrough', step: 'pick_skill' });
-    }
-  } else if (clearedWave === 15) {
-    game.shopTierBonus = Math.max(game.shopTierBonus, 3);
-  } else if (clearedWave === 18) {
-    // W19 prep: reveal W20 Boss fixed core + rolled fair auxiliary mechanic!
-    game.bossIntel.w20Revealed = true;
-  } else if (clearedWave === 20) {
-    // W20 Victory: 100% guaranteed Boss Voucher + IMMEDIATE activation of locked direction's base effect (even at 0 materials!)
-    game.hero.vouchers.w20 = true;
-    game.shopTierBonus = Math.max(game.shopTierBonus, 4);
-    const dirKey = game.w20State?.lockedDirection || game.w20State?.preselectedDirection || getRecommendedW20Direction();
-    const dirSpec = W20_DIRECTIONS[dirKey] || W20_DIRECTIONS.fire_chain_surge;
-    if (game.w20State) {
-      game.w20State.preselectedDirection = dirSpec.key;
-      game.w20State.lockedDirection = dirSpec.key;
-      game.w20State.locked = true;
-      game.w20State.lockedAtWave = 20;
-    }
-    if (!game.hero.breakthroughs.w20 || game.hero.breakthroughs.w20.placeholder) {
-      game.hero.breakthroughs.w20 = {
-        wave: 20,
-        completed: true,
-        placeholder: false,
-        directionKey: dirSpec.key,
-        directionName: dirSpec.name,
-        directionIcon: dirSpec.icon,
-        baseEffectActive: true,
-        baseEffectDesc: dirSpec.baseDesc,
-        enhancementKey: null,
-        enhancementName: null,
-        enhancementDesc: null,
-        rerollCount: 0
-      };
-      game.hero.baseMaxHp += 60;
-      syncHeroMaxHp();
-      game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + 100);
-      game.stats.breakthroughsCompleted = (game.stats.breakthroughsCompleted || 0) + 1;
-      // Auto-collect any unpicked ground chests from W20 Boss
-      if (game.chests.length) {
-        for (const c of game.chests) queueModal({ type:'chest', legend: c.legend, shrineTier: !!c.shrineTier });
-        game.chests = [];
-      }
-      initW20EnhancementDraft(dirSpec.key);
-      game.pendingBreakthrough = 'w20';
-      queueModal({ type: 'w20_breakthrough' });
-    }
-  } else if (clearedWave === 28) {
-    const om = BALANCE.wave?.w28Omen || {};
-    game.endgameOmen = {
-      ...(game.endgameOmen || { wave: 28 }),
-      triggered: true,
-      clearTriggered: true,
-      label: om.clearTitle || '🌑 终局预兆已现 · W29 前哨与终局情报即将揭晓！'
-    };
-    // Stage 5: Reveal W30 Final Boss (boss6) intel in W29 prep (concise banner + persistent HUD card, zero blocking popup!)
-    if (game.bossIntel) game.bossIntel.w30Revealed = true;
-  } else if (clearedWave === 29) {
-    enterW29FinalPrep(BALANCE.progression.w29FinalPrepSeconds || 90);
-  }
-
-  game.hero.realm = getActiveUnlockNode().idx;
-  rollShop(true);
-  refreshCombos(true);
-
-  const chestNote = game.chests.length ? ` · 地面有 ${game.chests.length} 个宝箱待拾取` : '';
-  const intNote = interest ? ` + 利息 ${interest}` : '';
-  if (clearedWave === 10) {
-    showBanner('⚡ 第 10 波首领伏诛 · 触发【W10 首次大型突破】！', '指定一个已学主力神通并从 3 个随机形态分支中择一突破！主印上限将升至 4★、解锁第 2 辅印槽！', 'good');
-  } else if (clearedWave === 15) {
-    showBanner('⚡ 第 16 波备战 · 开放【W20 二破方向预选】！', 'W16–W19 随时可在顶栏/构筑总览预选与调整突破方向（击败 W20 首领拿到凭证后基础效果才会生效）！', 'good');
-  } else if (clearedWave === 18) {
-    showBanner(`🔎 W19 首领情报揭晓 · 天劫魔尊（辅助：${game.bossIntel.w20Aux}）`, `核心：${game.bossIntel.w20Core} · 辅助：${game.bossIntel.w20AuxDesc}`, 'boss');
-  } else if (clearedWave === 20) {
-    const w20 = game.hero.breakthroughs.w20;
-    showBanner(`⚡ 天劫魔尊伏诛 · 【${w20?.directionName || '二破'}】基础效果已当场生效！`, '已获得 W20 突破凭证（零材料同样 100% 生效）！请从战后强化的候选卡中择一或消耗锻材整组重抽！', 'good');
-  } else if (clearedWave === 28) {
-    const om = BALANCE.wave?.w28Omen || {};
-    showBanner(
-      `🔎 W30 终局情报揭晓 · 深渊主宰（本局辅助：${game.bossIntel?.w30Aux || '未知'}）`,
-      `核心：${game.bossIntel?.w30Core || '80%锁血冲击波'} · 辅助：${game.bossIntel?.w30AuxDesc || om.clearSub || 'W29 战后开启 90 秒最终整备'}`,
-      'boss'
-    );
-  } else if (clearedWave !== 29) {
-    const matNote = clearMatBonus > 0 ? ` · 精修锻材 +${clearMatBonus}` : '';
-    showBanner(`✅ 第 ${clearedWave} / ${MAIN_WAVES} 波通关！`, `赏金 +${clearBonus}${intNote} 金${matNote} · 回血 +${BALANCE.progression.waveClearHeal}${chestNote}`, 'good');
-  }
-  AudioKit.play('merge');
-
-  if (game.autoWave && !game.finalPrep?.active) {
-    if (hasPendingDecision()) {
-      game.autoWavePausedForDecision = true;
-      game.autoWaveTimer = 4.0;
-      toast('⏸️ 存在待选突破或奖励，自动开波已暂停！');
-    } else {
-      game.autoWavePausedForDecision = false;
-      game.autoWaveTimer = 4.0;
-    }
-  }
-  renderAllUI(true);
-}
-
-function finishGame(victory){
-  if (game.curWaveTel) finalizeCurrentTelemetry();
-  if (game.combatLog && !Number.isFinite(game.combatLog.settledAtRunClock)) {
-    game.combatLog.settledAtRunClock = getCombatLogNowSec();
-  }
-  syncRunResourceAccounting();
-  if (game.w30Battle && game.w30Battle.active) {
-    const boss = game.enemies.find(e => e.kind === 'boss6');
-    const hpPct = victory ? 0 : (boss ? Math.round(clamp(boss.hp, 0, boss.maxHp) * 100 / Math.max(1, boss.maxHp)) : 0);
-    const at = Number((game.w30Battle.elapsedSeconds || 0).toFixed(2));
-    game.w30Battle.active = false;
-    game.w30Battle.signatureLockActive = false;
-    game.w30Battle.outcome = victory ? 'victory' : 'defeat';
-    game.w30Battle.phase = 'ended';
-    game.w30Battle.phaseTimeline.push({ phase: 'ended', outcome: game.w30Battle.outcome, at, bossHpPct: hpPct });
-  }
-  game.phase = victory ? 'won' : 'lost';
-  game.subPhase = null;
-  if (game.finalPrep) {
-    game.finalPrep.active = false;
-    game.finalPrep.transitioning = false;
-  }
-  game.projectiles = [];
-  game.zones = [];
-  game.healOrbs = [];
-  game.shrine = null;
-  game.speed = 1;
-  $('hpVignette')?.classList.remove('danger');
-  // Stage 6: Idempotent per-runId settlement of legacy shards & one-time milestones
-  settleRunMetaRewards(!!victory);
-  showEndModal(victory);
-  renderAllUI(true);
-}
-
-/* ==================== SIMULATION TICK ==================== */
-function tick(dt){
-  if (!game || !['prep','wave','harvest'].includes(game.phase)) return;
-
-  const realDt = dt / Math.max(1, game.speed || 1);
-  // BUG-01: W29 90s real-time countdown runs strictly on real monotonic time BEFORE paused guard!
-  if (game.phase === 'prep' && game.finalPrep && game.finalPrep.active) {
-    const expired = syncW29FinalPrepClock({
-      fallbackRealDt: counters.inMainLoopFrame ? 0 : realDt,
-      allowFallbackDt: !counters.inMainLoopFrame
-    });
-    if (expired) return;
-  }
-
-  if (paused) return;
-
-  syncRunResourceAccounting();
-
-  // In prep phase, check auto-wave decision pause (non-W29 prep)
-  if (game.phase === 'prep' && !(game.finalPrep && game.finalPrep.active) && game.autoWave) {
-    if (hasPendingDecision()) {
-      game.autoWavePausedForDecision = true;
-    } else {
-      if (game.autoWavePausedForDecision) {
-        game.autoWavePausedForDecision = false;
-        game.autoWaveTimer = Math.max(game.autoWaveTimer || 0, 2.5);
-      }
-      game.autoWaveTimer -= dt;
-      if (game.autoWaveTimer <= 0) {
-        startWave();
-        return;
-      }
-    }
-  }
-
-  if (game.activeModal) return;
-
-  if (game.runMetrics) {
-    if (game.phase === 'prep' && !game.finalPrep?.active) {
-      game.runMetrics.prepSec += realDt;
-      game.runMetrics.totalEffectiveSec += realDt;
-    } else if (game.phase === 'harvest') {
-      game.runMetrics.harvestSec += dt;
-      game.runMetrics.totalEffectiveSec += dt;
-    } else if (game.phase === 'wave') {
-      const isBossWave = game.wave % (BALANCE.wave?.bossPeriod || 5) === 0;
-      if (isBossWave) game.runMetrics.bossCombatSec += dt;
-      else game.runMetrics.normalCombatSec += dt;
-      game.runMetrics.totalEffectiveSec += dt;
-    }
-  }
-
-  updateVfx(dt);
-  updateHero(dt);
-  updateCamera(dt, false);
-
-  // Holy Tier-2 passive regen (+5/s)
-  if (getSynergyTier('holy') >= 1) {
-    game.holyRegenTimer -= dt;
-    if (game.holyRegenTimer <= 0) {
-      game.holyRegenTimer = 1.0;
-      game.hero.hp = Math.min(game.hero.maxHp, game.hero.hp + 5);
-    }
-  }
-
-  if (game.phase === 'harvest') {
-    updatePickups(dt);
-    game.harvestTimer -= dt;
-    if (game.gems.length === 0 || game.harvestTimer <= 0) {
-      completeWaveClear();
-    }
-    return;
-  }
-
-  if (game.phase === 'prep') {
-    updateSeal(dt);
-    updatePickups(dt); // Allows walking over ground chests during prep!
-    return;
-  }
-
-  // Wave Simulation with MAX_ENEMIES soft cap
-  game.waveClock += dt;
-  if (game.wave === MAIN_WAVES && game.w30Battle?.active) {
-    game.w30Battle.elapsedSeconds = Number((game.w30Battle.elapsedSeconds + dt).toFixed(3));
-  }
-  if (game.curWaveTel) game.curWaveTel.duration = Number(game.waveClock.toFixed(1));
-
-  // Arknights-style storm warning cue right before Stage 3 dense surge (and W28 Mid-Wave Endgame Omen!)
-  if (!game.stormWarned && game.waveClock >= game.stormWarnAt) {
-    game.stormWarned = true;
-    AudioKit.play('boss', 0.85);
-    if (game.wave === 28) {
-      const om = BALANCE.wave?.w28Omen || {};
-      if (game.endgameOmen) game.endgameOmen.midWaveTriggered = true;
-      flashScreen('fail');
-      showBanner(om.midTitle || '🌑 终局阴云压境 · 深渊低语回响！', om.midSub || '终局危机迫近！稳住阵脚准备迎接 W29 与 W30 终局决战！', 'boss');
-    } else {
-      showBanner('⚠️ 暴风雨将至 · 大波敌军即将合围！', '调整站位与冲刺冷却，迎战波内峰值怪潮！', 'boss');
-    }
-  }
-
-  // Optional Black-Myth-style Blood Shrine activation!
-  if (game.shrine && !game.shrine.active && !game.shrine.cleared) {
-    const s = game.shrine;
-    const shrineNeed = hasMetaAux('aux_shrine_compass') ? 0.15 : 0.30;
-    if (dist(game.hero, s) <= s.r + 0.15) {
-      s.charge += dt;
-      if (s.charge >= shrineNeed) {
-        s.active = true;
-        if (game.curWaveTel) game.curWaveTel.shrineTried = true;
-        const scale = Math.pow(BALANCE.wave.normalHpGrowth || 1.115, game.wave - 1);
-        const boss = spawnEnemy('elite', 'west', scale * 2.10, { x: clamp(s.x + 1.2, 1, W-1), y: clamp(s.y, 1, H-1) });
-        boss.isShrineBoss = true;
-        boss.name = '🩸 血煞妖王';
-        boss.col = '#ff3b5c';
-        boss.spd = Number((boss.spd * 1.18).toFixed(2));
-        boss.dmg = Math.round(boss.dmg * 1.30);
-        boss.affixes = pickEliteAffixes(2);
-        for (let k = 0; k < 3; k++) {
-          if (game.enemies.length >= MAX_ENEMIES) break;
-          const a = (Math.PI * 2 * k) / 3;
-          spawnEnemy('wolf', 'west', scale, { x: clamp(s.x + Math.cos(a)*1.6, 0.8, W-0.8), y: clamp(s.y + Math.sin(a)*1.6, 0.8, H-0.8) });
-        }
-        AudioKit.play('boss', 1.1);
-        game.shake = Math.max(game.shake, 7);
-        addRing(s.x, s.y, '#ff3b5c', 3.4);
-        showBanner('🩸 血煞妖碑已觉醒！', '【血煞妖王】现身！斩杀赢章节构装宝箱 + 25 金 + 2 锻材！', 'boss');
-      }
-    } else {
-      s.charge = Math.max(0, s.charge - dt * 0.5);
-    }
-  }
-
-  for (const w of game.waveQueue) {
-    if (!w.spawned && game.waveClock >= w.at) {
-      if (game.enemies.length >= MAX_ENEMIES) break;
-      w.spawned = true;
-      spawnEnemy(w.kind, w.side, w.scale);
-    }
-  }
-
-  updateSeal(dt);
-  updateProjectilesAndZones(dt);
-  updateEnemies(dt);
-  updatePickups(dt);
-
-  if (game.phase !== 'wave') return;
-  const allSpawned = game.waveQueue.every(w => w.spawned);
-  if (allSpawned && game.enemies.length === 0) {
-    beginWaveHarvest();
-  }
 }
 
 /* ==================== VFX HELPERS ==================== */

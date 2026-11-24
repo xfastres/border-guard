@@ -59,6 +59,11 @@
   - 迁出 5 个英雄动作与技能循环函数及 5 个拾取/升级/受击归因函数，剥离 `damageHero` 中 2 处直接 DOM 暗角操作至 `ports.ui.setDangerVignette`，补齐 `ports.input.setPointerWorld`（`src/legacy/game.js` 降至 5,564 行）。
   - 新增 `tests/unit/hero-skills-vitals.test.mjs`（52 项无 DOM 单测，覆盖智能瞄准、冲刺/超载/破阵、6 主动技能全 W10 分支与组合技、拾取/升级奇偶分支、奇门偏折/金刚反震/不灭金身与 160 条真实受击归因日志）。
   - 实测结果：`npm run build` PASS（502,727 B）；`npm run test:unit` 252/252 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.11（`src/core/state.js` + `src/systems/run/` 状态工厂与波次/W29 终局整备/生命周期/主步进 · Phase 3 业务层收官）**：已完成并经主控独立审查与全量实测验收。
+  - 迁出对局状态工厂 `makeGame`/`createRunState` 至 `src/core/state.js`，迁出 25 个波次、遥测、W29 终局整备、开局/清波/结算与 `tick(dt)` 主模拟函数至 `src/systems/run/{waves,telemetry,final-prep,lifecycle,tick,index}.js`，补齐 6 个默认端口。
+  - **Phase 3 里程碑达成**：全部 6 大业务子域（`meta`/`equipment`/`economy`/`progression`/`hero`/`combat`/`run`）100% 脱离 `src/legacy/game.js`，`src/legacy/game.js` 从 13,031 行降至 4,266 行（仅余 86 个 UI/Canvas/弹窗/HUD/输入/预设/RAF 壳层函数）。
+  - 新增 `tests/unit/run-lifecycle.test.mjs`（23 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（509,042 B，63 模块，1 内联脚本）；`npm run test:unit` 275/275 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS（种子 `2026` & `1337`）；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS；`npm run test:baseline` 43/43 PASS。
 
 ---
 

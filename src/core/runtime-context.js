@@ -4,7 +4,7 @@ export function createNoopPorts() {
   return {
     storage: { getStorage: () => null },
     audio: { play: noop, unlock: noop },
-    vfx: { addRing: noop, addFloat: noop },
+    vfx: { addRing: noop, addFloat: noop, update: noop },
     ui: {
       toast: noop,
       showBanner: noop,
@@ -12,11 +12,13 @@ export function createNoopPorts() {
       renderAllUI: noop,
       setDangerVignette: noop,
       setPaused: () => false,
+      resetRunUI: noop,
     },
     modals: {
       queueModal: noop,
       closeModal: noop,
       openNextModal: noop,
+      hideBackdrop: noop,
       showEndModal: noop,
       showIntroModal: noop,
       openW20PreselectModal: noop,
@@ -36,6 +38,8 @@ export function createNoopPorts() {
       screenToWorld: () => ({ x: 0, y: 0 }),
       worldToScreen: () => ({ x: 0, y: 0 }),
       getCamera: () => ({ x: 0, y: 0, zoom: 1, w: 1280, h: 720, dpr: 1 }),
+      updateCamera: noop,
+      resetCamera: noop,
     },
     input: {
       getKeys: () => new Set(),
@@ -49,6 +53,7 @@ export function createNoopPorts() {
       perfNow: () => (typeof performance !== 'undefined' && typeof performance.now === 'function'
         ? performance.now()
         : Date.now()),
+      syncLoopTimestamp: noop,
     },
   };
 }
