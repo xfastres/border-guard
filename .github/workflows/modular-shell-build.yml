@@ -40,7 +40,9 @@ jobs:
       - name: Upload modular shell artifact
         uses: actions/upload-artifact@v4
         with:
-          name: border-guard-modular-shell
-          path: release/Border-Guard-v0.60-modular-shell.html
+          name: border-guard-phase1-bootstrap
+          path: |
+            release/Border-Guard-v0.60-modular-shell.html
+            package-lock.json
           if-no-files-found: error
           retention-days: 14
