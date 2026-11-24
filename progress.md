@@ -47,6 +47,10 @@
   - 迁出 13 个天命赌局配置、押注档位、品质与类别抽样、候选构建、轮盘开奖与单次安全领奖函数（`src/legacy/game.js` 降至 9,094 行）。
   - 新增 `tests/unit/destiny.test.mjs`（14 项无 DOM 单测，含 4 档押注边界、专属互斥降级、空劫保底与固定种子 RNG 顺序回归）。
   - 实测结果：`npm run build` PASS（491,293 B）；`npm run test:unit` 122/122 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.9a（`src/systems/combat/{hooks,damage,index}.js` 战斗钩子与生成/伤害结算核心）**：已完成并经主控独立审查与实测验收。
+  - 迁出 10 个战斗状态钩子与 11 个敌军生成、W30 锁血/末段、伤害结算、击杀与连锁闪电函数（`src/legacy/game.js` 降至 7,842 行，商店与天命系统已直连 `combatCore`）。
+  - 新增 `tests/unit/combat-core.test.mjs`（30 项无 DOM 单测，覆盖火/冰三联动严格替代二联动、W30 80% 截断锁血与 35% 末段、绝对零度封顶、图腾/晶柱破盾与固定种子 RNG 顺序）。
+  - 实测结果：`npm run build` PASS（496,808 B）；`npm run test:unit` 152/152 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 
