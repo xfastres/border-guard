@@ -2,9 +2,9 @@
 
 ## 当前工程阶段
 
-当前模块化重构已完成 Phase 0–1、Phase 2.1 和 Phase 2.2：HTML、CSS、JavaScript 已分离，静态数据已迁入 `src/data/`。`src/legacy/game.js` 仍保留约 13,093 行运行时逻辑和共享状态，业务模块化尚未完成。原版可玩基线仍是根目录的 `Border-Guard-v0.60.html`。
+当前模块化重构已完成 Phase 0–1、Phase 2.1–2.3：HTML/CSS、静态数据、RNG/数学/地形纯函数和音频服务已独立。`src/legacy/game.js` 仍保留约 13,032 行运行时逻辑和共享状态，业务模块化尚未完成。原版可玩基线仍是根目录的 `Border-Guard-v0.60.html`。
 
-新静态数据只放入 `src/data/`，不要再添加到 legacy 文件。下一步先明确 Core 状态/context 所有权，再按 `docs/architecture/v060-dependency-audit.md` 迁移业务函数。禁止一次性批量拆分 314 个函数。
+新静态数据只放入 `src/data/`，纯函数按职责放入 `src/core/`，UI 服务放入 `src/ui/`，不要再向 legacy 添加新职责。下一步先明确 `game` / `cam` / Meta 存档等状态所有权和 runtime context，再迁移业务系统。禁止一次性批量拆分 314 个函数。
 
 ## 不可违反
 
