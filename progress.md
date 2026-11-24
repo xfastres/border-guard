@@ -43,6 +43,10 @@
   - 迁出 26 个 W10 突破、W20/W30 预选/Boss 情报/阶梯重抽与 Perk/宝箱奖励函数（`src/legacy/game.js` 降至 9,740 行，首次跌破万行）。
   - 新增 `tests/unit/progression-breakthrough.test.mjs`（13 项无 DOM 单测）。
   - 实测结果：`npm run build` PASS（489,064 B）；`npm run test:unit` 108/108 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.8（`src/systems/progression/destiny.js` 天命赌局）**：已完成并经主控独立审查与实测验收。
+  - 迁出 13 个天命赌局配置、押注档位、品质与类别抽样、候选构建、轮盘开奖与单次安全领奖函数（`src/legacy/game.js` 降至 9,094 行）。
+  - 新增 `tests/unit/destiny.test.mjs`（14 项无 DOM 单测，含 4 档押注边界、专属互斥降级、空劫保底与固定种子 RNG 顺序回归）。
+  - 实测结果：`npm run build` PASS（491,293 B）；`npm run test:unit` 122/122 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 
