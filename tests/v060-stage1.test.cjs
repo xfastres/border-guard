@@ -132,7 +132,6 @@ test('1. v0.60 config & embedded BALANCE are synced and configure 30-wave contro
 test('2. W1 -> W10 normal progression, auto-wave decision pause, W10 breakthrough flow, and W11 observable combat state changes (Fire & Frost)', () => {
   const { B } = bootBG60();
   B.startNewRun(2026);
-  B.closeModal();
   B.pickHeroSkill('firewave');
 
   // Verify level-up every other level without old Lv.4/9/14/19 cap block
@@ -143,7 +142,9 @@ test('2. W1 -> W10 normal progression, auto-wave decision pause, W10 breakthroug
     const modalType = B.game.activeModal?.type || null;
     levelEvents.push({ lv: B.game.hero.lv, modalType });
     if (modalType === 'levelup') {
-      B.pickHeroSkill('firewave');
+      const ch = B.game.activeModal.choices || [];
+      const pick = ch.includes('firewave') && (B.game.hero.skills.firewave || 0) < 5 ? 'firewave' : ch[0];
+      B.pickHeroSkill(pick);
     }
   }
   assert.deepEqual(levelEvents, [
@@ -162,14 +163,22 @@ test('2. W1 -> W10 normal progression, auto-wave decision pause, W10 breakthroug
   assert.equal(B.game.phase, 'prep');
   assert.equal(B.game.wave, 1);
   assert.equal(B.hasPendingDecision(), true);
-  B.pickHeroSkill('blades');
+  {
+    const ch = B.game.activeModal.choices || [];
+    B.pickHeroSkill(ch.includes('blades') ? 'blades' : ch[0]);
+  }
 
   // Advance W1 through W9 via wave start & clear
   for (let w = 1; w <= 9; w++) {
     while (B.game.activeModal) {
-      if (B.game.activeModal.type === 'levelup') B.pickHeroSkill('firewave');
-      else if (B.game.activeModal.type === 'chest') B.pickGearReward('burn_core');
-      else B.closeModal();
+      if (B.game.activeModal.type === 'levelup') {
+        const ch = B.game.activeModal.choices || [];
+        const pick = ch.includes('firewave') && (B.game.hero.skills.firewave || 0) < 5 ? 'firewave' : ch[0];
+        if (pick) B.pickHeroSkill(pick); else B.closeModal();
+      } else if (B.game.activeModal.type === 'chest') {
+        const ch = B.game.activeModal.choices || [];
+        if (ch[0]) B.pickGearReward(ch[0]); else B.closeModal();
+      } else B.closeModal();
     }
     B.game.chests = [];
     const started = B.startWave();
@@ -193,9 +202,14 @@ test('2. W1 -> W10 normal progression, auto-wave decision pause, W10 breakthroug
   B.completeWaveClear();
 
   while (B.game.activeModal && B.game.activeModal.type !== 'w10_breakthrough') {
-    if (B.game.activeModal.type === 'chest') B.pickGearReward('flame_fan');
-    else if (B.game.activeModal.type === 'levelup') B.pickHeroSkill('firewave');
-    else B.closeModal();
+    if (B.game.activeModal.type === 'chest') {
+      const ch = B.game.activeModal.choices || [];
+      if (ch[0]) B.pickGearReward(ch[0]); else B.closeModal();
+    } else if (B.game.activeModal.type === 'levelup') {
+      const ch = B.game.activeModal.choices || [];
+      const pick = ch.includes('firewave') && (B.game.hero.skills.firewave || 0) < 5 ? 'firewave' : ch[0];
+      if (pick) B.pickHeroSkill(pick); else B.closeModal();
+    } else B.closeModal();
   }
 
   // Verify autoWave is paused while W10 breakthrough is pending

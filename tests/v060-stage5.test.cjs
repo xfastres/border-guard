@@ -140,9 +140,14 @@ test('1. W29 same-direction escalation (tighter & tougher than W28), W30 intel r
 
   // Settle all W29 wave-end reward modals
   while (B.game.activeModal) {
-    if (B.game.activeModal.type === 'levelup') B.pickHeroSkill('firewave');
-    else if (B.game.activeModal.type === 'chest') B.pickGearReward(B.game.activeModal.choices?.[0] || B.game.bag[0] || null);
-    else B.closeModal();
+    if (B.game.activeModal.type === 'levelup') {
+      const ch = B.game.activeModal.choices || [];
+      const pick = ch.find(k => (B.game.hero.skills[k] || 0) < 5) || ch[0];
+      if (pick) B.pickHeroSkill(pick); else B.closeModal();
+    } else if (B.game.activeModal.type === 'chest') {
+      const ch = B.game.activeModal.choices || [];
+      if (ch[0]) B.pickGearReward(ch[0]); else B.closeModal();
+    } else B.closeModal();
   }
   B.syncW29FinalPrepStart();
   const fpStarted = B.getFinalPrepState();

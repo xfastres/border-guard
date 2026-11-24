@@ -436,7 +436,7 @@ test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing b
   const { B } = bootBG60({ storage });
 
   // Start naturally from W1 with default 0-unlock loadout (main_flame + 1+1+2=4 aux!)
-  B.startNewRun(6060, false);
+  B.startNewRun(6060, true);
   B.pickHeroSkill('firewave');
   assert.equal(B.game.wave, 1);
   assert.equal(B.game.metaRunLocked, true);
@@ -456,10 +456,10 @@ test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing b
       if (!m) break;
 
       if (m.type === 'levelup') {
-        // Prefer firewave -> blades -> berserk -> nova -> thunder -> stomp
+        // Prefer firewave -> blades -> berserk -> nova -> thunder -> stomp from real offered choices
         const order = ['firewave', 'blades', 'berserk', 'nova', 'thunder', 'stomp'];
-        const unlocked = B.getUnlockedSkillPool();
-        const pick = order.find(k => unlocked.includes(k) && (B.game.hero.skills[k] || 0) < 5);
+        const offered = (m.choices || []).filter(k => (B.game.hero.skills[k] || 0) < 5);
+        const pick = order.find(k => offered.includes(k)) || offered[0];
         if (pick) B.pickHeroSkill(pick);
         else B.closeModal();
       } else if (m.type === 'w10_breakthrough') {
@@ -477,7 +477,7 @@ test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing b
         if (bestKey) B.pickW20Enhancement(bestKey);
         else B.closeModal();
       } else if (m.type === 'chest') {
-        const choices = B.pickChestGearChoices(!!m.legend, !!m.shrineTier);
+        const choices = (m.choices || []).slice();
         // Score choices favoring fire synergy affixes & higher rarity
         const scoreInst = (inst) => {
           let sc = ({ common: 10, rare: 25, epic: 50, legend: 90 }[inst.rarity] || 10) + inst.slotsCount * 12;
@@ -488,7 +488,8 @@ test('4. Natural W1 -> W30 full playthrough via 0-gamble regular route: pacing b
           return sc;
         };
         choices.sort((a, b) => scoreInst(b) - scoreInst(a));
-        B.pickGearReward(choices[0]);
+        if (choices[0]) B.pickGearReward(choices[0]);
+        else B.closeModal();
       } else {
         B.closeModal();
       }

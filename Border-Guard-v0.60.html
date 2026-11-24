@@ -3821,31 +3821,170 @@ function normalizeMetaSave(raw){
   };
 }
 
+const META_SAVE_MIGRATORS = {
+  // Reserved v0 -> v1 migration hook (upgrades explicit schemaVersion === 0 legacy payloads)
+  0: (payload) => ({ ...payload, schemaVersion: 1 })
+};
+
+function migrateMetaSave(raw){
+  const cfg = getMetaConfig();
+  const supportedVersion = Math.max(1, Number(cfg.schemaVersion || 1));
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return { ok: false, reason: 'invalid_payload', foundVersion: null, supportedVersion };
+  }
+  const foundVersion = raw.schemaVersion;
+  const isInt = typeof foundVersion === 'number' && Number.isInteger(foundVersion);
+  if (!isInt || foundVersion < 0 || foundVersion > supportedVersion) {
+    return {
+      ok: false,
+      reason: 'incompatible_schema_version',
+      foundVersion: foundVersion ?? null,
+      supportedVersion
+    };
+  }
+  if (foundVersion < supportedVersion && typeof META_SAVE_MIGRATORS[foundVersion] !== 'function') {
+    return {
+      ok: false,
+      reason: 'incompatible_schema_version',
+      foundVersion,
+      supportedVersion
+    };
+  }
+  if (raw.loadout != null && (typeof raw.loadout !== 'object' || Array.isArray(raw.loadout))) {
+    return { ok: false, reason: 'corrupted_structure', foundVersion, supportedVersion };
+  }
+  if (raw.stats != null && (typeof raw.stats !== 'object' || Array.isArray(raw.stats))) {
+    return { ok: false, reason: 'corrupted_structure', foundVersion, supportedVersion };
+  }
+  let cur = { ...raw };
+  let v = foundVersion;
+  let guard = 0;
+  while (v < supportedVersion && guard++ < 16) {
+    const fn = META_SAVE_MIGRATORS[v];
+    if (typeof fn !== 'function') {
+      return { ok: false, reason: 'incompatible_schema_version', foundVersion, supportedVersion };
+    }
+    cur = fn(cur);
+    v = Number(cur?.schemaVersion);
+    if (!Number.isInteger(v)) {
+      return { ok: false, reason: 'migration_failed', foundVersion, supportedVersion };
+    }
+  }
+  if (v !== supportedVersion) {
+    return { ok: false, reason: 'incompatible_schema_version', foundVersion, supportedVersion };
+  }
+  return {
+    ok: true,
+    reason: null,
+    foundVersion,
+    supportedVersion,
+    migratedFrom: foundVersion !== supportedVersion ? foundVersion : null,
+    save: normalizeMetaSave(cur)
+  };
+}
+
 let metaSave = null;
+let metaStorageStatus = {
+  state: 'ok', // 'ok' | 'load_error' | 'save_error'
+  loadError: null,
+  foundVersion: null,
+  supportedVersion: 1,
+  saveFailed: false,
+  lastSaveError: null,
+  rawCorruptedBackup: null,
+  pendingUnsavedSettlement: null
+};
+
+function getMetaStorageStatus(){
+  return {
+    ...metaStorageStatus,
+    pendingUnsavedSettlement: metaStorageStatus.pendingUnsavedSettlement
+      ? JSON.parse(JSON.stringify(metaStorageStatus.pendingUnsavedSettlement))
+      : null
+  };
+}
+
+function exportRawCorruptedMetaSave(){
+  return metaStorageStatus.rawCorruptedBackup || null;
+}
 
 function loadMetaSave(){
   const cfg = getMetaConfig();
   const store = getMetaStorage();
+  metaStorageStatus.supportedVersion = Math.max(1, Number(cfg.schemaVersion || 1));
+  let rawStr = null;
   try {
-    const rawStr = store.getItem(cfg.storageKey);
-    if (rawStr) {
-      metaSave = normalizeMetaSave(JSON.parse(rawStr));
-      return metaSave;
-    }
-  } catch (_) {}
-  metaSave = createDefaultMetaSave();
+    rawStr = store.getItem(cfg.storageKey);
+  } catch (err) {
+    metaStorageStatus.state = 'load_error';
+    metaStorageStatus.loadError = 'storage_read_error';
+    metaStorageStatus.lastSaveError = String(err?.message || err || 'storage_read_error');
+    metaSave = createDefaultMetaSave();
+    return metaSave;
+  }
+  if (rawStr == null || rawStr === '') {
+    metaSave = createDefaultMetaSave();
+    metaStorageStatus.state = metaStorageStatus.saveFailed ? 'save_error' : 'ok';
+    metaStorageStatus.loadError = null;
+    metaStorageStatus.foundVersion = null;
+    metaStorageStatus.rawCorruptedBackup = null;
+    return metaSave;
+  }
+  let parsed = null;
+  try {
+    parsed = JSON.parse(rawStr);
+  } catch (_) {
+    // NEVER silently overwrite corrupted localStorage data!
+    metaStorageStatus.state = 'load_error';
+    metaStorageStatus.loadError = 'corrupted_json';
+    metaStorageStatus.foundVersion = null;
+    metaStorageStatus.rawCorruptedBackup = rawStr;
+    metaSave = createDefaultMetaSave();
+    return metaSave;
+  }
+  const mig = migrateMetaSave(parsed);
+  if (!mig.ok) {
+    // NEVER silently overwrite incompatible/future schemaVersion or corrupted structure!
+    metaStorageStatus.state = 'load_error';
+    metaStorageStatus.loadError = mig.reason;
+    metaStorageStatus.foundVersion = mig.foundVersion ?? null;
+    metaStorageStatus.supportedVersion = mig.supportedVersion;
+    metaStorageStatus.rawCorruptedBackup = rawStr;
+    metaSave = createDefaultMetaSave();
+    return metaSave;
+  }
+  metaSave = mig.save;
+  metaStorageStatus.state = metaStorageStatus.saveFailed ? 'save_error' : 'ok';
+  metaStorageStatus.loadError = null;
+  metaStorageStatus.foundVersion = mig.foundVersion;
+  metaStorageStatus.rawCorruptedBackup = null;
   return metaSave;
 }
 
-function saveMetaSave(){
+function saveMetaSave(opts = {}){
   const cfg = getMetaConfig();
   const store = getMetaStorage();
+  if (metaStorageStatus.state === 'load_error' && !opts?.forceOverwriteCorrupted) {
+    metaStorageStatus.saveFailed = true;
+    metaStorageStatus.lastSaveError = 'protected_corrupted_storage';
+    return false;
+  }
   if (!metaSave) metaSave = createDefaultMetaSave();
   metaSave = normalizeMetaSave(metaSave);
   try {
     store.setItem(cfg.storageKey, JSON.stringify(metaSave));
+    metaStorageStatus.saveFailed = false;
+    metaStorageStatus.lastSaveError = null;
+    if (opts?.forceOverwriteCorrupted) {
+      metaStorageStatus.loadError = null;
+      metaStorageStatus.rawCorruptedBackup = null;
+    }
+    metaStorageStatus.state = 'ok';
     return true;
-  } catch (_) {
+  } catch (err) {
+    metaStorageStatus.saveFailed = true;
+    metaStorageStatus.lastSaveError = String(err?.message || err || 'storage_write_failed');
+    if (metaStorageStatus.state !== 'load_error') metaStorageStatus.state = 'save_error';
     return false;
   }
 }
@@ -3859,14 +3998,19 @@ function resetMetaSave(){
   const cfg = getMetaConfig();
   const store = getMetaStorage();
   try { store.removeItem(cfg.storageKey); } catch (_) {}
+  metaStorageStatus.state = 'ok';
+  metaStorageStatus.loadError = null;
+  metaStorageStatus.foundVersion = null;
+  metaStorageStatus.rawCorruptedBackup = null;
+  metaStorageStatus.pendingUnsavedSettlement = null;
   metaSave = createDefaultMetaSave();
-  saveMetaSave();
+  const saved = saveMetaSave({ forceOverwriteCorrupted: true });
   if (game && !isMetaLoadoutLocked()) {
     game.metaLoadout = { main: metaSave.loadout.main, aux: metaSave.loadout.aux.slice() };
     syncRunActivePools();
   }
   renderAllUI(true);
-  return { ok: true, save: JSON.parse(JSON.stringify(metaSave)) };
+  return { ok: saved, reason: saved ? null : 'storage_write_failed', save: JSON.parse(JSON.stringify(metaSave)) };
 }
 
 function exportMetaSave(){
@@ -3877,15 +4021,29 @@ function exportMetaSave(){
 function importMetaSave(jsonOrObj){
   try {
     const parsed = typeof jsonOrObj === 'string' ? JSON.parse(jsonOrObj) : jsonOrObj;
-    if (!parsed || typeof parsed !== 'object') return { ok: false, reason: 'invalid_payload' };
-    metaSave = normalizeMetaSave(parsed);
-    saveMetaSave();
+    const mig = migrateMetaSave(parsed);
+    if (!mig.ok) {
+      return {
+        ok: false,
+        reason: mig.reason,
+        foundVersion: mig.foundVersion,
+        supportedVersion: mig.supportedVersion
+      };
+    }
+    const prevSave = metaSave ? JSON.parse(JSON.stringify(metaSave)) : null;
+    metaSave = mig.save;
+    const saved = saveMetaSave({ forceOverwriteCorrupted: true });
+    if (!saved) {
+      if (prevSave) metaSave = prevSave;
+      return { ok: false, reason: 'storage_write_failed', error: metaStorageStatus.lastSaveError };
+    }
+    metaStorageStatus.pendingUnsavedSettlement = null;
     if (game && !isMetaLoadoutLocked()) {
       game.metaLoadout = { main: metaSave.loadout.main, aux: metaSave.loadout.aux.slice() };
       syncRunActivePools();
     }
     renderAllUI(true);
-    return { ok: true, save: JSON.parse(JSON.stringify(metaSave)) };
+    return { ok: true, migratedFrom: mig.migratedFrom, save: JSON.parse(JSON.stringify(metaSave)) };
   } catch (err) {
     return { ok: false, reason: 'parse_error', error: String(err?.message || err) };
   }
@@ -4262,6 +4420,19 @@ function checkEligibleNewMilestones(victory, g = game, save = getMetaSave()){
 function settleRunMetaRewards(victory){
   if (!game) return null;
   const runId = game.runId || (game.runId = generateRunId(game.seed));
+
+  // If this exact runId already has a pending unsaved settlement (previous write failed), do NOT double-award!
+  if (metaStorageStatus.pendingUnsavedSettlement?.runId === runId) {
+    const pendingRec = {
+      ...metaStorageStatus.pendingUnsavedSettlement.record,
+      duplicateBlocked: false,
+      saveStatus: 'failed',
+      persisted: false
+    };
+    game.metaSettlement = pendingRec;
+    return pendingRec;
+  }
+
   // Always sync from storage first so even a page reload replay cannot double-claim!
   const save = loadMetaSave();
   if (save.settledRunIds.includes(runId)) {
@@ -4275,7 +4446,10 @@ function settleRunMetaRewards(victory){
       totalShardsGrantedThisCall: 0,
       totalShardsGranted: prev?.totalShardsGranted ?? 0,
       duplicateBlocked: true,
-      shardsAfter: save.legacyShards
+      shardsAfter: save.legacyShards,
+      saveStatus: 'saved',
+      persisted: true,
+      saveError: null
     };
     game.metaSettlement = blocked;
     return blocked;
@@ -4314,12 +4488,72 @@ function settleRunMetaRewards(victory){
     duplicateBlocked: false,
     shardsAfter: save.legacyShards,
     settledAtWave: game.wave,
-    loadoutSnapshot: getActiveMetaLoadout()
+    loadoutSnapshot: getActiveMetaLoadout(),
+    saveStatus: 'saved',
+    persisted: true,
+    saveError: null
   };
   save.lastSettlement = record;
-  saveMetaSave();
+  const saved = saveMetaSave();
+  if (!saved) {
+    record.saveStatus = 'failed';
+    record.persisted = false;
+    record.saveError = metaStorageStatus.lastSaveError || 'storage_write_failed';
+    save.lastSettlement = { ...record };
+    metaStorageStatus.pendingUnsavedSettlement = {
+      runId,
+      victory: !!victory,
+      record: { ...record },
+      saveSnapshot: JSON.parse(JSON.stringify(metaSave))
+    };
+    toast('⚠️ 本地存档写入失败，本局奖励尚未持久化！请在结算页点击【重试保存】或【导出备份 JSON】。', true);
+  } else {
+    metaStorageStatus.pendingUnsavedSettlement = null;
+  }
   game.metaSettlement = record;
   return record;
+}
+
+function retryPendingMetaSave(){
+  const pending = metaStorageStatus.pendingUnsavedSettlement;
+  if (pending && pending.saveSnapshot) {
+    metaSave = normalizeMetaSave(pending.saveSnapshot);
+    if (metaSave.lastSettlement) {
+      metaSave.lastSettlement.saveStatus = 'saved';
+      metaSave.lastSettlement.persisted = true;
+      metaSave.lastSettlement.saveError = null;
+    }
+  }
+  const ok = saveMetaSave();
+  if (ok) {
+    if (pending) metaStorageStatus.pendingUnsavedSettlement = null;
+    if (game?.metaSettlement) {
+      game.metaSettlement.saveStatus = 'saved';
+      game.metaSettlement.persisted = true;
+      game.metaSettlement.saveError = null;
+    }
+    toast('✅ 重试保存成功！本局传承奖励已安全持久化至本地存档。');
+  } else {
+    const errReason = metaStorageStatus.lastSaveError || 'storage_write_failed';
+    if (metaSave?.lastSettlement) {
+      metaSave.lastSettlement.saveStatus = 'failed';
+      metaSave.lastSettlement.persisted = false;
+      metaSave.lastSettlement.saveError = errReason;
+    }
+    if (game?.metaSettlement) {
+      game.metaSettlement.saveStatus = 'failed';
+      game.metaSettlement.persisted = false;
+      game.metaSettlement.saveError = errReason;
+    }
+    toast('⚠️ 重试保存仍然失败，请点击【导出备份 JSON】妥善保存！', true);
+  }
+  if (game?.activeModal?.type === 'end') showEndModal(game.phase === 'won');
+  renderAllUI(true);
+  return {
+    ok,
+    reason: ok ? null : (metaStorageStatus.lastSaveError || 'storage_write_failed'),
+    record: game?.metaSettlement ? { ...game.metaSettlement } : null
+  };
 }
 
 loadMetaSave();
@@ -6345,7 +6579,7 @@ function aggregateGear(gearList){
   return m;
 }
 
-function syncHeroMaxHp(){
+function syncHeroMaxHp(opts = {}){
   if (!game?.hero) return;
   const h = game.hero;
   const gm = aggregateGear(h.gear);
@@ -6353,8 +6587,11 @@ function syncHeroMaxHp(){
   const destinyFlatHp = hasDestinyEnhancement('destiny_aegis_bulwark') ? 90 : 0;
   const rawMax = Math.round((h.baseMaxHp + gm.flatHp + destinyFlatHp) * Math.max(0.4, 1 + gm.hpPct));
   h.maxHp = Math.max(60, rawMax);
-  if (h.maxHp > oldMax) h.hp = Math.min(h.maxHp, h.hp + (h.maxHp - oldMax));
-  else h.hp = Math.min(h.hp, h.maxHp);
+  if (opts && opts.healDelta && h.maxHp > oldMax) {
+    h.hp = Math.min(h.maxHp, h.hp + (h.maxHp - oldMax));
+  } else {
+    h.hp = Math.min(h.hp, h.maxHp);
+  }
 }
 
 function getHeroStats(){
@@ -6566,6 +6803,20 @@ function getBagCapacity(){
   return Math.max(4, Number(BALANCE.progression?.bagCapacity || 12));
 }
 
+function hasBagSpace(need = 1){
+  if (!game || !Array.isArray(game.bag)) return false;
+  return (game.bag.length + Math.max(1, Number(need) || 1)) <= getBagCapacity();
+}
+
+function tryStoreGearInBag(inst){
+  if (!hasBagSpace(1)) {
+    return { ok: false, reason: 'bag_full', capacity: getBagCapacity() };
+  }
+  const normalized = isBagSeal(inst) ? inst : normalizeGearInstance(inst);
+  game.bag.push(normalized);
+  return { ok: true, storedIn: 'bag', item: normalized };
+}
+
 function isBagSeal(item){
   return !!(item && typeof item === 'object' && item.itemType === 'seal');
 }
@@ -6669,6 +6920,9 @@ function confirmShopPurchase(){
   game.shopConfirmDraft = null;
   if (game.activeModal?.type === 'shop_confirm') closeModal();
   const bought = buyShopItem(draft.shopIdx);
+  if (bought && typeof bought === 'object' && bought.ok === false) {
+    return { ok: false, reason: bought.reason || 'buy_failed', goldLeft: game.gold };
+  }
   return { ok: !!bought, reason: bought ? null : 'buy_failed', goldLeft: game.gold };
 }
 
@@ -6851,9 +7105,20 @@ function buyShopItem(shopIdx){
 
   // 2. Stage 2 Independent Gear purchase (with stage + same-element escalating price & paidGold lock)
   if (item.itemType === 'gear' && item.gear) {
+    if (!hasBagSpace(1)) {
+      toast(`背包已满（${getBagCapacity()}/${getBagCapacity()}），请先出售或拆解背包装备后再购买！`, true);
+      renderAllUI(true);
+      return { ok: false, reason: 'bag_full' };
+    }
+    const boughtInst = normalizeGearInstance({ ...item.gear, paidGold: item.cost, origin: 'shop' });
+    const stored = tryStoreGearInBag(boughtInst);
+    if (!stored.ok) {
+      toast(`背包已满（${getBagCapacity()}/${getBagCapacity()}），请先出售或拆解背包装备后再购买！`, true);
+      renderAllUI(true);
+      return { ok: false, reason: 'bag_full' };
+    }
     game.gold -= item.cost;
     item.bought = true;
-    const boughtInst = normalizeGearInstance({ ...item.gear, paidGold: item.cost, origin: 'shop' });
     // Increment same-element purchase count (respecting sameElemResetByStage)
     const curStage = getSourceStageForWave(game.wave);
     if (BALANCE.equipment?.shopPricing?.sameElemResetByStage && game.shopElemBuyStage !== curStage) {
@@ -6867,7 +7132,6 @@ function buyShopItem(shopIdx){
         other.cost = calcShopGearPrice(other.gear.rarity, other.gear.elem, game.wave);
       }
     }
-    game.bag.push(boughtInst);
     AudioKit.play('chest', 1.15);
     addFloat(game.hero.x, game.hero.y - 0.55, `购入 ${boughtInst.icon}${boughtInst.name} [${boughtInst.slotsCount}槽]`, GEAR_RARITY_COLORS[boughtInst.rarity] || '#ffe27a', true);
     toast(`购入【${boughtInst.name}】(${GEAR_RARITY_LABELS[boughtInst.rarity]}·${boughtInst.slotsCount}槽) 花费 ${item.cost} 金，已放入背包！`);
@@ -7068,8 +7332,13 @@ function unequipGear(slotIdx){
   if (isFinalPrepActionLocked()) return false;
   const list = game.hero.gear;
   if (!list || slotIdx < 0 || slotIdx >= list.length) return false;
+  if (!hasBagSpace(1)) {
+    toast(`背包已满（${getBagCapacity()}/${getBagCapacity()}），请先替换或出售/拆解背包装备后再卸下！`, true);
+    renderAllUI(true);
+    return { ok: false, reason: 'bag_full' };
+  }
   const [inst] = list.splice(slotIdx, 1);
-  game.bag.push(inst);
+  tryStoreGearInBag(inst);
   syncHeroMaxHp();
   recomputeEquipmentSynergies();
   AudioKit.play('coin', 0.85);
@@ -10795,15 +11064,40 @@ function getFinalPrepState(){
   };
 }
 
+let _monotonicClockOverride = null;
+let _inMainLoopFrame = false;
+
+function getMonotonicNowMs(){
+  if (typeof _monotonicClockOverride === 'function') {
+    const v = Number(_monotonicClockOverride());
+    if (Number.isFinite(v)) return v;
+  }
+  return (typeof performance !== 'undefined' && typeof performance.now === 'function')
+    ? performance.now()
+    : Date.now();
+}
+
+function setMonotonicClockForTest(fn){
+  _monotonicClockOverride = typeof fn === 'function' ? fn : null;
+  if (typeof lastTs !== 'undefined') lastTs = getMonotonicNowMs();
+}
+
 function syncW29FinalPrepStart(){
   const fp = game?.finalPrep;
   if (!fp || !fp.active || fp.started) return false;
   if (!hasPendingW29WaveRewards()) {
+    const nowMs = getMonotonicNowMs();
+    const remSec = Number.isFinite(fp.timer) && fp.timer > 0 ? fp.timer : (fp.duration || fp.maxSeconds || 90);
     fp.awaitingWaveRewards = false;
     fp.started = true;
+    fp.startedAtMs = nowMs;
+    fp.deadlineMs = nowMs + remSec * 1000;
+    fp.lastClockMs = nowMs;
+    fp.lastObservedTimer = remSec;
+    fp.usesWallClock = false;
     showBanner(
       `⏳ W29 终局整备正式倒计时（${Math.round(fp.duration || 90)} 秒）！`,
-      `波末奖励已结清！真实时间走表（不受倍速与面板暂停），迎战 W30 深渊主宰（辅助：${game.bossIntel?.w30Aux || '未知'}）！`,
+      `波末奖励已结清！真实时间走表（不受倍速、面板或暂停影响），迎战 W30 深渊主宰（辅助：${game.bossIntel?.w30Aux || '未知'}）！`,
       'boss'
     );
     renderAllUI(true);
@@ -10812,13 +11106,95 @@ function syncW29FinalPrepStart(){
   return false;
 }
 
-function closeAllPrepModals(){
+function syncW29FinalPrepClock({ nowMs = null, fallbackRealDt = 0, allowFallbackDt = true } = {}){
+  if (!game || game.phase !== 'prep') return false;
+  const fp = game.finalPrep;
+  if (!fp || !fp.active) return false;
+
+  // Phase A: Settle W29 wave-end rewards (levelup / ground chests) FIRST; 90s timer stays frozen until last wave-end reward closes!
+  if (!fp.started) {
+    syncW29FinalPrepStart();
+    if (!fp.started) return false;
+  }
+  if (fp.locked || fp.transitioning) return false;
+
+  const curNowMs = Number.isFinite(nowMs) ? nowMs : getMonotonicNowMs();
+  if (!Number.isFinite(fp.deadlineMs)) {
+    const remSec = Math.max(0, Number(fp.timer || 0));
+    fp.startedAtMs = curNowMs;
+    fp.deadlineMs = curNowMs + remSec * 1000;
+    fp.lastClockMs = curNowMs;
+    fp.lastObservedTimer = remSec;
+  }
+
+  // Compatibility: if a test directly mutates game.finalPrep.timer, re-anchor deadlineMs to that value before ticking.
+  if (Number.isFinite(fp.lastObservedTimer) && Math.abs(fp.timer - fp.lastObservedTimer) > 1e-4) {
+    fp.deadlineMs = curNowMs + Math.max(0, Number(fp.timer || 0)) * 1000;
+    fp.lastClockMs = curNowMs;
+    fp.lastObservedTimer = fp.timer;
+  }
+
+  const prevClockMs = Number.isFinite(fp.lastClockMs) ? fp.lastClockMs : curNowMs;
+  const wallDeltaMs = Math.max(0, curNowMs - prevClockMs);
+  const hasExplicitClock = typeof _monotonicClockOverride === 'function';
+  let elapsedSec = 0;
+
+  if (wallDeltaMs > 0) {
+    // Real monotonic clock advanced: ALWAYS use exact wall-clock delta (NEVER clamped to 0.05s, NEVER frozen by paused!)
+    fp.usesWallClock = true;
+    fp.lastClockMs = curNowMs;
+    const prevTimer = fp.timer;
+    fp.timer = Math.max(0, (fp.deadlineMs - curNowMs) / 1000);
+    elapsedSec = Math.max(0, prevTimer - fp.timer);
+  } else if (allowFallbackDt && !hasExplicitClock && !fp.usesWallClock && fallbackRealDt > 0) {
+    // Node sandbox compatibility when performance.now() is static (0) and tests invoke tick(dt)/stepFrame(dt) directly
+    const prevTimer = fp.timer;
+    fp.deadlineMs -= fallbackRealDt * 1000;
+    fp.timer = Math.max(0, (fp.deadlineMs - curNowMs) / 1000);
+    elapsedSec = Math.max(0, prevTimer - fp.timer);
+  } else {
+    fp.timer = Math.max(0, (fp.deadlineMs - curNowMs) / 1000);
+  }
+
+  fp.lastObservedTimer = fp.timer;
+  if (elapsedSec > 0 && game.runMetrics) {
+    game.runMetrics.w29FinalPrepSec += elapsedSec;
+    game.runMetrics.totalEffectiveSec += elapsedSec;
+  }
+  if (fp.timer <= 0) {
+    resolveW29FinalPrepTimeout();
+    return true;
+  }
+  return false;
+}
+
+function isCancelablePrepModal(m){
+  return !!(m && ['destiny_gamble', 'affix_transfer', 'shop_confirm', 'w30_early_confirm', 'meta_legacy'].includes(m.type));
+}
+
+function closeCancelablePrepModals(){
   if (!game) return;
-  game.activeModal = null;
-  game.pendingModals = [];
   game.inspTarget = null;
   game.mode = null;
-  $('modalBackdrop').hidden = true;
+  // Strictly preserve legal reward modals (levelup, chest, perk, w10_breakthrough, w20_breakthrough)!
+  if (Array.isArray(game.pendingModals)) {
+    game.pendingModals = game.pendingModals.filter(m => !isCancelablePrepModal(m));
+  }
+  if (isCancelablePrepModal(game.activeModal)) {
+    game.activeModal = null;
+    $('modalBackdrop').hidden = true;
+    if (game.pendingModals && game.pendingModals.length > 0) {
+      openNextModal();
+    }
+  } else if (!game.activeModal && game.pendingModals && game.pendingModals.length > 0) {
+    openNextModal();
+  } else if (!game.activeModal) {
+    $('modalBackdrop').hidden = true;
+  }
+}
+
+function closeAllPrepModals(){
+  closeCancelablePrepModals();
 }
 
 function renderW30EarlyConfirmModal(){
@@ -10876,12 +11252,15 @@ function startW30Early({ acceptRandomClaim = false } = {}){
   const clearedShopDraft = !!game.shopConfirmDraft;
   if (game.transferDraft) cancelAffixTransferPreview();
   if (game.shopConfirmDraft) game.shopConfirmDraft = null;
+  // Close cancelable prep UI modals FIRST so any legal levelup reward triggered by auto-claim is preserved!
+  closeCancelablePrepModals();
 
   let autoClaimedOffer = null;
   if (pendingOffer && acceptRandomClaim) {
     autoClaimedOffer = autoClaimPendingDestinyReward(game.rnd, { allowDuringFinalPrepResolve: true });
   }
-  closeAllPrepModals();
+  // Close only any residual cancelable prep UI while strictly keeping legal reward modals (e.g. newly triggered levelup)!
+  closeCancelablePrepModals();
   fp.lastResolution = {
     trigger: pendingOffer ? 'early_start_random_claim' : 'early_start',
     clearedTransferDraft,
@@ -10907,13 +11286,16 @@ function resolveW29FinalPrepTimeout(){
   const clearedShopDraft = !!game.shopConfirmDraft;
   if (game.transferDraft) cancelAffixTransferPreview();
   if (game.shopConfirmDraft) game.shopConfirmDraft = null;
+  // Close cancelable prep UI modals FIRST so any legal levelup reward triggered by auto-claim is preserved!
+  closeCancelablePrepModals();
 
   let autoClaimedOffer = null;
   if (game.destiny?.pendingOffer && !game.destiny.pendingOffer.claimed) {
     autoClaimedOffer = autoClaimPendingDestinyReward(game.rnd, { allowDuringFinalPrepResolve: true });
   }
 
-  closeAllPrepModals();
+  // Close only any residual cancelable prep UI while strictly keeping legal reward modals (e.g. newly triggered levelup)!
+  closeCancelablePrepModals();
   fp.lastResolution = {
     trigger: 'timeout',
     clearedTransferDraft,
@@ -10935,6 +11317,7 @@ function enterW29FinalPrep(seconds = 90){
     game.chests = [];
   }
   const awaiting = hasPendingW29WaveRewards();
+  const nowMs = getMonotonicNowMs();
   game.subPhase = 'w29_final_prep';
   game.finalPrep = {
     active: true,
@@ -10945,6 +11328,11 @@ function enterW29FinalPrep(seconds = 90){
     timer: dur,
     duration: dur,
     maxSeconds: dur,
+    startedAtMs: awaiting ? null : nowMs,
+    deadlineMs: awaiting ? null : (nowMs + dur * 1000),
+    lastClockMs: awaiting ? null : nowMs,
+    lastObservedTimer: dur,
+    usesWallClock: false,
     w30IntelShown: true,
     lastResolution: null
   };
@@ -10957,7 +11345,7 @@ function enterW29FinalPrep(seconds = 90){
   } else {
     showBanner(
       `⏳ W29 终局整备开启（限时 ${Math.round(dur)} 秒）！`,
-      `W30 深渊主宰情报（辅助：${game.bossIntel?.w30Aux || '未知'}）常驻右侧战况栏！真实时间走表，归零或提前开战将进入 W30 终局决战！`,
+      `W30 深渊主宰情报（辅助：${game.bossIntel?.w30Aux || '未知'}）常驻右侧战况栏！真实时间走表（不可暂停），归零或提前开战将进入 W30 终局决战！`,
       'boss'
     );
   }
@@ -11146,41 +11534,34 @@ function finishGame(victory){
 /* ==================== SIMULATION TICK ==================== */
 function tick(dt){
   if (!game || !['prep','wave','harvest'].includes(game.phase)) return;
+
+  const realDt = dt / Math.max(1, game.speed || 1);
+  // BUG-01: W29 90s real-time countdown runs strictly on real monotonic time BEFORE paused guard!
+  if (game.phase === 'prep' && game.finalPrep && game.finalPrep.active) {
+    const expired = syncW29FinalPrepClock({
+      fallbackRealDt: _inMainLoopFrame ? 0 : realDt,
+      allowFallbackDt: !_inMainLoopFrame
+    });
+    if (expired) return;
+  }
+
   if (paused) return;
 
   syncRunResourceAccounting();
-  const realDt = dt / Math.max(1, game.speed || 1);
 
-  // In prep phase, check auto-wave decision pause and W29 90s real-time final prep countdown
-  if (game.phase === 'prep') {
-    if (game.finalPrep && game.finalPrep.active) {
-      // Phase A: Settle W29 wave-end rewards (levelup / ground chests) FIRST; 90s timer stays frozen until last wave-end reward closes!
-      syncW29FinalPrepStart();
-      // Phase B: Once started, 90s counts down strictly in REAL elapsed time (unaffected by game.speed=2 AND NEVER paused by ANY prep panel/modal!)
-      if (game.finalPrep.started && !game.finalPrep.locked) {
-        game.finalPrep.timer = Math.max(0, game.finalPrep.timer - realDt);
-        if (game.runMetrics) {
-          game.runMetrics.w29FinalPrepSec += realDt;
-          game.runMetrics.totalEffectiveSec += realDt;
-        }
-        if (game.finalPrep.timer <= 0) {
-          resolveW29FinalPrepTimeout();
-          return;
-        }
+  // In prep phase, check auto-wave decision pause (non-W29 prep)
+  if (game.phase === 'prep' && !(game.finalPrep && game.finalPrep.active) && game.autoWave) {
+    if (hasPendingDecision()) {
+      game.autoWavePausedForDecision = true;
+    } else {
+      if (game.autoWavePausedForDecision) {
+        game.autoWavePausedForDecision = false;
+        game.autoWaveTimer = Math.max(game.autoWaveTimer || 0, 2.5);
       }
-    } else if (game.autoWave) {
-      if (hasPendingDecision()) {
-        game.autoWavePausedForDecision = true;
-      } else {
-        if (game.autoWavePausedForDecision) {
-          game.autoWavePausedForDecision = false;
-          game.autoWaveTimer = Math.max(game.autoWaveTimer || 0, 2.5);
-        }
-        game.autoWaveTimer -= dt;
-        if (game.autoWaveTimer <= 0) {
-          startWave();
-          return;
-        }
+      game.autoWaveTimer -= dt;
+      if (game.autoWaveTimer <= 0) {
+        startWave();
+        return;
       }
     }
   }
@@ -11390,8 +11771,15 @@ function flashScreen(kind){
   flashTimer = setTimeout(() => { el.className = 'trib-flash'; }, kind === 'dmg' ? 180 : 420);
 }
 
+let _modalOfferSeq = 1;
+
 function renderStarterModal(){
+  const m = game?.activeModal;
+  if (!m || m.type !== 'starter') return;
   const starters = ['blades', 'firewave', 'nova'];
+  if (!m.offerId) m.offerId = `starter_${_modalOfferSeq++}`;
+  if (!Array.isArray(m.choices) || !m.choices.length) m.choices = starters.slice();
+  if (typeof m.claimed !== 'boolean') m.claimed = false;
   const hs = getHeroStats();
   const box = $('modalBox');
   box.innerHTML = `
@@ -11400,8 +11788,9 @@ function renderStarterModal(){
     <div class="choices" id="modalChoices"></div>
   `;
   const grid = box.querySelector('#modalChoices');
-  for (const k of starters) {
+  for (const k of m.choices) {
     const s = HERO_SKILLS[k];
+    if (!s) continue;
     const info = getSkillBreakdown(k, 1, hs);
     const card = document.createElement('button');
     card.type = 'button';
@@ -11421,14 +11810,26 @@ function renderStarterModal(){
 }
 
 function renderLevelUpModal(){
-  const unlockedKeys = getUnlockedSkillPool();
-  const pool = unlockedKeys.map(k => HERO_SKILLS[k]).filter(s => s && (game.hero.skills[s.key] || 0) < 5);
-  if (!pool.length) { game.gold += 20; toast('当前阶段神通池已全满级！额外奖励 +20 金币！'); closeModal(); return; }
-  const choices = [];
-  const copy = pool.slice();
-  while (choices.length < 3 && copy.length) {
-    choices.push(copy.splice(Math.floor(game.rnd() * copy.length), 1)[0]);
+  const m = game?.activeModal;
+  if (!m || m.type !== 'levelup') return;
+  if (!m.offerId) m.offerId = `levelup_${_modalOfferSeq++}`;
+  if (typeof m.claimed !== 'boolean') m.claimed = false;
+
+  let choices = [];
+  if (Array.isArray(m.choices) && m.choices.length) {
+    choices = m.choices.map(k => HERO_SKILLS[k]).filter(s => s && (game.hero.skills[s.key] || 0) < 5);
   }
+  if (!choices.length) {
+    const unlockedKeys = getUnlockedSkillPool();
+    const pool = unlockedKeys.map(k => HERO_SKILLS[k]).filter(s => s && (game.hero.skills[s.key] || 0) < 5);
+    if (!pool.length) { game.gold += 20; toast('当前阶段神通池已全满级！额外奖励 +20 金币！'); closeModal(); return; }
+    const copy = pool.slice();
+    while (choices.length < 3 && copy.length) {
+      choices.push(copy.splice(Math.floor(game.rnd() * copy.length), 1)[0]);
+    }
+    m.choices = choices.map(s => s.key);
+  }
+
   const box = $('modalBox');
   box.innerHTML = `
     <h2>✨ ${getRealmStageLabel()} Lv.${game.hero.lv} · 选择领主神通</h2>
@@ -11477,8 +11878,18 @@ function renderLevelUpModal(){
 }
 
 function pickHeroSkill(key){
-  if (!HERO_SKILLS[key]) return false;
-  if (game && !game.metaRunLocked) lockMetaLoadoutForRun();
+  if (!game || !HERO_SKILLS[key]) return false;
+  const m = game.activeModal;
+  if (!m || (m.type !== 'starter' && m.type !== 'levelup')) return false;
+  if (m.claimed) return false;
+  if (!Array.isArray(m.choices) || !m.choices.includes(key)) return false;
+  if ((game.hero.skills[key] || 0) >= 5) return false;
+
+  // ATOMIC SINGLE-CLAIM LOCK BEFORE STATE MUTATION
+  m.claimed = true;
+  m.claimedChoice = key;
+
+  if (!game.metaRunLocked) lockMetaLoadoutForRun();
   game.hero.skills[key] = (game.hero.skills[key] || 0) + 1;
   AudioKit.play('merge', 1.1);
   toast(`领主习得【${HERO_SKILLS[key].name} Lv.${game.hero.skills[key]}】！`);
@@ -12297,7 +12708,14 @@ function renderAffixChipsHtml(inst){
 }
 
 function renderChestModal(legendBias = false, shrineTier = false){
-  const choices = pickChestGearChoices(legendBias, shrineTier);
+  const m = game?.activeModal;
+  if (!m || m.type !== 'chest') return;
+  if (!m.offerId) m.offerId = `chest_${_modalOfferSeq++}`;
+  if (typeof m.claimed !== 'boolean') m.claimed = false;
+  const choices = (Array.isArray(m.choices) && m.choices.length)
+    ? m.choices.map(c => normalizeGearInstance(c))
+    : pickChestGearChoices(legendBias, shrineTier);
+  m.choices = choices;
   const box = $('modalBox');
   const title = legendBias ? '👑 首领传说宝箱' : shrineTier ? '🩸 血煞妖碑高阶宝箱' : '📦 精英构装宝箱';
   box.innerHTML = `
@@ -12337,22 +12755,33 @@ function renderChestModal(legendBias = false, shrineTier = false){
 }
 
 function grantGear(input, opts = {}){
-  const inst = isGearInstance(input)
-    ? normalizeGearInstance(input)
-    : createGearInstance(gearBase(input), { wave: game.wave, origin: opts.origin || 'drop', ...opts });
-  // Stage 2: NEVER auto-fuse or overwrite existing gear instances!
-  game.bag.push(inst);
-  AudioKit.play('chest', 1.2);
-  const stSpec = getSourceStageSpec(inst.sourceStage);
-  toast(`获得独立构装【${inst.name}】(${GEAR_RARITY_LABELS[inst.rarity]}·${stSpec.label}·${inst.slotsCount}槽)，已放入背包！`);
-  renderAllUI(true);
-  return inst;
+  const res = grantGearSafely(input, { origin: opts.origin || 'drop', ...opts });
+  return res?.item || null;
 }
 
 function pickGearReward(itemOrKey){
-  const inst = grantGear(itemOrKey);
+  if (!game) return false;
+  const m = game.activeModal;
+  if (!m || m.type !== 'chest') return false;
+  if (m.claimed) return false;
+  if (!Array.isArray(m.choices) || !m.choices.length) return false;
+
+  let matched = null;
+  if (itemOrKey && typeof itemOrKey === 'object') {
+    matched = m.choices.find(c => c === itemOrKey || (itemOrKey.uid && c.uid === itemOrKey.uid)) || null;
+  } else if (typeof itemOrKey === 'string') {
+    matched = m.choices.find(c => c.uid === itemOrKey || c.baseKey === itemOrKey) || null;
+  }
+  if (!matched) return false;
+
+  // ATOMIC SINGLE-CLAIM LOCK BEFORE STATE MUTATION
+  m.claimed = true;
+  m.claimedChoice = matched.uid;
+
+  if (!game.metaRunLocked) lockMetaLoadoutForRun();
+  const grantRes = grantGearSafely(matched, { origin: 'chest' });
   closeModal();
-  return inst;
+  return grantRes?.item || matched;
 }
 
 function formatDurationMMSS(sec){
@@ -12600,9 +13029,20 @@ function showEndModal(victory){
     ? `波段推进 +${(settle.band1Shards || 0) + (settle.band2Shards || 0) + (settle.band3Shards || 0)}（W3-10:${settle.band1Shards} / W11-20:${settle.band2Shards} / W21-29:${settle.band3Shards}）· 首领 +${settle.bossBonus} · 突破 +${(settle.w10Bonus || 0) + (settle.w20Bonus || 0)}${settle.w30VictoryBonus ? ` · W30通关大奖 +${settle.w30VictoryBonus}` : ''}`
     : '未通过 W3 且未击败首领：防速死刷取规则生效，本局传承碎片收益为 0（有效推进后即可获得长期成长）';
   const newMsList = (settle?.newlyClaimedMilestones || []).map(m => `${m.name}(+💠${m.shardReward})`).join('、') || '无新增';
+  const saveFailed = !!(settle && (settle.saveStatus === 'failed' || settle.persisted === false));
   const dupGuardText = settle?.duplicateBlocked
     ? '🛡️ 防重放已拦截（本 runId 奖励此前已发放，本次 +0）'
-    : `✅ 单局首结已入账（runId: ${game.runId}）`;
+    : saveFailed
+      ? `⚠️ 本地存档写入失败，本局奖励尚未持久化（原因：${settle.saveError || 'storage_write_failed'}）`
+      : `✅ 单局首结已入账（runId: ${game.runId}）`;
+  const saveWarningHtml = saveFailed ? `
+        <div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:rgba(255,95,86,0.16);border:1px solid rgba(255,123,107,0.55);color:#ffd2cc;font-size:12px">
+          ⚠️ <b>本地存档写入失败，本局奖励尚未持久化！</b>（${settle.saveError || '存储空间不足或受限'}）
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+            <button class="btn gold" id="endRetrySaveBtn" type="button" style="padding:5px 10px;font-size:12px">🔄 重试保存</button>
+            <button class="btn" id="endExportBackupBtn" type="button" style="padding:5px 10px;font-size:12px">💾 导出备份 JSON</button>
+          </div>
+        </div>` : '';
 
   const box = $('modalBox');
   box.innerHTML = `
@@ -12629,7 +13069,7 @@ function showEndModal(victory){
         <h4>③ 长期成长与资源结算 · 传承碎片与里程碑</h4>
         <p>本局实发传承碎片：<b style="color:#72f2b4;font-size:14px">💠 +${settle?.totalShardsGranted ?? 0}</b>（当前余额：<b>💠 ${getMetaSave().legacyShards}</b>） · ${dupGuardText}<br>
         收益明细：${shardDetailText}<br>
-        新增一次性里程碑：<b>${newMsList}</b>（累计已完成 ${getMetaSave().claimedMilestones.length}/${getMetaConfig().milestones.length}）</p>
+        新增一次性里程碑：<b>${newMsList}</b>（累计已完成 ${getMetaSave().claimedMilestones.length}/${getMetaConfig().milestones.length}）</p>${saveWarningHtml}
       </div>
     </div>
     ${recentRows ? `
@@ -12645,6 +13085,15 @@ function showEndModal(victory){
       <button class="btn gold" id="restartGo" type="button" style="padding:9px 18px;font-size:14px">🔁 快速重开</button>
     </div>
   `;
+  box.querySelector('#endRetrySaveBtn')?.addEventListener('click', () => retryPendingMetaSave());
+  box.querySelector('#endExportBackupBtn')?.addEventListener('click', () => {
+    const json = exportMetaSave();
+    if (typeof navigator !== 'undefined' && navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(json).then(() => toast('💾 备份存档 JSON 已复制到剪贴板！')).catch(() => toast('💾 备份存档已就绪（可通过 BG60.exportMetaSave() 获取）'));
+    } else {
+      toast('💾 备份存档已就绪（可通过 BG60.exportMetaSave() 获取）');
+    }
+  });
   box.querySelector('#endMetaBtn')?.addEventListener('click', () => openMetaLegacyModal({ context: 'settlement', returnTo: 'end' }));
   box.querySelector('#restartGo')?.addEventListener('click', () => startNewRun());
   $('modalBackdrop').hidden = false;
@@ -15794,8 +16243,21 @@ window.addEventListener('keydown', e => {
 window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 
 // Static button listeners
+function setPaused(val){
+  paused = !!val;
+  renderAllUI();
+  return paused;
+}
 $('speedBtn').addEventListener('click', () => { game.speed = game.speed === 2 ? 1 : 2; renderAllUI(); });
-$('pauseBtn').addEventListener('click', () => { paused = !paused; renderAllUI(); });
+$('pauseBtn').addEventListener('click', () => {
+  if (!paused && game?.phase === 'prep' && game?.finalPrep?.active && game.finalPrep.started) {
+    toast('⏳ W29 终局整备倒计时按真实时间流逝，不可暂停！');
+    renderAllUI();
+    return;
+  }
+  paused = !paused;
+  renderAllUI();
+});
 $('soundBtn').addEventListener('click', () => { AudioKit.enabled = !AudioKit.enabled; renderAllUI(); });
 $('helpBtn').addEventListener('click', showIntroModal);
 $('resetBtn').addEventListener('click', () => startNewRun());
@@ -16288,7 +16750,7 @@ function stepFrame(rawDt){
   for (let i = 0; i < steps; i++) tick(rawDt);
 }
 function loop(ts){
-  const rawDt = Math.min(0.05, (ts - lastTs) / 1000);
+  const rawDt = Math.min(0.05, Math.max(0, (ts - lastTs) / 1000));
   lastTs = ts;
   perfStats.frameCount++;
   perfStats.fpsTimer += rawDt;
@@ -16298,7 +16760,12 @@ function loop(ts){
     perfStats.fpsTimer = 0;
   }
   if (game) {
-    stepFrame(rawDt);
+    _inMainLoopFrame = true;
+    try {
+      stepFrame(rawDt);
+    } finally {
+      _inMainLoopFrame = false;
+    }
     render();
     uiAccum += rawDt;
     if (uiAccum >= 0.14) {
@@ -16355,12 +16822,15 @@ window.BG60 = {
   openAffixTransferModal, renderAffixTransferModal,
   // Stage 5: W29 Real-Time Final Prep, Full-Boundary Transaction Lock, Shop Confirm Draft, W30 Boss Intel & 3-Phase Signature Lock
   isFinalPrepActionLocked, hasPendingW29WaveRewards, getFinalPrepState, syncW29FinalPrepStart,
+  syncW29FinalPrepClock, getMonotonicNowMs, setMonotonicClockForTest, setPaused,
+  isCancelablePrepModal, closeCancelablePrepModals,
   startW30Early, resolveW29FinalPrepTimeout,
   openShopPurchaseConfirm, confirmShopPurchase, cancelShopPurchaseConfirm,
   isW30BossIntelRevealed, getW30BossIntel, getW30BattleState, spawnHealOrb,
   // Stage 6: Meta Progression, Fixed 4-Pt Budget, Anti-Dilution Pools, Versioned Persistence, Anti-Farm Rewards & Real Attribution
   getMetaConfig, getMetaMainSpec, getMetaAuxSpec, getMetaPackSpec,
-  createDefaultMetaSave, normalizeMetaSave, loadMetaSave, saveMetaSave, getMetaSave,
+  createDefaultMetaSave, normalizeMetaSave, migrateMetaSave, loadMetaSave, saveMetaSave, getMetaSave,
+  getMetaStorageStatus, exportRawCorruptedMetaSave, retryPendingMetaSave,
   resetMetaSave, exportMetaSave, importMetaSave,
   getMetaLoadoutBudget, isMetaLoadoutLocked, setMetaMainLegacy, toggleMetaAuxLegacy, setMetaLoadout, unlockMetaItem,
   lockMetaLoadoutForRun, getActiveMetaLoadout, getActiveMetaMain, hasMetaAux,
