@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const distDir = resolve(projectRoot, '../dist');
-const expectedName = 'Border-Guard-v0.60-modular-preview.html';
+const expectedName = 'Border-Guard-v0.60.html';
 const builtFile = resolve(distDir, expectedName);
 const releaseDir = resolve(projectRoot, '../release');
 const releaseFile = resolve(releaseDir, expectedName);

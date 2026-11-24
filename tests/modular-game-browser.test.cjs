@@ -8,7 +8,7 @@ const { execFileSync } = require('node:child_process');
 const { resolveChromeBin, toFileUrl } = require('./helpers/chrome-bin.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
-const HTML_PATH = path.join(ROOT, 'release', 'Border-Guard-v0.60-modular-preview.html');
+const HTML_PATH = path.join(ROOT, 'release', 'Border-Guard-v0.60.html');
 const CHROME_BIN = resolveChromeBin();
 
 test('Modular v0.60 game opens from file:// and boots on desktop and mobile viewports', () => {

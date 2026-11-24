@@ -10,7 +10,7 @@
 | Phase 4.1–4.4 | `ui/{vfx,feedback,canvas,shared,modals,hud,input}`、`debug/{presets,test-api}`、`app/{game-loop,bootstrap}`，彻底删除 `src/legacy/game.js` | 已完成 | 298 unit + 3 arch + parity + E2E + 43 baseline |
 | Phase 5 | 零 DOM `headless-w1-to-w30.test.mjs`（12 用例）、`test:parity` 三种子与清理加固、`package.json` `test:all`、CI 工作流升级 | 已完成 | `npm run build` + `npm run test:all` 七组全绿 |
 | Phase 6 | 刷新 `AGENTS.md`、`README.md`、`PROJECT_HANDOFF.md`、`task_plan.md`、`progress.md`（保留历史记录） | 已完成 | 文档与仓库现状核对一致 |
-| Phase 7 | 构建产物切换至 `release/Border-Guard-v0.60.html`、`localStorage` 跨版兼容校验与阶段一最终验收 | 待执行 | 全套 `test:all` + 跨版存档校验 |
+| Phase 7 | 构建产物切换至 `release/Border-Guard-v0.60.html`、双向 `localStorage` Meta 存档兼容校验与阶段一最终验收 | 已完成 | `npm run build` + `npm run test:all` 七组全绿（含 `test:parity` 2/2） |
 | 阶段二（门控后） | 仅在阶段一验收确认后启动：五维度深度诊断报告（P0/P1/P2）→ 用户确认选定项 → 按项实施与回归 | 待阶段一确认 | — |
 
 ---

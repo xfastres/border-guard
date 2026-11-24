@@ -10,7 +10,7 @@ const { resolveChromeBin, toFileUrl } = require('../helpers/chrome-bin.cjs');
 
 const root = path.resolve(__dirname, '../..');
 const originalHtml = path.join(root, 'Border-Guard-v0.60.html');
-const modularHtml = path.resolve(root, process.env.BG_MODULAR_HTML || 'release/Border-Guard-v0.60-modular-preview.html');
+const modularHtml = path.resolve(root, process.env.BG_MODULAR_HTML || 'release/Border-Guard-v0.60.html');
 
 async function withTimeout(promise, label, ms = 20000) {
   let timer;
@@ -136,6 +136,16 @@ async function openGame(t, chromeBin, html, label) {
   return {
     exceptions,
     consoleErrors,
+    async evalFn(fn, ...args) {
+      const serializedArgs = args.map(arg => JSON.stringify(arg)).join(', ');
+      const { result, exceptionDetails } = await send('Runtime.evaluate', {
+        expression: `(${fn.toString()})(${serializedArgs})`,
+        returnByValue: true,
+      });
+      assert.equal(exceptionDetails, undefined,
+        `${label} eval error: ${exceptionDetails?.exception?.description || exceptionDetails?.text || 'unknown error'}`);
+      return result.value;
+    },
     async snapshot(seed) {
       const { result, exceptionDetails } = await send('Runtime.evaluate', {
         expression: `(${collectSnapshot.toString()})(${seed})`,
@@ -252,4 +262,80 @@ test('original and modular v0.60 match in Chrome for seeds 2026, 1337 and 9527',
     }
     assert.deepEqual(actual, expected, `Seed ${seed}: modular snapshot differs from the original`);
   }
+});
+
+test('original and modular v0.60 share bidirectional localStorage Meta save compatibility in Chrome', { timeout: 60000 }, async t => {
+  assert.ok(statSync(originalHtml, { throwIfNoEntry: false })?.isFile(), `Original baseline missing: ${originalHtml}`);
+  assert.ok(statSync(modularHtml, { throwIfNoEntry: false })?.isFile(), `Modular HTML missing: ${modularHtml}. Run npm run build.`);
+  const chromeBin = resolveChromeBin();
+  const original = await openGame(t, chromeBin, originalHtml, 'original-meta');
+  const modular = await openGame(t, chromeBin, modularHtml, 'modular-meta');
+
+  const fromOriginal = await original.evalFn(() => {
+    const api = window.BG60;
+    const { storageKey } = api.getMetaConfig();
+    api.resetMetaSave();
+    api.startNewRun(2026, false);
+    const preset = api.loadTestPreset({ wave: 10, tier: 'standard', build: 'fire', seed: 2026 });
+    if (!preset.ok) throw new Error('W10 preset failed in original');
+    api.finishGame(false);
+    const raw = window.localStorage.getItem(storageKey);
+    const save = api.getMetaSave();
+    const status = api.getMetaStorageStatus();
+    return { storageKey, raw, save, status, exported: api.exportMetaSave() };
+  });
+
+  assert.equal(fromOriginal.status.state, 'ok');
+  assert.equal(typeof fromOriginal.raw, 'string');
+  assert.ok(fromOriginal.save.legacyShards > 0, 'Original W10 settlement should grant Meta shards');
+  assert.equal(fromOriginal.save.stats.totalRuns, 1);
+
+  const loadedInModular = await modular.evalFn((storageKey, raw) => {
+    const api = window.BG60;
+    if (api.getMetaConfig().storageKey !== storageKey) {
+      throw new Error(`Storage key mismatch: ${api.getMetaConfig().storageKey} !== ${storageKey}`);
+    }
+    window.localStorage.setItem(storageKey, raw);
+    api.loadMetaSave();
+    const loadedSave = api.getMetaSave();
+    const loadedStatus = api.getMetaStorageStatus();
+    const loadedExported = api.exportMetaSave();
+
+    api.startNewRun(1337, false);
+    const preset = api.loadTestPreset({ wave: 20, tier: 'standard', build: 'frost', seed: 1337 });
+    if (!preset.ok) throw new Error('W20 preset failed in modular');
+    api.finishGame(false);
+    return {
+      loadedSave,
+      loadedStatus,
+      loadedExported,
+      updatedRaw: window.localStorage.getItem(storageKey),
+      updatedSave: api.getMetaSave(),
+      updatedStatus: api.getMetaStorageStatus(),
+    };
+  }, fromOriginal.storageKey, fromOriginal.raw);
+
+  assert.equal(loadedInModular.loadedStatus.state, 'ok');
+  assert.deepEqual(loadedInModular.loadedSave, fromOriginal.save);
+  assert.deepEqual(JSON.parse(loadedInModular.loadedExported), JSON.parse(fromOriginal.exported));
+  assert.equal(loadedInModular.updatedStatus.state, 'ok');
+  assert.equal(loadedInModular.updatedSave.stats.totalRuns, 2);
+  assert.ok(loadedInModular.updatedSave.legacyShards > fromOriginal.save.legacyShards);
+
+  const roundTripToOriginal = await original.evalFn((storageKey, raw) => {
+    const api = window.BG60;
+    window.localStorage.setItem(storageKey, raw);
+    api.loadMetaSave();
+    return {
+      save: api.getMetaSave(),
+      status: api.getMetaStorageStatus(),
+    };
+  }, fromOriginal.storageKey, loadedInModular.updatedRaw);
+
+  assert.equal(roundTripToOriginal.status.state, 'ok');
+  assert.deepEqual(roundTripToOriginal.save, loadedInModular.updatedSave);
+  assert.deepEqual(original.exceptions, [], 'original-meta uncaught JS exceptions');
+  assert.deepEqual(original.consoleErrors, [], 'original-meta console.error entries');
+  assert.deepEqual(modular.exceptions, [], 'modular-meta uncaught JS exceptions');
+  assert.deepEqual(modular.consoleErrors, [], 'modular-meta console.error entries');
 });

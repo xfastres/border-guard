@@ -13,7 +13,7 @@
   - `src/ui/`：样式（8 份 CSS）、Web Audio 音频、VFX、提示反馈、Canvas 2D 渲染与相机、共享格式化、弹窗系统、零闪烁 HUD 协调器与输入控制器。
   - `src/debug/`：测试预设 `presets.js` 与 `window.BG60` / `window.BG52` 公开调试 API `test-api.js`。
   - `src/app/`：根装配 `bootstrap.js`（提供零 DOM 纯系统工厂 `createGameSystems` 与浏览器启动 `bootBrowserGame`）与主循环 `game-loop.js`。
-- **离线单文件构建**：使用 Vite + `vite-plugin-singlefile` 将全部源码与样式内联打包为单个可离线双击打开的 HTML（当前预览输出 `release/Border-Guard-v0.60-modular-preview.html`，Phase 7 将切换为正式交付路径 `release/Border-Guard-v0.60.html`）。
+- **离线单文件构建**：使用 Vite + `vite-plugin-singlefile` 将全部源码与样式内联打包为单个可离线双击打开的正式交付 HTML：`release/Border-Guard-v0.60.html`（521,949 字节，1 个内联 `<script>`，0 外部静态资源依赖；`release/` 已被 `.gitignore` 忽略，运行 `npm run build` 即可生成）。
 
 ### 开发、构建与验证命令（要求 Node.js >= 22.12，浏览器测试需本机 Chrome/Chromium）
 

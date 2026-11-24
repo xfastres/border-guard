@@ -88,6 +88,10 @@
   - 实测结果：`npm run build` PASS（90 模块，521,949 B）；`npm run test:all` 七组全绿退出码 0（`test:unit` 298/298、`test:integration` 12/12、`test:arch` 3/3、`test:parity` 1/1 三种子、`test:modular-game` 1/1、`test:e2e:modular` 6 场景 0 异常、`test:baseline` 43/43）；GitHub Actions 远程作业未运行。
 - **Phase 6（工程规范与交接文档刷新）**：已完成。
   - 更新 `AGENTS.md`、`README.md`、`PROJECT_HANDOFF.md`、`task_plan.md` 与 `progress.md`，全面同步 v0.60 模块化分层、命令清单与测试现状，完整保留全部历史版本与交接段落（`src/`、构建脚本与冻结文件零修改）。
+- **Phase 7（正式单文件交付 `release/Border-Guard-v0.60.html` 与阶段一终验）**：已完成并经全量实测验收。
+  - 将构建输出、校验脚本、测试脚本与 CI 工作流正式切换至 `release/Border-Guard-v0.60.html`（`vite.config.js`、`scripts/verify-single-file.mjs`、`package.json`、`tests/modular-game-browser.test.cjs`、`tests/parity/v060-modular-parity.test.cjs`、`.github/workflows/modular-shell-build.yml`），根目录原版 `Border-Guard-v0.60.html` 与 `balance/v060-baseline.json` 保持字节未变。
+  - 在 `tests/parity/v060-modular-parity.test.cjs` 新增真实 Chrome 双向 `localStorage` Meta 存档兼容用例（原版写入 → 模块版加载并推进结算 → 原版回读逐字段 `deepEqual`）。
+  - 最终实测结果：`npm run build` PASS（`release/Border-Guard-v0.60.html`，90 模块，521,949 B，1 内联脚本）；`npm run test:all` 七组全绿退出码 0（`test:unit` 298/298、`test:integration` 12/12、`test:arch` 3/3、`test:parity` 2/2 含三种子等价与双向 `localStorage` 兼容、`test:modular-game` 1/1 桌面+手机、`test:e2e:modular` 6 场景 0 异常、`test:baseline` 43/43）；冻结基线零改动；GitHub Actions 远程作业未运行。
 
 ---
 

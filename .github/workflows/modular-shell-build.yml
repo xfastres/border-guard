@@ -47,7 +47,7 @@ jobs:
         run: npm run test:baseline
 
   build:
-    name: Build offline single-file game preview
+    name: Build offline single-file game release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -77,18 +77,18 @@ jobs:
       - name: Compare the modular game with the original in Chrome
         run: npm run test:parity
 
-      - name: Open modular game preview via file URL in Chrome
+      - name: Open modular game release via file URL in Chrome
         run: npm run test:modular-game
 
       - name: Run interactive E2E against the modular build
         env:
-          BG_GAME_HTML: release/Border-Guard-v0.60-modular-preview.html
+          BG_GAME_HTML: release/Border-Guard-v0.60.html
         run: node --test tests/v060-e2e-browser.test.cjs
 
-      - name: Upload modular game preview artifact
+      - name: Upload modular single-file HTML release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: border-guard-modular-game-preview
-          path: release/Border-Guard-v0.60-modular-preview.html
+          name: border-guard-v060-modular-single-file
+          path: release/Border-Guard-v0.60.html
           if-no-files-found: error
           retention-days: 14

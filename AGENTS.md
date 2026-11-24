@@ -2,7 +2,7 @@
 
 ## 当前工程阶段
 
-当前 v0.60 模块化重构已完成 Phase 0–6：`src/legacy/game.js` 已彻底拆解并删除（`src/legacy/` 仅保留退役说明 `README.md`，0 个 `.js` 文件），全部源码已按单向分层组织为 90 个构建模块（`src/data/` → `src/core/` → `src/systems/` → `src/ui/` & `src/debug/` → `src/app/`）。根目录 `Border-Guard-v0.60.html` 作为冻结原版基线保持字节未变。
+当前 v0.60 阶段一模块化重构（Phase 0–7）已全部完成并验收：`src/legacy/game.js` 已彻底拆解并删除（`src/legacy/` 仅保留退役说明 `README.md`，0 个 `.js` 文件），全部源码已按单向分层组织为 90 个构建模块（`src/data/` → `src/core/` → `src/systems/` → `src/ui/` & `src/debug/` → `src/app/`）。根目录 `Border-Guard-v0.60.html` 作为冻结原版基线保持字节未变。
 
 新静态数据放入 `src/data/`，状态容器/查询/纯函数放入 `src/core/`，业务规则按子域（`meta` / `equipment` / `economy` / `progression` / `hero` / `combat` / `run`）放入 `src/systems/` 并遵循 `createXxx(runtimeCtx, deps)` 工厂依赖注入，绘制/弹窗/HUD/输入/音频放入 `src/ui/`，调试预设与对外 API 放入 `src/debug/`，根装配与主循环放入 `src/app/`。禁止在 `src/legacy/` 新增任何代码。
 
@@ -37,13 +37,13 @@
 - `npm run test:unit`：运行全部 ES 模块单元测试（含 AST 架构门禁）。
 - `npm run test:integration`：运行零 DOM / 零浏览器纯 ES 模块 W1→W30 全链路与 BUG-01～BUG-10 集成测试。
 - `npm run test:arch`：单独运行 AST 分层边界、零循环依赖、legacy 退役与冻结原版哈希门禁。
-- `npm run test:parity`：真实 Chrome CDP 同种子（`2026` / `1337` / `9527`）原版 vs 模块版等价校验。
+- `npm run test:parity`：真实 Chrome CDP 同种子（`2026` / `1337` / `9527`）原版 vs 模块版全量等价校验与双向 `localStorage` Meta 存档兼容校验。
 - `npm run test:modular-game`：用 Chrome 通过 `file://` 检查单文件在桌面与手机视口离线启动。
-- `npm run test:e2e:modular`：对模块化构建产物运行 6 场景真实 Chrome 交互 E2E。
+- `npm run test:e2e:modular`：对模块化单文件交付产物运行 6 场景真实 Chrome 交互 E2E。
 - `npm run test:baseline`：运行根目录原版 `Border-Guard-v0.60.html` 全部 43 项回归测试。
 - `npm run test:all`：依次执行上述全部 7 组测试套件。
 
-当前阶段构建产物为 `release/Border-Guard-v0.60-modular-preview.html`（Phase 7 将切换为正式单文件交付产物 `release/Border-Guard-v0.60.html` 并完成阶段一终验）。
+正式单文件交付产物为 `release/Border-Guard-v0.60.html`（由 `npm run build` 生成，`.gitignore` 已忽略构建输出目录，根目录原版 `Border-Guard-v0.60.html` 保持冻结未变）。
 
 ## 交付要求
 
