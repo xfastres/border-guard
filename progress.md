@@ -35,6 +35,10 @@
   - 迁出 10 个背包装卸/回收/强化/安全领奖函数至 `src/systems/equipment/inventory.js` 与 7 个词条转移台函数至 `src/systems/equipment/transfer.js`（工厂依赖注入确保 0 循环依赖，`src/legacy/game.js` 降至 10,658 行）。
   - 新增 `tests/unit/equipment-inventory-transfer.test.mjs`（16 项无 DOM 单测）。
   - 实测结果：`npm run build` PASS（483,727 B）；`npm run test:unit` 77/77 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
+- **Phase 3.6（`src/systems/economy/` Part B 商店刷新/购买与 W29 二次确认）**：已完成并经主控独立审查与实测验收。
+  - 迁出 7 个商店与灵印交易函数至 `src/systems/economy/shop.js` 及 3 个 W29 购买草稿函数至 `src/systems/economy/shop-confirm.js`（`src/legacy/game.js` 降至 10,315 行）。
+  - 新增 `tests/unit/economy-shop.test.mjs`（18 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（485,970 B）；`npm run test:unit` 95/95 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 
