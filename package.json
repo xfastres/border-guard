@@ -11,7 +11,8 @@
     "build": "vite build && node scripts/verify-single-file.mjs",
     "preview": "vite preview",
     "check:single-file": "node scripts/verify-single-file.mjs",
-    "test:baseline": "node --test tests/v060-audit-phaseA.test.cjs tests/v060-audit-phaseB.test.cjs tests/v060-stage1.test.cjs tests/v060-stage2.test.cjs tests/v060-stage3.test.cjs tests/v060-stage4.test.cjs tests/v060-stage5.test.cjs && node --test tests/v060-stage6.test.cjs && node --test tests/v060-e2e-browser.test.cjs"
+    "test:baseline": "node --test tests/v060-audit-phaseA.test.cjs tests/v060-audit-phaseB.test.cjs tests/v060-stage1.test.cjs tests/v060-stage2.test.cjs tests/v060-stage3.test.cjs tests/v060-stage4.test.cjs tests/v060-stage5.test.cjs && node --test tests/v060-stage6.test.cjs && node --test tests/v060-e2e-browser.test.cjs",
+    "test:modular-shell": "node --test tests/modular-shell-browser.test.cjs"
   },
   "devDependencies": {
     "vite": "8.3.8",
