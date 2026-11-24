@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const distDir = resolve(projectRoot, '../dist');
-const expectedName = 'Border-Guard-v0.60-modular-shell.html';
+const expectedName = 'Border-Guard-v0.60-modular-preview.html';
 const builtFile = resolve(distDir, expectedName);
 const releaseDir = resolve(projectRoot, '../release');
 const releaseFile = resolve(releaseDir, expectedName);
@@ -38,8 +38,8 @@ if (
 }
 
 const html = readFileSync(builtFile, 'utf8');
-if (!html.includes('name="bg-build-kind" content="modular-shell"')) {
-  fail('Build marker is missing; the output may not come from the modular shell entry.');
+if (!html.includes('name="bg-build-kind" content="modular-game"')) {
+  fail('Build marker is missing; the output may not come from the modular game entry.');
 }
 
 const scriptTags = html.match(/<script\b[^>]*>/gi) ?? [];
@@ -55,7 +55,7 @@ if (externalStylesheets.length > 0) {
   fail('An external stylesheet reference remains.');
 }
 
-if (html.includes('/src/main.js') || html.includes('/assets/')) {
+if (html.includes('/src/main.js') || html.includes('/src/ui/styles/') || html.includes('/assets/')) {
   fail('A development or external asset path remains in the output.');
 }
 
@@ -63,5 +63,5 @@ mkdirSync(releaseDir, { recursive: true });
 copyFileSync(builtFile, releaseFile);
 
 const stats = statSync(releaseFile);
-console.log(`PASS: one-file HTML build verified: release/${expectedName}`);
+console.log(`PASS: one-file HTML game build verified: release/${expectedName}`);
 console.log(`PASS: ${stats.size.toLocaleString('en-US')} bytes; inline script tags: ${scriptTags.length}`);

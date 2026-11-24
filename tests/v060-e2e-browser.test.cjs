@@ -15,7 +15,9 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const HTML_PATH = path.join(ROOT, 'Border-Guard-v0.60.html');
+const HTML_PATH = process.env.BG_GAME_HTML
+  ? path.resolve(ROOT, process.env.BG_GAME_HTML)
+  : path.join(ROOT, 'Border-Guard-v0.60.html');
 const FILE_URL = `file://${HTML_PATH}`;
 const CHROME_BIN = '/usr/bin/google-chrome';
 

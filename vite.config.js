@@ -9,7 +9,7 @@ export default defineConfig({
   root: projectRoot,
   plugins: [
     viteSingleFile({
-      outputFileName: 'Border-Guard-v0.60-modular-shell.html',
+      outputFileName: 'Border-Guard-v0.60-modular-preview.html',
     }),
   ],
   build: {

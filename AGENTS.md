@@ -2,9 +2,9 @@
 
 ## 当前工程阶段
 
-当前模块化重构处于 Phase 1：只建立 ES Modules / Vite 构建骨架和单 HTML 输出验证。原版可玩游戏仍是根目录的 `Border-Guard-v0.60.html`。
+当前模块化重构已完成 Phase 0–1，并进入 Phase 2.1：原版 HTML、CSS、JavaScript 已拆为独立入口、样式文件和 legacy 运行时模块。`src/legacy/game.js` 暂时仍是完整旧 IIFE，不代表业务模块化已完成。原版可玩基线仍是根目录的 `Border-Guard-v0.60.html`。
 
-在 Phase 2 依赖图和迁移设计完成前，不得开始批量迁移业务代码。
+下一步按 `docs/architecture/v060-dependency-audit.md` 先迁移静态数据和 Core 边界，再迁移业务系统。禁止一次性批量拆分 314 个函数。
 
 ## 不可违反
 
@@ -37,7 +37,7 @@
 - `npm run build`：构建并验证单文件 HTML。
 - `npm run preview`：预览构建结果。
 
-Phase 1 构建产物为 `release/Border-Guard-v0.60-modular-shell.html`，它是骨架验证页，不是游戏版本。
+当前构建产物为 `release/Border-Guard-v0.60-modular-preview.html`，它是从原版迁移出来的可玩预览；业务代码仍处于 legacy 模块，不能宣称最终模块化完成。
 
 ## 交付要求
 

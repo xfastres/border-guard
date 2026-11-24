@@ -1,15 +1,127 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="bg-build-kind" content="modular-shell" />
-    <meta name="bg-source-baseline" content="98932a2918ed22f17ea176b4209de76b839160bc" />
-    <meta name="theme-color" content="#101b24" />
-    <title>Border Guard · 模块化工程骨架</title>
-  </head>
-  <body>
-    <div id="app" data-build-kind="modular-shell"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="bg-build-kind" content="modular-game" />
+<meta name="bg-source-baseline" content="98932a2918ed22f17ea176b4209de76b839160bc" />
+<title>边境守卫 v0.60 · 30波试玩版（阶段 1）</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23121e24'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38'%3E%E2%9A%94%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/src/ui/styles/game.css" />
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+
+<header class="topbar" id="topbar">
+  <div class="top-left">
+    <div class="brand">⚔️ 边境守卫 <span class="ver">v0.60 · 30波完整试玩版</span></div>
+    <span class="pill wave-prep" id="wavePill">第 1 / 30 波 · 备战</span>
+    <span class="pill gold" id="goldPill">💰 55</span>
+    <span class="pill" id="matPill" title="普通材料（用于常规装备优化与W20突破强化重抽）">⚙️ 0 锻材</span>
+    <span class="pill" id="tokenPill" title="天命转印符（仅通过天命赌局特殊强化子池获取，用于词条转移台）">🔮 0 转印符</span>
+    <span class="pill" id="shardPill" title="局外传承碎片（仅用于局外横向解锁，不与局内金币互换）">💠 0 碎片</span>
+    <span class="pill hp" id="heroHpPill">❤️ 220/220</span>
+    <button class="pill realm-btn" id="heroPill" type="button" title="当前成长阶段与等级（点击查看属性与W10/W20突破详情）">
+      <span id="heroLvTxt">炼气·初探 Lv.1</span>
+      <span class="xp-bar"><span class="xp-fill" id="xpFill"></span></span>
+    </button>
+    <span class="pill" id="enemyPill" hidden>👾 0</span>
+    <span class="pill fps" id="fpsPill">60 FPS</span>
+  </div>
+  <div class="top-right">
+    <button class="btn" id="speedBtn" type="button">1×</button>
+    <button class="btn" id="pauseBtn" type="button">暂停</button>
+    <button class="btn" id="soundBtn" type="button" title="音效开关">🔊</button>
+    <button class="btn" id="helpBtn" type="button">玩法</button>
+    <button class="btn" id="resetBtn" type="button">重开</button>
+  </div>
+</header>
+
+<section class="subbar" id="subbar">
+  <div class="syn-strip" id="sealStrip"></div>
+  <div class="sub-actions">
+    <div class="skill-strip" id="skillStrip" title="已学领主神通（点击展开属性与伤害构成）"></div>
+    <button class="btn gold" id="w20PrepBtn" type="button" hidden title="W16-W20 预选第二次突破方向与查看 W19 首领情报">⚡ W20 方向预选</button>
+    <button class="btn gold" id="destinyBtn" type="button" title="天命赌局：自由押注金币抽取灵印/构装/丹药/天命专属强化与转印符（备战期可用）">🎲 天命赌局</button>
+    <button class="btn" id="transferBtn" type="button" title="词条转移台：消耗天命转印符与金币，在已穿戴与背包装备间转移词条（备战期可用）">✨ 词条转移台</button>
+    <button class="btn" id="metaLegacyBtn" type="button" title="局外传承配置与解锁（开局前与结算可调整；局内只读展示并锁定配置）">💠 局外传承</button>
+    <button class="meta-badge" id="metaBadge" type="button" title="查看W10/W20突破与配方组合技">✨ 突破 0/2 · 组合 0/4</button>
+    <button class="btn" id="heroPanelBtn" type="button">👑 属性/神通 [C]</button>
+    <button class="btn" id="autoWaveBtn" type="button">自动下波：关</button>
+  </div>
+</section>
+
+<div class="hp-vignette" id="hpVignette"></div>
+<div class="trib-flash" id="tribFlash"></div>
+
+<aside class="battle-hud" id="battleHud">
+  <div class="lh-head" id="battleHudHead" title="战场状态、敌潮威胁与本局战绩">
+    <span>⚔️ 战场情报</span>
+    <button class="btn" id="battleHudToggle" type="button" style="padding:2px 7px;font-size:10.5px">折叠</button>
+  </div>
+  <div class="lh-body" id="battleHudBody"></div>
+</aside>
+
+<aside class="left-hud build-hud" id="leftHud">
+  <div class="lh-head" id="leftHudHead" title="按 [Tab] 或点击折叠/展开构筑总览">
+    <span>🧩 构筑总览</span>
+    <button class="btn" id="leftHudToggle" type="button" style="padding:2px 7px;font-size:10.5px">折叠 [Tab]</button>
+  </div>
+  <div class="lh-body" id="leftHudBody"></div>
+</aside>
+
+<aside class="inspector" id="inspector" hidden>
+  <div class="insp-head">
+    <div class="insp-title" id="inspTitle">领主</div>
+    <button class="btn" id="inspClose" type="button" style="padding:3px 8px">关闭</button>
+  </div>
+  <div class="insp-sub" id="inspSub"></div>
+  <div class="stat-grid" id="inspStats"></div>
+  <div class="insp-sec-lbl" id="inspSlotLbl">领主全局构装（4 槽 · 点击装卸）</div>
+  <div class="slot-row" id="inspSlots"></div>
+  <div class="gear-fx-list" id="inspGearFx"></div>
+  <div class="insp-actions" id="inspActions"></div>
+  <div class="insp-sec-lbl" id="inspSkillLbl" hidden>已选神通 · 伤害构成与升级效果</div>
+  <div class="skill-list" id="inspSkills"></div>
+</aside>
+
+<div class="toast" id="toast" hidden></div>
+<div class="banner" id="banner" hidden>
+  <div class="bt" id="bannerTitle"></div>
+  <div class="bs" id="bannerSub"></div>
+</div>
+
+<div class="dock-wrap">
+  <div class="dock" id="dock">
+    <div class="dock-sec" id="heroSkillSec">
+      <button class="act-btn" id="dashBtn" type="button">
+        <span class="k">Space</span><span class="ic">🔥</span><span class="nm">烈焰冲刺</span><span class="sb">位移+火径</span>
+        <span class="cd-mask" id="dashCd" hidden></span>
+      </button>
+      <button class="act-btn" id="ultBtn" type="button">
+        <span class="k">R</span><span class="ic">⚡</span><span class="nm">全军超载</span><span class="sb">5s 狂暴</span>
+        <span class="cd-mask" id="ultCd" hidden></span>
+      </button>
+    </div>
+    <div class="dock-div"></div>
+    <div class="dock-gold" id="dockGold"><span class="lbl">💰 金币</span><b id="dockGoldNum">55</b></div>
+    <div class="dock-sec" id="shopSec"></div>
+    <button class="act-btn" id="rerollBtn" type="button">
+      <span class="k">Q</span><span class="ic">🎲</span><span class="nm">刷新商店</span><span class="sb" id="rerollCost">5 金币</span>
+    </button>
+    <div class="dock-div"></div>
+    <div class="bag-tray" id="bagTray"></div>
+    <div class="dock-div"></div>
+    <button class="act-btn primary" id="waveBtn" type="button">
+      <span class="k">Enter</span><span class="ic">⚔️</span><span class="nm" id="waveBtnNm">开始第 1 波</span><span class="sb" id="waveBtnSb">备战中</span>
+    </button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
 </html>
