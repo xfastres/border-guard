@@ -1,5 +1,8 @@
 import BALANCE from '../data/balance.js';
 import AudioKit from '../ui/audio/audio.js';
+import { createCanvasRenderer } from '../ui/canvas/index.js';
+import { createFeedbackUI } from '../ui/feedback/feedback.js';
+import { createVfxManager } from '../ui/vfx/vfx.js';
 import { clamp, xpForLevel } from '../core/math.js';
 import { createRuntimeContext } from '../core/runtime-context.js';
 import { createMetaSystem } from '../systems/meta/index.js';
@@ -27,11 +30,8 @@ import {
 import {
   W,
   H,
-  CELL,
   MAIN_WAVES,
   MAX_ENEMIES,
-  MAX_FLOATS,
-  MAX_RINGS,
   HERO_GEAR_SLOTS,
   SHRINE_WAVES,
   ELEMENTS,
@@ -414,6 +414,19 @@ function checkEligibleNewMilestones(victory, g = game, save = getMetaSave()){
   return findNewMetaMilestones(victory, save, g);
 }
 
+const $ = id => document.getElementById(id);
+const canvas = $('gameCanvas');
+const ctx = canvas.getContext('2d');
+const perfStats = { fps: 60, frameCount: 0, fpsTimer: 0, culledTiles: 0, culledProps: 0 };
+const vfxManager = createVfxManager(runtimeCtx);
+const feedbackUI = createFeedbackUI({ getEl: $ });
+const canvasRenderer = createCanvasRenderer(runtimeCtx, {
+  canvas, ctx, getEl: $, perfStats, hero: heroStats, unlock: unlockSystem, combat: combatSystem,
+});
+const { addRing, addFloat, updateVfx } = vfxManager;
+const { toast, showBanner, setDangerVignette, flashScreen, hideTransientFeedback } = feedbackUI;
+const { cam, fitCamera, updateCamera, resetCamera, screenToWorld, worldToScreen, render } = canvasRenderer;
+
 // Bind adapters before the initial Meta load. Viewport and input are read on demand.
 runtimeCtx.bindPorts({
   storage: { getStorage: getMetaStorage },
@@ -423,9 +436,7 @@ runtimeCtx.bindPorts({
     toast, showBanner, flashScreen, renderAllUI, setDangerVignette, setPaused,
     resetRunUI() {
       lastShopKey = lastSynKey = lastBagKey = lastInspKey = lastArtKey = lastSkillKey = lastLeftHudKey = lastBattleHudKey = '';
-      $('banner').hidden = true;
-      $('toast').hidden = true;
-      setDangerVignette(false);
+      hideTransientFeedback();
     },
   },
   modals: {
@@ -438,7 +449,7 @@ runtimeCtx.bindPorts({
   },
   viewport: {
     screenToWorld, worldToScreen, getCamera: () => cam, updateCamera,
-    resetCamera: () => { fitCamera(); updateCamera(0, true); },
+    resetCamera,
   },
   clock: {
     syncLoopTimestamp: nowMs => { if (typeof lastTs !== 'undefined') lastTs = nowMs; },
@@ -528,46 +539,14 @@ function getSkillBreakdown(key, lv, hs){
 
 
 /* ==================== STATE & HELPERS ==================== */
-const $ = id => document.getElementById(id);
-const canvas = $('gameCanvas');
-const ctx = canvas.getContext('2d');
-
-const cam = { x: (W / 2) * CELL, y: (H / 2) * CELL, zoom: 1, w: 1280, h: 720, dpr: 1 };
 const keys = new Set();
 let pointerDown = false;
 let pointerScreen = null;
 let pointerWorld = null;
-let toastTimer = null, bannerTimer = null;
-const perfStats = { fps: 60, frameCount: 0, fpsTimer: 0, culledTiles: 0, culledProps: 0 };
 
 // UI dirty-tracking keys to guarantee ZERO DOM flicker
 let lastShopKey = '', lastSynKey = '', lastBagKey = '', lastInspKey = '', lastArtKey = '', lastSkillKey = '', lastLeftHudKey = '', lastBattleHudKey = '';
 let compactHudMode = null;
-
-
-
-
-
-
-function toast(msg, warn = false){
-  const el = $('toast');
-  el.textContent = msg;
-  el.className = 'toast' + (warn ? ' warn' : '');
-  el.hidden = false;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.hidden = true; }, 2400);
-}
-function showBanner(title, sub, tone = ''){
-  $('bannerTitle').textContent = title;
-  $('bannerSub').textContent = sub;
-  $('banner').className = 'banner' + (tone ? ' ' + tone : '');
-  $('banner').hidden = false;
-  clearTimeout(bannerTimer);
-  bannerTimer = setTimeout(() => { $('banner').hidden = true; }, 2400);
-}
-
-function setDangerVignette(active){ $('hpVignette')?.classList.toggle('danger', active); }
-
 
 function perkLv(k){ return queryPerkLv(game, k); }
 function hasCombo(k){ return queryHasCombo(game, k); }
@@ -644,27 +623,6 @@ function renderW30EarlyConfirmModal(){
   $('modalBackdrop').hidden = false;
 }
 
-/* ==================== VFX HELPERS ==================== */
-function addRing(x, y, col, r){
-  game.rings.push({ x, y, col, r, t: 0.34, max: 0.34 });
-  if (game.rings.length > MAX_RINGS) game.rings.shift();
-}
-function addFloat(x, y, txt, col='#fff', big=false){
-  game.floats.push({ x, y, txt, col, big, t: big ? 1.05 : 0.72, max: big ? 1.05 : 0.72 });
-  if (game.floats.length > MAX_FLOATS) game.floats.shift();
-}
-function updateVfx(dt){
-  game.shake = Math.max(0, game.shake - dt * 18);
-  for (const r of game.rings) r.t -= dt;
-  game.rings = game.rings.filter(r => r.t > 0);
-  for (const b of game.beams) b.t -= dt;
-  game.beams = game.beams.filter(b => b.t > 0);
-  for (const l of game.bolts) l.t -= dt;
-  game.bolts = game.bolts.filter(l => l.t > 0);
-  for (const f of game.floats) { f.t -= dt; f.y -= dt * (f.big ? 0.95 : 0.68); }
-  game.floats = game.floats.filter(f => f.t > 0);
-}
-
 /* ==================== MODALS (STARTER, LEVEL-UP, W10 BREAKTHROUGH, CHEST, PERK, INTRO, META, END) ==================== */
 function queueModal(m){
   game.pendingModals.push(m);
@@ -722,14 +680,6 @@ function closeModal(){
   }
 }
 
-let flashTimer = null;
-function flashScreen(kind){
-  const el = $('tribFlash');
-  if (!el) return;
-  el.className = 'trib-flash ' + (kind === 'gold' ? 'show-gold' : kind === 'dmg' ? 'show-dmg' : 'show-fail');
-  clearTimeout(flashTimer);
-  flashTimer = setTimeout(() => { el.className = 'trib-flash'; }, kind === 'dmg' ? 180 : 420);
-}
 function renderStarterModal(){
   const m = game?.activeModal;
   if (!m || m.type !== 'starter') return;
@@ -1742,726 +1692,6 @@ function renderAffixTransferModal(){
     });
   });
   $('modalBackdrop').hidden = false;
-}
-
-/* ==================== RENDERING (CAMERA + VIEWPORT-CULLED CANVAS) ==================== */
-function fitCamera(){
-  cam.w = window.innerWidth;
-  cam.h = window.innerHeight;
-  cam.dpr = Math.min(2, window.devicePixelRatio || 1);
-  canvas.width = Math.round(cam.w * cam.dpr);
-  canvas.height = Math.round(cam.h * cam.dpr);
-  const availH = Math.max(300, cam.h - 170);
-  const availW = Math.max(300, cam.w - 24);
-  // Fixed ~24x16 tactical viewport window moving across 64x48 open world
-  cam.zoom = clamp(Math.min(availW / (24 * CELL), availH / (16 * CELL)), 0.72, 1.15);
-  if (game) updateCamera(0, true);
-}
-
-function updateCamera(dt, snap = false){
-  if (!game) return;
-  const worldW = W * CELL, worldH = H * CELL;
-  // Reserve HUD safe margins so world borders & hero are NEVER occluded by topbar/subbar or bottom shop dock
-  const subRect = $('subbar')?.getBoundingClientRect?.();
-  const dockRect = $('dock')?.getBoundingClientRect?.();
-  const topSafePx = clamp((subRect?.bottom || 104) + 14, 70, cam.h * 0.30);
-  const botSafePx = clamp((dockRect?.height || 86) + 22, 70, cam.h * 0.30);
-  const sideSafePx = 18;
-
-  const minCamX = (cam.w / 2 - sideSafePx) / cam.zoom;
-  const maxCamX = worldW - (cam.w / 2 - sideSafePx) / cam.zoom;
-  const minCamY = (cam.h / 2 - topSafePx) / cam.zoom;
-  const maxCamY = worldH - (cam.h / 2 - botSafePx) / cam.zoom;
-
-  let tx = game.hero.x * CELL;
-  let ty = game.hero.y * CELL;
-  if (minCamX >= maxCamX) tx = worldW / 2;
-  else tx = clamp(tx, minCamX, maxCamX);
-  if (minCamY >= maxCamY) ty = worldH / 2;
-  else ty = clamp(ty, minCamY, maxCamY);
-
-  if (snap || dt <= 0) {
-    cam.x = tx; cam.y = ty;
-  } else {
-    const k = 1 - Math.exp(-8.5 * dt);
-    cam.x += (tx - cam.x) * k;
-    cam.y += (ty - cam.y) * k;
-  }
-}
-
-function screenToWorld(sx, sy){
-  return {
-    x: ((sx - cam.w / 2) / cam.zoom + cam.x) / CELL,
-    y: ((sy - cam.h / 2) / cam.zoom + cam.y) / CELL
-  };
-}
-function worldToScreen(wx, wy){
-  return {
-    x: (wx * CELL - cam.x) * cam.zoom + cam.w / 2,
-    y: (wy * CELL - cam.y) * cam.zoom + cam.h / 2
-  };
-}
-
-function render(){
-  if (!game) return;
-  ctx.setTransform(cam.dpr, 0, 0, cam.dpr, 0, 0);
-  ctx.fillStyle = '#091014';
-  ctx.fillRect(0, 0, cam.w, cam.h);
-
-  const sx = game.shake > 0 ? (Math.random() - 0.5) * game.shake : 0;
-  const sy = game.shake > 0 ? (Math.random() - 0.5) * game.shake : 0;
-
-  ctx.save();
-  ctx.translate(cam.w / 2 + sx, cam.h / 2 + sy);
-  ctx.scale(cam.zoom, cam.zoom);
-  ctx.translate(-cam.x, -cam.y);
-
-  drawArena();
-  drawZones();
-  drawPickups();
-  drawEnemies();
-  drawHero();
-  drawArtifacts();
-  drawProjectilesBeamsBolts();
-  drawTopTelegraphs();
-  drawRingsAndFloats();
-
-  ctx.restore();
-
-  // Screen-space offscreen directional arrows (Boss / Elite / Chests) & W30 Boss Top Bar
-  drawEdgeIndicators();
-  drawW30BossTopBar();
-}
-
-function drawTopTelegraphs(){
-  if (!game?.zones?.length) return;
-  for (const z of game.zones) {
-    if (z.kind === 'w30SigTelegraph' || z.kind === 'w30SigShockwave') {
-      const zx = z.x * CELL, zy = z.y * CELL, zr = z.r * CELL;
-      const sx = z.safeX * CELL, sy = z.safeY * CELL, sr = (z.safeR || 2.8) * CELL;
-      const prog = 1 - clamp(z.t / Math.max(0.01, z.max), 0, 1);
-      ctx.save();
-      if (z.kind === 'w30SigTelegraph') {
-        // High-contrast crimson danger ring + sweeping charge wave
-        ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,30,66,0.12)'; ctx.fill();
-        ctx.strokeStyle = '#ff2e63'; ctx.lineWidth = 4; ctx.setLineDash([12, 8]); ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.beginPath(); ctx.arc(zx, zy, Math.max(10, zr * prog), 0, Math.PI * 2);
-        ctx.strokeStyle = '#ffe678'; ctx.lineWidth = 3.5; ctx.stroke();
-      } else {
-        // Erupting high-contrast shockwave rings
-        const curR = Math.max(12, zr * prog);
-        ctx.beginPath(); ctx.arc(zx, zy, curR, 0, Math.PI * 2);
-        ctx.strokeStyle = '#ff2e63'; ctx.lineWidth = 10; ctx.stroke();
-        ctx.beginPath(); ctx.arc(zx, zy, curR, 0, Math.PI * 2);
-        ctx.strokeStyle = '#fff0a0'; ctx.lineWidth = 3.5; ctx.stroke();
-      }
-      // Ultra-clear Emerald/Cyan Safe Zone (drawn on TOP so hero ALWAYS sees safety!)
-      ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(72,255,178,0.24)'; ctx.fill();
-      ctx.strokeStyle = '#62ffb8'; ctx.lineWidth = 4; ctx.stroke();
-      ctx.beginPath(); ctx.arc(sx, sy, sr * 0.72, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1.6; ctx.setLineDash([6, 6]); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.font = '900 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#eafff5';
-      ctx.fillText(z.kind === 'w30SigTelegraph' ? `✅ 安全区 (${z.t.toFixed(1)}s)` : '✅ 安全区(免疫冲击波)', sx, sy - sr - 10);
-      ctx.restore();
-    } else if (z.kind === 'w30RiftRing') {
-      const zx = z.x * CELL, zy = z.y * CELL, zr = z.r * CELL;
-      const prog = 1 - clamp(z.t / Math.max(0.01, z.max), 0, 1);
-      ctx.save();
-      ctx.beginPath(); ctx.arc(zx, zy, Math.max(8, zr * prog), 0, Math.PI * 2);
-      ctx.strokeStyle = '#ff52b8'; ctx.lineWidth = 7; ctx.stroke();
-      ctx.beginPath(); ctx.arc(zx, zy, Math.max(8, zr * prog), 0, Math.PI * 2);
-      ctx.strokeStyle = '#ffe88a'; ctx.lineWidth = 2.5; ctx.stroke();
-      ctx.restore();
-    }
-  }
-}
-
-function drawW30BossTopBar(){
-  if (!game || game.wave !== MAIN_WAVES || game.phase !== 'wave') return;
-  const boss = game.enemies.find(e => e.kind === 'boss6' && e.hp > 0);
-  if (!boss) return;
-  const barW = Math.min(520, Math.max(260, cam.w * 0.44));
-  const barH = 18;
-  const x = (cam.w - barW) / 2;
-  const y = 108;
-  const ratio = clamp(boss.hp / Math.max(1, boss.maxHp), 0, 1);
-  const sigPct = BALANCE.w30Boss?.signatureThresholdPct ?? 0.80;
-  const finPct = BALANCE.w30Boss?.finalPhaseThresholdPct ?? 0.35;
-  const bState = game.w30Battle;
-  const phaseTag = boss.signatureLockActive
-    ? '🛡️ 终焉锁血（命中可挂状态/叠盾 · 0 扣血）'
-    : boss.finalPhaseEntered
-      ? '🔥 末段组合压制（无锁血 · 打空即胜）'
-      : boss.signatureTriggered
-        ? '⚔️ 中段周旋'
-        : '⚔️ 开场交锋';
-
-  ctx.save();
-  ctx.fillStyle = 'rgba(10,16,22,0.86)';
-  ctx.fillRect(x - 10, y - 24, barW + 20, barH + 34);
-  ctx.strokeStyle = boss.signatureLockActive ? '#ffd97d' : '#ff4d6d';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(x - 10, y - 24, barW + 20, barH + 34);
-
-  ctx.font = '900 12px sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = '#fff3d6';
-  ctx.fillText(`👑 深渊主宰 · ${phaseTag}`, x, y - 8);
-  ctx.textAlign = 'right'; ctx.fillStyle = '#ffd97d';
-  ctx.fillText(`${Math.ceil(boss.hp).toLocaleString()} / ${boss.maxHp.toLocaleString()} (${Math.round(ratio * 100)}%) · ${Number(bState?.elapsedSeconds || 0).toFixed(0)}s`, x + barW, y - 8);
-
-  ctx.fillStyle = 'rgba(255,255,255,0.12)';
-  ctx.fillRect(x, y, barW, barH);
-  ctx.fillStyle = boss.signatureLockActive ? '#ffd166' : boss.finalPhaseEntered ? '#ff385c' : '#ff5270';
-  ctx.fillRect(x, y, barW * ratio, barH);
-
-  // 80% Signature & 35% Final Phase threshold markers
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(x + barW * sigPct - 1, y - 2, 2, barH + 4);
-  ctx.fillRect(x + barW * finPct - 1, y - 2, 2, barH + 4);
-  ctx.restore();
-}
-
-function drawArena(){
-  // Strict visible viewport AABB culling (never iterates all 3072 tiles!)
-  const halfW = (cam.w / (2 * cam.zoom)) / CELL;
-  const halfH = (cam.h / (2 * cam.zoom)) / CELL;
-  const cxTile = cam.x / CELL, cyTile = cam.y / CELL;
-  const x0 = Math.max(0, Math.floor(cxTile - halfW) - 1);
-  const x1 = Math.min(W - 1, Math.ceil(cxTile + halfW) + 1);
-  const y0 = Math.max(0, Math.floor(cyTile - halfH) - 1);
-  const y1 = Math.min(H - 1, Math.ceil(cyTile + halfH) + 1);
-
-  let tilesDrawn = 0;
-  for (let y = y0; y <= y1; y++) {
-    for (let x = x0; x <= x1; x++) {
-      ctx.fillStyle = ((x + y) % 2) ? '#121f24' : '#152329';
-      ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
-      tilesDrawn++;
-    }
-  }
-  perfStats.culledTiles = tilesDrawn;
-
-  // Subtle spatial landmark grid every 8 tiles
-  ctx.strokeStyle = 'rgba(130,205,198,0.08)';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  for (let x = Math.ceil(x0 / 8) * 8; x <= x1; x += 8) {
-    ctx.moveTo(x * CELL, y0 * CELL);
-    ctx.lineTo(x * CELL, (y1 + 1) * CELL);
-  }
-  for (let y = Math.ceil(y0 / 8) * 8; y <= y1; y += 8) {
-    ctx.moveTo(x0 * CELL, y * CELL);
-    ctx.lineTo((x1 + 1) * CELL, y * CELL);
-  }
-  ctx.stroke();
-
-  // Culled non-blocking terrain landmarks (ancient rune circles, flagstones, tufts)
-  let propsDrawn = 0;
-  for (const p of runtimeCtx.terrainProps) {
-    const pad = p.rad || 1;
-    if (p.x + pad < x0 || p.x - pad > x1 + 1 || p.y + pad < y0 || p.y - pad > y1 + 1) continue;
-    propsDrawn++;
-    const px = p.x * CELL, py = p.y * CELL;
-    if (p.kind === 'rune') {
-      ctx.beginPath();
-      ctx.arc(px, py, p.rad * CELL, 0, Math.PI * 2);
-      ctx.strokeStyle = p.col;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(px, py, p.rad * CELL * 0.55, 0, Math.PI * 2);
-      ctx.stroke();
-    } else if (p.kind === 'stone') {
-      ctx.save();
-      ctx.translate(px, py); ctx.rotate(p.rot);
-      ctx.fillStyle = 'rgba(170,205,205,0.06)';
-      const sw = p.s * CELL;
-      ctx.fillRect(-sw, -sw * 0.65, sw * 2, sw * 1.3);
-      ctx.restore();
-    } else {
-      ctx.beginPath();
-      ctx.arc(px, py, p.s * CELL * 0.55, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(92,195,140,0.08)';
-      ctx.fill();
-    }
-  }
-  perfStats.culledProps = propsDrawn;
-
-  // Glowing Secret Realm Boundary (世界结界光墙)
-  ctx.strokeStyle = 'rgba(108,226,255,0.55)';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(2, 2, W * CELL - 4, H * CELL - 4);
-  ctx.strokeStyle = 'rgba(255,214,102,0.22)';
-  ctx.lineWidth = 10;
-  ctx.strokeRect(7, 7, W * CELL - 14, H * CELL - 14);
-}
-
-function drawArtifacts(){
-  const h = game.hero;
-  const hx = h.x * CELL, hy = h.y * CELL;
-  const inCombat = game.phase === 'wave' && game.enemies.length > 0;
-
-  // Frost Domain perk aura ring + Dual Wind+Frost Aura
-  const fdLv = perkLv('frost_domain');
-  if (fdLv > 0 && inCombat) {
-    const rad = (fdLv >= 2 ? 4.5 : 3.2) * CELL;
-    ctx.save();
-    ctx.beginPath(); ctx.arc(hx, hy, rad, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(108,226,255,0.06)'; ctx.fill();
-    ctx.strokeStyle = 'rgba(108,226,255,0.32)'; ctx.lineWidth = 1.6;
-    ctx.setLineDash([6, 6]); ctx.stroke();
-    ctx.restore();
-  }
-  if (hasDualRes('wind_frost') && inCombat) {
-    ctx.save();
-    ctx.beginPath(); ctx.arc(hx, hy, 3.4 * CELL, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(132,255,216,0.26)'; ctx.lineWidth = 1.8;
-    ctx.setLineDash([10, 6]); ctx.stroke();
-    ctx.restore();
-  }
-
-  // Subtle Realm + Active Seal halo under Hero (no cluttered orbiting balls!)
-  const rCol = getRealm(h.realm).col;
-  if (h.realm > 0 || (inCombat && game.seal)) {
-    const col = (inCombat && game.seal) ? ELEMENTS[game.seal.elem].color : rCol;
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(hx, hy, 22 + h.realm * 2 + Math.sin(performance.now() / 160) * 2, 0, Math.PI * 2);
-    ctx.strokeStyle = col;
-    ctx.globalAlpha = inCombat ? 0.44 : 0.28;
-    ctx.lineWidth = 2.2 + h.realm * 0.35;
-    ctx.stroke();
-    ctx.restore();
-  }
-}
-
-function drawHero(){
-  const h = game.hero;
-  const hx = h.x * CELL, hy = h.y * CELL;
-  const hs = getHeroStats();
-  const rSpec = getRealm(h.realm);
-
-  // Overdrive golden aura
-  if (h.ultTimer > 0) {
-    ctx.beginPath();
-    ctx.arc(hx, hy, 30 + Math.sin(performance.now()/80)*4, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,220,90,0.22)'; ctx.fill();
-    ctx.strokeStyle = '#ffe878'; ctx.lineWidth = 2; ctx.stroke();
-  }
-
-  // Orbiting Blades (旋风飞刃: tightened radius matching combat collision!) + Combo Array Auras
-  const bLv = h.skills.blades || 0;
-  const hasWanjian = hasCombo('wanjian');
-  const hasIceBlades = hasCombo('ice_blades');
-  if (hasWanjian) {
-    const rot = performance.now() / 650;
-    ctx.save();
-    ctx.translate(hx, hy); ctx.rotate(rot);
-    ctx.beginPath(); ctx.arc(0, 0, 1.35 * CELL, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255,228,120,0.45)'; ctx.lineWidth = 2; ctx.setLineDash([7, 5]); ctx.stroke();
-    ctx.setLineDash([]);
-    for (let k = 0; k < 8; k++) {
-      const a = (Math.PI * 2 * k) / 8;
-      ctx.beginPath();
-      ctx.moveTo(Math.cos(a) * 1.15 * CELL, Math.sin(a) * 1.15 * CELL);
-      ctx.lineTo(Math.cos(a) * 1.48 * CELL, Math.sin(a) * 1.48 * CELL);
-      ctx.strokeStyle = 'rgba(255,240,160,0.62)'; ctx.lineWidth = 2; ctx.stroke();
-    }
-    ctx.restore();
-  }
-  if (bLv > 0 && game.phase === 'wave' && game.enemies.length > 0) {
-    const count = bLv + 1;
-    const orbitR = (1.65 + bLv * 0.10) * hs.skillRangeMult * CELL;
-    ctx.beginPath();
-    ctx.arc(hx, hy, orbitR, 0, Math.PI * 2);
-    ctx.strokeStyle = hasIceBlades ? 'rgba(130,245,255,0.42)' : 'rgba(142,244,255,0.12)';
-    ctx.lineWidth = hasIceBlades ? 2.4 : 1.5;
-    ctx.stroke();
-    if (hasIceBlades) {
-      ctx.save();
-      ctx.translate(hx, hy); ctx.rotate(-h.bladeAngle * 0.5);
-      for (let t = 0; t < 2; t++) {
-        ctx.beginPath();
-        for (let p = 0; p < 3; p++) {
-          const a = (Math.PI * 2 * p) / 3 + t * Math.PI;
-          const x = Math.cos(a) * orbitR * 0.92, y = Math.sin(a) * orbitR * 0.92;
-          if (p === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.strokeStyle = 'rgba(160,248,255,0.22)'; ctx.lineWidth = 1.6; ctx.stroke();
-      }
-      ctx.restore();
-    }
-    for (let i = 0; i < count; i++) {
-      const ang = h.bladeAngle + (Math.PI * 2 * i) / count;
-      const bx = hx + Math.cos(ang) * orbitR;
-      const by = hy + Math.sin(ang) * orbitR;
-      ctx.save();
-      ctx.translate(bx, by);
-      ctx.rotate(ang + Math.PI / 2);
-      const bScale = hasIceBlades ? 1.32 : 1.0;
-      ctx.beginPath();
-      ctx.moveTo(0, -12 * bScale); ctx.lineTo(5.5 * bScale, 6 * bScale); ctx.lineTo(0, 3 * bScale); ctx.lineTo(-5.5 * bScale, 6 * bScale); ctx.closePath();
-      ctx.fillStyle = hasIceBlades ? '#b6f8ff' : hasWanjian ? '#ffe888' : '#8ef4ff'; ctx.fill();
-      ctx.strokeStyle = hasIceBlades ? '#52d6ff' : '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
-      ctx.restore();
-    }
-  }
-
-  // Hero Body (size & rim glow scale with Cultivation Realm!)
-  const bodyR = 14 + h.realm * 0.8;
-  ctx.beginPath();
-  ctx.arc(hx, hy, bodyR, 0, Math.PI * 2);
-  ctx.fillStyle = h.invuln > 0 ? '#ffffff' : '#2a8fff';
-  ctx.fill();
-  ctx.strokeStyle = (h.armorBreakT || 0) > 0 ? '#ff6b57' : h.shield > 0 ? '#8ef5ff' : rSpec.col;
-  ctx.lineWidth = (h.armorBreakT || 0) > 0 ? 4 : 3;
-  ctx.stroke();
-  // Crown / realm crest
-  ctx.fillStyle = rSpec.col;
-  ctx.beginPath();
-  ctx.moveTo(hx - 7, hy - 9); ctx.lineTo(hx - 4, hy - 16); ctx.lineTo(hx, hy - 11);
-  ctx.lineTo(hx + 4, hy - 16); ctx.lineTo(hx + 7, hy - 9); ctx.closePath();
-  ctx.fill();
-
-  // HP Bar (Sole Lifeline!)
-  const r = clamp(h.hp / h.maxHp, 0, 1);
-  ctx.fillStyle = 'rgba(0,0,0,0.75)';
-  ctx.fillRect(hx - 18, hy - 25, 36, 6);
-  ctx.fillStyle = r < 0.35 ? '#ff6250' : '#6cf29c';
-  ctx.fillRect(hx - 17, hy - 24, 34 * r, 4);
-}
-
-function drawEdgeIndicators(){
-  const padX = 36, padTop = 108, padBot = 106;
-  const targets = [];
-  for (const e of game.enemies) {
-    if (e.boss) targets.push({ x: e.x, y: e.y, col: '#ff5247', label: 'BOSS' });
-    else if (e.elite) targets.push({ x: e.x, y: e.y, col: e.isShrineBoss ? '#ff3b5c' : '#c978ff', label: e.isShrineBoss ? '妖王' : '精英' });
-  }
-  if (game.shrine && !game.shrine.active && !game.shrine.cleared) {
-    targets.push({ x: game.shrine.x, y: game.shrine.y, col: '#ff4d6d', label: '🩸妖碑' });
-  }
-  for (const c of game.chests) {
-    targets.push({ x: c.x, y: c.y, col: '#ffe066', label: c.legend ? '👑' : '📦' });
-  }
-  for (const t of targets) {
-    const sp = worldToScreen(t.x, t.y);
-    if (sp.x >= 24 && sp.x <= cam.w - 24 && sp.y >= padTop && sp.y <= cam.h - padBot) continue;
-    const cx = cam.w / 2, cy = cam.h / 2;
-    const ang = Math.atan2(sp.y - cy, sp.x - cx);
-    const ix = clamp(sp.x, padX, cam.w - padX);
-    const iy = clamp(sp.y, padTop, cam.h - padBot);
-    ctx.save();
-    ctx.translate(ix, iy);
-    ctx.rotate(ang);
-    ctx.beginPath();
-    ctx.moveTo(12, 0); ctx.lineTo(-7, -7); ctx.lineTo(-4, 0); ctx.lineTo(-7, 7); ctx.closePath();
-    ctx.fillStyle = t.col; ctx.fill();
-    ctx.strokeStyle = '#10191f'; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.restore();
-    ctx.font = '900 10px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillStyle = t.col;
-    ctx.fillText(t.label, ix, iy - 12);
-  }
-}
-
-function drawEnemies(){
-  for (const e of game.enemies) {
-    const ex = e.x * CELL, ey = e.y * CELL;
-    const rad = e.r * CELL;
-
-    // Telegraph leap / charge corridor during windup
-    if (e.aiState === 'windup') {
-      const lineLen = (e.aiKind === 'leap' ? 3.2 : 4.6) * CELL;
-      ctx.save();
-      ctx.strokeStyle = 'rgba(255,70,56,0.72)';
-      ctx.lineWidth = e.boss ? 16 : 8;
-      ctx.setLineDash([8, 6]);
-      ctx.beginPath();
-      ctx.moveTo(ex, ey);
-      ctx.lineTo(ex + e.aiVx * lineLen, ey + e.aiVy * lineLen);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // Unstoppable Gold-Crimson Aura during windup/leap/charge!
-    if (isEnemyUnstoppable(e)) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(ex, ey, rad + 7, 0, Math.PI * 2);
-      ctx.strokeStyle = '#ffcc4d'; ctx.lineWidth = 2.8; ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(ex, ey, rad + 10, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255,82,66,0.65)'; ctx.lineWidth = 1.8; ctx.stroke();
-      ctx.font = '900 10px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillStyle = '#ffdf6e';
-      ctx.fillText('🛡️霸体', ex, ey - rad - 16);
-      ctx.restore();
-    }
-    if (e.elite || e.boss || e.frenzyT > 0) {
-      ctx.beginPath();
-      ctx.arc(ex, ey, rad + 6, 0, Math.PI * 2);
-      ctx.fillStyle = e.boss ? 'rgba(255,65,50,0.22)' : e.isShrineBoss ? 'rgba(255,59,92,0.28)' : e.elite ? 'rgba(190,102,255,0.22)' : 'rgba(255,159,67,0.20)';
-      ctx.fill();
-    }
-    ctx.beginPath();
-    ctx.arc(ex, ey, rad, 0, Math.PI * 2);
-    ctx.fillStyle = e.flash > 0 ? '#ffffff' : e.freezeT > 0 ? '#8ceeff' : e.col;
-    ctx.fill();
-    ctx.strokeStyle = e.fireMarkT > 0 ? '#ff6d38' : e.shield > 0 ? '#6ce2ff' : e.slowT > 0 ? '#7ce8ff' : e.rim;
-    ctx.lineWidth = (e.boss || e.elite || e.shield > 0 || e.fireMarkT > 0) ? 3 : 1.8;
-    ctx.stroke();
-
-    // Fire Mark indicator (W10 Fire breakthrough hook)
-    if (e.fireMarkT > 0) {
-      ctx.font = '900 10px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillStyle = '#ff9a52';
-      ctx.fillText(`🔥×${e.fireMarkStacks || 1}`, ex, ey + rad + 11);
-    }
-
-    // Elite affix tag
-    if (e.elite && e.affixes?.length) {
-      ctx.font = '900 10px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillStyle = e.isShrineBoss ? '#ff8ca0' : '#e6c2ff';
-      ctx.fillText(e.affixes.map(a => a.name).join('·'), ex, ey - rad - 13);
-    }
-
-    // HP Bar for damaged / elites / bosses
-    if (e.hp < e.maxHp || e.elite || e.boss || e.shield > 0) {
-      const bw = e.boss ? 48 : e.elite ? 32 : 20;
-      const r = clamp(e.hp / e.maxHp, 0, 1);
-      ctx.fillStyle = 'rgba(0,0,0,0.72)';
-      ctx.fillRect(ex - bw/2, ey - rad - 9, bw, 4.5);
-      ctx.fillStyle = e.boss ? '#ff4f42' : e.isShrineBoss ? '#ff3b5c' : e.elite ? '#d284ff' : '#ff7b61';
-      ctx.fillRect(ex - bw/2 + 0.5, ey - rad - 8.5, (bw - 1) * r, 3.5);
-      if (e.shield > 0) {
-        const sr = clamp(e.shield / (e.maxHp * 0.16), 0, 1);
-        ctx.fillStyle = '#6ce2ff';
-        ctx.fillRect(ex - bw/2 + 0.5, ey - rad - 11, (bw - 1) * sr, 2);
-      }
-    }
-  }
-}
-
-function drawPickups(){
-  const h = game.hero;
-  const isHarvest = game.phase === 'harvest';
-  for (const g of game.gems) {
-    const gx = g.x * CELL, gy = g.y * CELL;
-    const s = g.big ? 6 : 4;
-    if (isHarvest || g.magnetized) {
-      const dx = h.x * CELL - gx, dy = h.y * CELL - gy;
-      const d = Math.max(1, Math.hypot(dx, dy));
-      const trail = Math.min(26, d * 0.45);
-      ctx.strokeStyle = g.big ? 'rgba(255,228,120,0.55)' : 'rgba(110,244,255,0.48)';
-      ctx.lineWidth = g.big ? 3 : 2;
-      ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx - (dx/d)*trail, gy - (dy/d)*trail); ctx.stroke();
-    }
-    ctx.fillStyle = g.big ? '#ffe478' : '#6ef4ff';
-    ctx.beginPath();
-    ctx.moveTo(gx, gy - s); ctx.lineTo(gx + s * 0.8, gy); ctx.lineTo(gx, gy + s); ctx.lineTo(gx - s * 0.8, gy); ctx.closePath();
-    ctx.fill();
-  }
-  for (const c of game.chests) {
-    const cx = c.x * CELL, cy = c.y * CELL + Math.sin(c.bob) * 3;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 16, 0, Math.PI * 2);
-    ctx.fillStyle = c.legend ? 'rgba(255,196,64,0.3)' : c.shrineTier ? 'rgba(255,65,95,0.34)' : 'rgba(196,120,255,0.28)';
-    ctx.fill();
-    ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(c.legend ? '👑' : c.shrineTier ? '🩸' : '📦', cx, cy);
-  }
-  for (const orb of (game.healOrbs || [])) {
-    const ox = orb.x * CELL, oy = orb.y * CELL + Math.sin(orb.bob || 0) * 3;
-    ctx.beginPath();
-    ctx.arc(ox, oy, 14, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(98,255,184,0.32)'; ctx.fill();
-    ctx.strokeStyle = '#62ffb8'; ctx.lineWidth = 2.2; ctx.stroke();
-    ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('💚', ox, oy);
-  }
-}
-
-function drawZones(){
-  // Optional Blood Shrine (血煞妖碑)
-  if (game.shrine && !game.shrine.cleared) {
-    const s = game.shrine;
-    const sx = s.x * CELL, sy = s.y * CELL, sr = s.r * CELL;
-    ctx.save();
-    ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2);
-    ctx.fillStyle = s.active ? 'rgba(255,48,80,0.24)' : 'rgba(255,58,92,0.14)';
-    ctx.fill();
-    ctx.strokeStyle = s.active ? '#ff8096' : '#ff3b5c';
-    ctx.lineWidth = 2.5;
-    if (!s.active) ctx.setLineDash([6, 5]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    if (!s.active && s.charge > 0) {
-      ctx.beginPath();
-      ctx.arc(sx, sy, sr * clamp(s.charge / 0.30, 0, 1), 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,70,100,0.35)'; ctx.fill();
-    }
-    ctx.font = '900 12px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ff9cb0';
-    ctx.fillText(s.active ? '🩸妖王试炼中' : '🩸血煞妖碑(踩入挑战)', sx, sy - sr - 6);
-    ctx.restore();
-  }
-
-  for (const z of game.zones) {
-    const zx = z.x * CELL, zy = z.y * CELL, zr = z.r * CELL;
-    if (z.kind === 'lava' || z.kind === 'fireVortex') {
-      ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
-      ctx.fillStyle = z.kind === 'fireVortex'
-        ? `rgba(255,120,40,${0.26 * (z.t / z.max)})`
-        : `rgba(255,95,35,${0.25 * (z.t / z.max)})`;
-      ctx.fill();
-      if (z.kind === 'fireVortex') {
-        ctx.strokeStyle = 'rgba(255,190,85,0.65)'; ctx.lineWidth = 2; ctx.stroke();
-      }
-    } else if (z.kind === 'frostVortex' || z.kind === 'frostTrail') {
-      ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(108,226,255,${0.22 * (z.t / z.max)})`; ctx.fill();
-      ctx.strokeStyle = 'rgba(142,244,255,0.45)'; ctx.lineWidth = 1.6; ctx.stroke();
-    } else if (z.kind === 'thunderField') {
-      ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(198,136,255,${0.22 * (z.t / z.max)})`; ctx.fill();
-      ctx.strokeStyle = 'rgba(216,166,255,0.5)'; ctx.lineWidth = 1.8; ctx.stroke();
-    } else if (z.kind === 'enemyLava') {
-      ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,55,30,${0.28 * (z.t / z.max)})`; ctx.fill();
-      ctx.strokeStyle = 'rgba(255,110,60,0.45)'; ctx.lineWidth = 1.5; ctx.stroke();
-    } else if (z.kind === 'poisonPool') {
-      ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(60,245,135,${0.22 * (z.t / z.max)})`; ctx.fill();
-      ctx.strokeStyle = 'rgba(82,255,154,0.45)'; ctx.lineWidth = 1.5; ctx.stroke();
-    } else if (z.kind === 'poisonBomb') {
-      const prog = 1 - z.t / z.max;
-      ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(82,255,154,0.14)'; ctx.fill();
-      ctx.strokeStyle = '#52ff9a'; ctx.lineWidth = 2; ctx.stroke();
-      ctx.beginPath(); ctx.arc(zx, zy, zr * prog, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(82,255,154,0.30)'; ctx.fill();
-    } else if (z.kind === 'bossWave') {
-      const prog = 1 - z.t / z.max;
-      ctx.beginPath(); ctx.arc(zx, zy, Math.max(6, zr * prog), 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(255,90,65,${1 - prog * 0.4})`; ctx.lineWidth = 6; ctx.stroke();
-    } else if (z.kind === 'bossSlam') {
-      const prog = 1 - z.t / z.max;
-      ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,55,40,0.16)'; ctx.fill();
-      ctx.strokeStyle = '#ff5642'; ctx.lineWidth = 2.5; ctx.stroke();
-      ctx.beginPath(); ctx.arc(zx, zy, zr * prog, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,70,50,0.28)'; ctx.fill();
-    }
-  }
-}
-
-function drawProjectilesBeamsBolts(){
-  for (const p of game.projectiles) {
-    const px = p.x * CELL, py = p.y * CELL;
-    if (p.kind === 'firewave') {
-      const a = Math.atan2(p.vy, p.vx);
-      ctx.save(); ctx.translate(px, py); ctx.rotate(a);
-      if (p.comboStyle === 'wanjian') {
-        ctx.beginPath();
-        ctx.moveTo(20, 0); ctx.lineTo(-2, -6); ctx.lineTo(-6, -2); ctx.lineTo(-16, -2);
-        ctx.lineTo(-16, 2); ctx.lineTo(-6, 2); ctx.lineTo(-2, 6); ctx.closePath();
-        ctx.fillStyle = '#ffe878'; ctx.fill();
-        ctx.strokeStyle = '#8ef8ff'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-6, -8); ctx.lineTo(-6, 8);
-        ctx.strokeStyle = '#ffd24c'; ctx.lineWidth = 2.5; ctx.stroke();
-      } else {
-        ctx.beginPath(); ctx.arc(0, 0, 14, -1.1, 1.1);
-        ctx.strokeStyle = p.isThunderFireCombo ? '#d284ff' : (p.w10Branch ? '#ff542e' : '#ff8c42'); ctx.lineWidth = 5.5; ctx.stroke();
-        ctx.strokeStyle = p.isThunderFireCombo ? '#ffe878' : '#fff0a0'; ctx.lineWidth = 2; ctx.stroke();
-        if (p.isThunderFireCombo) {
-          ctx.beginPath(); ctx.moveTo(-4, -12); ctx.lineTo(4, -4); ctx.lineTo(-3, 4); ctx.lineTo(5, 12);
-          ctx.strokeStyle = '#ffe878'; ctx.lineWidth = 1.8; ctx.stroke();
-        }
-      }
-      ctx.restore();
-    } else if (p.kind === 'arrow') {
-      const a = Math.atan2(p.vy, p.vx);
-      ctx.save(); ctx.translate(px, py); ctx.rotate(a);
-      ctx.strokeStyle = p.w10Branch ? '#8cf0ff' : '#8ef8c6'; ctx.lineWidth = 2.8;
-      ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(7, 0); ctx.stroke();
-      ctx.restore();
-    } else if (p.kind === 'fireball') {
-      ctx.beginPath(); ctx.arc(px, py, 6.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#ff7b38'; ctx.fill();
-      ctx.strokeStyle = '#fff09c'; ctx.lineWidth = 1.6; ctx.stroke();
-    } else if (p.kind === 'frostball') {
-      ctx.beginPath(); ctx.arc(px, py, 5.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#7beeff'; ctx.fill();
-    } else if (p.kind === 'enemyShot') {
-      ctx.beginPath(); ctx.arc(p.tx * CELL, p.ty * CELL, 8, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255,102,196,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
-      ctx.beginPath(); ctx.arc(px, py, 5.2, 0, Math.PI * 2);
-      ctx.fillStyle = '#ff66c4'; ctx.fill();
-      ctx.strokeStyle = '#ffd6f0'; ctx.lineWidth = 1.2; ctx.stroke();
-    }
-  }
-  for (const b of game.beams) {
-    const alpha = b.t / b.max;
-    ctx.save();
-    ctx.strokeStyle = b.col || `rgba(255,232,120,${alpha})`;
-    ctx.globalAlpha = b.col ? alpha : 1;
-    ctx.lineWidth = b.w * alpha;
-    ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(b.x1 * CELL, b.y1 * CELL); ctx.lineTo(b.x2 * CELL, b.y2 * CELL); ctx.stroke();
-    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-    ctx.lineWidth = Math.max(1.5, b.w * 0.35 * alpha);
-    ctx.stroke();
-    ctx.restore();
-  }
-  for (const l of game.bolts) {
-    const alpha = l.t / l.max;
-    ctx.save();
-    ctx.strokeStyle = l.col;
-    ctx.globalAlpha = alpha;
-    ctx.lineWidth = l.comboThunderFire ? 5 : 3;
-    ctx.beginPath();
-    l.pts.forEach((pt, i) => {
-      const lx = pt.x * CELL + (i > 0 ? (Math.random()-0.5)*7 : 0);
-      const ly = pt.y * CELL + (i > 0 ? (Math.random()-0.5)*7 : 0);
-      if (i === 0) ctx.moveTo(lx, ly); else ctx.lineTo(lx, ly);
-    });
-    ctx.stroke();
-    if (l.comboThunderFire) {
-      ctx.strokeStyle = '#ffe878';
-      ctx.lineWidth = 1.6;
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-}
-
-function drawRingsAndFloats(){
-  for (const r of game.rings) {
-    const u = 1 - r.t / r.max;
-    ctx.beginPath();
-    ctx.arc(r.x * CELL, r.y * CELL, Math.max(4, r.r * CELL * (0.28 + 0.72 * u)), 0, Math.PI * 2);
-    ctx.strokeStyle = r.col;
-    ctx.globalAlpha = 1 - u;
-    ctx.lineWidth = 3 * (1 - u * 0.5);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-  ctx.textAlign = 'center';
-  for (const f of game.floats) {
-    const alpha = clamp(f.t / f.max * 1.4, 0, 1);
-    ctx.globalAlpha = alpha;
-    ctx.font = f.big ? '900 15px sans-serif' : '800 12px sans-serif';
-    ctx.fillStyle = '#000';
-    ctx.fillText(f.txt, f.x * CELL + 1, f.y * CELL + 1);
-    ctx.fillStyle = f.col;
-    ctx.fillText(f.txt, f.x * CELL, f.y * CELL);
-  }
-  ctx.globalAlpha = 1;
 }
 
 /* ==================== UI RENDERING (ZERO-FLICKER RECONCILIATION) ==================== */

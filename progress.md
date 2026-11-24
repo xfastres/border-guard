@@ -64,6 +64,10 @@
   - **Phase 3 里程碑达成**：全部 6 大业务子域（`meta`/`equipment`/`economy`/`progression`/`hero`/`combat`/`run`）100% 脱离 `src/legacy/game.js`，`src/legacy/game.js` 从 13,031 行降至 4,266 行（仅余 86 个 UI/Canvas/弹窗/HUD/输入/预设/RAF 壳层函数）。
   - 新增 `tests/unit/run-lifecycle.test.mjs`（23 项无 DOM 单测）。
   - 实测结果：`npm run build` PASS（509,042 B，63 模块，1 内联脚本）；`npm run test:unit` 275/275 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS（种子 `2026` & `1337`）；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS；`npm run test:baseline` 43/43 PASS。
+- **Phase 4.1（`src/ui/{vfx,feedback,canvas}/` VFX、反馈提示、相机与 Canvas 2D 渲染层）**：已完成并经主控独立审查与实测验收。
+  - 迁出 23 个 VFX/反馈/相机/Canvas 绘制函数至 `src/ui/vfx/vfx.js`、`src/ui/feedback/feedback.js` 与 `src/ui/canvas/{camera,draw-arena,draw-entities,draw-effects,draw-overlays,renderer,index}.js`（`src/legacy/game.js` 降至 3,496 行）。
+  - 新增 `tests/unit/ui-vfx-camera.test.mjs`（6 项无浏览器单测）。
+  - 实测结果：`npm run build` PASS（510,908 B，72 模块）；`npm run test:unit` 281/281 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 
