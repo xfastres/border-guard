@@ -11,6 +11,7 @@ on:
       - "Border-Guard-v0.60.html"
       - "balance/**"
       - "tests/v060-*.test.cjs"
+      - "tests/modular-shell-browser.test.cjs"
       - "index.html"
       - "package.json"
       - "package-lock.json"
@@ -59,6 +60,9 @@ jobs:
 
       - name: Build and verify single HTML
         run: npm run build
+
+      - name: Open modular shell via file URL in Chrome
+        run: npm run test:modular-shell
 
       - name: Upload modular shell artifact
         uses: actions/upload-artifact@v4
