@@ -2,9 +2,9 @@
 
 ## 当前工程阶段
 
-当前模块化重构已完成 Phase 0–1、Phase 2.1–2.3：HTML/CSS、静态数据、RNG/数学/地形纯函数和音频服务已独立。`src/legacy/game.js` 仍保留约 13,032 行运行时逻辑和共享状态，业务模块化尚未完成。原版可玩基线仍是根目录的 `Border-Guard-v0.60.html`。
+当前 v0.60 模块化重构已完成 Phase 0–6：`src/legacy/game.js` 已彻底拆解并删除（`src/legacy/` 仅保留退役说明 `README.md`，0 个 `.js` 文件），全部源码已按单向分层组织为 90 个构建模块（`src/data/` → `src/core/` → `src/systems/` → `src/ui/` & `src/debug/` → `src/app/`）。根目录 `Border-Guard-v0.60.html` 作为冻结原版基线保持字节未变。
 
-新静态数据只放入 `src/data/`，纯函数按职责放入 `src/core/`，UI 服务放入 `src/ui/`，不要再向 legacy 添加新职责。下一步先明确 `game` / `cam` / Meta 存档等状态所有权和 runtime context，再迁移业务系统。禁止一次性批量拆分 314 个函数。
+新静态数据放入 `src/data/`，状态容器/查询/纯函数放入 `src/core/`，业务规则按子域（`meta` / `equipment` / `economy` / `progression` / `hero` / `combat` / `run`）放入 `src/systems/` 并遵循 `createXxx(runtimeCtx, deps)` 工厂依赖注入，绘制/弹窗/HUD/输入/音频放入 `src/ui/`，调试预设与对外 API 放入 `src/debug/`，根装配与主循环放入 `src/app/`。禁止在 `src/legacy/` 新增任何代码。
 
 ## 不可违反
 
@@ -20,26 +20,30 @@
 
 ## 模块约定
 
-- `core`：状态、时间、随机数、数学工具；不操作 DOM。
-- `data`：静态数据；不操作运行时状态。
-- `systems`：游戏规则；不直接操作 DOM。
-- `ui`：绘制、输入和显示；通过明确接口调用业务系统。
-- `app`：依赖组装、初始化和主循环。
-- `debug`：测试接口与调试预设，不进入正式玩法链路。
+- `data`：静态数据与配置（`balance.js`、`core-data.js`、`equipment-data.js`、`progression-data.js`、`destiny-data.js`）；不操作运行时状态，不访问浏览器全局。
+- `core`：唯一权威状态容器（`runtime-context.js`）、对局状态工厂（`state.js`）、纯状态查询（`state-queries.js`）、RNG/数学/地形工具；不操作 DOM，不导入 `systems`/`ui`/`debug`/`app`。
+- `systems`：游戏业务规则（`meta` / `equipment` / `economy` / `progression` / `hero` / `combat` / `run`）；通过 `runtimeCtx.ports` 反转 UI/音频/VFX/弹窗/存储/时钟副作用，不直接操作 DOM 或浏览器全局。
+- `ui`：音频、VFX、提示反馈、Canvas 2D 渲染与相机、共享格式化、弹窗系统、零闪烁 HUD 协调器与输入监听；通过明确接口调用业务系统，禁止导入 `app`/`debug`/`legacy`。
+- `debug`：调试预设与 `window.BG60` / `window.BG52` 公开测试 API，不进入正式玩法链路，禁止导入 `app`/`legacy`。
+- `app`：顶层装配（`bootstrap.js` 含零 DOM 纯装配 `createGameSystems` 与浏览器入口 `bootBrowserGame`）和 RAF 主循环（`game-loop.js`）。
 
-禁止循环依赖、隐式跨模块全局变量和巨型 common/utils 聚合文件。
-
-当前原始脚本依赖共享词法作用域。迁移前必须绘制状态读写、函数调用、DOM 副作用和 RNG 调用依赖图，明确 context / state ownership / composition 方案。
+禁止循环依赖、隐式跨模块全局变量和巨型 common/utils 聚合文件。所有分层边界与零循环依赖由 `tests/unit/architecture-guard.test.mjs` 的 AST 门禁自动强制检查。
 
 ## 命令
 
-- `npm run dev`：开发服务器。
-- `npm run build`：构建并验证单文件 HTML。
+- `npm run dev`：启动 Vite 开发服务器。
+- `npm run build`：打包并校验离线单文件 HTML（`vite-plugin-singlefile` + `scripts/verify-single-file.mjs`）。
 - `npm run preview`：预览构建结果。
-- `npm run test:baseline`：运行原版 v0.60 回归测试。
-- `npm run test:modular-game`：用 Chrome 检查模块化单文件在桌面和手机视口启动。
+- `npm run test:unit`：运行全部 ES 模块单元测试（含 AST 架构门禁）。
+- `npm run test:integration`：运行零 DOM / 零浏览器纯 ES 模块 W1→W30 全链路与 BUG-01～BUG-10 集成测试。
+- `npm run test:arch`：单独运行 AST 分层边界、零循环依赖、legacy 退役与冻结原版哈希门禁。
+- `npm run test:parity`：真实 Chrome CDP 同种子（`2026` / `1337` / `9527`）原版 vs 模块版等价校验。
+- `npm run test:modular-game`：用 Chrome 通过 `file://` 检查单文件在桌面与手机视口离线启动。
+- `npm run test:e2e:modular`：对模块化构建产物运行 6 场景真实 Chrome 交互 E2E。
+- `npm run test:baseline`：运行根目录原版 `Border-Guard-v0.60.html` 全部 43 项回归测试。
+- `npm run test:all`：依次执行上述全部 7 组测试套件。
 
-当前构建产物为 `release/Border-Guard-v0.60-modular-preview.html`，它是从原版迁移出来的可玩预览；业务代码仍处于 legacy 模块，不能宣称最终模块化完成。
+当前阶段构建产物为 `release/Border-Guard-v0.60-modular-preview.html`（Phase 7 将切换为正式单文件交付产物 `release/Border-Guard-v0.60.html` 并完成阶段一终验）。
 
 ## 交付要求
 

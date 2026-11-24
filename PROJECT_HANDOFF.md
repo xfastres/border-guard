@@ -1,8 +1,24 @@
 # 《边境守卫》项目交接说明
 
-更新日期：2026-11-20（下方 v0.25 / v0.26 段落为 11-13 / 11-14 的历史交接记录）。
+更新日期：2026-11-24（下方 v0.32 / v0.26 / v0.25 段落为历史交接记录，完整保留）。
 
-## 当前状态（v0.32 界面打磨与六项玩法优化）
+## 当前状态（v0.60 阶段一模块化重构 · Phase 0–6）
+
+- **冻结原版基线**：根目录 `Border-Guard-v0.60.html`（Git Blob `46049dcc8ca119f79dcc7e8b6e482a797dd794e2`）与 `balance/v060-baseline.json` 未修改一字节；归档副本位于 `archive/baselines/Border-Guard-v0.60-before-modular.html`。
+- **模块化源码结构（`src/`）**：原 13,031 行 `src/legacy/game.js` 已 100% 拆解并删除（`src/legacy/` 仅余 `README.md`）。全部 90 个构建模块遵循严格单向分层：
+  - `src/data/` → `src/core/`（`runtime-context.js` / `state.js` / `state-queries.js` / `rng.js` / `math.js` / `terrain.js`）→ `src/systems/`（`meta` / `equipment` / `economy` / `progression` / `hero` / `combat` / `run`）→ `src/ui/`（`audio` / `vfx` / `feedback` / `canvas` / `shared` / `modals` / `hud` / `input` / `styles`）& `src/debug/`（`presets.js` / `test-api.js`）→ `src/app/`（`bootstrap.js` / `game-loop.js`）→ `src/main.js`。
+- **关键架构保证**：
+  - 单一权威运行时状态（`RuntimeContext`）+ 8 组依赖反转 `ports`，`data` / `core` / `systems` 纯层 0 浏览器标识符，全仓 0 循环依赖（AST 门禁 `npm run test:arch` 强制校验）。
+  - `window.BG60`（258 键严格同序 + 3 getter + 34 常量）与 `window.BG52 === window.BG60`、`localStorage` 键名与 schema、RNG 算法与调用顺序 100% 兼容原版。
+  - `createGameSystems(runtimeCtx)` 支持零 DOM / 零浏览器纯 ES 模块完整跑通 W1→W30 对局。
+- **构建与验证现状**：
+  - 当前构建产物为 `release/Border-Guard-v0.60-modular-preview.html`（Phase 7 将切换为正式单文件交付路径 `release/Border-Guard-v0.60.html` 并完成阶段一终验）。
+  - Windows 本地实测 `npm run build` 与 `npm run test:all` 七组全绿：`test:unit` 298/298、`test:integration` 12/12、`test:arch` 3/3、`test:parity` 3 种子（`2026` / `1337` / `9527`）全量快照等价、`test:modular-game` 桌面+手机离线启动通过、`test:e2e:modular` 6 场景 0 异常、`test:baseline` 43/43。GitHub Actions 远程作业已配置补全，尚未在远端运行。
+- **阶段二待诊断问题池**：阶段一严格执行零玩法改动原则，重构中发现的潜在缺陷/性能/体验项（`Math.random` 边界、高频 HUD 刷新、`loadTestPreset` 未初始化 `nextTowerId`、W29 时钟回退显示跳变、Meta 损坏备份未落独立 key 等）均已登记于 `findings.md`，待阶段一验收后统一进入阶段二深度诊断。
+
+---
+
+## 历史交接记录：v0.32 界面打磨与六项玩法优化（2026-11-20）
 
 - **当前入口**：`Border-Guard-v0.32.html`，基于 v0.31 `Border-Guard-v0.29.html` 派生；单文件离线可双击打开，无外部依赖。
 - **本轮范围**：

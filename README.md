@@ -1,5 +1,44 @@
 # 边境守卫 · Border Guard
 
+## 当前版本：v0.60（30 波模块化工程版 · 离线单文件 HTML）
+
+`v0.60` 是 30 波修仙肉鸽防守试玩版（含初始技能、装备词条双/三联动、W10/W20 突破与预选重抽、W29 90 秒终局整备、天命赌局、词条转移台、W30 首领三阶段锁血与局外 Meta 传承）。
+
+仓库已完成 **v0.60 阶段一纯工程模块化重构（零玩法改动）**：
+- **冻结原版基线**：根目录 `Border-Guard-v0.60.html` 与 `balance/v060-baseline.json` 保持字节不变，作为回归与等价校验黄金对照。
+- **模块化源码（`src/`）**：`src/legacy/game.js` 已彻底拆分并删除，全量源码按严格单向分层组织为 90 个 ES 模块：
+  - `src/data/`：静态数据与配置（零运行时状态、零 DOM）。
+  - `src/core/`：唯一权威状态容器 `runtime-context.js`、对局状态工厂 `state.js`、只读查询 `state-queries.js`、RNG / 数学 / 地形纯函数。
+  - `src/systems/`：7 个纯业务子域（`meta` / `equipment` / `economy` / `progression` / `hero` / `combat` / `run`），零浏览器标识符，通过 `ports` 依赖反转解耦表现层。
+  - `src/ui/`：样式（8 份 CSS）、Web Audio 音频、VFX、提示反馈、Canvas 2D 渲染与相机、共享格式化、弹窗系统、零闪烁 HUD 协调器与输入控制器。
+  - `src/debug/`：测试预设 `presets.js` 与 `window.BG60` / `window.BG52` 公开调试 API `test-api.js`。
+  - `src/app/`：根装配 `bootstrap.js`（提供零 DOM 纯系统工厂 `createGameSystems` 与浏览器启动 `bootBrowserGame`）与主循环 `game-loop.js`。
+- **离线单文件构建**：使用 Vite + `vite-plugin-singlefile` 将全部源码与样式内联打包为单个可离线双击打开的 HTML（当前预览输出 `release/Border-Guard-v0.60-modular-preview.html`，Phase 7 将切换为正式交付路径 `release/Border-Guard-v0.60.html`）。
+
+### 开发、构建与验证命令（要求 Node.js >= 22.12，浏览器测试需本机 Chrome/Chromium）
+
+```sh
+npm run dev                 # 启动开发服务器
+npm run build               # 构建并校验离线单文件 HTML
+npm run preview             # 预览构建产物
+npm run test:unit           # 298 项 ES 模块单元测试（含 AST 架构边界门禁）
+npm run test:integration    # 12 项零 DOM/零浏览器纯 ES 模块 W1→W30 全链路与 BUG-01~10 集成测试
+npm run test:arch           # AST 零循环依赖、单向分层、纯层无 DOM、legacy 退役与冻结原版哈希门禁
+npm run test:parity         # 真实 Chrome CDP 同种子（2026 / 1337 / 9527）原版 vs 模块版全量等价校验
+npm run test:modular-game   # 真实 Chrome file:// 桌面（1440×900）+ 手机（390×844）离线启动校验
+npm run test:e2e:modular    # 真实 Chrome 交互 E2E（6 场景，0 未捕获异常）
+npm run test:baseline       # 原版 Border-Guard-v0.60.html 全部 43 项回归测试
+npm run test:all            # 依次运行以上全部 7 组测试套件
+```
+
+如需手动指定 Chrome 路径，可设置环境变量 `CHROME_BIN`（如 Windows 下 `C:/Program Files/Google/Chrome/Application/chrome.exe`）。协同规范见 [AGENTS.md](AGENTS.md)，阶段记录见 [progress.md](progress.md) 与 [findings.md](findings.md)。
+
+---
+
+## 历史版本说明（v0.17–v0.32 格子策略经营线）
+
+> 以下内容为早期五夜格子策略经营版本（`Border-Guard-v0.17.html` … `Border-Guard-v0.32.html`）的历史说明，所有历史版本与 `tests/artifacts/` 证据均完整保留。
+
 > 一款**单机、离线可玩、横屏优先**的格子策略经营游戏：白天探索、建城与布防，夜间守住边境，目标是在**五夜**之后击退首领；一局约 15 分钟。
 
 不需要服务器，不需要联网，也不需要安装。所有内容都在本仓库的单个 HTML 文件里。

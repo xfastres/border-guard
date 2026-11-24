@@ -86,6 +86,8 @@
   - 加固 `tests/parity/v060-modular-parity.test.cjs`（默认超时升至 20s、`t.after` 销毁 stderr + `SIGKILL` 兜底防挂起，并扩充至 `2026` / `1337` / `9527` 三组种子）。
   - 更新 `package.json` 新增 `test:integration`、跨平台 `test:e2e:modular` 与全量串联 `test:all`；升级 `.github/workflows/modular-shell-build.yml` 补齐模块化全套门禁与路径触发。
   - 实测结果：`npm run build` PASS（90 模块，521,949 B）；`npm run test:all` 七组全绿退出码 0（`test:unit` 298/298、`test:integration` 12/12、`test:arch` 3/3、`test:parity` 1/1 三种子、`test:modular-game` 1/1、`test:e2e:modular` 6 场景 0 异常、`test:baseline` 43/43）；GitHub Actions 远程作业未运行。
+- **Phase 6（工程规范与交接文档刷新）**：已完成。
+  - 更新 `AGENTS.md`、`README.md`、`PROJECT_HANDOFF.md`、`task_plan.md` 与 `progress.md`，全面同步 v0.60 模块化分层、命令清单与测试现状，完整保留全部历史版本与交接段落（`src/`、构建脚本与冻结文件零修改）。
 
 ---
 
