@@ -12,7 +12,7 @@ const root = path.resolve(__dirname, '../..');
 const originalHtml = path.join(root, 'Border-Guard-v0.60.html');
 const modularHtml = path.resolve(root, process.env.BG_MODULAR_HTML || 'release/Border-Guard-v0.60-modular-preview.html');
 
-async function withTimeout(promise, label, ms = 10000) {
+async function withTimeout(promise, label, ms = 20000) {
   let timer;
   try {
     return await Promise.race([
@@ -47,10 +47,19 @@ async function openGame(t, chromeBin, html, label) {
         chrome.kill();
       }
       await withTimeout(exited, `${label} Chrome to close`, 5000);
+    } catch {
+      // Force termination below if graceful shutdown times out.
     } finally {
       socket?.close();
-      if (chrome.exitCode === null && chrome.signalCode === null && chrome.kill()) {
-        await withTimeout(exited, `${label} Chrome to terminate`, 5000);
+      chrome.stderr?.destroy();
+      try {
+        if (chrome.exitCode === null && chrome.signalCode === null && chrome.kill('SIGKILL')) {
+          await withTimeout(exited, `${label} Chrome to terminate`, 5000);
+        }
+      } catch {
+        // Chrome may exit before the forced termination finishes.
+      } finally {
+        chrome.unref();
       }
       rmSync(userDir, { recursive: true, force: true, maxRetries: 5 });
     }
@@ -68,7 +77,7 @@ async function openGame(t, chromeBin, html, label) {
     ready.promise,
     exited.then(reason => { throw new Error(`${label} Chrome exited during startup (${reason})\n${stderr}`); }),
   ]), `${label} Chrome DevTools port`);
-  const response = await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(10000) });
+  const response = await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(20000) });
   assert.ok(response.ok, `${label} Chrome /json/list returned ${response.status}`);
   const target = (await response.json()).find(entry => entry.type === 'page' && entry.webSocketDebuggerUrl);
   assert.ok(target, `${label} Chrome has no CDP page target`);
@@ -219,14 +228,14 @@ function collectSnapshot(seed) {
   return JSON.parse(JSON.stringify(snapshot, (key, value) => key === 'uid' && typeof value === 'string' ? undefined : value));
 }
 
-test('original and modular v0.60 match in Chrome for seeds 2026 and 1337', { timeout: 60000 }, async t => {
+test('original and modular v0.60 match in Chrome for seeds 2026, 1337 and 9527', { timeout: 90000 }, async t => {
   assert.ok(statSync(originalHtml, { throwIfNoEntry: false })?.isFile(), `Original baseline missing: ${originalHtml}`);
   assert.ok(statSync(modularHtml, { throwIfNoEntry: false })?.isFile(), `Modular HTML missing: ${modularHtml}. Run npm run build.`);
   const chromeBin = resolveChromeBin();
   const original = await openGame(t, chromeBin, originalHtml, 'original');
   const modular = await openGame(t, chromeBin, modularHtml, 'modular');
 
-  for (const seed of [2026, 1337]) {
+  for (const seed of [2026, 1337, 9527]) {
     const expected = await original.snapshot(seed);
     const actual = await modular.snapshot(seed);
     for (const [label, session, snapshot] of [['original', original, expected], ['modular', modular, actual]]) {

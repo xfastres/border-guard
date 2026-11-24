@@ -11,6 +11,10 @@ on:
       - "Border-Guard-v0.60.html"
       - "balance/**"
       - "tests/v060-*.test.cjs"
+      - "tests/unit/**"
+      - "tests/integration/**"
+      - "tests/parity/**"
+      - "tests/helpers/**"
       - "tests/modular-game-browser.test.cjs"
       - "index.html"
       - "package.json"
@@ -58,8 +62,20 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Run modular unit tests
+        run: npm run test:unit
+
+      - name: Run headless integration tests
+        run: npm run test:integration
+
+      - name: Check module boundaries
+        run: npm run test:arch
+
       - name: Build and verify single HTML
         run: npm run build
+
+      - name: Compare the modular game with the original in Chrome
+        run: npm run test:parity
 
       - name: Open modular game preview via file URL in Chrome
         run: npm run test:modular-game

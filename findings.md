@@ -12,6 +12,8 @@
 - **高频 DOM 与 Canvas 渲染负载**：HUD 与 Canvas 绘制已拆入 `src/ui/hud/` 与 `src/ui/canvas/`，但主循环仍每 0.14s 触发 `renderAllUI(false)`，且 `hud-controller.js` 中预留状态键 `lastSynKey` 未被读取，阶段二需做帧率、DOM 重绘与 GC 抖动专项性能诊断。
 - **调试预设 `nextTowerId` 未初始化**：`src/debug/presets.js`（沿用原版 `loadTestPreset`）读取 `game.nextTowerId++` 给测试预设灵印分配 `id`，但 `createRunState`（原 `makeGame`）未初始化 `nextTowerId`，导致预设中 `seal.id` / `subSeals[i].id` 实为 `NaN`（原版即如此，阶段一严格保留，阶段二可评估修复）。
 - **无障碍与移动端折叠细节**：HUD 折叠按钮（`toggleLeftHud` / `toggleBattleHud`）当前缺少 `aria-expanded` 属性同步，响应式折叠阈值固定为 `<= 980px`，阶段二可结合移动端与平板视口体验一并评估优化。
+- **W29 倒计时时钟回退显示跳变**：Phase 5 无头集成测试发现，若底层时钟在 W29 终局整备期间发生回退，`finalPrep.deadlineMs` 仍保持锁定不变，但显示用的 `finalPrep.timer` 会从 70s 回升至 80s（沿用原版实现，阶段二可评估单调下界钳制）。
+- **Meta 损坏存档备份仅驻留内存**：Phase 5 集成测试确认，损坏 JSON 的原始文本当前保存在运行时 `storageStatus.rawCorruptedBackup` 并拒绝覆盖原 key，但未自动落盘至独立 backup key（刷新后依赖原 key 保持不动），阶段二可评估交互与持久化备份体验。
 - **标题版本文案残留**：原版 `Border-Guard-v0.60.html` `<title>` 仍为 `边境守卫 v0.60 · 30波试玩版（阶段 1）`（阶段一为保持零差异暂保留，阶段二一并评估修订）。
 
 ---

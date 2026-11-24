@@ -81,6 +81,11 @@
   - 新增 `src/ui/input/input.js`、`src/debug/{presets,test-api}.js`、`src/app/{game-loop,bootstrap}.js`；`src/main.js` 精简为 19 行纯启动入口；`window.BG60`（258 键严格同序 + 3 getter + 34 常量）与 `window.BG52 === window.BG60` 100% 兼容；`createGameSystems(runtimeCtx)` 达成零 DOM 纯系统组装。
   - 新增 `tests/unit/app-loop-input.test.mjs`（6 项无浏览器单测）。
   - 实测结果：`npm run build` PASS（521,949 B，90 模块，1 内联脚本）；`npm run test:unit` 298/298 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS（种子 `2026` & `1337`）；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS（0 异常）；`npm run test:baseline` 43/43 PASS。
+- **Phase 5（纯 ES 模块无头全链路集成测试、同种子对照加固与 CI 升级）**：已完成并经主控独立审查与 `test:all` 全量实测验收（`src/` 零改动）。
+  - 新增 `tests/integration/headless-w1-to-w30.test.mjs`（12 项零 DOM/零浏览器纯 ES 模块集成用例：两次种子 `2026` 真实战斗帧跑通 W1→W30 通关+W30 6 阶段验证+Meta 存档回读逐项 `deepEqual`、种子 `1337` 差异校验，以及跨系统 BUG-01～BUG-10 完整回归矩阵；主控审查时将全链路用例超时由 10s 放宽至 30s 防止 CI 抖动）。
+  - 加固 `tests/parity/v060-modular-parity.test.cjs`（默认超时升至 20s、`t.after` 销毁 stderr + `SIGKILL` 兜底防挂起，并扩充至 `2026` / `1337` / `9527` 三组种子）。
+  - 更新 `package.json` 新增 `test:integration`、跨平台 `test:e2e:modular` 与全量串联 `test:all`；升级 `.github/workflows/modular-shell-build.yml` 补齐模块化全套门禁与路径触发。
+  - 实测结果：`npm run build` PASS（90 模块，521,949 B）；`npm run test:all` 七组全绿退出码 0（`test:unit` 298/298、`test:integration` 12/12、`test:arch` 3/3、`test:parity` 1/1 三种子、`test:modular-game` 1/1、`test:e2e:modular` 6 场景 0 异常、`test:baseline` 43/43）；GitHub Actions 远程作业未运行。
 
 ---
 
