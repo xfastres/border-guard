@@ -16,7 +16,7 @@ on:
       - ".github/workflows/modular-shell-build.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -33,6 +33,17 @@ jobs:
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+
+      - name: Commit generated lockfile once
+        if: github.event_name == 'push'
+        run: |
+          if [ -n "$(git status --porcelain -- package-lock.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "build: lock modular shell dependencies"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
 
       - name: Build and verify single HTML
         run: npm run build
