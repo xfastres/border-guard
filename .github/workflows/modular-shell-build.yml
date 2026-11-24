@@ -8,6 +8,9 @@ on:
     branches:
       - feat/v060-30wave
     paths:
+      - "Border-Guard-v0.60.html"
+      - "balance/**"
+      - "tests/v060-*.test.cjs"
       - "index.html"
       - "package.json"
       - "package-lock.json"
@@ -20,6 +23,24 @@ permissions:
   contents: read
 
 jobs:
+  baseline-regression:
+    name: Test original v0.60 baseline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Run original v0.60 regression suite
+        run: npm run test:baseline
+
   build:
     name: Build offline single-file shell
     runs-on: ubuntu-latest
