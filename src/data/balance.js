@@ -1,3 +1,3 @@
-import BALANCE from '../../balance/v060-baseline.json';
+import BALANCE from '../../balance/v060-baseline.json' with { type: 'json' };
 
 export default BALANCE;

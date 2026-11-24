@@ -3,6 +3,22 @@ import AudioKit from '../ui/audio/audio.js';
 import { buildTerrainProps } from '../core/terrain.js';
 import { mulberry32 } from '../core/rng.js';
 import { dist, clamp, xpForLevel } from '../core/math.js';
+import { createRuntimeContext } from '../core/runtime-context.js';
+import {
+  getSourceStageForWave as queryGetSourceStageForWave,
+  getSourceStageSpec as queryGetSourceStageSpec,
+  perkLv as queryPerkLv,
+  hasCombo as queryHasCombo,
+  getW20ActiveState as queryGetW20ActiveState,
+  hasW20Direction as queryHasW20Direction,
+  hasW20Enhancement as queryHasW20Enhancement,
+  hasDestinyEnhancement as queryHasDestinyEnhancement,
+  getOwnedDestinyEnhancements as queryGetOwnedDestinyEnhancements,
+  isFinalPrepActionLocked as queryIsFinalPrepActionLocked,
+  isW29WaveRewardModal as queryIsW29WaveRewardModal,
+  hasPendingW29WaveRewards as queryHasPendingW29WaveRewards,
+  getFinalPrepState as queryGetFinalPrepState,
+} from '../core/state-queries.js';
 import {
   W,
   H,
@@ -63,20 +79,18 @@ import {
 (() => {
 'use strict';
 
+let game = null;
+let paused = false;
+const runtimeCtx = createRuntimeContext({
+  onGameChange: nextGame => { game = nextGame; },
+  onPausedChange: nextPaused => { paused = nextPaused; },
+});
+const { meta, counters } = runtimeCtx;
 
-
-function getSourceStageForWave(wave = game?.wave || 1){
-  const w = Math.max(1, Math.round(Number(wave) || 1));
-  const found = SOURCE_STAGES.find(s => w >= s.minWave && w <= s.maxWave);
-  return found ? found.stage : SOURCE_STAGES[SOURCE_STAGES.length - 1].stage;
-}
-function getSourceStageSpec(stage = 1){
-  return SOURCE_STAGES.find(s => s.stage === Number(stage)) || SOURCE_STAGES[0];
-}
+function getSourceStageForWave(wave = game?.wave || 1){ return queryGetSourceStageForWave(wave); }
+function getSourceStageSpec(stage = 1){ return queryGetSourceStageSpec(stage); }
 
 /* ==================== STAGE 6: META PROGRESSION, VERSIONED PERSISTENCE & ANTI-FARM REWARDS ==================== */
-const _metaMemoryStore = new Map();
-let _runIdSeq = 1;
 
 function getMetaConfig(){
   const raw = BALANCE.metaProgression || {};
@@ -120,9 +134,9 @@ function getMetaStorage(){
     }
   } catch (_) {}
   return {
-    getItem: k => (_metaMemoryStore.has(k) ? _metaMemoryStore.get(k) : null),
-    setItem: (k, v) => { _metaMemoryStore.set(k, String(v)); },
-    removeItem: k => { _metaMemoryStore.delete(k); }
+    getItem: k => (meta.memoryStore.has(k) ? meta.memoryStore.get(k) : null),
+    setItem: (k, v) => { meta.memoryStore.set(k, String(v)); },
+    removeItem: k => { meta.memoryStore.delete(k); }
   };
 }
 
@@ -175,7 +189,7 @@ function createDefaultMetaSave(){
   };
 }
 
-function getMetaLoadoutBudget(loadout = metaSave?.loadout){
+function getMetaLoadoutBudget(loadout = meta.save?.loadout){
   const cfg = getMetaConfig();
   const mainId = loadout?.main || null;
   const auxList = Array.isArray(loadout?.aux) ? Array.from(new Set(loadout.aux)) : [];
@@ -332,8 +346,8 @@ function migrateMetaSave(raw){
   };
 }
 
-let metaSave = null;
-let metaStorageStatus = {
+// Keep the storage status shape published by BG60 during the Meta migration.
+meta.storageStatus = {
   state: 'ok', // 'ok' | 'load_error' | 'save_error'
   loadError: null,
   foundVersion: null,
@@ -343,6 +357,7 @@ let metaStorageStatus = {
   rawCorruptedBackup: null,
   pendingUnsavedSettlement: null
 };
+const metaStorageStatus = meta.storageStatus;
 
 function getMetaStorageStatus(){
   return {
@@ -359,7 +374,7 @@ function exportRawCorruptedMetaSave(){
 
 function loadMetaSave(){
   const cfg = getMetaConfig();
-  const store = getMetaStorage();
+  const store = runtimeCtx.ports.storage.getStorage();
   metaStorageStatus.supportedVersion = Math.max(1, Number(cfg.schemaVersion || 1));
   let rawStr = null;
   try {
@@ -368,16 +383,16 @@ function loadMetaSave(){
     metaStorageStatus.state = 'load_error';
     metaStorageStatus.loadError = 'storage_read_error';
     metaStorageStatus.lastSaveError = String(err?.message || err || 'storage_read_error');
-    metaSave = createDefaultMetaSave();
-    return metaSave;
+    meta.save = createDefaultMetaSave();
+    return meta.save;
   }
   if (rawStr == null || rawStr === '') {
-    metaSave = createDefaultMetaSave();
+    meta.save = createDefaultMetaSave();
     metaStorageStatus.state = metaStorageStatus.saveFailed ? 'save_error' : 'ok';
     metaStorageStatus.loadError = null;
     metaStorageStatus.foundVersion = null;
     metaStorageStatus.rawCorruptedBackup = null;
-    return metaSave;
+    return meta.save;
   }
   let parsed = null;
   try {
@@ -388,8 +403,8 @@ function loadMetaSave(){
     metaStorageStatus.loadError = 'corrupted_json';
     metaStorageStatus.foundVersion = null;
     metaStorageStatus.rawCorruptedBackup = rawStr;
-    metaSave = createDefaultMetaSave();
-    return metaSave;
+    meta.save = createDefaultMetaSave();
+    return meta.save;
   }
   const mig = migrateMetaSave(parsed);
   if (!mig.ok) {
@@ -399,29 +414,29 @@ function loadMetaSave(){
     metaStorageStatus.foundVersion = mig.foundVersion ?? null;
     metaStorageStatus.supportedVersion = mig.supportedVersion;
     metaStorageStatus.rawCorruptedBackup = rawStr;
-    metaSave = createDefaultMetaSave();
-    return metaSave;
+    meta.save = createDefaultMetaSave();
+    return meta.save;
   }
-  metaSave = mig.save;
+  meta.save = mig.save;
   metaStorageStatus.state = metaStorageStatus.saveFailed ? 'save_error' : 'ok';
   metaStorageStatus.loadError = null;
   metaStorageStatus.foundVersion = mig.foundVersion;
   metaStorageStatus.rawCorruptedBackup = null;
-  return metaSave;
+  return meta.save;
 }
 
 function saveMetaSave(opts = {}){
   const cfg = getMetaConfig();
-  const store = getMetaStorage();
+  const store = runtimeCtx.ports.storage.getStorage();
   if (metaStorageStatus.state === 'load_error' && !opts?.forceOverwriteCorrupted) {
     metaStorageStatus.saveFailed = true;
     metaStorageStatus.lastSaveError = 'protected_corrupted_storage';
     return false;
   }
-  if (!metaSave) metaSave = createDefaultMetaSave();
-  metaSave = normalizeMetaSave(metaSave);
+  if (!meta.save) meta.save = createDefaultMetaSave();
+  meta.save = normalizeMetaSave(meta.save);
   try {
-    store.setItem(cfg.storageKey, JSON.stringify(metaSave));
+    store.setItem(cfg.storageKey, JSON.stringify(meta.save));
     metaStorageStatus.saveFailed = false;
     metaStorageStatus.lastSaveError = null;
     if (opts?.forceOverwriteCorrupted) {
@@ -439,27 +454,27 @@ function saveMetaSave(opts = {}){
 }
 
 function getMetaSave(){
-  if (!metaSave) loadMetaSave();
-  return metaSave;
+  if (!meta.save) loadMetaSave();
+  return meta.save;
 }
 
 function resetMetaSave(){
   const cfg = getMetaConfig();
-  const store = getMetaStorage();
+  const store = runtimeCtx.ports.storage.getStorage();
   try { store.removeItem(cfg.storageKey); } catch (_) {}
   metaStorageStatus.state = 'ok';
   metaStorageStatus.loadError = null;
   metaStorageStatus.foundVersion = null;
   metaStorageStatus.rawCorruptedBackup = null;
   metaStorageStatus.pendingUnsavedSettlement = null;
-  metaSave = createDefaultMetaSave();
+  meta.save = createDefaultMetaSave();
   const saved = saveMetaSave({ forceOverwriteCorrupted: true });
   if (game && !isMetaLoadoutLocked()) {
-    game.metaLoadout = { main: metaSave.loadout.main, aux: metaSave.loadout.aux.slice() };
+    game.metaLoadout = { main: meta.save.loadout.main, aux: meta.save.loadout.aux.slice() };
     syncRunActivePools();
   }
   renderAllUI(true);
-  return { ok: saved, reason: saved ? null : 'storage_write_failed', save: JSON.parse(JSON.stringify(metaSave)) };
+  return { ok: saved, reason: saved ? null : 'storage_write_failed', save: JSON.parse(JSON.stringify(meta.save)) };
 }
 
 function exportMetaSave(){
@@ -479,20 +494,20 @@ function importMetaSave(jsonOrObj){
         supportedVersion: mig.supportedVersion
       };
     }
-    const prevSave = metaSave ? JSON.parse(JSON.stringify(metaSave)) : null;
-    metaSave = mig.save;
+    const prevSave = meta.save ? JSON.parse(JSON.stringify(meta.save)) : null;
+    meta.save = mig.save;
     const saved = saveMetaSave({ forceOverwriteCorrupted: true });
     if (!saved) {
-      if (prevSave) metaSave = prevSave;
+      if (prevSave) meta.save = prevSave;
       return { ok: false, reason: 'storage_write_failed', error: metaStorageStatus.lastSaveError };
     }
     metaStorageStatus.pendingUnsavedSettlement = null;
     if (game && !isMetaLoadoutLocked()) {
-      game.metaLoadout = { main: metaSave.loadout.main, aux: metaSave.loadout.aux.slice() };
+      game.metaLoadout = { main: meta.save.loadout.main, aux: meta.save.loadout.aux.slice() };
       syncRunActivePools();
     }
     renderAllUI(true);
-    return { ok: true, migratedFrom: mig.migratedFrom, save: JSON.parse(JSON.stringify(metaSave)) };
+    return { ok: true, migratedFrom: mig.migratedFrom, save: JSON.parse(JSON.stringify(meta.save)) };
   } catch (err) {
     return { ok: false, reason: 'parse_error', error: String(err?.message || err) };
   }
@@ -772,7 +787,7 @@ function pickWeightedByMainLegacy(items, getElemFn, rndFn = game?.rnd || Math.ra
 }
 
 function generateRunId(seed){
-  const seq = _runIdSeq++;
+  const seq = meta.runIdSeq++;
   return `run_${Date.now().toString(36)}_${Number(seed || 0).toString(36)}_${seq}`;
 }
 
@@ -953,7 +968,7 @@ function settleRunMetaRewards(victory){
       runId,
       victory: !!victory,
       record: { ...record },
-      saveSnapshot: JSON.parse(JSON.stringify(metaSave))
+      saveSnapshot: JSON.parse(JSON.stringify(meta.save))
     };
     toast('⚠️ 本地存档写入失败，本局奖励尚未持久化！请在结算页点击【重试保存】或【导出备份 JSON】。', true);
   } else {
@@ -966,11 +981,11 @@ function settleRunMetaRewards(victory){
 function retryPendingMetaSave(){
   const pending = metaStorageStatus.pendingUnsavedSettlement;
   if (pending && pending.saveSnapshot) {
-    metaSave = normalizeMetaSave(pending.saveSnapshot);
-    if (metaSave.lastSettlement) {
-      metaSave.lastSettlement.saveStatus = 'saved';
-      metaSave.lastSettlement.persisted = true;
-      metaSave.lastSettlement.saveError = null;
+    meta.save = normalizeMetaSave(pending.saveSnapshot);
+    if (meta.save.lastSettlement) {
+      meta.save.lastSettlement.saveStatus = 'saved';
+      meta.save.lastSettlement.persisted = true;
+      meta.save.lastSettlement.saveError = null;
     }
   }
   const ok = saveMetaSave();
@@ -984,10 +999,10 @@ function retryPendingMetaSave(){
     toast('✅ 重试保存成功！本局传承奖励已安全持久化至本地存档。');
   } else {
     const errReason = metaStorageStatus.lastSaveError || 'storage_write_failed';
-    if (metaSave?.lastSettlement) {
-      metaSave.lastSettlement.saveStatus = 'failed';
-      metaSave.lastSettlement.persisted = false;
-      metaSave.lastSettlement.saveError = errReason;
+    if (meta.save?.lastSettlement) {
+      meta.save.lastSettlement.saveStatus = 'failed';
+      meta.save.lastSettlement.persisted = false;
+      meta.save.lastSettlement.saveError = errReason;
     }
     if (game?.metaSettlement) {
       game.metaSettlement.saveStatus = 'failed';
@@ -1005,11 +1020,30 @@ function retryPendingMetaSave(){
   };
 }
 
+// Bind adapters before the initial Meta load. Viewport and input are read on demand.
+runtimeCtx.bindPorts({
+  storage: { getStorage: getMetaStorage },
+  audio: { play: AudioKit.play.bind(AudioKit), unlock: AudioKit.unlock.bind(AudioKit) },
+  vfx: { addRing, addFloat },
+  ui: { toast, showBanner, flashScreen, renderAllUI, setDangerVignette, setPaused },
+  modals: {
+    queueModal, closeModal, openNextModal, showEndModal,
+    openW20PreselectModal, openDestinyGambleModal, openAffixTransferModal, openMetaLegacyModal,
+    renderW10BreakthroughModal, renderW20PreselectModal, renderW20BreakthroughModal,
+    renderDestinyGambleModal, renderAffixTransferModal, renderShopConfirmModal, renderW30EarlyConfirmModal,
+  },
+  viewport: { screenToWorld, worldToScreen, getCamera: () => cam },
+  input: {
+    getKeys: () => keys,
+    getPointerScreen: () => pointerScreen,
+    getPointerWorld: () => pointerWorld,
+    isPointerDown: () => pointerDown,
+  },
+});
 loadMetaSave();
 
-let _gearUidSeq = 1;
 function nextGearUid(){
-  const n = _gearUidSeq++;
+  const n = counters.gearUidSeq++;
   const r = game?.rnd ? Math.floor(game.rnd() * 9000 + 1000) : Math.floor(Math.random() * 9000 + 1000);
   return `g${n}_${r}`;
 }
@@ -1484,10 +1518,7 @@ const keys = new Set();
 let pointerDown = false;
 let pointerScreen = null;
 let pointerWorld = null;
-let paused = false;
 let toastTimer = null, bannerTimer = null;
-let game = null;
-let TERRAIN_PROPS = [];
 const perfStats = { fps: 60, frameCount: 0, fpsTimer: 0, culledTiles: 0, culledProps: 0 };
 
 // UI dirty-tracking keys to guarantee ZERO DOM flicker
@@ -1516,6 +1547,7 @@ function showBanner(title, sub, tone = ''){
   bannerTimer = setTimeout(() => { $('banner').hidden = true; }, 2400);
 }
 
+function setDangerVignette(active){ $('hpVignette')?.classList.toggle('danger', active); }
 
 
 /* Wave / Breakthrough Node Evaluation (replaces old 4 manual tribulations!) */
@@ -1547,8 +1579,8 @@ function getUnlockedSkillPool(){
   return getActiveUnlockNode().skills.slice();
 }
 
-function perkLv(k){ return game?.hero?.perks?.[k] || 0; }
-function hasCombo(k){ return !!game?.hero?.combos?.[k]; }
+function perkLv(k){ return queryPerkLv(game, k); }
+function hasCombo(k){ return queryHasCombo(game, k); }
 
 function getSealStarCap(){
   const node = getActiveUnlockNode();
@@ -1580,7 +1612,7 @@ function hasPendingDecision(){
 
 function makeGame(seed = Math.floor(Math.random() * 1e9)){
   const rnd = mulberry32(seed);
-  TERRAIN_PROPS = buildTerrainProps(seed);
+  runtimeCtx.setTerrainProps(buildTerrainProps(seed));
   const w20AuxEntry = W20_BOSS_AUX_POOL.length
     ? W20_BOSS_AUX_POOL[Math.floor(rnd() * W20_BOSS_AUX_POOL.length)]
     : { key: 'oppression_ring', name: '领域压迫环', desc: '周期释放带预警的压迫光环。', fairnessNote: '有清晰预警与走位窗口' };
@@ -1933,13 +1965,13 @@ function syncRunResourceAccounting(){
 }
 
 function startNewRun(seed = Math.floor(Math.random() * 1e9), showStarter = true, opts = {}){
-  game = makeGame(seed);
+  runtimeCtx.setGame(makeGame(seed));
   syncRunActivePools();
   if (!opts?.preRunSetup) {
     game.metaRunLocked = true;
   }
   recomputeEquipmentSynergies();
-  paused = false;
+  runtimeCtx.setPaused(false);
   lastShopKey = lastSynKey = lastBagKey = lastInspKey = lastArtKey = lastSkillKey = lastLeftHudKey = lastBattleHudKey = '';
   $('banner').hidden = true;
   $('toast').hidden = true;
@@ -1953,32 +1985,9 @@ function startNewRun(seed = Math.floor(Math.random() * 1e9), showStarter = true,
 }
 
 /* ==================== CROSS-STAGE COMBAT STATE HOOKS (W10 / GEAR / W20 SHARED) ==================== */
-let _inFireChainTransfer = false;
-
-function getW20ActiveState(){
-  const w20 = game?.hero?.breakthroughs?.w20;
-  if (!w20 || !w20.completed || w20.placeholder) {
-    return { active: false, baseEffectActive: false, directionKey: null, enhancementKey: null, voucher: !!game?.hero?.vouchers?.w20 };
-  }
-  const baseActive = w20.baseEffectActive !== false && !!game?.hero?.vouchers?.w20;
-  return {
-    active: baseActive,
-    baseEffectActive: baseActive,
-    directionKey: baseActive ? (w20.directionKey || null) : null,
-    enhancementKey: baseActive ? (w20.enhancementKey || null) : null,
-    voucher: !!game?.hero?.vouchers?.w20
-  };
-}
-
-function hasW20Direction(dirKey){
-  const st = getW20ActiveState();
-  return st.baseEffectActive && st.directionKey === dirKey;
-}
-
-function hasW20Enhancement(enhKey){
-  const st = getW20ActiveState();
-  return st.baseEffectActive && st.enhancementKey === enhKey;
-}
+function getW20ActiveState(){ return queryGetW20ActiveState(game); }
+function hasW20Direction(dirKey){ return queryHasW20Direction(game, dirKey); }
+function hasW20Enhancement(enhKey){ return queryHasW20Enhancement(game, enhKey); }
 
 function recordW20Proc(kind = 'base'){
   if (!game) return;
@@ -1991,14 +2000,8 @@ function recordW20Proc(kind = 'base'){
   }
 }
 
-function hasDestinyEnhancement(key){
-  return !!(key && game?.hero?.destinyEnhancements?.[key]);
-}
-
-function getOwnedDestinyEnhancements(){
-  const map = game?.hero?.destinyEnhancements || {};
-  return Object.keys(map).filter(k => map[k] && DESTINY_ENHANCEMENTS[k]).map(k => DESTINY_ENHANCEMENTS[k]);
-}
+function hasDestinyEnhancement(key){ return queryHasDestinyEnhancement(game, key); }
+function getOwnedDestinyEnhancements(){ return queryGetOwnedDestinyEnhancements(game); }
 
 function recordDestinyProc(key = null){
   if (!game) return;
@@ -2082,7 +2085,7 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
   const w20Vortex = hasW20Enhancement('w20_fire_mark_vortex');
   const w20EmberBarrage = hasW20Enhancement('w20_fire_ember_barrage');
   const w20BossBreaker = hasW20Enhancement('w20_shared_boss_breaker');
-  const allowChainTransfer = !_inFireChainTransfer && (hasFireTrio || w20FireBase);
+  const allowChainTransfer = !counters.inFireChainTransfer && (hasFireTrio || w20FireBase);
 
   e.fireDetonateCd = 0.22;
   const stacks = Math.max(1, e.fireMarkStacks || 1);
@@ -2111,7 +2114,7 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
   }
 
   // Stage 3 W20 Base Direction [fire_chain_surge]: Pull nearby non-boss enemies inward & splash fire mark before blast!
-  if (w20FireBase && !_inFireChainTransfer) {
+  if (w20FireBase && !counters.inFireChainTransfer) {
     const be = BALANCE.w20Breakthrough?.baseEffects || {};
     const pullRad = be.firePullRadius || 3.4;
     const pullStr = be.firePullStrength || 0.75;
@@ -2154,7 +2157,7 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
 
   // Stage 2 Fire Trio + Stage 3 W20 [fire_chain_surge] chain transfer & isolated Boss/Elite focused detonation
   if (allowChainTransfer) {
-    _inFireChainTransfer = true;
+    counters.inFireChainTransfer = true;
     try {
       const sc = BALANCE.equipment?.synergyCombat || {};
       const be = BALANCE.w20Breakthrough?.baseEffects || {};
@@ -2250,12 +2253,12 @@ function triggerFireDetonation(e, arg2 = 1.2, arg3 = 1.85, arg4 = 'firewave'){
         }
       }
     } finally {
-      _inFireChainTransfer = false;
+      counters.inFireChainTransfer = false;
     }
   }
 
   // W20 Fire/Shared Enhancements post-detonation behaviors
-  if (!_inFireChainTransfer) {
+  if (!counters.inFireChainTransfer) {
     if (w20Vortex) {
       recordW20Proc('enhancement');
       game.zones.push({
@@ -2951,13 +2954,7 @@ function getWaveClearMaterialBonus(clearedWave){
 }
 
 /* ==================== STAGE 5: W29 FINAL PREP ATOMIC MUTEX LOCK & SHOP CONFIRM DRAFT ==================== */
-function isFinalPrepActionLocked(){
-  const fp = game?.finalPrep;
-  if (!fp) return false;
-  if (fp.locked || fp.transitioning) return true;
-  if (fp.active && fp.started && fp.timer <= 0) return true;
-  return false;
-}
+function isFinalPrepActionLocked(){ return queryIsFinalPrepActionLocked(game); }
 
 function openShopPurchaseConfirm(shopIdx){
   if (!game || game.phase !== 'prep') return { ok: false, reason: 'not_in_prep' };
@@ -7201,40 +7198,14 @@ function beginWaveHarvest(){
   }
 }
 
-function isW29WaveRewardModal(m){
-  return !!(m && ['levelup', 'chest', 'perk'].includes(m.type));
-}
-
-function hasPendingW29WaveRewards(){
-  if (!game) return false;
-  if (game.chests && game.chests.length > 0) return true;
-  if (isW29WaveRewardModal(game.activeModal)) return true;
-  if (game.pendingModals && game.pendingModals.some(isW29WaveRewardModal)) return true;
-  return false;
-}
-
-function getFinalPrepState(){
-  const fp = game?.finalPrep;
-  if (!fp) return null;
-  return {
-    active: !!fp.active,
-    awaitingWaveRewards: !!fp.awaitingWaveRewards,
-    started: !!fp.started,
-    locked: !!fp.locked,
-    transitioning: !!fp.transitioning,
-    timer: Number((fp.timer || 0).toFixed(3)),
-    duration: fp.duration || fp.maxSeconds || 90,
-    w30IntelShown: !!fp.w30IntelShown,
-    lastResolution: fp.lastResolution ? JSON.parse(JSON.stringify(fp.lastResolution)) : null
-  };
-}
-
-let _monotonicClockOverride = null;
-let _inMainLoopFrame = false;
+function isW29WaveRewardModal(m){ return queryIsW29WaveRewardModal(m); }
+function hasPendingW29WaveRewards(){ return queryHasPendingW29WaveRewards(game); }
+function getFinalPrepState(){ return queryGetFinalPrepState(game); }
 
 function getMonotonicNowMs(){
-  if (typeof _monotonicClockOverride === 'function') {
-    const v = Number(_monotonicClockOverride());
+  const override = counters.monotonicClockOverride;
+  if (typeof override === 'function') {
+    const v = Number(override());
     if (Number.isFinite(v)) return v;
   }
   return (typeof performance !== 'undefined' && typeof performance.now === 'function')
@@ -7243,7 +7214,7 @@ function getMonotonicNowMs(){
 }
 
 function setMonotonicClockForTest(fn){
-  _monotonicClockOverride = typeof fn === 'function' ? fn : null;
+  counters.monotonicClockOverride = typeof fn === 'function' ? fn : null;
   if (typeof lastTs !== 'undefined') lastTs = getMonotonicNowMs();
 }
 
@@ -7301,7 +7272,7 @@ function syncW29FinalPrepClock({ nowMs = null, fallbackRealDt = 0, allowFallback
 
   const prevClockMs = Number.isFinite(fp.lastClockMs) ? fp.lastClockMs : curNowMs;
   const wallDeltaMs = Math.max(0, curNowMs - prevClockMs);
-  const hasExplicitClock = typeof _monotonicClockOverride === 'function';
+  const hasExplicitClock = typeof counters.monotonicClockOverride === 'function';
   let elapsedSec = 0;
 
   if (wallDeltaMs > 0) {
@@ -7708,8 +7679,8 @@ function tick(dt){
   // BUG-01: W29 90s real-time countdown runs strictly on real monotonic time BEFORE paused guard!
   if (game.phase === 'prep' && game.finalPrep && game.finalPrep.active) {
     const expired = syncW29FinalPrepClock({
-      fallbackRealDt: _inMainLoopFrame ? 0 : realDt,
-      allowFallbackDt: !_inMainLoopFrame
+      fallbackRealDt: counters.inMainLoopFrame ? 0 : realDt,
+      allowFallbackDt: !counters.inMainLoopFrame
     });
     if (expired) return;
   }
@@ -7939,14 +7910,11 @@ function flashScreen(kind){
   clearTimeout(flashTimer);
   flashTimer = setTimeout(() => { el.className = 'trib-flash'; }, kind === 'dmg' ? 180 : 420);
 }
-
-let _modalOfferSeq = 1;
-
 function renderStarterModal(){
   const m = game?.activeModal;
   if (!m || m.type !== 'starter') return;
   const starters = ['blades', 'firewave', 'nova'];
-  if (!m.offerId) m.offerId = `starter_${_modalOfferSeq++}`;
+  if (!m.offerId) m.offerId = `starter_${counters.modalOfferSeq++}`;
   if (!Array.isArray(m.choices) || !m.choices.length) m.choices = starters.slice();
   if (typeof m.claimed !== 'boolean') m.claimed = false;
   const hs = getHeroStats();
@@ -7981,7 +7949,7 @@ function renderStarterModal(){
 function renderLevelUpModal(){
   const m = game?.activeModal;
   if (!m || m.type !== 'levelup') return;
-  if (!m.offerId) m.offerId = `levelup_${_modalOfferSeq++}`;
+  if (!m.offerId) m.offerId = `levelup_${counters.modalOfferSeq++}`;
   if (typeof m.claimed !== 'boolean') m.claimed = false;
 
   let choices = [];
@@ -8879,7 +8847,7 @@ function renderAffixChipsHtml(inst){
 function renderChestModal(legendBias = false, shrineTier = false){
   const m = game?.activeModal;
   if (!m || m.type !== 'chest') return;
-  if (!m.offerId) m.offerId = `chest_${_modalOfferSeq++}`;
+  if (!m.offerId) m.offerId = `chest_${counters.modalOfferSeq++}`;
   if (typeof m.claimed !== 'boolean') m.claimed = false;
   const choices = (Array.isArray(m.choices) && m.choices.length)
     ? m.choices.map(c => normalizeGearInstance(c))
@@ -10722,7 +10690,7 @@ function drawArena(){
 
   // Culled non-blocking terrain landmarks (ancient rune circles, flagstones, tufts)
   let propsDrawn = 0;
-  for (const p of TERRAIN_PROPS) {
+  for (const p of runtimeCtx.terrainProps) {
     const pad = p.rad || 1;
     if (p.x + pad < x0 || p.x - pad > x1 + 1 || p.y + pad < y0 || p.y - pad > y1 + 1) continue;
     propsDrawn++;
@@ -12402,7 +12370,7 @@ window.addEventListener('keydown', e => {
     if (game.activeModal?.type === 'affix_transfer') { cancelAffixTransferPreview(); closeModal(); renderAllUI(); return; }
     if (game.activeModal?.type === 'destiny_gamble' && !getPendingDestinyOffer()) { closeModal(); renderAllUI(); return; }
     if (game.inspTarget) { game.inspTarget = null; renderAllUI(); }
-    else if (paused) { paused = false; renderAllUI(); }
+    else if (paused) setPaused(false);
     return;
   }
   if (k === 'tab') { e.preventDefault(); toggleLeftHud(); return; }
@@ -12418,7 +12386,7 @@ window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 
 // Static button listeners
 function setPaused(val){
-  paused = !!val;
+  runtimeCtx.setPaused(val);
   renderAllUI();
   return paused;
 }
@@ -12429,8 +12397,7 @@ $('pauseBtn').addEventListener('click', () => {
     renderAllUI();
     return;
   }
-  paused = !paused;
-  renderAllUI();
+  setPaused(!paused);
 });
 $('soundBtn').addEventListener('click', () => { AudioKit.enabled = !AudioKit.enabled; renderAllUI(); });
 $('helpBtn').addEventListener('click', showIntroModal);
@@ -12493,9 +12460,9 @@ function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', material
   const normBuild = ['fire', 'frost'].includes(build) ? build : 'fire';
   const runSeed = Number.isFinite(Number(seed)) ? Number(seed) : 2026;
 
-  paused = false;
+  runtimeCtx.setPaused(false);
   closeModal();
-  game = makeGame(runSeed);
+  runtimeCtx.setGame(makeGame(runSeed));
   game.wave = targetWave;
   game.phase = 'prep';
   game.subPhase = null;
@@ -12828,9 +12795,9 @@ function exportBuildPreset(){
 function importBuildPreset(snapshot){
   if (!snapshot || typeof snapshot !== 'object') return { ok: false, reason: 'invalid_snapshot' };
   const data = typeof snapshot === 'string' ? JSON.parse(snapshot) : JSON.parse(JSON.stringify(snapshot));
-  paused = false;
+  runtimeCtx.setPaused(false);
   closeModal();
-  game = makeGame(Number.isFinite(Number(data.seed)) ? Number(data.seed) : 2026);
+  runtimeCtx.setGame(makeGame(Number.isFinite(Number(data.seed)) ? Number(data.seed) : 2026));
   game.wave = clamp(Math.round(Number(data.wave || 1)), 1, MAIN_WAVES);
   game.phase = 'prep';
   game.gold = Math.max(0, Math.round(Number(data.gold ?? BALANCE.progression.initialGold)));
@@ -12936,11 +12903,11 @@ function loop(ts){
     perfStats.fpsTimer = 0;
   }
   if (game) {
-    _inMainLoopFrame = true;
+    counters.inMainLoopFrame = true;
     try {
       stepFrame(rawDt);
     } finally {
-      _inMainLoopFrame = false;
+      counters.inMainLoopFrame = false;
     }
     render();
     uiAccum += rawDt;

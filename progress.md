@@ -9,6 +9,12 @@
   - 新增 `tests/unit/architecture-guard.test.mjs`（AST 校验 0 循环依赖、严格单向分层、纯层零浏览器标识符、legacy 目录约束、基线哈希锁定）。
   - 清理 `src/data/destiny-data.js` 未使用导入，`.gitignore` 忽略 `release/`，`package.json` 新增 `test:arch` / `test:parity` / `test:unit`。
   - 实测结果：`npm run build` PASS（471,116 B，1 内联脚本）；`npm run test:baseline` 43/43 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 场景 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS。
+- **Phase 2.4b（`RuntimeContext` + `Ports` 底座与纯状态查询叶模块）**：已完成并经主控独立审查与实测验收。
+  - 新增 `src/core/runtime-context.js`（唯一权威状态容器：`game`、`terrainProps`、`paused`、`meta`、`counters` 与 8 组依赖反转 `ports`）。
+  - 新增 `src/core/state-queries.js`（迁出 13 个纯只读状态查询函数，消除向上/循环依赖）。
+  - `src/data/balance.js` 补充 `with { type: 'json' }` 支持 Node 直接导入单测；`src/legacy/game.js` 接入 `runtimeCtx` 桥接（13,031 → 12,998 行）。
+  - 新增 `tests/unit/runtime-context.test.mjs`（11 项无 DOM 单测）。
+  - 实测结果：`npm run build` PASS（474,626 B）；`npm run test:unit` 14/14 PASS；`npm run test:arch` 3/3 PASS；`npm run test:parity` 1/1 PASS；`npm run test:modular-game` 1/1 PASS；模块版 Chrome E2E 6/6 PASS。
 
 ---
 
