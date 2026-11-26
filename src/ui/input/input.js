@@ -35,6 +35,7 @@ export function createInputController(runtimeCtx, deps) {
       openW20PreselectModal, openDestinyGambleModal, openAffixTransferModal, openMetaLegacyModal,
     } = deps.modals;
     const { castHeroDash, castHeroOverdrive } = deps.heroSkills;
+    const keyButton = key => key === ' ' || key === 'e' ? $('dashBtn') : key === 'r' ? $('ultBtn') : null;
     const { rollShop } = deps.shop;
     const { startNewRun, startWave } = deps.run;
     const { toast } = deps.feedback;
@@ -86,6 +87,7 @@ export function createInputController(runtimeCtx, deps) {
       if (e.target?.closest?.('button') && !game.activeModal && (k === ' ' || k === 'enter')) { e.preventDefault(); e.target.blur?.(); }
       keys.add(k);
       if (k === 'escape') {
+        if (game.activeModal?.type === 'shop_confirm') { $('shopConfirmCancelBtn')?.click(); return; }
         if (game.activeModal?.type === 'affix_transfer') { cancelAffixTransferPreview(); closeModal(); renderAllUI(); return; }
         if (game.activeModal?.type === 'destiny_gamble' && !getPendingDestinyOffer()) { closeModal(); renderAllUI(); return; }
         if (game.inspTarget) { game.inspTarget = null; renderAllUI(); }
@@ -94,6 +96,7 @@ export function createInputController(runtimeCtx, deps) {
       }
       if (k === 'tab' && !game.activeModal) { e.preventDefault(); toggleLeftHud(); return; }
       if (game.activeModal) return;
+      keyButton(k)?.classList.add('key-press');
       if (k === ' ' || k === 'e') { e.preventDefault(); castHeroDash(); return; }
       if (k === 'r') { castHeroOverdrive(); return; }
       if (k === 'q') { rollShop(false); return; }
@@ -101,7 +104,15 @@ export function createInputController(runtimeCtx, deps) {
       if (k === 'enter' && game.phase === 'prep') { startWave(); return; }
       if (k === 'f') { game.speed = game.speed === 2 ? 1 : 2; renderAllUI(); return; }
     });
-    win.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+    win.addEventListener('keyup', e => {
+      const key = e.key.toLowerCase();
+      keys.delete(key);
+      keyButton(key)?.classList.remove('key-press');
+    });
+    win.addEventListener('blur', () => {
+      $('dashBtn')?.classList.remove('key-press');
+      $('ultBtn')?.classList.remove('key-press');
+    });
 
     $('speedBtn').addEventListener('click', () => {
       const game = runtimeCtx.game;
@@ -118,6 +129,13 @@ export function createInputController(runtimeCtx, deps) {
       setPaused(!paused);
     });
     $('soundBtn').addEventListener('click', () => { audio.enabled = !audio.enabled; renderAllUI(); });
+    $('fxQualityBtn')?.addEventListener('click', () => { deps.battleVfx?.cycleMode(); renderAllUI(); });
+    $('prepBuildOpen')?.addEventListener('click', () => {
+      const game = runtimeCtx.game;
+      if (!game || game.activeModal) return;
+      game.inspTarget = game.inspTarget?.type === 'hero' ? null : { type: 'hero' };
+      renderAllUI(true);
+    });
     $('helpBtn').addEventListener('click', showIntroModal);
     $('resetBtn').addEventListener('click', () => { panels.close(); startNewRun(); });
     $('dashBtn').addEventListener('click', castHeroDash);

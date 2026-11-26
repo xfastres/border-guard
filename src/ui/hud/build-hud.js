@@ -1,3 +1,4 @@
+import { withIcons } from '../shared/icons.js';
 import { getBuildRoute, getOwnedDestinyEnhancements } from '../../core/state-queries.js';
 import {
   ARTIFACTS, SEAL_SPECIALIZATIONS, SUB_SEAL_RESONANCE, SEAL_FUSE_NEED, ELEMENTS, HERO_GEAR_SLOTS,
@@ -163,10 +164,10 @@ export function createBuildHud(runtimeCtx, deps) {
         chips.push(`<span class="glance-chip">🎲 天命 ${ownedDestiny.length}</span>`);
       }
 
-      body.innerHTML = sealHtml +
+      body.innerHTML = withIcons(sealHtml +
         routeHint +
         `<div class="glance-gear-grid">${gearTiles}</div>` +
-        `<button type="button" class="glance-syn-row" data-switch-syn${attr('点击切换查看全部套装、词条联动与神通详情')}>${chips.slice(0, 4).join('')}</button>`;
+        `<button type="button" class="glance-syn-row" data-switch-syn${attr('点击切换查看全部套装、词条联动与神通详情')}>${chips.slice(0, 4).join('')}</button>`);
     } else {
       // Tab 2: Full Synergies, Set Progress, Element Bonds & Learned Skills
       const progCards = [];

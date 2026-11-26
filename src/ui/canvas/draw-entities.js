@@ -1,8 +1,11 @@
 import { clamp } from '../../core/math.js';
 import { hasCombo, perkLv } from '../../core/state-queries.js';
 import { CELL, ELEMENTS } from '../../data/index.js';
+import { effectTier } from '../vfx/battle-vfx.js';
+import { drawEnemyBody, drawTraveler } from './silhouettes.js';
+import { polygon } from './spell-effects.js';
 
-export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat }) {
+export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat, visible = () => true, scene }) {
   const { getHeroStats, hasDualRes } = hero;
   const { getRealm } = unlock;
   const { isEnemyUnstoppable } = combat;
@@ -54,12 +57,12 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat }) 
     const hs = getHeroStats();
     const rSpec = getRealm(h.realm);
 
-    // Overdrive golden aura
+    // The active route colors its overdrive tell.
     if (h.ultTimer > 0) {
       ctx.beginPath();
       ctx.arc(hx, hy, 30 + Math.sin(performance.now()/80)*4, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,220,90,0.22)'; ctx.fill();
-      ctx.strokeStyle = '#ffe878'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = h.skills?.berserk ? '#b91f5b41' : '#d9c07536'; ctx.fill();
+      ctx.strokeStyle = h.skills?.berserk ? '#ffa4a9' : '#f8d489'; ctx.lineWidth = 2; ctx.stroke();
     }
 
     // Orbiting Blades (旋风飞刃: tightened radius matching combat collision!) + Combo Array Auras
@@ -84,7 +87,13 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat }) 
     }
     if (bLv > 0 && game.phase === 'wave' && game.enemies.length > 0) {
       const count = bLv + 1;
-      const orbitR = (1.65 + bLv * 0.10) * hs.skillRangeMult * CELL;
+      const tier = effectTier(game, 'blades');
+      const breathe = h.w10Branch?.blades === 'bl_expanding_storm' ? 1.10 + .35 * Math.sin(game.waveClock * 3.2) : 1;
+      const orbitR = (1.65 + bLv * .10) * hs.skillRangeMult * CELL * breathe;
+      if (tier && scene?.quality !== 'off') {
+        ctx.beginPath(); polygon(ctx, hx, hy, orbitR * .93, tier === 2 ? 8 : 6, h.bladeAngle * -.21);
+        ctx.strokeStyle = '#c2dbf74d'; ctx.lineWidth = 1.3; ctx.stroke();
+      }
       ctx.beginPath();
       ctx.arc(hx, hy, orbitR, 0, Math.PI * 2);
       ctx.strokeStyle = hasIceBlades ? 'rgba(130,245,255,0.42)' : 'rgba(142,244,255,0.12)';
@@ -112,6 +121,10 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat }) 
         ctx.save();
         ctx.translate(bx, by);
         ctx.rotate(ang + Math.PI / 2);
+        if (scene?.quality !== 'off') {
+          ctx.beginPath(); ctx.moveTo(-4, 0);
+          ctx.quadraticCurveTo(2, 17, -9, 23 + tier * 9); ctx.quadraticCurveTo(-1, 11, -6, 0); ctx.fillStyle = '#bddaff61'; ctx.fill();
+        }
         const bScale = hasIceBlades ? 1.32 : 1.0;
         ctx.beginPath();
         ctx.moveTo(0, -12 * bScale); ctx.lineTo(5.5 * bScale, 6 * bScale); ctx.lineTo(0, 3 * bScale); ctx.lineTo(-5.5 * bScale, 6 * bScale); ctx.closePath();
@@ -121,21 +134,8 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat }) 
       }
     }
 
-    // Hero Body (size & rim glow scale with Cultivation Realm!)
-    const bodyR = 14 + h.realm * 0.8;
-    ctx.beginPath();
-    ctx.arc(hx, hy, bodyR, 0, Math.PI * 2);
-    ctx.fillStyle = h.invuln > 0 ? '#ffffff' : '#2a8fff';
-    ctx.fill();
-    ctx.strokeStyle = (h.armorBreakT || 0) > 0 ? '#ff6b57' : h.shield > 0 ? '#8ef5ff' : rSpec.col;
-    ctx.lineWidth = (h.armorBreakT || 0) > 0 ? 4 : 3;
-    ctx.stroke();
-    // Crown / realm crest
-    ctx.fillStyle = rSpec.col;
-    ctx.beginPath();
-    ctx.moveTo(hx - 7, hy - 9); ctx.lineTo(hx - 4, hy - 16); ctx.lineTo(hx, hy - 11);
-    ctx.lineTo(hx + 4, hy - 16); ctx.lineTo(hx + 7, hy - 9); ctx.closePath();
-    ctx.fill();
+    const bodyR = 14 + h.realm * .8;
+    drawTraveler(ctx, hx, hy, bodyR, scene?.heading ?? (h.face >= 0 ? 0 : Math.PI), h, rSpec.col, scene?.quality);
 
     // HP Bar (Sole Lifeline!)
     const r = clamp(h.hp / h.maxHp, 0, 1);
@@ -151,9 +151,9 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat }) 
       const ex = e.x * CELL, ey = e.y * CELL;
       const rad = e.r * CELL;
 
-      // Telegraph leap / charge corridor during windup
-      if (e.aiState === 'windup') {
-        const lineLen = (e.aiKind === 'leap' ? 3.2 : 4.6) * CELL;
+      // A warning line can enter the view before the enemy itself does.
+      const lineLen = (e.aiKind === 'leap' ? 3.2 : 4.6) * CELL;
+      if (e.aiState === 'windup' && visible(ex, ey, lineLen + rad)) {
         ctx.save();
         ctx.strokeStyle = 'rgba(255,70,56,0.72)';
         ctx.lineWidth = e.boss ? 16 : 8;
@@ -165,6 +165,7 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat }) 
         ctx.restore();
       }
 
+      if (!visible(ex, ey, rad + 27)) continue;
       // Unstoppable Gold-Crimson Aura during windup/leap/charge!
       if (isEnemyUnstoppable(e)) {
         ctx.save();
@@ -176,28 +177,16 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat }) 
         ctx.strokeStyle = 'rgba(255,82,66,0.65)'; ctx.lineWidth = 1.8; ctx.stroke();
         ctx.font = '900 10px sans-serif'; ctx.textAlign = 'center';
         ctx.fillStyle = '#ffdf6e';
-        ctx.fillText('🛡️霸体', ex, ey - rad - 16);
+        ctx.fillText('霸体', ex, ey - rad - 16);
         ctx.restore();
       }
-      if (e.elite || e.boss || e.frenzyT > 0) {
-        ctx.beginPath();
-        ctx.arc(ex, ey, rad + 6, 0, Math.PI * 2);
-        ctx.fillStyle = e.boss ? 'rgba(255,65,50,0.22)' : e.isShrineBoss ? 'rgba(255,59,92,0.28)' : e.elite ? 'rgba(190,102,255,0.22)' : 'rgba(255,159,67,0.20)';
-        ctx.fill();
-      }
-      ctx.beginPath();
-      ctx.arc(ex, ey, rad, 0, Math.PI * 2);
-      ctx.fillStyle = e.flash > 0 ? '#ffffff' : e.freezeT > 0 ? '#8ceeff' : e.col;
-      ctx.fill();
-      ctx.strokeStyle = e.fireMarkT > 0 ? '#ff6d38' : e.shield > 0 ? '#6ce2ff' : e.slowT > 0 ? '#7ce8ff' : e.rim;
-      ctx.lineWidth = (e.boss || e.elite || e.shield > 0 || e.fireMarkT > 0) ? 3 : 1.8;
-      ctx.stroke();
+      drawEnemyBody(ctx, e, ex, ey, rad, game.waveClock, scene?.quality);
 
       // Fire Mark indicator (W10 Fire breakthrough hook)
       if (e.fireMarkT > 0) {
         ctx.font = '900 10px sans-serif'; ctx.textAlign = 'center';
         ctx.fillStyle = '#ff9a52';
-        ctx.fillText(`🔥×${e.fireMarkStacks || 1}`, ex, ey + rad + 11);
+        ctx.fillText(`火×${e.fireMarkStacks || 1}`, ex, ey + rad + 11);
       }
 
       // Elite affix tag
@@ -230,6 +219,7 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat }) 
     const isHarvest = game.phase === 'harvest';
     for (const g of game.gems) {
       const gx = g.x * CELL, gy = g.y * CELL;
+      if (!visible(gx, gy, 26)) continue;
       const s = g.big ? 6 : 4;
       if (isHarvest || g.magnetized) {
         const dx = h.x * CELL - gx, dy = h.y * CELL - gy;
@@ -250,8 +240,11 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat }) 
       ctx.arc(cx, cy, 16, 0, Math.PI * 2);
       ctx.fillStyle = c.legend ? 'rgba(255,196,64,0.3)' : c.shrineTier ? 'rgba(255,65,95,0.34)' : 'rgba(196,120,255,0.28)';
       ctx.fill();
-      ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(c.legend ? '👑' : c.shrineTier ? '🩸' : '📦', cx, cy);
+      ctx.beginPath(); polygon(ctx, cx, cy, 11, 4, Math.PI / 4);
+      ctx.fillStyle = '#26252e'; ctx.fill();
+      ctx.strokeStyle = c.legend ? '#f7d182' : c.shrineTier ? '#e38f9d' : '#bbacef'; ctx.lineWidth = 1.7; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx - 8, cy - 2); ctx.lineTo(cx + 8, cy - 2);
+      ctx.moveTo(cx, cy - 3); ctx.lineTo(cx, cy + 4); ctx.stroke();
     }
     for (const orb of (game.healOrbs || [])) {
       const ox = orb.x * CELL, oy = orb.y * CELL + Math.sin(orb.bob || 0) * 3;
@@ -259,8 +252,8 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat }) 
       ctx.arc(ox, oy, 14, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(98,255,184,0.32)'; ctx.fill();
       ctx.strokeStyle = '#62ffb8'; ctx.lineWidth = 2.2; ctx.stroke();
-      ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('💚', ox, oy);
+      ctx.fillStyle = '#daffda';
+      ctx.fillRect(ox - 2, oy - 7, 4, 14); ctx.fillRect(ox - 7, oy - 2, 14, 4);
     }
   }
 

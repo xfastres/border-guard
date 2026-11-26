@@ -1,3 +1,4 @@
+import { withIcons, setIconText } from '../shared/icons.js';
 import { getOwnedDestinyEnhancements } from '../../core/state-queries.js';
 import { GEAR_AFFIXES } from '../../data/equipment-data.js';
 
@@ -33,7 +34,7 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
     const w29Note = runtimeCtx.game.finalPrep?.active ? ` · <span style="color:#ff9090">⏳ W29 整备倒计时继续运行 (${Math.ceil(runtimeCtx.game.finalPrep.timer)}s)</span>` : '';
 
     if (pending) {
-      box.innerHTML = `
+      box.innerHTML = withIcons(`
       <h2>🎲 天命赌局 · 开奖三选一（押注 💰${pending.bet}）</h2>
       <p class="lead">本次天命已开奖！请从以下 <strong>3 件随机候选</strong>中择一领取（<strong>单次结账、仅领一件</strong>，未领取前不可再次发起新押注）${w29Note}。</p>
       <div class="destiny-meta-row">
@@ -43,7 +44,7 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
         <span class="destiny-chip">📦 背包 ${runtimeCtx.game.bag.length}/${getBagCapacity()}</span>
       </div>
       <div class="choices" id="modalChoices"></div>
-    `;
+    `);
       const grid = box.querySelector('#modalChoices');
       pending.choices.forEach((ch, idx) => {
         const card = document.createElement('button');
@@ -52,14 +53,14 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
         card.dataset.choice = String(idx);
         const gearChips = ch.category === 'gear' && ch.gear ? `<div style="margin-top:3px">${renderAffixChipsHtml(ch.gear)}</div>` : '';
         const synBadge = ch.synNote ? `<span class="syn-badge hint">💡 ${ch.synNote}</span>` : '';
-        card.innerHTML = `
+        card.innerHTML = withIcons(`
         <span class="tag">${ch.tag || ch.category}</span>
         <span class="ci">${ch.icon || '✨'}</span>
         <span class="cn">${ch.name}</span>
         <span class="cd">${ch.desc || ''}</span>
         ${gearChips}
         ${synBadge}
-      `;
+      `);
         card.addEventListener('click', () => claimDestinyReward(idx));
         grid.append(card);
       });
@@ -72,7 +73,7 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
     const t = cfg.preciousThresholds;
     const lastEmpty = runtimeCtx.game.destiny?.lastOutcome?.outcome === 'empty_tribulation';
 
-    box.innerHTML = `
+    box.innerHTML = withIcons(`
     <h2>🎲 天命赌局 · 自由押注开奖</h2>
     <p class="lead">自由设定押注金币，确认后<strong>单次原子扣款并立即开奖</strong>（不可无痛撤回）。空劫概率 <strong>${Math.round(cfg.emptyTribulationChance * 100)}%</strong>（空劫押注归零）；中奖按<strong>灵印 / 构装 / 丹药 / 特殊强化各 25%</strong>生成 3 件候选三选一，纯按概率无稀有度保底${w29Note}。</p>
     <div class="destiny-meta-row">
@@ -98,7 +99,7 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
       <button class="btn" id="destinyOpenTransferBtn" type="button">✨ 前往词条转移台 (🔮${runtimeCtx.game.transferTokens || 0})</button>
       <button class="btn" id="destinyCloseBtn" type="button">返回备战</button>
     </div>
-  `;
+  `);
 
     const updateBandPreview = val => {
       const bVal = Math.floor(Number(val) || 0);
@@ -110,7 +111,7 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
       if (rollBtn) rollBtn.disabled = !valid;
       if (!pv) return;
       if (bVal < cfg.minBet) {
-        pv.innerHTML = `<span style="color:#ff9aa8">⚠️ 低于最低押注门槛（${cfg.minBet} 金），无法开奖。</span>`;
+        pv.innerHTML = withIcons(`<span style="color:#ff9aa8">⚠️ 低于最低押注门槛（${cfg.minBet} 金），无法开奖。</span>`);
         return;
       }
       const unlocked = [
@@ -120,7 +121,7 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
         info.allowDestinyExclusive ? '✅ 🌟史诗/天命专属强化' : `🔒 史诗/天命专属(需≥${t.destinyExclusive}金)`,
         info.allowLegend ? '✅ 👑传说珍贵池' : `🔒 传说池(需≥${t.legend}金)`
       ];
-      pv.innerHTML = `<b>押注 💰${bVal} 档位资格：</b>${unlocked.join(' · ')}<br><small style="opacity:0.85">四类顶层权重固定：灵印 25% / 构装 25% / 丹药 25% / 特殊强化 25%（无稀有度保底）</small>`;
+      pv.innerHTML = withIcons(`<b>押注 💰${bVal} 档位资格：</b>${unlocked.join(' · ')}<br><small style="opacity:0.85">四类顶层权重固定：灵印 25% / 构装 25% / 丹药 25% / 特殊强化 25%（无稀有度保底）</small>`);
     };
 
     const quickWrap = box.querySelector('#destinyQuickBtns');
@@ -172,7 +173,7 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
     const w29Note = runtimeCtx.game.finalPrep?.active ? ` · <span style="color:#ff9090">⏳ W29 整备倒计时继续运行 (${Math.ceil(runtimeCtx.game.finalPrep.timer)}s)</span>` : '';
 
     if (allGear.length < 2) {
-      box.innerHTML = `
+      box.innerHTML = withIcons(`
       <h2>✨ 词条转移台</h2>
       <p class="lead">至少需要持有 <strong>2 件构装</strong>（已穿戴或背包合计）才可进行词条提取与转入${w29Note}。</p>
       <div class="destiny-meta-row">
@@ -183,7 +184,7 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
         <button class="btn gold" id="trGoDestiny" type="button">🎲 前往天命赌局</button>
         <button class="btn" id="trCancel" type="button">返回备战</button>
       </div>
-    `;
+    `);
       box.querySelector('#trGoDestiny')?.addEventListener('click', () => openDestinyGambleModal());
       box.querySelector('#trCancel')?.addEventListener('click', () => { cancelAffixTransferPreview(); deps.modalManager.closeModal(); });
       getEl('modalBackdrop').hidden = false;
@@ -212,7 +213,7 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
 
     const fmtSyn = list => list.length ? list.map(s => `${s.name}(${s.tier === 3 ? '三联动' : '双联动'})`).join(' / ') : '无联动';
 
-    box.innerHTML = `
+    box.innerHTML = withIcons(`
     <h2>✨ 词条转移台 · 原子预览与确认</h2>
     <p class="lead">支持<strong>已穿戴 4 槽装备与背包装备</strong>直接互转（无需卸下主力装）。提取后<strong>源装备保留、源槽变为空槽</strong>，目标可<strong>填空槽或覆盖已有词条</strong>；取消预览零副作用${w29Note}。</p>
     <div class="destiny-meta-row">
@@ -236,7 +237,7 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
       <button class="btn" id="trCancelBtn" type="button">取消预览 / 返回备战</button>
       <button class="btn gold" id="trCommitBtn" type="button" ${pv.canCommit ? '' : 'disabled'}>✨ 最终确认转移 (🔮${pv.costTokens} + 💰${pv.costGold})</button>
     </div>
-  `;
+  `);
 
     const srcCol = box.querySelector('#trSrcCol');
     const tgtCol = box.querySelector('#trTgtCol');
@@ -246,7 +247,7 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
       const isSrcSel = g.uid === _transferUiState.sourceUid;
       const sCard = document.createElement('div');
       sCard.className = 'transfer-gear-card' + (isSrcSel ? ' sel' : '');
-      sCard.innerHTML = `<div class="transfer-gear-head"><span>${g.icon} ${gearLabel(g)}</span><small>${entry.locTag} · ${g.slotsCount}槽</small></div><div class="transfer-slot-row"></div>`;
+      sCard.innerHTML = withIcons(`<div class="transfer-gear-head"><span>${g.icon} ${gearLabel(g)}</span><small>${entry.locTag} · ${g.slotsCount}槽</small></div><div class="transfer-slot-row"></div>`);
       const sRow = sCard.querySelector('.transfer-slot-row');
       for (let i = 0; i < g.slotsCount; i++) {
         const af = g.affixes?.[i] || null;
@@ -254,7 +255,7 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
         b.type = 'button';
         b.className = 'transfer-slot-btn' + (isSrcSel && _transferUiState.sourceSlot === i ? ' active' : '') + (!af ? ' empty-slot' : '');
         b.disabled = !af;
-        b.textContent = af ? `槽${i + 1}:${GEAR_AFFIXES[af.id]?.icon || ''}${GEAR_AFFIXES[af.id]?.name || af.id}` : `槽${i + 1}:[空槽]`;
+        setIconText(b, af ? `槽${i + 1}:${GEAR_AFFIXES[af.id]?.icon || ''}${GEAR_AFFIXES[af.id]?.name || af.id}` : `槽${i + 1}:[空槽]`);
         b.addEventListener('click', () => {
           _transferUiState.sourceUid = g.uid;
           _transferUiState.sourceSlot = i;
@@ -267,7 +268,7 @@ export function createDestinyTransferModals(runtimeCtx, deps) {
       const isTgtSel = g.uid === _transferUiState.targetUid;
       const tCard = document.createElement('div');
       tCard.className = 'transfer-gear-card' + (isTgtSel ? ' sel' : '');
-      tCard.innerHTML = `<div class="transfer-gear-head"><span>${g.icon} ${gearLabel(g)}</span><small>${entry.locTag} · ${g.slotsCount}槽</small></div><div class="transfer-slot-row"></div>`;
+      tCard.innerHTML = withIcons(`<div class="transfer-gear-head"><span>${g.icon} ${gearLabel(g)}</span><small>${entry.locTag} · ${g.slotsCount}槽</small></div><div class="transfer-slot-row"></div>`);
       const tRow = tCard.querySelector('.transfer-slot-row');
       for (let i = 0; i < g.slotsCount; i++) {
         const af = g.affixes?.[i] || null;

@@ -1,7 +1,10 @@
 import { clamp } from '../../core/math.js';
 import { CELL } from '../../data/index.js';
+import { withoutIcons } from '../shared/icons.js';
+import { EFFECT_LIMITS } from '../vfx/battle-vfx.js';
+import { drawAttackBody, polygon, traceBolt } from './spell-effects.js';
 
-export function createEffectsDrawer(runtimeCtx, { ctx }) {
+export function createEffectsDrawer(runtimeCtx, { ctx, scene, visible = () => true, now = () => performance.now() }) {
   function drawZones(){
     const game = runtimeCtx.game;
     // Optional Blood Shrine (血煞妖碑)
@@ -23,25 +26,36 @@ export function createEffectsDrawer(runtimeCtx, { ctx }) {
         ctx.fillStyle = 'rgba(255,70,100,0.35)'; ctx.fill();
       }
       ctx.font = '900 12px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ff9cb0';
-      ctx.fillText(s.active ? '🩸妖王试炼中' : '🩸血煞妖碑(踩入挑战)', sx, sy - sr - 6);
+      ctx.fillText(s.active ? '妖王试炼中' : '血煞妖碑 · 踩入挑战', sx, sy - sr - 6);
       ctx.restore();
     }
 
     for (const z of game.zones) {
       const zx = z.x * CELL, zy = z.y * CELL, zr = z.r * CELL;
+      if (!visible(zx, zy, zr + 20)) continue;
       if (z.kind === 'lava' || z.kind === 'fireVortex') {
         ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
         ctx.fillStyle = z.kind === 'fireVortex'
           ? `rgba(255,120,40,${0.26 * (z.t / z.max)})`
           : `rgba(255,95,35,${0.25 * (z.t / z.max)})`;
         ctx.fill();
-        if (z.kind === 'fireVortex') {
-          ctx.strokeStyle = 'rgba(255,190,85,0.65)'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.strokeStyle = z.kind === 'fireVortex' ? '#f7ac5b8c' : '#ec743b75';
+        ctx.lineWidth = z.kind === 'fireVortex' ? 2 : 1.25;
+        ctx.stroke();
+        if (scene?.limits.glow) {
+          ctx.beginPath();
+          ctx.ellipse(zx, zy, zr * .75, zr * .42, .45, .4, 4.5);
+          ctx.strokeStyle = '#6a3128a0'; ctx.lineWidth = 2; ctx.stroke();
         }
       } else if (z.kind === 'frostVortex' || z.kind === 'frostTrail') {
         ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(108,226,255,${0.22 * (z.t / z.max)})`; ctx.fill();
-        ctx.strokeStyle = 'rgba(142,244,255,0.45)'; ctx.lineWidth = 1.6; ctx.stroke();
+        ctx.strokeStyle = '#9de5f99e'; ctx.lineWidth = 1.6; ctx.stroke();
+        if (scene?.quality !== 'off') {
+          ctx.beginPath(); polygon(ctx, zx, zy, zr * .84, 6, z.t * .42); ctx.stroke();
+          ctx.beginPath(); ctx.ellipse(zx, zy - 4, zr * .82, zr * .36, -.31, 0, Math.PI * 2);
+          ctx.fillStyle = '#ccf7ff1c'; ctx.fill();
+        }
       } else if (z.kind === 'thunderField') {
         ctx.beginPath(); ctx.arc(zx, zy, zr, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(198,136,255,${0.22 * (z.t / z.max)})`; ctx.fill();
@@ -78,80 +92,56 @@ export function createEffectsDrawer(runtimeCtx, { ctx }) {
 
   function drawProjectilesBeamsBolts(){
     const game = runtimeCtx.game;
+    const limits = scene?.limits || EFFECT_LIMITS.high;
+    const time = now();
     for (const p of game.projectiles) {
       const px = p.x * CELL, py = p.y * CELL;
-      if (p.kind === 'firewave') {
-        const a = Math.atan2(p.vy, p.vx);
-        ctx.save(); ctx.translate(px, py); ctx.rotate(a);
-        if (p.comboStyle === 'wanjian') {
-          ctx.beginPath();
-          ctx.moveTo(20, 0); ctx.lineTo(-2, -6); ctx.lineTo(-6, -2); ctx.lineTo(-16, -2);
-          ctx.lineTo(-16, 2); ctx.lineTo(-6, 2); ctx.lineTo(-2, 6); ctx.closePath();
-          ctx.fillStyle = '#ffe878'; ctx.fill();
-          ctx.strokeStyle = '#8ef8ff'; ctx.lineWidth = 2; ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(-6, -8); ctx.lineTo(-6, 8);
-          ctx.strokeStyle = '#ffd24c'; ctx.lineWidth = 2.5; ctx.stroke();
-        } else {
-          ctx.beginPath(); ctx.arc(0, 0, 14, -1.1, 1.1);
-          ctx.strokeStyle = p.isThunderFireCombo ? '#d284ff' : (p.w10Branch ? '#ff542e' : '#ff8c42'); ctx.lineWidth = 5.5; ctx.stroke();
-          ctx.strokeStyle = p.isThunderFireCombo ? '#ffe878' : '#fff0a0'; ctx.lineWidth = 2; ctx.stroke();
-          if (p.isThunderFireCombo) {
-            ctx.beginPath(); ctx.moveTo(-4, -12); ctx.lineTo(4, -4); ctx.lineTo(-3, 4); ctx.lineTo(5, 12);
-            ctx.strokeStyle = '#ffe878'; ctx.lineWidth = 1.8; ctx.stroke();
-          }
+      if (p.kind === 'enemyShot') {
+        const tx = p.tx * CELL, ty = p.ty * CELL;
+        if (visible(tx, ty, 12)) {
+          ctx.beginPath(); ctx.arc(tx, ty, 8, 0, Math.PI * 2);
+          ctx.strokeStyle = '#ff83bb76'; ctx.lineWidth = 1.5; ctx.stroke();
         }
-        ctx.restore();
-      } else if (p.kind === 'arrow') {
-        const a = Math.atan2(p.vy, p.vx);
-        ctx.save(); ctx.translate(px, py); ctx.rotate(a);
-        ctx.strokeStyle = p.w10Branch ? '#8cf0ff' : '#8ef8c6'; ctx.lineWidth = 2.8;
-        ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(7, 0); ctx.stroke();
-        ctx.restore();
-      } else if (p.kind === 'fireball') {
-        ctx.beginPath(); ctx.arc(px, py, 6.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#ff7b38'; ctx.fill();
-        ctx.strokeStyle = '#fff09c'; ctx.lineWidth = 1.6; ctx.stroke();
-      } else if (p.kind === 'frostball') {
-        ctx.beginPath(); ctx.arc(px, py, 5.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#7beeff'; ctx.fill();
-      } else if (p.kind === 'enemyShot') {
-        ctx.beginPath(); ctx.arc(p.tx * CELL, p.ty * CELL, 8, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255,102,196,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
-        ctx.beginPath(); ctx.arc(px, py, 5.2, 0, Math.PI * 2);
-        ctx.fillStyle = '#ff66c4'; ctx.fill();
-        ctx.strokeStyle = '#ffd6f0'; ctx.lineWidth = 1.2; ctx.stroke();
-      }
+        if (!visible(px, py, 15)) continue;
+        ctx.beginPath(); polygon(ctx, px, py, 6, 4);
+        ctx.fillStyle = '#e8579c'; ctx.fill();
+        ctx.strokeStyle = '#ffdae9'; ctx.lineWidth = 1.2; ctx.stroke();
+      } else if (visible(px, py, 40)) drawAttackBody(ctx, p, game, scene);
     }
-    for (const b of game.beams) {
+    const beams = game.beams;
+    for (let i = Math.max(0, beams.length - limits.beams); i < beams.length; i++) {
+      const b = beams[i];
       const alpha = b.t / b.max;
       ctx.save();
-      ctx.strokeStyle = b.col || `rgba(255,232,120,${alpha})`;
-      ctx.globalAlpha = b.col ? alpha : 1;
-      ctx.lineWidth = b.w * alpha;
       ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(b.x1 * CELL, b.y1 * CELL); ctx.lineTo(b.x2 * CELL, b.y2 * CELL); ctx.stroke();
-      ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-      ctx.lineWidth = Math.max(1.5, b.w * 0.35 * alpha);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(b.x1 * CELL, b.y1 * CELL); ctx.lineTo(b.x2 * CELL, b.y2 * CELL);
+      ctx.strokeStyle = b.col || '#f6cb75'; ctx.globalAlpha = alpha * (limits.glow ? .32 : .6);
+      ctx.lineWidth = Math.max(1, b.w * alpha * 1.6); ctx.stroke();
+      if (limits.glow) {
+        ctx.strokeStyle = '#fff8de'; ctx.globalAlpha = alpha;
+        ctx.lineWidth = Math.max(1.6, b.w * .40 * alpha); ctx.stroke();
+      }
       ctx.restore();
     }
-    for (const l of game.bolts) {
-      const alpha = l.t / l.max;
+    const bolts = game.bolts;
+    for (let i = Math.max(0, bolts.length - limits.bolts); i < bolts.length; i++) {
+      const b = bolts[i];
+      const point = b.pts.at(-1);
+      if (!point) continue;
+      const alpha = b.t / b.max;
       ctx.save();
-      ctx.strokeStyle = l.col;
-      ctx.globalAlpha = alpha;
-      ctx.lineWidth = l.comboThunderFire ? 5 : 3;
-      ctx.beginPath();
-      l.pts.forEach((pt, i) => {
-        const lx = pt.x * CELL + (i > 0 ? (Math.random()-0.5)*7 : 0);
-        const ly = pt.y * CELL + (i > 0 ? (Math.random()-0.5)*7 : 0);
-        if (i === 0) ctx.moveTo(lx, ly); else ctx.lineTo(lx, ly);
-      });
+      traceBolt(ctx, b.pts, time + i * 41, scene?.quality !== 'off');
+      ctx.strokeStyle = b.comboThunderFire ? '#ff9f56' : '#8d9cff';
+      ctx.globalAlpha = alpha * .48;
+      ctx.lineWidth = limits.glow ? 8 : 4;
       ctx.stroke();
-      if (l.comboThunderFire) {
-        ctx.strokeStyle = '#ffe878';
-        ctx.lineWidth = 1.6;
-        ctx.stroke();
+      ctx.strokeStyle = '#eff4ff'; ctx.globalAlpha = alpha;
+      ctx.lineWidth = 1.65; ctx.stroke();
+      if (limits.glow) {
+        const x = point.x * CELL, y = point.y * CELL;
+        ctx.beginPath(); polygon(ctx, x, y, 11 + 7 * (1 - alpha), 6, .2);
+        ctx.globalAlpha = alpha * .47;
+        ctx.strokeStyle = '#a09bf3'; ctx.lineWidth = 1; ctx.stroke();
       }
       ctx.restore();
     }
@@ -159,7 +149,10 @@ export function createEffectsDrawer(runtimeCtx, { ctx }) {
 
   function drawRingsAndFloats(){
     const game = runtimeCtx.game;
-    for (const r of game.rings) {
+    const limits = scene?.limits || EFFECT_LIMITS.high;
+    for (let i = Math.max(0, game.rings.length - limits.rings); i < game.rings.length; i++) {
+      const r = game.rings[i];
+      if (!visible(r.x * CELL, r.y * CELL, r.r * CELL)) continue;
       const u = 1 - r.t / r.max;
       ctx.beginPath();
       ctx.arc(r.x * CELL, r.y * CELL, Math.max(4, r.r * CELL * (0.28 + 0.72 * u)), 0, Math.PI * 2);
@@ -170,14 +163,20 @@ export function createEffectsDrawer(runtimeCtx, { ctx }) {
       ctx.globalAlpha = 1;
     }
     ctx.textAlign = 'center';
-    for (const f of game.floats) {
+    for (let i = Math.max(0, game.floats.length - limits.labels); i < game.floats.length; i++) {
+      const f = game.floats[i];
+      if (!visible(f.x * CELL, f.y * CELL, 26)) continue;
       const alpha = clamp(f.t / f.max * 1.4, 0, 1);
+      const crit = /^\d+!$|斩杀/u.test(f.txt);
+      const dx = crit && scene?.limits.glow ? Math.sin(f.t * 38) * 2.5 : 0;
+      const text = withoutIcons(f.txt);
+      const x = f.x * CELL + dx, y = f.y * CELL;
       ctx.globalAlpha = alpha;
-      ctx.font = f.big ? '900 15px sans-serif' : '800 12px sans-serif';
+      ctx.font = crit ? '900 22px sans-serif' : f.big ? '900 15px sans-serif' : '800 12px sans-serif';
       ctx.fillStyle = '#000';
-      ctx.fillText(f.txt, f.x * CELL + 1, f.y * CELL + 1);
+      ctx.fillText(text, x + 1, y + 1);
       ctx.fillStyle = f.col;
-      ctx.fillText(f.txt, f.x * CELL, f.y * CELL);
+      ctx.fillText(text, x, y);
     }
     ctx.globalAlpha = 1;
   }

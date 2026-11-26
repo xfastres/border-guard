@@ -16,6 +16,7 @@ import { createInputController } from '../ui/input/input.js';
 import { createModalsSystem } from '../ui/modals/index.js';
 import { createUiFormatters } from '../ui/shared/formatters.js';
 import { createVfxManager } from '../ui/vfx/vfx.js';
+import { createBattleVfx } from '../ui/vfx/battle-vfx.js';
 import { createGameLoop } from './game-loop.js';
 
 export function createGameSystems(runtimeCtx) {
@@ -110,10 +111,19 @@ export function bootBrowserGame({ win = window, doc = win.document } = {}) {
     scheduleFrame: callback => win.requestAnimationFrame(callback),
   });
   const { perfStats } = gameLoop;
-  const vfx = createVfxManager(runtimeCtx);
+  const battleVfx = createBattleVfx(runtimeCtx, {
+    preferReducedMotion: win.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches,
+  });
+  const vfx = createVfxManager(runtimeCtx, battleVfx);
   const feedback = createFeedbackUI({ getEl });
   const viewport = createCanvasRenderer(runtimeCtx, {
-    canvas, ctx, getEl, perfStats, hero: heroStats, unlock, combat,
+    canvas, ctx, getEl, perfStats, hero: heroStats, unlock, combat, battleVfx, now,
+    makeSurface(width, height) {
+      const surface = doc.createElement('canvas');
+      surface.width = width;
+      surface.height = height;
+      return surface;
+    },
     getViewportSize: () => ({ width: win.innerWidth, height: win.innerHeight, dpr: win.devicePixelRatio || 1 }),
   });
   const formatters = createUiFormatters({ getW10BranchSpec: w10.getW10BranchSpec });
@@ -134,7 +144,7 @@ export function bootBrowserGame({ win = window, doc = win.document } = {}) {
   const hud = createHudSystem(runtimeCtx, {
     getEl,
     getViewportWidth: () => win.innerWidth,
-    perfStats,
+    perfStats, battleVfx,
     meta,
     equipment: { ...equipmentCore, ...equipmentInventory },
     economy: { ...economyCore, ...shop, ...shopConfirm },
@@ -149,7 +159,7 @@ export function bootBrowserGame({ win = window, doc = win.document } = {}) {
   });
   const input = createInputController(runtimeCtx, {
     win, canvas, getEl, viewport, hud, modals, feedback, audio: AudioKit,
-    heroSkills, shop, run, affixTransfer, destiny, unlock, w20,
+    heroSkills, shop, run, affixTransfer, destiny, unlock, w20, battleVfx,
   });
   const ui = { audio: AudioKit, vfx, feedback, viewport, formatters, modals, hud, input };
 

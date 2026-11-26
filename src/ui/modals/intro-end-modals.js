@@ -1,3 +1,4 @@
+import { withIcons } from '../shared/icons.js';
 import { BUILD_ROUTES } from '../../data/build-data.js';
 import { MAIN_WAVES } from '../../data/core-data.js';
 
@@ -22,8 +23,8 @@ export function createIntroEndModals(runtimeCtx, deps) {
     const auxSpecs = (save.loadout.aux || []).map(id => getMetaAuxSpec(id)).filter(Boolean);
     const budget = getMetaLoadoutBudget(save.loadout);
     const box = getEl('modalBox');
-    box.innerHTML = `
-    <h2>⚔️ 边境守卫 v0.60 · 30 波 · 数值与构筑重做</h2>
+    box.innerHTML = withIcons(`
+    <h2>⚔️ 边境守卫 v0.60 · 秘境视觉试玩</h2>
     <p class="lead">64×48 修仙秘境自由游走！从 <strong>W1</strong> 迎战 6 大首领与 <strong>W10 / W20 双大型突破</strong>，激活双/三词条实战联动，完成 <strong>W29 实时 90 秒整备</strong>并决战 <strong>W30 深渊主宰</strong>！</p>
     <div class="meta-lock-banner" style="margin-bottom:10px">
       <div>💠 当前局外传承：<strong>${mainSpec ? `${mainSpec.icon}${mainSpec.name}` : '未选'}</strong> · 辅助（${budget.auxCount}/3 · ${budget.auxPoints}/4点）：<strong>${auxSpecs.map(a => `${a.icon}${a.name}`).join(' / ') || '无'}</strong></div>
@@ -68,7 +69,7 @@ export function createIntroEndModals(runtimeCtx, deps) {
       <button class="btn" id="introMetaBtnFoot" type="button" style="padding:9px 14px;font-size:13px">⚙️ 配置局外传承</button>
       <button class="btn gold" id="introGo" type="button" style="padding:9px 22px;font-size:14px">⚔️ 锁定传承 · 踏入秘境！</button>
     </div>
-  `;
+  `);
     const openMetaFromIntro = () => deps.metaModal.openMetaLegacyModal({ context: 'pre_run', returnTo: 'intro' });
     box.querySelector('#introMetaBtn')?.addEventListener('click', openMetaFromIntro);
     box.querySelector('#introMetaBtnFoot')?.addEventListener('click', openMetaFromIntro);
@@ -151,7 +152,7 @@ export function createIntroEndModals(runtimeCtx, deps) {
         </div>` : '';
 
     const box = getEl('modalBox');
-    box.innerHTML = `
+    box.innerHTML = withIcons(`
     <h2>${victory ? `🏆 30 波秘境守卫大成！你斩杀了第 ${MAIN_WAVES} 波深渊主宰！` : `💀 道消身陨 · 止步第 ${runtimeCtx.game.wave} / ${MAIN_WAVES} 波（${getRealmStageLabel()}）`}</h2>
     <p class="lead">${victory ? '你已完成全部 30 波边境守卫与终局决战！以下为本局三维度真实结算报告：' : '本局已在当前波次立即结算。以下为三维度真实战况归因与长期成长结算：'}</p>
     <div class="settle-grid">
@@ -190,7 +191,7 @@ export function createIntroEndModals(runtimeCtx, deps) {
       ${settle?.practice ? '' : `<button class="btn" id="endMetaBtn" type="button" style="padding:9px 15px;font-size:13px">⚙️ 局外传承配置（💠${getMetaSave().legacyShards}）</button>`}
       <button class="btn gold" id="restartGo" type="button" style="padding:9px 18px;font-size:14px">${settle?.practice ? '返回开始页' : '🔁 快速重开'}</button>
     </div>
-  `;
+  `);
     box.querySelector('#endRetrySaveBtn')?.addEventListener('click', () => retryPendingMetaSave());
     box.querySelector('#endExportBackupBtn')?.addEventListener('click', () => {
       const json = exportMetaSave();

@@ -37,7 +37,7 @@ export function createOverlaysDrawer(runtimeCtx, { ctx, cam, worldToScreen }) {
         ctx.setLineDash([]);
         ctx.font = '900 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillStyle = '#eafff5';
-        ctx.fillText(z.kind === 'w30SigTelegraph' ? `✅ 安全区 (${z.t.toFixed(1)}s)` : '✅ 安全区(免疫冲击波)', sx, sy - sr - 10);
+        ctx.fillText(z.kind === 'w30SigTelegraph' ? `安全区 (${z.t.toFixed(1)}s)` : '安全区(免疫冲击波)', sx, sy - sr - 10);
         ctx.restore();
       } else if (z.kind === 'w30RiftRing') {
         const zx = z.x * CELL, zy = z.y * CELL, zr = z.r * CELL;
@@ -57,21 +57,22 @@ export function createOverlaysDrawer(runtimeCtx, { ctx, cam, worldToScreen }) {
     if (!game || game.wave !== MAIN_WAVES || game.phase !== 'wave') return;
     const boss = game.enemies.find(e => e.kind === 'boss6' && e.hp > 0);
     if (!boss) return;
-    const barW = Math.min(520, Math.max(260, cam.w * 0.44));
-    const barH = 18;
+    const narrow = cam.w <= 700;
+    const barW = narrow ? cam.w - 36 : Math.min(520, Math.max(260, cam.w * .44));
+    const barH = narrow ? 9 : 13;
     const x = (cam.w - barW) / 2;
-    const y = 108;
+    const y = narrow ? 146 : 108;
     const ratio = clamp(boss.hp / Math.max(1, boss.maxHp), 0, 1);
     const sigPct = BALANCE.w30Boss?.signatureThresholdPct ?? 0.80;
     const finPct = BALANCE.w30Boss?.finalPhaseThresholdPct ?? 0.35;
     const bState = game.w30Battle;
     const phaseTag = boss.signatureLockActive
-      ? '🛡️ 终焉锁血（命中可挂状态/叠盾 · 0 扣血）'
+      ? '终焉锁血 · 入安全区'
       : boss.finalPhaseEntered
-        ? '🔥 末段组合压制（无锁血 · 打空即胜）'
+        ? '末段组合压制'
         : boss.signatureTriggered
-          ? '⚔️ 中段周旋'
-          : '⚔️ 开场交锋';
+          ? '中段周旋'
+          : '开场交锋';
 
     ctx.save();
     ctx.fillStyle = 'rgba(10,16,22,0.86)';
@@ -81,9 +82,9 @@ export function createOverlaysDrawer(runtimeCtx, { ctx, cam, worldToScreen }) {
     ctx.strokeRect(x - 10, y - 24, barW + 20, barH + 34);
 
     ctx.font = '900 12px sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = '#fff3d6';
-    ctx.fillText(`👑 深渊主宰 · ${phaseTag}`, x, y - 8);
+    ctx.fillText(`深渊主宰 · ${phaseTag}`, x, y - 8, barW * .62);
     ctx.textAlign = 'right'; ctx.fillStyle = '#ffd97d';
-    ctx.fillText(`${Math.ceil(boss.hp).toLocaleString()} / ${boss.maxHp.toLocaleString()} (${Math.round(ratio * 100)}%) · ${Number(bState?.elapsedSeconds || 0).toFixed(0)}s`, x + barW, y - 8);
+    ctx.fillText(`${Math.round(ratio * 100)}% · ${Number(bState?.elapsedSeconds || 0).toFixed(0)}s`, x + barW, y - 8);
 
     ctx.fillStyle = 'rgba(255,255,255,0.12)';
     ctx.fillRect(x, y, barW, barH);
@@ -106,10 +107,10 @@ export function createOverlaysDrawer(runtimeCtx, { ctx, cam, worldToScreen }) {
       else if (e.elite) targets.push({ x: e.x, y: e.y, col: e.isShrineBoss ? '#ff3b5c' : '#c978ff', label: e.isShrineBoss ? '妖王' : '精英' });
     }
     if (game.shrine && !game.shrine.active && !game.shrine.cleared) {
-      targets.push({ x: game.shrine.x, y: game.shrine.y, col: '#ff4d6d', label: '🩸妖碑' });
+      targets.push({ x: game.shrine.x, y: game.shrine.y, col: '#ff4d6d', label: '妖碑' });
     }
     for (const c of game.chests) {
-      targets.push({ x: c.x, y: c.y, col: '#ffe066', label: c.legend ? '👑' : '📦' });
+      targets.push({ x: c.x, y: c.y, col: '#ffe066', label: c.legend ? '遗物' : '宝箱' });
     }
     for (const t of targets) {
       const sp = worldToScreen(t.x, t.y);

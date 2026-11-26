@@ -1,3 +1,4 @@
+import { withIcons } from '../shared/icons.js';
 export function createMetaModal(runtimeCtx, deps) {
   const { getEl, audio } = deps;
   const { rollShop } = deps.economy;
@@ -83,7 +84,7 @@ export function createMetaModal(runtimeCtx, deps) {
     const isSettlement = modalState.context === 'settlement' || runtimeCtx.game.phase === 'won' || runtimeCtx.game.phase === 'lost';
     const isPreRun = modalState.context === 'pre_run' || modalState.returnTo === 'intro';
 
-    box.innerHTML = `
+    box.innerHTML = withIcons(`
     <h2>💠 局外传承配置与横向解锁</h2>
     <p class="lead">每局锁定 <strong>1 个主传承</strong> + <strong>最多 ${budget.maxAuxCount} 个辅助传承（总预算固定 ${budget.maxAuxPoints} 点，全解锁容量永不增加）</strong>。主传承仅提高本系奖励出现权重 ×${cfg.mainRewardWeightMultiplier}（严格重新归一化），<strong>绝不堆叠永久攻血暴击</strong>！</p>
     <div class="meta-lock-banner ${locked ? 'locked' : ''}">
@@ -114,7 +115,7 @@ export function createMetaModal(runtimeCtx, deps) {
           : isPreRun ? `<button class="btn gold" id="metaConfirmPreBtn" type="button" style="padding:8px 18px">⚔️ 锁定配置 · 踏入秘境！</button>`
           : `<button class="btn" id="metaCloseBtn" type="button">关闭</button>`}
     </div>
-  `;
+  `);
 
     box.querySelectorAll('[data-meta-action]').forEach(btn => {
       btn.addEventListener('click', () => {

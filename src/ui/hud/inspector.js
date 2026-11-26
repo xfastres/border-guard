@@ -1,3 +1,4 @@
+import { setIconText, withIcons } from '../shared/icons.js';
 import { clamp } from '../../core/math.js';
 import { getSourceStageSpec } from '../../core/state-queries.js';
 import BALANCE from '../../data/balance.js';
@@ -41,7 +42,7 @@ export function createInspectorUI(runtimeCtx, deps) {
       if (a) {
         const spec = ARTIFACTS[a.kind], st = getSealStats(a);
         const routeSpec = a.route ? SEAL_SPECIALIZATIONS[a.elem]?.[a.route] : null;
-        $('inspTitle').textContent = `${spec.icon} 主:${spec.name} ${'★'.repeat(a.star)} ${SEAL_TIER_NAMES[a.star]}${routeSpec ? ` · ${routeSpec.name}` : ''}`;
+        setIconText($('inspTitle'), `${spec.icon} 主:${spec.name} ${'★'.repeat(a.star)} ${SEAL_TIER_NAMES[a.star]}${routeSpec ? ` · ${routeSpec.name}` : ''}`);
         $('inspSub').textContent = `[唯一主灵印 + ${subCap} 辅灵印共鸣阵盘] ${spec.desc}`;
         $('inspStats').innerHTML = `
         <div class="stat-box">爆发伤害 <b>${st.dmg}</b><span class="sub">含辅印与领主全局加成</span></div>
@@ -50,7 +51,7 @@ export function createInspectorUI(runtimeCtx, deps) {
         <div class="stat-box">3★ 专精路线 <b>${routeSpec ? routeSpec.name : (a.star >= 3 ? '待选择' : '3★解锁')}</b><span class="sub">${routeSpec ? routeSpec.tag : '免费稳健 vs 35金专精'}</span></div>
       `;
       } else {
-        $('inspTitle').textContent = `✨ 灵印阵盘`;
+        setIconText($('inspTitle'), `✨ 灵印阵盘`);
         $('inspSub').textContent = `主灵印未铭刻 · 辅印槽 ${game.subSeals.length}/${subCap}`;
         $('inspStats').innerHTML = '';
       }
@@ -62,10 +63,10 @@ export function createInspectorUI(runtimeCtx, deps) {
         const el = ELEMENTS[a.elem];
         const r1 = document.createElement('div');
         r1.className = 'gear-fx-row';
-        r1.innerHTML = `<b>[2层羁绊 · 3★激活]</b> ${el.t1} ${getSynergyCounts()[a.elem] >= 2 ? '✅' : '🔒'}`;
+        r1.innerHTML = withIcons(`<b>[2层羁绊 · 3★激活]</b> ${el.t1} ${getSynergyCounts()[a.elem] >= 2 ? '✅' : '🔒'}`);
         const r2 = document.createElement('div');
         r2.className = 'gear-fx-row';
-        r2.innerHTML = `<b>[4层终极 · 5★激活]</b> ${el.t2} ${getSynergyCounts()[a.elem] >= 4 ? '✅' : '🔒'}`;
+        r2.innerHTML = withIcons(`<b>[4层终极 · 5★激活]</b> ${el.t2} ${getSynergyCounts()[a.elem] >= 4 ? '✅' : '🔒'}`);
         fxWrap.append(r1, r2);
 
         // Stage 2: 3★ Same-Element Seal Specialization Route comparison & choice
@@ -74,11 +75,11 @@ export function createInspectorUI(runtimeCtx, deps) {
           const routeRow = document.createElement('div');
           routeRow.className = 'gear-fx-row';
           if (a.route && routes[a.route]) {
-            routeRow.innerHTML = `<b>✨ 已选 3★ 专精【${routes[a.route].name}】</b>（${routes[a.route].tag}）：${routes[a.route].desc}`;
+            routeRow.innerHTML = withIcons(`<b>✨ 已选 3★ 专精【${routes[a.route].name}】</b>（${routes[a.route].tag}）：${routes[a.route].desc}`);
           } else if (a.star >= 3) {
-            routeRow.innerHTML = `<b>⚡ 3★ 专精节点二选一（金币取舍）：</b><br>• <b>${routes.standard.name}</b>（免费）：${routes.standard.desc}<br>• <b>${routes.mastery.name}</b>（${routes.mastery.cost} 金）：${routes.mastery.desc}`;
+            routeRow.innerHTML = withIcons(`<b>⚡ 3★ 专精节点二选一（金币取舍）：</b><br>• <b>${routes.standard.name}</b>（免费）：${routes.standard.desc}<br>• <b>${routes.mastery.name}</b>（${routes.mastery.cost} 金）：${routes.mastery.desc}`);
           } else {
-            routeRow.innerHTML = `<b>🔒 3★ 专精节点预览</b>：主印升至 3★ 后可在【${routes.standard.name}(免费)】与【${routes.mastery.name}(${routes.mastery.cost}金)】间择一！`;
+            routeRow.innerHTML = withIcons(`<b>🔒 3★ 专精节点预览</b>：主印升至 3★ 后可在【${routes.standard.name}(免费)】与【${routes.mastery.name}(${routes.mastery.cost}金)】间择一！`);
           }
           fxWrap.append(routeRow);
         }
@@ -88,7 +89,7 @@ export function createInspectorUI(runtimeCtx, deps) {
         const sp = ARTIFACTS[sub.kind], res = SUB_SEAL_RESONANCE[sub.elem];
         const row = document.createElement('div');
         row.className = 'gear-fx-row';
-        row.innerHTML = `<b>${sp.icon} 辅印 ${i+1} · ${res.name} ${sub.star}★</b>（进度 ${sub.star>=3?'满3★':`${sub.prog}/${SEAL_FUSE_NEED[sub.star]}`}）：${res.desc(sub.star)}`;
+        row.innerHTML = withIcons(`<b>${sp.icon} 辅印 ${i+1} · ${res.name} ${sub.star}★</b>（进度 ${sub.star>=3?'满3★':`${sub.prog}/${SEAL_FUSE_NEED[sub.star]}`}）：${res.desc(sub.star)}`);
         fxWrap.append(row);
       }
 
@@ -100,12 +101,12 @@ export function createInspectorUI(runtimeCtx, deps) {
         const routes = SEAL_SPECIALIZATIONS[a.elem];
         const bStd = document.createElement('button');
         bStd.type = 'button'; bStd.className = 'btn';
-        bStd.innerHTML = `<span>✨ 选 ${routes.standard.name}</span><small>免费 (0 金)</small>`;
+        bStd.innerHTML = withIcons(`<span>✨ 选 ${routes.standard.name}</span><small>免费 (0 金)</small>`);
         bStd.addEventListener('click', () => chooseSealRoute('standard'));
         const bMas = document.createElement('button');
         bMas.type = 'button'; bMas.className = 'btn gold';
         bMas.disabled = game.gold < routes.mastery.cost;
-        bMas.innerHTML = `<span>🔥 选 ${routes.mastery.name}</span><small>消耗 ${routes.mastery.cost} 金</small>`;
+        bMas.innerHTML = withIcons(`<span>🔥 选 ${routes.mastery.name}</span><small>消耗 ${routes.mastery.cost} 金</small>`);
         bMas.addEventListener('click', () => chooseSealRoute('mastery'));
         acts.append(bStd, bMas);
       }
@@ -147,16 +148,16 @@ export function createInspectorUI(runtimeCtx, deps) {
     const gearDmgPct = Math.round(hs.gm.dmgPct * 100);
     const leechCap = Math.max(10, Math.round(h.maxHp * 0.055));
     const maxEnhLv = BALANCE.equipment?.materialEnhance?.maxEnhanceLv || 6;
-    $('inspTitle').textContent = `👑 ${getRealmStageLabel()} · Lv.${h.lv}`;
-    $('inspSub').textContent = `按 [C] 开关 · 主印上限 ${getSealStarCap()}★ · 辅印 ${game.subSeals.length}/${getSubSealSlotCap()} · 锻材 ⚙️${game.materials || 0} · 转印符 🔮${game.transferTokens || 0}${hs.mmActive ? ' · 🎯一法破万法!' : ''}`;
-    $('inspStats').innerHTML = `
+    setIconText($('inspTitle'), `👑 ${getRealmStageLabel()} · Lv.${h.lv}`);
+    setIconText($('inspSub'), `按 [C] 开关 · 主印上限 ${getSealStarCap()}★ · 辅印 ${game.subSeals.length}/${getSubSealSlotCap()} · 锻材 ⚙️${game.materials || 0} · 转印符 🔮${game.transferTokens || 0}${hs.mmActive ? ' · 🎯一法破万法!' : ''}`);
+    $('inspStats').innerHTML = withIcons(`
     <div class="stat-box">生命 / 护盾 <b>${Math.ceil(h.hp)}/${h.maxHp}</b><span class="sub">护盾 ${Math.ceil(h.shield)} · 移速 ${hs.moveSpd.toFixed(1)}</span></div>
     <div class="stat-box">伤害倍率 <b>${Math.round(hs.dmgMult * 100)}%</b><span class="sub">级${baseDmgPct}% 构+${gearDmgPct}% 节点+${Math.round((activeNode.dmgBonus||0)*100)}%</span></div>
     <div class="stat-box">攻速倍率 <b>${Math.round(hs.aspd * 100)}%</b><span class="sub">神通倍率 ${Math.round(hs.skillDmgMult*100)}%</span></div>
     <div class="stat-box">暴击 / 暴伤 <b>${Math.round(hs.crit*100)}% / ${Math.round(hs.critDmg*100)}%</b><span class="sub">构装暴击 +${Math.round(hs.gm.crit*100)}%</span></div>
     <div class="stat-box">🔥火系引爆 <b>${game.stats.fireDetonations||0}次</b><span class="sub">传递 ${game.stats.fireChainTransfers||0} · 孤立聚焦 ${game.stats.fireFocusedDetonations||0}</span></div>
     <div class="stat-box">❄️冰盾反制 <b>+${game.stats.frostShieldGained||0}盾</b><span class="sub">受击${game.stats.frostHitPulses||0} 冲刺${game.stats.frostDashPulses||0} 满盾${game.stats.frostFullShieldPulses||0}</span></div>
-  `;
+  `);
     $('inspSlotLbl').hidden = false;
     const slots = $('inspSlots');
     slots.replaceChildren();
@@ -165,9 +166,9 @@ export function createInspectorUI(runtimeCtx, deps) {
       const sb = document.createElement('button');
       sb.type = 'button';
       sb.className = 'gear-slot' + (inst ? ' filled' : '');
-      sb.innerHTML = inst
+      sb.innerHTML = withIcons(inst
         ? `<span style="font-size:16px">${inst.icon}</span><span>${gearLabel(inst)}</span><span style="font-size:9px;opacity:.85">${GEAR_RARITY_LABELS[inst.rarity]}·${inst.slotsCount}槽</span>`
-        : '<span>+ 空槽</span><span style="font-size:9.5px">点此穿戴</span>';
+        : '<span>+ 空槽</span><span style="font-size:9.5px">点此穿戴</span>');
       sb.addEventListener('click', () => {
         if (inst) unequipGear(s);
         else {
@@ -193,7 +194,7 @@ export function createInspectorUI(runtimeCtx, deps) {
       for (const ht of gearSyn.hints) {
         if (ht.state !== 'trio') html += `<span class="syn-badge hint">💡 ${ht.text}</span>`;
       }
-      synBox.innerHTML = html;
+      synBox.innerHTML = withIcons(html);
       fxWrap.append(synBox);
     }
 
@@ -204,18 +205,18 @@ export function createInspectorUI(runtimeCtx, deps) {
         const enhGold = getGearEnhanceGoldCost?.(inst) ?? 0;
         const row = document.createElement('div');
         row.className = 'gear-fx-row';
-        row.innerHTML = `
+        row.innerHTML = withIcons(`
         <div><b>${inst.icon} ${gearLabel(inst)}</b> [${GEAR_RARITY_LABELS[inst.rarity]} · ${stSpec.label} · ${inst.slotsCount}槽]</div>
         <div style="font-size:11px;opacity:.9;margin-top:2px">基础：${describeGearEffect(inst)}</div>
         <div style="margin-top:3px">${renderAffixChipsHtml(inst)}</div>
-      `;
+      `);
         const actRow = document.createElement('div');
         actRow.className = 'gear-act-row';
         const enhBtn = document.createElement('button');
         enhBtn.type = 'button';
         enhBtn.className = 'btn';
         enhBtn.disabled = enhCost === null || (game.materials || 0) < enhCost || game.gold < enhGold;
-        enhBtn.textContent = enhCost === null ? `已满强化 (+${maxEnhLv})` : `⚙️ 锻材强化 (${enhCost}锻材${enhGold ? ` + ${enhGold}金` : ''} → +${inst.enhanceLv + 1})`;
+        setIconText(enhBtn, enhCost === null ? `已满强化 (+${maxEnhLv})` : `⚙️ 锻材强化 (${enhCost}锻材${enhGold ? ` + ${enhGold}金` : ''} → +${inst.enhanceLv + 1})`);
         enhBtn.addEventListener('click', () => enhanceGear({ location: 'equipped', idx: sIdx }));
         const uneqBtn = document.createElement('button');
         uneqBtn.type = 'button';
@@ -247,16 +248,16 @@ export function createInspectorUI(runtimeCtx, deps) {
           const card = document.createElement('div');
           card.className = 'gear-fx-row';
           card.style.width = '100%';
-          card.innerHTML = `<div><b>🎒 ${inst.icon || '✨'} ${inst.name} ${inst.star}★</b> [未装备灵印 · 安全收纳不覆盖主印]</div>`;
+          card.innerHTML = withIcons(`<div><b>🎒 ${inst.icon || '✨'} ${inst.name} ${inst.star}★</b> [未装备灵印 · 安全收纳不覆盖主印]</div>`);
           const rowBtns = document.createElement('div');
           rowBtns.className = 'gear-act-row';
           const sellBtn = document.createElement('button');
           sellBtn.type = 'button'; sellBtn.className = 'btn';
-          sellBtn.textContent = `💰出售(+${sellVal}金)`;
+          setIconText(sellBtn, `💰出售(+${sellVal}金)`);
           sellBtn.addEventListener('click', () => sellBagGear(idx));
           const disBtn = document.createElement('button');
           disBtn.type = 'button'; disBtn.className = 'btn';
-          disBtn.textContent = `🔧拆解(+${disMats}锻材)`;
+          setIconText(disBtn, `🔧拆解(+${disMats}锻材)`);
           disBtn.addEventListener('click', () => dismantleBagGear(idx));
           rowBtns.append(sellBtn, disBtn);
           card.append(rowBtns);
@@ -272,10 +273,10 @@ export function createInspectorUI(runtimeCtx, deps) {
         const card = document.createElement('div');
         card.className = 'gear-fx-row';
         card.style.width = '100%';
-        card.innerHTML = `
+        card.innerHTML = withIcons(`
         <div><b>🎒 ${g.icon} ${gearLabel(g)}</b> [${GEAR_RARITY_LABELS[g.rarity]} · ${stSpec.label} · ${g.slotsCount}槽]</div>
         <div style="margin-top:2px">${renderAffixChipsHtml(g)}</div>
-      `;
+      `);
         const rowBtns = document.createElement('div');
         rowBtns.className = 'gear-act-row';
         const eqBtn = document.createElement('button');
@@ -290,15 +291,15 @@ export function createInspectorUI(runtimeCtx, deps) {
         const enhBtn = document.createElement('button');
         enhBtn.type = 'button'; enhBtn.className = 'btn';
         enhBtn.disabled = enhCost === null || (game.materials || 0) < enhCost || game.gold < enhGold;
-        enhBtn.textContent = enhCost === null ? '满强化' : `⚙️强化(${enhCost}材${enhGold ? ` + ${enhGold}金` : ''})`;
+        setIconText(enhBtn, enhCost === null ? '满强化' : `⚙️强化(${enhCost}材${enhGold ? ` + ${enhGold}金` : ''})`);
         enhBtn.addEventListener('click', () => enhanceGear({ location: 'bag', idx }));
         const sellBtn = document.createElement('button');
         sellBtn.type = 'button'; sellBtn.className = 'btn';
-        sellBtn.textContent = `💰出售(+${sellVal}金)`;
+        setIconText(sellBtn, `💰出售(+${sellVal}金)`);
         sellBtn.addEventListener('click', () => sellBagGear(idx));
         const disBtn = document.createElement('button');
         disBtn.type = 'button'; disBtn.className = 'btn';
-        disBtn.textContent = `🔧拆解(+${disMats}锻材)`;
+        setIconText(disBtn, `🔧拆解(+${disMats}锻材)`);
         disBtn.addEventListener('click', () => dismantleBagGear(idx));
         rowBtns.append(eqBtn, enhBtn, sellBtn, disBtn);
         card.append(rowBtns);
@@ -311,7 +312,7 @@ export function createInspectorUI(runtimeCtx, deps) {
         const card = document.createElement('div');
         card.className = 'gear-fx-row';
         card.style.width = '100%';
-        card.innerHTML = `<div><b>📦 暂存箱 #${sIdx + 1} · ${it.icon || '✨'} ${it.name}</b> [背包满溢安全暂存]</div>`;
+        card.innerHTML = withIcons(`<div><b>📦 暂存箱 #${sIdx + 1} · ${it.icon || '✨'} ${it.name}</b> [背包满溢安全暂存]</div>`);
         const btn = document.createElement('button');
         btn.type = 'button'; btn.className = 'btn gold';
         btn.disabled = game.bag.length >= getBagCapacity();
@@ -337,12 +338,12 @@ export function createInspectorUI(runtimeCtx, deps) {
       const bSpec = bKey ? (W10_SKILL_BRANCHES[k] || []).find(b => b.key === bKey) : null;
       const card = document.createElement('div');
       card.className = 'skill-card';
-      card.innerHTML = `
+      card.innerHTML = withIcons(`
       <div class="sh"><span>${info.name}${bSpec ? ` · <b style="color:#ffd878">[W10:${bSpec.name}]</b>` : ''}</span><span class="lv">${info.lvText}${k !== 'berserk' ? ` · 输出 ${dealt.toLocaleString()} (${pct}%)` : ''}</span></div>
       <div class="dmg">${info.cur}</div>
       ${bSpec ? `<div class="dmg" style="color:#9ef6ff">${bSpec.icon} ${bSpec.tag}：${bSpec.desc}</div>` : ''}
       <div class="next">⬆ ${info.next}</div>
-    `;
+    `);
       sl.append(card);
     }
 
@@ -359,9 +360,9 @@ export function createInspectorUI(runtimeCtx, deps) {
       row.className = 'skill-card';
       row.style.opacity = unlocked ? '1' : '0.55';
       const reqTxt = c.req.map(rk => `${HERO_SKILLS[rk].name}(Lv.${h.skills[rk]||0})`).join(' + ');
-      row.innerHTML = unlocked
+      row.innerHTML = withIcons(unlocked
         ? `<div class="sh"><span>${c.icon} ${c.name}</span><span class="lv" style="color:${active?'#7ce896':'#95b3ae'}">${active?'已觉醒':`进度 ${sumLv}/3`}</span></div><div class="dmg">${reqTxt} · ${c.desc}</div>`
-        : `<div class="sh"><span>🔒 ${c.name}</span><span class="lv">需【${c.realm === 1 ? 'W6 筑基节点' : 'W10 突破节点'}】解锁</span></div>`;
+        : `<div class="sh"><span>🔒 ${c.name}</span><span class="lv">需【${c.realm === 1 ? 'W6 筑基节点' : 'W10 突破节点'}】解锁</span></div>`);
       sl.append(row);
     }
 
@@ -369,7 +370,7 @@ export function createInspectorUI(runtimeCtx, deps) {
     const rep = getTelemetryReport();
     const telHead = document.createElement('div');
     telHead.className = 'insp-sec-lbl';
-    telHead.textContent = `📊 心流与难度曲线体检表（已过 ${rep.summary.wavesCleared} 波 · 最低血 ${rep.summary.lowestHpPct}%）`;
+    setIconText(telHead, `📊 心流与难度曲线体检表（已过 ${rep.summary.wavesCleared} 波 · 最低血 ${rep.summary.lowestHpPct}%）`);
     sl.append(telHead);
     const telBox = document.createElement('div');
     telBox.className = 'skill-card';

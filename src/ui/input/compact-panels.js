@@ -1,4 +1,6 @@
-// Presentation-only inline dock switcher, on-demand intel overlay, and unified detail tooltip.
+import { withoutIcons } from '../shared/icons.js';
+
+// Market and inventory navigation, on-demand intel, and tooltips.
 export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clearInput, setLeftTab }) {
   const backdrop = $('uiPanelBackdrop');
   const tip = $('uiDetailTooltip');
@@ -20,17 +22,15 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
 
   function setDockTab(tab) {
     const isBag = tab === 'bag';
-    const shopPanel = $('uiShopPanel');
-    const bagPanel = $('uiBagPanel');
-    if (shopPanel) shopPanel.hidden = isBag;
-    if (bagPanel) bagPanel.hidden = !isBag;
+    const selected = $(isBag ? 'uiBagPanel' : 'uiShopPanel');
+    selected?.scrollIntoView?.({ block: 'nearest' });
     const shopBtn = $('shopOpen');
     const bagBtn = $('bagOpen');
     shopBtn?.classList.toggle('active', !isBag);
-    shopBtn?.setAttribute?.('aria-selected', String(!isBag));
+    shopBtn?.setAttribute?.('aria-pressed', String(!isBag));
     bagBtn?.classList.toggle('active', isBag);
-    bagBtn?.setAttribute?.('aria-selected', String(isBag));
-    if (document.body?.dataset) document.body.dataset.dockTab = isBag ? 'bag' : 'shop';
+    bagBtn?.setAttribute?.('aria-pressed', String(isBag));
+    if (document.body?.dataset) document.body.dataset.prepFocus = isBag ? 'bag' : 'shop';
     hideTip();
     renderAllUI(true);
   }
@@ -64,7 +64,7 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
     renderAllUI(true);
   }
 
-  // Inline Shop <-> Bag switcher (locked geometry, zero modal interruption!)
+  // Both sections stay visible and share a single scroll region.
   $('shopOpen')?.addEventListener('click', () => setDockTab('shop'));
   $('bagOpen')?.addEventListener('click', () => setDockTab('bag'));
 
@@ -102,7 +102,7 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
     if (target === el && currentText === value && !tip.hidden) return;
     target = el;
     currentText = value;
-    tip.textContent = value;
+    tip.textContent = withoutIcons(value);
     tip.hidden = false;
     tip.style.left = '0px';
     tip.style.top = '0px';

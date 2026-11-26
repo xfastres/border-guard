@@ -1,3 +1,4 @@
+import { setIconText } from '../shared/icons.js';
 export function createFeedbackUI({ getEl = id => document.getElementById(id) } = {}) {
   let toastTimer = null;
   let bannerTimer = null;
@@ -5,7 +6,7 @@ export function createFeedbackUI({ getEl = id => document.getElementById(id) } =
 
   function toast(msg, warn = false){
     const el = getEl('toast');
-    el.textContent = msg;
+    setIconText(el, msg);
     el.className = 'toast' + (warn ? ' warn' : '');
     el.hidden = false;
     clearTimeout(toastTimer);
@@ -13,10 +14,15 @@ export function createFeedbackUI({ getEl = id => document.getElementById(id) } =
   }
 
   function showBanner(title, sub, tone = ''){
-    getEl('bannerTitle').textContent = title;
-    getEl('bannerSub').textContent = sub;
-    getEl('banner').className = 'banner' + (tone ? ' ' + tone : '');
-    getEl('banner').hidden = false;
+    setIconText(getEl('bannerTitle'), title);
+    setIconText(getEl('bannerSub'), sub);
+    const banner = getEl('banner');
+    banner.className = 'banner' + (tone ? ' ' + tone : '');
+    banner.hidden = false;
+    if (banner.classList) {
+      void banner.offsetWidth;
+      banner.classList.add('flash-in');
+    }
     clearTimeout(bannerTimer);
     bannerTimer = setTimeout(() => { getEl('banner').hidden = true; }, 2400);
   }

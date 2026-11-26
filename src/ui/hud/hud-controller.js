@@ -1,3 +1,4 @@
+import { setIconText } from '../shared/icons.js';
 import { clamp } from '../../core/math.js';
 import { HERO_GEAR_SLOTS, MAIN_WAVES, W20_DIRECTIONS } from '../../data/index.js';
 
@@ -5,6 +6,11 @@ export function createHudController(runtimeCtx, deps) {
   const { getEl: $, getViewportWidth = () => window.innerWidth, audio, perfStats, progression, run, unlock } = deps;
   let lastSynKey = '';
   let compactHudMode = null;
+  let lastGold = null;
+  let lastSeal = '';
+  let lastShield = 0;
+  let lastHp = 1;
+  let lastGame = null;
   let prevDashCooling = false;
   let prevUltCooling = false;
   let maxDashCdSeen = 3.0;
@@ -27,6 +33,8 @@ export function createHudController(runtimeCtx, deps) {
     const { getRealmStageLabel, hasPendingDecision } = unlock;
     const h = game.hero;
     const isWave = game.phase === 'wave' || game.phase === 'harvest';
+    const fresh = lastGame !== game;
+    lastGame = game;
 
     if (document.body?.dataset) {
       document.body.dataset.phase = isWave ? (game.phase === 'harvest' ? 'harvest' : 'wave') : 'prep';
@@ -48,7 +56,7 @@ export function createHudController(runtimeCtx, deps) {
     const panelTimer = $('uiPanelTimer');
     if (panelTimer) {
       panelTimer.hidden = !(game.finalPrep?.active && game.finalPrep?.started);
-      if (!panelTimer.hidden) panelTimer.textContent = `⏳ 终局整备 ${Math.ceil(game.finalPrep.timer)}s`;
+      if (!panelTimer.hidden) setIconText(panelTimer, `⏳ 终局整备 ${Math.ceil(game.finalPrep.timer)}s`);
     }
     const meta = getWavePhaseMeta(game.wave);
 
@@ -65,7 +73,8 @@ export function createHudController(runtimeCtx, deps) {
     wp.className = 'pill ' + (isWave ? 'wave-live' : 'wave-prep');
 
     const goldTxt = `🪙 ${game.gold}`;
-    if ($('goldPill').textContent !== goldTxt) {
+    if (fresh || lastGold !== game.gold) {
+      lastGold = game.gold;
       $('goldPill').textContent = goldTxt;
       $('dockGoldNum').textContent = game.gold;
       for (const el of [$('goldPill'), $('dockGoldNum')]) {
@@ -74,38 +83,44 @@ export function createHudController(runtimeCtx, deps) {
     }
     const matEl = $('matPill');
     if (matEl) {
-      matEl.textContent = `⚙️ ${game.materials || 0}`;
+      setIconText(matEl, `⚙️ ${game.materials || 0}`);
     }
     const tokEl = $('tokenPill');
     if (tokEl) {
       const tokCnt = game.transferTokens || 0;
       tokEl.hidden = tokCnt <= 0;
-      tokEl.textContent = `🔮 ${tokCnt}`;
+      setIconText(tokEl, `🔮 ${tokCnt}`);
     }
     const shardEl = $('shardPill');
     if (shardEl) {
-      shardEl.textContent = `💠 ${getMetaSave().legacyShards || 0}`;
+      setIconText(shardEl, `💠 ${getMetaSave().legacyShards || 0}`);
     }
 
     const hpPill = $('heroHpPill');
     const hpRatio = clamp(h.hp / Math.max(1, h.maxHp), 0, 1);
-    hpPill.textContent = `❤️ ${Math.ceil(h.hp)}/${h.maxHp}${h.shield > 0 ? ` (+${Math.ceil(h.shield)})` : ''}`;
+    setIconText(hpPill, `❤️ ${Math.ceil(h.hp)}/${h.maxHp}`);
     hpPill.className = 'pill ' + (hpRatio < 0.35 ? 'warn' : 'hp');
     const hpFill = $('heroHpFill');
     if (hpFill?.style) {
       hpFill.style.width = `${hpRatio * 100}%`;
       hpFill.classList?.toggle('low', hpRatio < 0.35);
     }
+    const hpTrail = $('heroHpTrail');
+    if (hpTrail?.style && (fresh || Math.abs(lastHp - hpRatio) > 0.0001)) {
+      hpTrail.style.transition = fresh || hpRatio >= lastHp ? 'none' : '';
+      hpTrail.style.width = `${hpRatio * 100}%`;
+    }
+    lastHp = hpRatio;
     $('hpVignette')?.classList.toggle('danger', game.phase === 'wave' && h.hp > 0 && hpRatio < 0.35);
 
     const rp = $('heroPill');
     if (game.pendingBreakthrough === 'w10' && !h.breakthroughs.w10) {
       rp.className = 'hero-vitals-btn trib-ready';
-      $('heroLvTxt').textContent = `⚡ 待选 W10 大突破`;
+      setIconText($('heroLvTxt'), `⚡ 待选 W10 大突破`);
       $('xpFill').style.width = `100%`;
     } else if (game.pendingBreakthrough === 'w20' && game.w20Draft) {
       rp.className = 'hero-vitals-btn trib-ready';
-      $('heroLvTxt').textContent = `⚡ 待选 W20 强化`;
+      setIconText($('heroLvTxt'), `⚡ 待选 W20 强化`);
       $('xpFill').style.width = `100%`;
     } else {
       rp.className = 'hero-vitals-btn';
@@ -119,10 +134,10 @@ export function createHudController(runtimeCtx, deps) {
       const showDraft = game.pendingBreakthrough === 'w20' && !!game.w20Draft;
       w20Btn.hidden = !(showPre || showDraft);
       if (showDraft) {
-        w20Btn.textContent = `⚡ W20强化 (⚙️${game.materials || 0})`;
+        setIconText(w20Btn, `⚡ W20强化 (⚙️${game.materials || 0})`);
       } else if (showPre) {
         const preSpec = game.w20State?.preselectedDirection ? W20_DIRECTIONS[game.w20State.preselectedDirection] : null;
-        w20Btn.textContent = preSpec ? `⚡ W20：${preSpec.icon}${preSpec.name}` : '⚡ W20 方向预选';
+        setIconText(w20Btn, preSpec ? `⚡ W20：${preSpec.icon}${preSpec.name}` : '⚡ W20 方向预选');
       }
     }
 
@@ -130,21 +145,21 @@ export function createHudController(runtimeCtx, deps) {
     if (destinyBtn) {
       const pendingOffer = getPendingDestinyOffer();
       destinyBtn.disabled = isWave || ['won', 'lost'].includes(game.phase);
-      destinyBtn.textContent = pendingOffer ? '🎲 天命待领 (3选1)!' : '🎲 天命赌局';
+      setIconText(destinyBtn, pendingOffer ? '🎲 天命待领 (3选1)!' : '🎲 天命赌局');
       destinyBtn.classList.toggle('active', !!pendingOffer);
     }
     const transferBtn = $('transferBtn');
     if (transferBtn) {
       const tokCnt = game.transferTokens || 0;
       transferBtn.disabled = isWave || ['won', 'lost'].includes(game.phase);
-      transferBtn.textContent = tokCnt > 0 ? `✨ 词条转移 (🔮${tokCnt})` : '✨ 词条转移';
+      setIconText(transferBtn, tokCnt > 0 ? `✨ 词条转移 (🔮${tokCnt})` : '✨ 词条转移');
     }
     const metaBtn = $('metaLegacyBtn');
     if (metaBtn) {
       const mainSpec = getActiveMetaMain();
       const budget = getMetaLoadoutBudget(getActiveMetaLoadout());
       const shards = getMetaSave().legacyShards || 0;
-      metaBtn.textContent = `💠 ${mainSpec ? mainSpec.icon + mainSpec.name.replace('传承', '') : '传承'}`;
+      setIconText(metaBtn, `💠 ${mainSpec ? mainSpec.icon + mainSpec.name.replace('传承', '') : '传承'}`);
       metaBtn.title = `局外传承（${isMetaLoadoutLocked() ? '本局已锁定只读' : '开局前可调整'}）\n主传承：${mainSpec ? mainSpec.name : '默认'} · 辅助 ${budget.auxPoints}/4 点\n持有传承碎片：${shards}`;
     }
 
@@ -155,8 +170,14 @@ export function createHudController(runtimeCtx, deps) {
     const shieldPill = $('heroShield');
     if (shieldPill) {
       shieldPill.hidden = !(h.shield > 0);
-      shieldPill.textContent = `盾 ${Math.ceil(h.shield || 0)}`;
+      setIconText(shieldPill, `🛡️ ${Math.ceil(h.shield || 0)}`);
+      if (!fresh && h.shield > lastShield) {
+        shieldPill.classList.remove('shield-gain');
+        void shieldPill.offsetWidth;
+        shieldPill.classList.add('shield-gain');
+      }
     }
+    lastShield = h.shield || 0;
     const clock = $('finalPrepClock');
     if (clock) {
       const prep = game.finalPrep;
@@ -166,6 +187,26 @@ export function createHudController(runtimeCtx, deps) {
         clock.classList.toggle('urgent', prep.timer <= 20);
       }
     }
+    const quality = deps.battleVfx;
+    if (quality) {
+      const qualityLabel = { high: '精致', low: '轻量', off: '精简' };
+      const label = quality.mode === 'auto' ? `自动·${qualityLabel[quality.quality]}` : qualityLabel[quality.quality];
+      const fxButton = $('fxQualityBtn');
+      if (fxButton && fxButton.textContent !== label) fxButton.textContent = label;
+      if (document.body?.dataset) document.body.dataset.fx = quality.quality;
+    }
+    const sealSig = game.seal ? `${game.seal.kind}:${game.seal.star}:${game.seal.prog}` : '';
+    const sealPill = $('heroSealPill');
+    if (sealPill && (fresh || sealSig !== lastSeal)) {
+      sealPill.hidden = !game.seal;
+      setIconText(sealPill, `✨ ${game.seal?.star || 0}星`);
+      if (!fresh && sealSig) {
+        sealPill.classList.remove('shield-gain');
+        void sealPill.offsetWidth;
+        sealPill.classList.add('shield-gain');
+      }
+    }
+    lastSeal = sealSig;
     const bossBanner = $('waveBossBanner');
     if (bossBanner) {
       bossBanner.hidden = game.phase !== 'wave';
@@ -179,20 +220,22 @@ export function createHudController(runtimeCtx, deps) {
           if (trackEl) trackEl.hidden = false;
           if (fillEl?.style) fillEl.style.width = `${pct}%`;
         } else {
-          if (titleEl) titleEl.textContent = game.wave % 5 === 0 ? '⚠️ 首领波激战中' : `⚔️ 第 ${game.wave} 波敌潮`;
+          if (titleEl) setIconText(titleEl, game.wave % 5 === 0 ? '⚠️ 首领波激战中' : `⚔️ 第 ${game.wave} 波敌潮`);
           if (trackEl) trackEl.hidden = true;
         }
       }
     }
     $('enemyPill').hidden = game.phase !== 'wave';
-    if (game.phase === 'wave') $('enemyPill').textContent = `👾 剩余 ${rem}`;
+    if (game.phase === 'wave') setIconText($('enemyPill'), `👾 剩余 ${rem}`);
     $('fpsPill').textContent = `${perfStats.fps} FPS`;
 
     $('speedBtn').textContent = `${game.speed}×`;
     $('speedBtn').classList.toggle('active', game.speed === 2);
     $('pauseBtn').textContent = runtimeCtx.paused ? '继续' : '暂停';
-    $('soundBtn').textContent = audio.enabled ? '🔊' : '🔇';
-    $('heroPanelBtn').textContent = `👑 属性/体检 (${h.gear.length}/${HERO_GEAR_SLOTS}) [C]`;
+    const soundButton = $('soundBtn');
+    setIconText(soundButton, audio.enabled ? '🔊' : '🔇');
+    soundButton.setAttribute?.('aria-pressed', String(audio.enabled));
+    setIconText($('heroPanelBtn'), `👑 属性/体检 (${h.gear.length}/${HERO_GEAR_SLOTS}) [C]`);
     $('heroPanelBtn').classList.toggle('active', game.inspTarget?.type === 'hero');
     const autoPaused = game.autoWave && game.phase === 'prep' && hasPendingDecision();
     $('autoWaveBtn').textContent = `自动下波：${game.autoWave ? (autoPaused ? '待选' : '开') : '关'}`;
@@ -202,7 +245,7 @@ export function createHudController(runtimeCtx, deps) {
     const btCnt = (h.breakthroughs.w10 ? 1 : 0) + (h.breakthroughs.w20 ? 1 : 0);
     const w10Tag = h.breakthroughs.w10 ? ` · W10:${h.breakthroughs.w10.branchName}` : '';
     const w20Tag = h.breakthroughs.w20?.directionName ? ` · W20:${h.breakthroughs.w20.directionName}` : '';
-    $('metaBadge').textContent = `✨ 突破 ${btCnt}/2${w10Tag}${w20Tag} · 组合 ${comboCnt}/4`;
+    setIconText($('metaBadge'), `✨ 突破 ${btCnt}/2${w10Tag}${w20Tag} · 组合 ${comboCnt}/4`);
 
     // Clock-sweep Cooldown Visualization + Ready Flash (patterns.md Cooldown Indicator Design)
     const dc = $('dashCd');
@@ -227,7 +270,7 @@ export function createHudController(runtimeCtx, deps) {
     const uc = $('ultCd');
     if (h.ultTimer > 0) {
       uc.hidden = false;
-      uc.textContent = `🔥${h.ultTimer.toFixed(1)}s`;
+      setIconText(uc, `🔥${h.ultTimer.toFixed(1)}s`);
       if (uc.style) uc.style.background = 'rgba(130, 56, 210, 0.52)';
       prevUltCooling = true;
     } else if (h.ultCd > 0) {
@@ -258,14 +301,14 @@ export function createHudController(runtimeCtx, deps) {
       $('waveBtnSb').textContent = `剩余 ${rem} 敌`;
     } else if (game.finalPrep?.active) {
       $('waveBtnNm').textContent = `开始第 ${game.wave} 波`;
-      $('waveBtnSb').textContent = game.finalPrep.awaitingWaveRewards
+      setIconText($('waveBtnSb'), game.finalPrep.awaitingWaveRewards
         ? '📦 先结清波末奖励'
-        : `⏳ 终局整备 ${Math.ceil(game.finalPrep.timer)}s`;
+        : `⏳ 终局整备 ${Math.ceil(game.finalPrep.timer)}s`);
     } else {
       $('waveBtnNm').textContent = `开始第 ${game.wave} 波`;
-      $('waveBtnSb').textContent = game.pendingBreakthrough
+      setIconText($('waveBtnSb'), game.pendingBreakthrough
         ? '⚡ 请先完成突破'
-        : (game.chests.length ? `📦 地面${game.chests.length}箱` : game.wave % 5 === 0 ? '⚠️ 首领波' : `${meta.tag}`);
+        : (game.chests.length ? `📦 地面${game.chests.length}箱` : game.wave % 5 === 0 ? '⚠️ 首领波' : `${meta.tag}`));
     }
 
     const freeMetaRefreshReady = hasMetaAux('aux_shop_first_refresh') && game.metaRunState && !game.metaRunState.freeRefreshUsedThisWave;
@@ -278,6 +321,7 @@ export function createHudController(runtimeCtx, deps) {
     deps.buildHud.renderLeftHud(force);
     deps.dockUI.renderShop(force);
     deps.dockUI.renderBag(force);
+    deps.prepBuild?.renderPrepBuild();
     deps.inspectorUI.renderInspector(force);
     syncOffsets();
   }
@@ -326,6 +370,9 @@ export function createHudController(runtimeCtx, deps) {
     lastSynKey = '';
     prevDashCooling = false;
     prevUltCooling = false;
+    lastGame = null;
+    const receipt = $('purchaseFeedback');
+    if (receipt) receipt.hidden = true;
     deps.battleHud.resetDirty();
     deps.buildHud.resetDirty();
     deps.dockUI.resetDirty();

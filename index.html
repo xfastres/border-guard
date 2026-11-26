@@ -4,11 +4,11 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="bg-build-kind" content="modular-game" />
-<meta name="bg-source-baseline" content="295a0b9cb8329d12f7127886a2bc412416def6a1" />
-<title>边境守卫 v0.60 · 30 波构筑重构试玩</title>
+<meta name="bg-source-baseline" content="c97cad937b2499954cbf074fde613905beac5ae2" />
+<title>边境守卫 v0.60 · 秘境视觉试玩</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23121e24'/%3E%3Cpath fill='none' stroke='%23f3d47c' stroke-width='4' d='M32 11l17 9v12c0 11-8 17-17 22-9-5-17-11-17-22V20zM32 20v24m-7-15h14'/%3E%3C/svg%3E" />
 </head>
-<body data-phase="prep" data-dock-tab="shop">
+<body data-phase="prep" data-fx="high" data-prep-focus="shop">
 <div class="final-prep-clock hud-island" id="finalPrepClock" hidden role="timer"></div>
 <canvas id="gameCanvas"></canvas>
 
@@ -22,12 +22,13 @@
     <span class="pill wave-prep" id="wavePill">第 1 / 30 波 · 备战</span>
     <button class="hero-vitals-btn" id="heroPill" type="button" title="当前生命、境界与经验（点击查看属性与突破详情）">
       <span class="hv-row">
-        <span class="pill hp" id="heroHpPill">❤️ 220/220</span>
+        <span class="pill hp" id="heroHpPill"><svg class="ui-icon icon-heart" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 5.7a4.8 4.8 0 0 0-6.8 0L12 7.3l-1.6-1.6a4.8 4.8 0 0 0-6.8 6.8l8.4 8 8.4-8a4.8 4.8 0 0 0 0-6.8z"/></svg> 220/220</span>
         <span class="hv-shield" id="heroShield" hidden title="剩余护盾"></span>
+        <span class="hero-seal-pill" id="heroSealPill" hidden title="当前主灵印星级"></span>
         <span class="hv-lv" id="heroLvTxt">炼气·初探 Lv.1</span>
       </span>
       <span class="hv-bars">
-        <span class="hp-bar"><span class="hp-fill" id="heroHpFill" style="width:100%"></span></span>
+        <span class="hp-bar"><span class="hp-trail" id="heroHpTrail"></span><span class="hp-fill" id="heroHpFill" style="width:100%"></span></span>
         <span class="xp-bar"><span class="xp-fill" id="xpFill"></span></span>
       </span>
     </button>
@@ -36,8 +37,8 @@
   <!-- Top-Center Contextual Boss & Wave Status Banner (visible during wave) -->
   <div class="wave-boss-banner hud-island" id="waveBossBanner" hidden>
     <div class="wbb-row">
-      <span class="wbb-title" id="waveBossTitle">⚔️ 敌潮交战中</span>
-      <span class="pill" id="enemyPill">👾 剩余 0</span>
+      <span class="wbb-title" id="waveBossTitle"><svg class="ui-icon icon-sword" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m20.5 3.5-2 6L9 19l-4-4 9.5-9.5zM4 14l6 6m-2-2-4 4-2-2 4-4"/></svg> 敌潮交战中</span>
+      <span class="pill" id="enemyPill"><svg class="ui-icon icon-beast" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m4 5 5 3 3-3 3 3 5-3-1 10-7 5-7-5zM8 12l2 1m6-1-2 1m-4 3h4"/></svg> 剩余 0</span>
     </div>
     <div class="wbb-track" id="waveBossTrack" hidden>
       <div class="wbb-fill" id="waveBossFill" style="width:100%"></div>
@@ -47,18 +48,19 @@
   <!-- Top-Right Islands: Active Currencies + Quiet System Controls -->
   <div class="top-right">
     <div class="hud-island res-island">
-      <span class="pill gold" id="goldPill" title="金币（商店购买、刷新与天命赌局）">💰 55</span>
+      <span class="pill gold" id="goldPill" title="金币（商店购买、刷新与天命赌局）"><svg class="ui-icon icon-coin" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5a9.5 9.5 0 1 0 0 19 9.5 9.5 0 0 0 0-19zm0 3.3 6.2 6.2-6.2 6.2L5.8 12zM10.5 10.5h3v3h-3z"/></svg> 55</span>
       <span class="res-sep" aria-hidden="true"></span>
-      <span class="pill" id="matPill" title="锻材（用于构装强化与 W20 突破强化重抽）">⚙️ 0</span>
-      <span class="pill" id="tokenPill" hidden title="天命转印符（用于词条转移台）">🔮 0</span>
-      <span class="pill" id="shardPill" hidden title="局外传承碎片（仅用于局外横向解锁）">💠 0</span>
+      <span class="pill" id="matPill" title="锻材（用于构装强化与 W20 突破强化重抽）"><svg class="ui-icon icon-forge" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18l-4 5h-3v4l2 2v2H7v-2l2-2v-4H6zM3 6V4m17 2 1-2"/></svg> 0</span>
+      <span class="pill" id="tokenPill" hidden title="天命转印符（用于词条转移台）"><svg class="ui-icon icon-gem" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10l5 6-10 12L2 9zM2 9h20M7 3l2 6 3 12 3-12 2-6"/></svg> 0</span>
+      <span class="pill" id="shardPill" hidden title="局外传承碎片（仅用于局外横向解锁）"><svg class="ui-icon icon-gem" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10l5 6-10 12L2 9zM2 9h20M7 3l2 6 3 12 3-12 2-6"/></svg> 0</span>
       <span class="pill fps" id="fpsPill" hidden>60 FPS</span>
     </div>
     <div class="hud-island sys-island">
-      <button class="btn sys-meta" id="metaLegacyBtn" type="button" title="局外传承配置与解锁（局内只读展示并锁定配置）">💠 传承</button>
+      <button class="btn sys-meta" id="metaLegacyBtn" type="button" title="局外传承配置与解锁（局内只读展示并锁定配置）"><svg class="ui-icon icon-gem" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10l5 6-10 12L2 9zM2 9h20M7 3l2 6 3 12 3-12 2-6"/></svg> 传承</button>
       <button class="btn" id="speedBtn" type="button" title="战斗倍速 [F]">1×</button>
       <button class="btn" id="pauseBtn" type="button" title="暂停/继续">暂停</button>
-      <button class="btn" id="soundBtn" type="button" title="音效开关">🔊</button>
+      <button class="btn" id="soundBtn" type="button" title="音效开关" aria-label="音效开关"><svg class="ui-icon icon-sound" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4h4l5 4V6L7 10zm12-1a4 4 0 0 1 0 6m2-9a8 8 0 0 1 0 12"/></svg></button>
+      <button class="btn fx-quality-btn" id="fxQualityBtn" type="button" title="特效档位：精致、轻量、精简">特效：自动</button>
       <button class="btn" id="helpBtn" type="button" title="玩法说明">玩法</button>
       <button class="btn" id="resetBtn" type="button" title="重新开始本局">重开</button>
     </div>
@@ -70,8 +72,8 @@
   <div class="syn-strip" id="sealStrip"></div>
   <div class="sub-actions" id="secondaryActions">
     <div class="skill-strip" id="skillStrip"></div>
-    <button class="meta-badge" id="metaBadge" type="button">✨ 突破 0/2 · 组合 0/4</button>
-    <button class="btn" id="heroPanelBtn" type="button">👑 属性/神通 [C]</button>
+    <button class="meta-badge" id="metaBadge" type="button"><svg class="ui-icon icon-sparkle" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5zM19 3v4m-2-2h4"/></svg> 突破 0/2 · 组合 0/4</button>
+    <button class="btn" id="heroPanelBtn" type="button"><svg class="ui-icon icon-crown" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m3 7 5 4 4-6 4 6 5-4-3 10H6zM6 20h12"/></svg> 属性/神通 [C]</button>
   </div>
 </section>
 
@@ -81,10 +83,10 @@
 <!-- Unified Single Left Build Glance Card (auto-collapses in Wave for clean arena) -->
 <aside class="left-hud build-hud hud-island" id="leftHud">
   <div class="lh-head" id="leftHudHead" title="按 [Tab] 或点击折叠/展开构筑总览">
-    <span class="lh-collapsed-lbl">🧩 构筑</span>
+    <span class="lh-collapsed-lbl"><svg class="ui-icon icon-layers" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5zm-9 9 9 5 9-5m-18 4 9 5 9-5"/></svg> 构筑</span>
     <div class="lh-tabs" id="leftHudTabs">
-      <button class="lh-tab active" id="leftTabBuild" type="button" data-left-tab="build">🧩 构筑</button>
-      <button class="lh-tab" id="leftTabSyn" type="button" data-left-tab="syn">✨ 羁绊</button>
+      <button class="lh-tab active" id="leftTabBuild" type="button" data-left-tab="build"><svg class="ui-icon icon-layers" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5zm-9 9 9 5 9-5m-18 4 9 5 9-5"/></svg> 构筑</button>
+      <button class="lh-tab" id="leftTabSyn" type="button" data-left-tab="syn"><svg class="ui-icon icon-sparkle" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5zM19 3v4m-2-2h4"/></svg> 羁绊</button>
     </div>
     <button class="btn lh-toggle" id="leftHudToggle" type="button">折叠 [Tab]</button>
   </div>
@@ -115,66 +117,70 @@
 
 <!-- Phase-Aware Bottom Command Console -->
 <div class="dock-wrap">
-  <!-- PREP MODE: Floating Mode Strip + Locked-Geometry Shop/Bag Console -->
+  <!-- Prep workbench keeps the market, build summary and inventory visible together. -->
   <div class="prep-console-wrap" id="prepConsoleWrap">
     <div class="prep-strip">
-      <div class="hud-island seg-group" role="tablist" aria-label="备战操作台切换">
-        <button class="seg-tab active" id="shopOpen" type="button" role="tab" aria-selected="true">
-          <span>🏪</span><span>商店</span>
+      <div class="hud-island seg-group" role="group" aria-label="备战区域">
+        <button class="seg-tab active" id="shopOpen" type="button" aria-pressed="true" aria-controls="uiShopPanel">
+          <span><svg class="ui-icon icon-store" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 5 4h14l2 6-2 3-3-2-4 2-4-2-3 2zM5 13v8h14v-8m-8 8v-5h4v5"/></svg></span><span>商店</span>
         </button>
-        <button class="seg-tab" id="bagOpen" type="button" role="tab" aria-selected="false">
-          <span>🎒</span><span>背包</span><span class="seg-badge" id="bagCount">0/12</span>
+        <button class="seg-tab" id="bagOpen" type="button" aria-pressed="false" aria-controls="uiBagPanel">
+          <span><svg class="ui-icon icon-bag" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V6a5 5 0 0 1 10 0v3m-9-3h8m-8 3h8l4 4v8H4v-8zM9 17h6m-5-4h4"/></svg></span><span>背包</span><span class="seg-badge" id="bagCount">0/12</span>
         </button>
       </div>
       <div class="hud-island prep-tools">
-        <button class="btn prep-tool-gold" id="destinyBtn" type="button" title="天命赌局：自由押注金币抽取灵印/构装/丹药/天命专属强化与转印符（备战期可用）">🎲 天命赌局</button>
-        <button class="btn prep-tool-purple" id="transferBtn" type="button" title="词条转移台：消耗天命转印符与金币，在已穿戴与背包装备间转移词条（备战期可用）">✨ 词条转移</button>
-        <button class="btn gold" id="w20PrepBtn" type="button" hidden title="W16-W20 预选第二次突破方向与查看 W19 首领情报">⚡ W20 方向预选</button>
+        <button class="btn prep-tool-gold" id="destinyBtn" type="button" title="天命赌局：自由押注金币抽取灵印/构装/丹药/天命专属强化与转印符（备战期可用）"><svg class="ui-icon icon-dice" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5v10l-9 5-9-5V7zM3 7l9 5 9-5m-9 5v10M8 7h.1m7 8h.1m3-2h.1m-11 1h.1m1.9 3h.1"/></svg> 天命赌局</button>
+        <button class="btn prep-tool-purple" id="transferBtn" type="button" title="词条转移台：消耗天命转印符与金币，在已穿戴与背包装备间转移词条（备战期可用）"><svg class="ui-icon icon-sparkle" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5zM19 3v4m-2-2h4"/></svg> 词条转移</button>
+        <button class="btn gold" id="w20PrepBtn" type="button" hidden title="W16-W20 预选第二次突破方向与查看 W19 首领情报"><svg class="ui-icon icon-thunder" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2 5 13h6l-1 9 9-12h-6z"/></svg> W20 方向预选</button>
         <span class="res-sep" aria-hidden="true"></span>
-        <button class="btn" id="intelOpen" type="button" title="查看本波敌情、首领机制与战绩统计">📊 情报</button>
+        <button class="btn" id="intelOpen" type="button" title="查看本波敌情、首领机制与战绩统计"><svg class="ui-icon icon-chart" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 17v-4m5 4V8m5 9V5"/></svg> 情报</button>
         <button class="btn" id="autoWaveBtn" type="button" title="备战结束后自动开启下一波">自动下波：关</button>
         <span id="uiPanelTimer" class="pill gold" hidden></span>
       </div>
     </div>
 
-    <div class="dock hud-island console-deck" id="dock">
-      <!-- Shop View (Locked 156px height) -->
-      <div class="deck-view" id="uiShopPanel">
-        <div class="deck-anchor">
-          <div class="dock-gold" id="dockGold">
-            <span class="lbl">可用金币</span>
-            <b id="dockGoldNum">55</b>
+    <div class="dock hud-island console-deck workbench" id="dock">
+      <section class="prep-market" id="uiShopPanel" aria-labelledby="marketTitle">
+        <header class="workbench-head">
+          <h2 id="marketTitle"><svg class="ui-icon icon-store" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 5 4h14l2 6-2 3-3-2-4 2-4-2-3 2zM5 13v8h14v-8m-8 8v-5h4v5"/></svg> 秘境商店</h2>
+          <div class="market-actions">
+            <span class="dock-gold" id="dockGold" title="可用金币"><svg class="ui-icon icon-coin" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5a9.5 9.5 0 1 0 0 19 9.5 9.5 0 0 0 0-19zm0 3.3 6.2 6.2-6.2 6.2L5.8 12zM10.5 10.5h3v3h-3z"/></svg> <b id="dockGoldNum">57</b></span>
+            <button class="btn reroll-btn" id="rerollBtn" type="button" title="刷新商店商品 [Q]">
+              <span><svg class="ui-icon icon-cycle" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5M4 17v-5h5m10-1a7 7 0 0 0-12-4L4 9m1 4a7 7 0 0 0 12 4l3-2"/></svg> 刷新 <kbd class="kbd-cap">Q</kbd></span>
+              <span class="sb" id="rerollCost">8 金</span>
+            </button>
           </div>
-          <button class="act-btn reroll-btn" id="rerollBtn" type="button" title="刷新商店商品 [Q]">
-            <span class="rr-top">🎲 刷新 <kbd class="kbd-cap">Q</kbd></span>
-            <span class="sb" id="rerollCost">5 金币</span>
-          </button>
-        </div>
+        </header>
         <div class="dock-sec shop-grid" id="shopSec"></div>
-      </div>
-
-      <!-- Bag View (IDENTICAL 156px height — 0px jump!) -->
-      <div class="deck-view" id="uiBagPanel" hidden>
-        <div class="deck-anchor">
-          <div class="dock-gold bag-cap-card">
-            <span class="lbl">背包容量</span>
-            <b id="bagCapNum">0/12</b>
-          </div>
-          <div class="bag-mat-pill" id="bagMatNum">⚙️ 0 锻材</div>
+        <p class="market-receipt" id="purchaseFeedback" role="status" hidden></p>
+      </section>
+      <aside class="prep-build" id="prepBuild" aria-labelledby="prepBuildTitle">
+        <header class="workbench-head">
+          <h2 id="prepBuildTitle"><svg class="ui-icon icon-layers" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5zm-9 9 9 5 9-5m-18 4 9 5 9-5"/></svg> 当前构筑</h2>
+          <button class="btn" id="prepBuildOpen" type="button" title="查看领主属性与神通 [C]">详情</button>
+        </header>
+        <div id="prepBuildRoute"></div>
+        <div class="prep-stat-grid" id="prepStats"></div>
+        <div id="prepSynergy"></div>
+      </aside>
+      <section class="prep-inventory" id="uiBagPanel" aria-label="穿戴和背包">
+        <div class="loadout-column">
+          <header class="workbench-head"><h2><svg class="ui-icon icon-shield" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 20 6v6c0 4.8-3.2 7.9-8 10-4.8-2.1-8-5.2-8-10V6zM8 12l3 3 5-6"/></svg> 穿戴</h2></header>
+          <div class="loadout-grid" id="prepGearSlots"></div>
         </div>
-        <div class="bag-deck-main">
+        <div class="inventory-column">
+          <header class="workbench-head"><h2><svg class="ui-icon icon-bag" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V6a5 5 0 0 1 10 0v3m-9-3h8m-8 3h8l4 4v8H4v-8zM9 17h6m-5-4h4"/></svg> 背包 <span id="bagCapNum">0/12</span></h2><span class="bag-mat-pill" id="bagMatNum"><svg class="ui-icon icon-forge" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18l-4 5h-3v4l2 2v2H7v-2l2-2v-4H6zM3 6V4m17 2 1-2"/></svg> 0 锻材</span></header>
           <div class="bag-tray" id="bagTray"></div>
-          <div id="bagSelection" class="bag-selection" hidden></div>
-          <div id="bagSelectionEmpty" class="bag-selection-placeholder">点击左侧装备查看操作<br>右键快卖 · Shift+右键拆材</div>
         </div>
-      </div>
-
-      <!-- Right Primary CTA -->
+        <div class="bag-details">
+          <div id="bagSelection" class="bag-selection" hidden></div>
+          <p id="bagSelectionEmpty" class="bag-selection-placeholder">选择背包物品可穿戴、替换、出售或拆解。</p>
+        </div>
+      </section>
       <button class="act-btn primary wave-cta" id="waveBtn" type="button">
+        <span class="ic"><svg class="ui-icon icon-sword" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m20.5 3.5-2 6L9 19l-4-4 9.5-9.5zM4 14l6 6m-2-2-4 4-2-2 4-4"/></svg></span>
+        <span class="wave-cta-copy"><span class="nm" id="waveBtnNm">开始第 1 波</span><span class="sb" id="waveBtnSb">备战中</span></span>
         <kbd class="kbd-cap">Enter</kbd>
-        <span class="ic">⚔️</span>
-        <span class="nm" id="waveBtnNm">开始第 1 波</span>
-        <span class="sb" id="waveBtnSb">备战中</span>
       </button>
     </div>
   </div>
@@ -182,7 +188,7 @@
   <!-- WAVE MODE: Clean Spacious Combat Action Bar (Shop/Bag auto-hidden!) -->
   <div class="wave-dock hud-island" id="heroSkillSec">
     <button class="act-btn skill-btn dash-skill" id="dashBtn" type="button">
-      <span class="ic">🔥</span>
+      <span class="ic"><svg class="ui-icon icon-fire" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2c1 5-4 6-4 10l2 2c1-3 4-4 4-7 4 4 6 6 5 10-1 4-5 5-8 5-5 0-8-3-8-7 0-4 3-6 4-8 0 3 1 4 2 4"/></svg></span>
       <span class="sk-txt">
         <span class="nm">烈焰冲刺 <kbd class="kbd-cap">Space</kbd></span>
         <span class="sb">位移 + 留火径</span>
@@ -190,7 +196,7 @@
       <span class="cd-mask" id="dashCd" hidden></span>
     </button>
     <button class="act-btn skill-btn ult-skill" id="ultBtn" type="button">
-      <span class="ic">⚡</span>
+      <span class="ic"><svg class="ui-icon icon-thunder" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2 5 13h6l-1 9 9-12h-6z"/></svg></span>
       <span class="sk-txt">
         <span class="nm">全军超载 <kbd class="kbd-cap">R</kbd></span>
         <span class="sb">5s 全队狂暴</span>
@@ -198,8 +204,8 @@
       <span class="cd-mask" id="ultCd" hidden></span>
     </button>
     <div class="dock-div"></div>
-    <button class="btn wave-peek-btn" id="waveIntelBtn" type="button" title="查看战场情报与首领机制">📊 情报</button>
-    <button class="btn wave-peek-btn" id="waveHeroBtn" type="button" title="查看领主属性与神通 [C]">👑 属性</button>
+    <button class="btn wave-peek-btn" id="waveIntelBtn" type="button" title="查看战场情报与首领机制"><svg class="ui-icon icon-chart" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 17v-4m5 4V8m5 9V5"/></svg> 情报</button>
+    <button class="btn wave-peek-btn" id="waveHeroBtn" type="button" title="查看领主属性与神通 [C]"><svg class="ui-icon icon-crown" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m3 7 5 4 4-6 4 6 5-4-3 10H6zM6 20h12"/></svg> 属性</button>
   </div>
 </div>
 
@@ -207,13 +213,13 @@
 <div class="ui-panel-backdrop" id="uiPanelBackdrop" hidden>
   <section class="ui-panel hud-island" role="dialog" aria-modal="true" aria-labelledby="uiPanelTitle">
     <header>
-      <h2 id="uiPanelTitle">⚔️ 战场情报</h2>
+      <h2 id="uiPanelTitle"><svg class="ui-icon icon-sword" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m20.5 3.5-2 6L9 19l-4-4 9.5-9.5zM4 14l6 6m-2-2-4 4-2-2 4-4"/></svg> 战场情报</h2>
       <button class="btn" id="uiPanelClose" type="button" aria-label="关闭">关闭 ×</button>
     </header>
     <section id="uiIntelPanel">
       <aside class="battle-hud" id="battleHud">
         <div class="lh-head" id="battleHudHead" hidden>
-          <span>⚔️ 战场情报</span>
+          <span><svg class="ui-icon icon-sword" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m20.5 3.5-2 6L9 19l-4-4 9.5-9.5zM4 14l6 6m-2-2-4 4-2-2 4-4"/></svg> 战场情报</span>
           <button class="btn" id="battleHudToggle" type="button">折叠</button>
         </div>
         <div class="lh-body" id="battleHudBody"></div>

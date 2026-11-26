@@ -1,3 +1,4 @@
+import { icon, SKILL_ICON, withIcons } from '../shared/icons.js';
 import BALANCE from '../../data/balance.js';
 import { getSourceStageSpec } from '../../core/state-queries.js';
 import { COMBO_LIST, ELEMENTS, HERO_SKILLS, HERO_SKILL_STARTERS, W10_SKILL_BRANCHES } from '../../data/core-data.js';
@@ -29,11 +30,11 @@ export function createProgressionModals(runtimeCtx, deps) {
     if (typeof m.claimed !== 'boolean') m.claimed = false;
     const hs = getHeroStats();
     const box = getEl('modalBox');
-    box.innerHTML = `
+    box.innerHTML = withIcons(`
     <h2>⚔️ 选择本命神通 · 开启 30 波秘境守卫</h2>
     <p class="lead">本命神通 + 御剑引子可随鼠标方向指向集火！击败 <strong>W10 首领</strong>后将触发<strong>首次大型突破</strong>，为你选定的主力神通解锁三选一形态质变分支！</p>
     <div class="choices" id="modalChoices"></div>
-  `;
+  `);
     const grid = box.querySelector('#modalChoices');
     for (const k of m.choices) {
       const s = HERO_SKILLS[k];
@@ -43,13 +44,13 @@ export function createProgressionModals(runtimeCtx, deps) {
       card.type = 'button';
       card.className = 'choice-card';
       card.dataset.choice = k;
-      card.innerHTML = `
+      card.innerHTML = withIcons(`
       <span class="tag">${s.tag} · 本命起手</span>
-      <span class="ci">${s.icon}</span>
+      <span class="ci">${icon(SKILL_ICON[s.key])}</span>
       <span class="cn">${s.name}</span>
       <span class="cd">${s.desc(1)}</span>
       <span class="cd" style="color:#9bf2d0;font-size:11px;margin-top:2px">✨ ${info.cur}</span>
-    `;
+    `);
       card.addEventListener('click', () => pickHeroSkill(k));
       grid.append(card);
     }
@@ -73,11 +74,11 @@ export function createProgressionModals(runtimeCtx, deps) {
     }
 
     const box = getEl('modalBox');
-    box.innerHTML = `
+    box.innerHTML = withIcons(`
     <h2>✨ ${getRealmStageLabel()} Lv.${runtimeCtx.game.hero.lv} · 选择领主神通</h2>
     <p class="lead">普通升级隔一级选一次神通卡，卡池随波次与大型突破分批开放（满级 Lv.5，组合技需两技总等级≥3觉醒）。</p>
     <div class="choices" id="modalChoices"></div>
-  `;
+  `);
     const grid = box.querySelector('#modalChoices');
     const hs = getHeroStats();
     const comboTier = getActiveUnlockNode().comboTier;
@@ -104,15 +105,15 @@ export function createProgressionModals(runtimeCtx, deps) {
       card.type = 'button';
       card.className = 'choice-card';
       card.dataset.choice = s.key;
-      card.innerHTML = `
+      card.innerHTML = withIcons(`
       <span class="tag">${s.tag} · ${curLv ? `Lv.${curLv} → Lv.${nextLv}` : '新习得 Lv.1'}</span>
       ${comboTag}
-      <span class="ci">${s.icon}</span>
+      <span class="ci">${icon(SKILL_ICON[s.key])}</span>
       <span class="cn">${s.name}</span>
       <span class="cd">${s.desc(nextLv)}</span>
       <span class="cd" style="color:#9bf2d0;font-size:11px;margin-top:2px">✨ 选后效果：${nextInfo.cur}</span>
       ${curInfo ? `<span class="cd" style="color:#a9c4be;font-size:10.5px">当前：${curInfo.cur}</span>` : ''}
-    `;
+    `);
       card.addEventListener('click', () => pickHeroSkill(s.key));
       grid.append(card);
     }
@@ -125,11 +126,11 @@ export function createProgressionModals(runtimeCtx, deps) {
     const learned = getLearnedSkillKeys();
 
     if (!runtimeCtx.game.w10Draft || !runtimeCtx.game.w10Draft.skillKey) {
-      box.innerHTML = `
+      box.innerHTML = withIcons(`
       <h2>⚡ W10 首次大型突破 · 第一步：指定主力神通</h2>
       <p class="lead">你已斩杀第 10 波首领并取得<strong>突破凭证</strong>！请从<strong>已学会的神通</strong>中指定 1 门主力神通，随后从其随机 3 个形态质变分支中择一突破（突破后同时解锁 <strong>主印 4★ 上限 + 第 2 辅印槽</strong>）！</p>
       <div class="choices" id="modalChoices"></div>
-    `;
+    `);
       const grid = box.querySelector('#modalChoices');
       const hs = getHeroStats();
       for (const k of learned) {
@@ -141,15 +142,15 @@ export function createProgressionModals(runtimeCtx, deps) {
         card.type = 'button';
         card.className = 'choice-card epic';
         card.dataset.skill = k;
-        card.innerHTML = `
+        card.innerHTML = withIcons(`
         <span class="tag">${s.tag} · 当前 Lv.${lv}</span>
         <span class="up-tag">⚡ 可突破 (${branchPool.length} 分支池)</span>
-        <span class="ci">${s.icon}</span>
+        <span class="ci">${icon(SKILL_ICON[s.key])}</span>
         <span class="cn">${s.name}</span>
         <span class="cd">${s.desc(lv)}</span>
         <span class="cd" style="color:#9bf2d0;font-size:11px;margin-top:2px">当前数值：${info.cur}</span>
         <span class="cd" style="color:#ffd878;font-size:11px;margin-top:2px">点击指定该神通并抽取 3 个形态分支 →</span>
-      `;
+      `);
         card.addEventListener('click', () => selectW10BreakthroughSkill(k));
         grid.append(card);
       }
@@ -160,14 +161,14 @@ export function createProgressionModals(runtimeCtx, deps) {
     const skillKey = runtimeCtx.game.w10Draft.skillKey;
     const s = HERO_SKILLS[skillKey];
     const branches = runtimeCtx.game.w10Draft.branches || [];
-    box.innerHTML = `
+    box.innerHTML = withIcons(`
     <h2>⚡ W10 首次大型突破 · 第二步：【${s.name}】分支三选一</h2>
     <p class="lead">选择 1 条形态分支永久改变【${s.name}】的攻击形态与跨阶段战斗状态（<strong>火标/引爆</strong> 或 <strong>减速/冰盾</strong>），为后续构装与 W20 二次突破奠定联动基础！</p>
     <div class="choices" id="modalChoices"></div>
     <div class="modal-footer">
       <button class="btn" id="w10BackBtn" type="button">← 重新指定主力神通</button>
     </div>
-  `;
+  `);
     const grid = box.querySelector('#modalChoices');
     for (const b of branches) {
       const hookKind = b.hook || b.hookType;
@@ -175,13 +176,13 @@ export function createProgressionModals(runtimeCtx, deps) {
       card.type = 'button';
       card.className = 'choice-card epic';
       card.dataset.branch = b.key;
-      card.innerHTML = `
+      card.innerHTML = withIcons(`
       <span class="tag">${b.tag}</span>
       <span class="up-tag">${hookKind === 'fire_mark_detonate' ? '🔥 火标/引爆联动' : '❄️ 减速/冰盾联动'}</span>
       <span class="ci">${b.icon}</span>
       <span class="cn">${b.name}</span>
       <span class="cd">${b.desc}</span>
-    `;
+    `);
       card.addEventListener('click', () => pickW10BreakthroughBranch(b.key));
       grid.append(card);
     }
@@ -223,7 +224,7 @@ export function createProgressionModals(runtimeCtx, deps) {
         <b>🔎 首领情报提示</b>：第 19 波备战时将提前揭晓 W20 首领【天劫魔尊】的固定核心机制与本局随机辅助机制。
       </div>`;
 
-    box.innerHTML = `
+    box.innerHTML = withIcons(`
     <h2>⚡ W20 第二次大型突破 · 方向预选（第 ${runtimeCtx.game.wave} 波备战）</h2>
     <div class="w20-notice">
       🔒 <b>生效时点说明：</b>W16–W19 期间可随时根据当前装备与词条自由调整预选方向；<b>击败 W20 首领拿到突破凭证后，已锁定方向的基础效果才会生效</b>（开战 W20 前均仅使用已有战力，零材料同样 100% 生效基础效果）！
@@ -236,7 +237,7 @@ export function createProgressionModals(runtimeCtx, deps) {
            <button class="btn gold" id="w20LockStartBtn" type="button" ${curPick ? '' : 'disabled'}>🔒 锁定【${curPick ? W20_DIRECTIONS[curPick].name : '请先选方向'}】并迎战 W20</button>`
           : `<button class="btn gold" id="w20DoneBtn" type="button">保存预选并返回备战</button>`}
     </div>
-  `;
+  `);
 
     const grid = box.querySelector('#modalChoices');
     for (const key of W20_DIRECTION_KEYS) {
@@ -248,14 +249,14 @@ export function createProgressionModals(runtimeCtx, deps) {
       card.type = 'button';
       card.className = 'choice-card' + (isSel ? ' w20-selected' : '');
       card.dataset.w20Dir = key;
-      card.innerHTML = `
+      card.innerHTML = withIcons(`
       <span class="tag">${d.tag}</span>
       ${isSel ? '<span class="up-tag">✅ 当前预选方向</span>' : isRec ? '<span class="up-tag">💡 契合当前构筑</span>' : ''}
       <span class="ci">${d.icon}</span>
       <span class="cn">${d.name}</span>
       <span class="cd">${d.baseDesc}</span>
       <span class="cd" style="color:#9bf2d0;font-size:11px;margin-top:2px">🔗 ${d.synergyNote}（战后强化池 ${poolCnt} 张）</span>
-    `;
+    `);
       card.addEventListener('click', () => {
         selectW20PreselectDirection(key);
       });
@@ -293,7 +294,7 @@ export function createProgressionModals(runtimeCtx, deps) {
     const minPool = 2 * (draft.groupSize || 2) + (BALANCE.w20Breakthrough?.minPoolBuffer ?? 2);
     const box = getEl('modalBox');
 
-    box.innerHTML = `
+    box.innerHTML = withIcons(`
     <h2>⚡ W20 第二次大型突破 · 战后强化选择</h2>
     <div class="w20-notice">
       ✅ <b>突破凭证保底生效：</b>已斩杀天劫魔尊并激活【${dir.icon} ${dir.name}】基础效果 —— ${dir.baseDesc}（即使普通材料为 0 亦已 100% 生效！）
@@ -308,7 +309,7 @@ export function createProgressionModals(runtimeCtx, deps) {
         🎲 付费整组重抽（消耗 ${nextCost} 锻材）
       </button>
     </div>
-  `;
+  `);
 
     const grid = box.querySelector('#modalChoices');
     for (const c of cards) {
@@ -316,13 +317,13 @@ export function createProgressionModals(runtimeCtx, deps) {
       card.type = 'button';
       card.className = 'choice-card legend';
       card.dataset.w20Enh = c.key;
-      card.innerHTML = `
+      card.innerHTML = withIcons(`
       <span class="tag">${c.tag}${c.shared ? ' · 通用相容' : ''}</span>
       <span class="up-tag">⚡ ${c.behaviorTag}</span>
       <span class="ci">${c.icon}</span>
       <span class="cn">${c.name}</span>
       <span class="cd">${c.desc}</span>
-    `;
+    `);
       card.addEventListener('click', () => pickW20Enhancement(c.key));
       grid.append(card);
     }
@@ -350,13 +351,13 @@ export function createProgressionModals(runtimeCtx, deps) {
       card.type = 'button';
       card.className = 'choice-card' + (p.rarity === 'epic' ? ' epic' : p.rarity === 'rare' ? ' rare' : '');
       card.dataset.choice = p.key;
-      card.innerHTML = `
+      card.innerHTML = withIcons(`
       <span class="tag">${p.family}系 · ${rarityLabel}</span>
       ${curLv === 1 ? '<span class="up-tag">⬆ 升阶精通 Lv.2</span>' : ''}
       <span class="ci">${p.icon}</span>
       <span class="cn">${p.name}</span>
       <span class="cd">${nextLv === 2 ? p.d2 : p.d1}</span>
-    `;
+    `);
       card.addEventListener('click', () => pickPerk(p.key));
       grid.append(card);
     }
@@ -394,7 +395,7 @@ export function createProgressionModals(runtimeCtx, deps) {
       const curSetCnt = setCounts[inst.set] || 0;
       const itemSyns = evaluateItemSynergies(inst);
       const synHints = getGearSynergyHints(inst);
-      card.innerHTML = `
+      card.innerHTML = withIcons(`
       <span class="tag">${rTag} · ${stSpec.label} · ${inst.slotsCount}槽${elSpec ? ` · ${elSpec.icon}${elSpec.name}` : ''}</span>
       <span class="ci">${inst.icon}</span>
       <span class="cn">${inst.name}</span>
@@ -403,7 +404,7 @@ export function createProgressionModals(runtimeCtx, deps) {
       ${itemSyns.length ? `<span class="syn-badge ${itemSyns[0].badgeClass}">✨ 单件联动：${itemSyns.map(s => `${s.icon}${s.name}(${s.short})`).join(' / ')}</span>` : ''}
       ${synHints.length ? `<span class="syn-badge hint">💡 ${synHints.join('；')}</span>` : ''}
       ${setSpec ? `<span class="cd" style="color:${setSpec.col};font-size:11px;margin-top:2px">${setSpec.icon} ${setSpec.name} (${curSetCnt}/3)</span>` : ''}
-    `;
+    `);
       card.addEventListener('click', () => pickGearReward(inst));
       grid.append(card);
     }

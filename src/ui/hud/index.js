@@ -2,6 +2,7 @@ import { createBattleHud } from './battle-hud.js';
 import { createBuildHud, gearListSig } from './build-hud.js';
 import { createDockUI } from './dock-ui.js';
 import { createHudController } from './hud-controller.js';
+import { createPrepBuild } from './prep-build.js';
 import { createInspectorUI } from './inspector.js';
 
 export { createBattleHud, createBuildHud, createDockUI, createHudController, createInspectorUI, gearListSig };
@@ -14,12 +15,14 @@ export function createHudSystem(runtimeCtx, deps) {
     get battleHud() { return battleHud; },
     get buildHud() { return buildHud; },
     get dockUI() { return dockUI; },
+    get prepBuild() { return prepBuild; },
     get inspectorUI() { return inspectorUI; },
   };
   const hudController = createHudController(runtimeCtx, hudDeps);
   const battleHud = createBattleHud(runtimeCtx, hudDeps);
   const buildHud = createBuildHud(runtimeCtx, hudDeps);
   const dockUI = createDockUI(runtimeCtx, hudDeps);
+  const prepBuild = createPrepBuild(runtimeCtx, hudDeps);
   const inspectorUI = createInspectorUI(runtimeCtx, hudDeps);
 
   const { renderBattleHud } = battleHud;

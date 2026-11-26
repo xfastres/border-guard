@@ -1,3 +1,4 @@
+import { withIcons } from '../shared/icons.js';
 import { clamp } from '../../core/math.js';
 import { MAIN_WAVES } from '../../data/index.js';
 
@@ -110,7 +111,7 @@ export function createBattleHud(runtimeCtx, deps) {
     }
 
     body.innerHTML =
-      '<div class="lh-sec">' +
+      withIcons('<div class="lh-sec">' +
         '<div class="bh-wave-row"><div><span class="bh-wave-kicker">当前战局</span><div class="bh-wave-name">第 ' + game.wave + ' / ' + MAIN_WAVES + ' 波</div></div>' +
         '<span class="bh-phase ' + phaseClass + '">' + phaseLabel + '</span></div>' +
         '<div class="bh-meta-line">' + meta.tag + ' · ' + getRealmStageLabel() + '</div>' +
@@ -133,7 +134,7 @@ export function createBattleHud(runtimeCtx, deps) {
           '<div class="bh-metric"><b>' + game.stats.elites.toLocaleString() + '</b><small>精英击杀</small></div>' +
           '<div class="bh-metric"><b>' + Math.round(game.stats.dmgTotal).toLocaleString() + '</b><small>累计伤害</small></div>' +
         '</div>' +
-      '</div>';
+      '</div>');
   }
 
   function resetDirty() {
