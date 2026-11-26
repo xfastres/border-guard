@@ -1,4 +1,5 @@
 import { CELL } from '../../data/index.js';
+import { getBuildRoute, getW20ActiveState, hasDestinyEnhancement } from '../../core/state-queries.js';
 
 export const EFFECT_LIMITS = {
   high: { particles: 192, stamps: 32, trails: 14, emission: 36, glow: true, beams: 32, bolts: 24, rings: 45, labels: 38 },
@@ -221,6 +222,11 @@ export function createBattleVfx(runtimeCtx, { preferReducedMotion = false } = {}
       }
       const dash = h.dashCd > lastDash + .35;
       const overdrive = h.ultTimer > lastUlt + .35;
+      let dashKind = 'fire';
+      if (dash) {
+        const direction = getW20ActiveState(game).directionKey || getBuildRoute(game)?.direction;
+        if (direction === 'wind_stride' || hasDestinyEnhancement(game, 'destiny_phantom_stride')) dashKind = 'wind';
+      }
       if ((dash || clock - lastTrail > (quality === 'low' ? .115 : .048)) && Math.hypot(dx, dy) > .035) {
         const n = dash ? (quality === 'low' ? 3 : 6) : 1;
         for (let i = 0; i < n; i++) {
@@ -228,12 +234,12 @@ export function createBattleVfx(runtimeCtx, { preferReducedMotion = false } = {}
           const progress = dash ? i / n : 0;
           trail.x = (lastX + dx * progress) * CELL;
           trail.y = (lastY + dy * progress) * CELL;
-          trail.angle = heading; trail.kind = dash ? 'wind' : 'lance';
+          trail.angle = heading; trail.kind = dash ? dashKind : 'lance';
           trail.time = trail.max = dash ? .26 + progress * .11 : .16;
         }
         lastTrail = clock;
       }
-      if (dash) burst('wind', h.x, h.y, 1.1);
+      if (dash) burst(dashKind, h.x, h.y, 1.1);
       if (overdrive) burst(h.skills?.berserk ? 'blood' : 'holy', h.x, h.y, 2.25);
       if (lastShield > 0 && h.shield <= 0 && h.invuln > 0) burst('frost', h.x, h.y, 1.38, 1);
       if (h.shield > lastShield && h.shield - lastShield >= 8 && clock - hitTime < .24) {

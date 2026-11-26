@@ -4,6 +4,10 @@ import { withoutIcons } from '../shared/icons.js';
 import { EFFECT_LIMITS } from '../vfx/battle-vfx.js';
 import { drawAttackBody, polygon, traceBolt } from './spell-effects.js';
 
+function isBossShieldLink(bolt) {
+  return bolt.col === '#6ce2ff' || bolt.col === '#ff88dc';
+}
+
 export function createEffectsDrawer(runtimeCtx, { ctx, scene, visible = () => true, now = () => performance.now() }) {
   function drawZones(){
     const game = runtimeCtx.game;
@@ -124,27 +128,41 @@ export function createEffectsDrawer(runtimeCtx, { ctx, scene, visible = () => tr
       ctx.restore();
     }
     const bolts = game.bolts;
-    for (let i = Math.max(0, bolts.length - limits.bolts); i < bolts.length; i++) {
-      const b = bolts[i];
-      const point = b.pts.at(-1);
-      if (!point) continue;
-      const alpha = b.t / b.max;
-      ctx.save();
-      traceBolt(ctx, b.pts, time + i * 41, scene?.quality !== 'off');
-      ctx.strokeStyle = b.comboThunderFire ? '#ff9f56' : '#8d9cff';
-      ctx.globalAlpha = alpha * .48;
-      ctx.lineWidth = limits.glow ? 8 : 4;
-      ctx.stroke();
-      ctx.strokeStyle = '#eff4ff'; ctx.globalAlpha = alpha;
-      ctx.lineWidth = 1.65; ctx.stroke();
-      if (limits.glow) {
-        const x = point.x * CELL, y = point.y * CELL;
-        ctx.beginPath(); polygon(ctx, x, y, 11 + 7 * (1 - alpha), 6, .2);
-        ctx.globalAlpha = alpha * .47;
-        ctx.strokeStyle = '#a09bf3'; ctx.lineWidth = 1; ctx.stroke();
-      }
-      ctx.restore();
+    // Keep the boss shield source identifiable even when a lightning build saturates the effect budget.
+    const shieldCap = Math.min(4, limits.bolts);
+    let shieldLinks = 0;
+    for (let i = bolts.length - 1; i >= 0 && shieldLinks < shieldCap; i--) {
+      if (!isBossShieldLink(bolts[i])) continue;
+      drawBolt(bolts[i], time + i * 41, limits, true);
+      shieldLinks++;
     }
+    let remaining = limits.bolts - shieldLinks;
+    for (let i = bolts.length - 1; i >= 0 && remaining > 0; i--) {
+      if (isBossShieldLink(bolts[i])) continue;
+      drawBolt(bolts[i], time + i * 41, limits, false);
+      remaining--;
+    }
+  }
+
+  function drawBolt(bolt, time, limits, bossLink) {
+    const point = bolt.pts.at(-1);
+    if (!point) return;
+    const alpha = bolt.t / bolt.max;
+    ctx.save();
+    traceBolt(ctx, bolt.pts, time, !bossLink && scene?.quality !== 'off');
+    ctx.strokeStyle = bossLink ? bolt.col : bolt.comboThunderFire ? '#ff9f56' : '#8d9cff';
+    ctx.globalAlpha = alpha * (bossLink ? .8 : .48);
+    ctx.lineWidth = limits.glow ? 8 : 4;
+    ctx.stroke();
+    ctx.strokeStyle = '#eff4ff'; ctx.globalAlpha = alpha;
+    ctx.lineWidth = 1.65; ctx.stroke();
+    if (limits.glow) {
+      const x = point.x * CELL, y = point.y * CELL;
+      ctx.beginPath(); polygon(ctx, x, y, 11 + 7 * (1 - alpha), 6, .2);
+      ctx.globalAlpha = alpha * .47;
+      ctx.strokeStyle = '#a09bf3'; ctx.lineWidth = 1; ctx.stroke();
+    }
+    ctx.restore();
   }
 
   function drawRingsAndFloats(){

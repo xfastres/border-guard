@@ -34,17 +34,18 @@ export function createPrepBuild(runtimeCtx, deps) {
     const n = route?.affixes.filter(a => owned.includes(a)).length;
     const gearSig = gearListSig(h.gear);
     const hs = hero.getHeroStats();
-    const current = { hp: h.hp, dmg: (hs.skillDmgMult - 1) * 100, speed: hs.aspd * 100, crit: hs.crit * 100 };
+    const current = { hp: h.maxHp, dmg: (hs.skillDmgMult - 1) * 100, speed: hs.aspd * 100, crit: hs.crit * 100 };
 
     if (game !== previousGame || game.wave !== previousWave || !previous) {
       previousGame = game;
       previousWave = game.wave;
       lastSummary = '';
       lastSlots = null;
+      previous = null;
       delta = null;
     }
     const metricsKey = METRICS.map(({ field }) => Math.round(current[field])).join(':');
-    const summaryKey = [metricsKey, route?.direction, n, h.maxHp, ...active.map(s => s.id)].join('|');
+    const summaryKey = [metricsKey, route?.direction, n, Math.round(h.hp), ...active.map(s => s.id)].join('|');
     if (summaryKey !== lastSummary) {
       lastSummary = summaryKey;
       if (previous) delta = Object.fromEntries(METRICS.map(({ field }) => [field, Math.round(current[field] - previous[field])]));
@@ -52,8 +53,8 @@ export function createPrepBuild(runtimeCtx, deps) {
       const stats = getEl('prepStats');
       stats.innerHTML = METRICS.map(({ label, field, suffix, precision }) => {
         const change = delta?.[field];
-        const value = current[field].toFixed(precision);
-        const after = field === 'hp' ? `/${h.maxHp}` : suffix;
+        const value = (field === 'hp' ? h.hp : current[field]).toFixed(precision);
+        const after = field === 'hp' ? `/${current.hp}` : suffix;
         return `<div class="prep-metric"><span>${label}</span><strong>${value}<small>${after}</small></strong>${change ? `<em class="stat-delta ${change > 0 ? 'gain' : 'loss'}">${change > 0 ? '+' : ''}${change}${suffix}</em>` : ''}</div>`;
       }).join('');
       getEl('prepBuildRoute').innerHTML = route

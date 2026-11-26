@@ -140,12 +140,16 @@ export function drawAfterimages(ctx, scene) {
     if (t.time <= 0) continue;
     const u = t.time / t.max;
     ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(t.angle);
-    ctx.globalAlpha = u * (t.kind === 'wind' ? .39 : .19);
+    ctx.globalAlpha = u * (t.kind === 'lance' ? .19 : .39);
     ctx.fillStyle = EFFECT_STYLE[t.kind].color;
     ctx.beginPath();
     ctx.moveTo(8, 0); ctx.quadraticCurveTo(2, -9, -5, -6);
     ctx.lineTo(-19 * u, 0); ctx.lineTo(-5, 6); ctx.quadraticCurveTo(2, 9, 8, 0);
     ctx.fill();
+    if (t.kind === 'fire') {
+      ctx.fillStyle = EFFECT_STYLE.fire.core;
+      ctx.fillRect(-16 * u, -1, 19 * u, 2);
+    }
     ctx.restore();
   }
   ctx.restore();

@@ -339,13 +339,23 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     assert.equal(afterFullBagClick.gold, fullBagShop.goldBefore, 'Full bag gear buy must deduct 0 gold');
     assert.equal(afterFullBagClick.bought, false, 'Full bag gear item must remain unbought');
 
-    // Modular Game UI v3: inline locked-geometry Shop <-> Bag switch, tooltip, non-destructive selection
+    // Inventory navigation, immediate tooltip and non-destructive selection.
     if (await cdp.eval("Boolean(document.getElementById('bagOpen'))")) {
       const shopDeckRect = await cdp.eval("(() => { const r = document.getElementById('dock').getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) }; })()");
-      assert.equal(await cdp.eval("document.getElementById('bagTray').getClientRects().length"), 0, 'Bag must start hidden while Shop tab is active');
+      const workbench = await cdp.eval("Boolean(document.querySelector('#dock.workbench'))");
+      const visibleBag = await cdp.eval("document.getElementById('bagTray').getClientRects().length > 0");
+      assert.equal(visibleBag, workbench, 'The workbench keeps inventory in the same view as the market');
+      if (workbench) {
+        assert.equal(await cdp.eval("document.querySelectorAll('#prepGearSlots .loadout-slot').length"), 4);
+        assert.ok(await cdp.eval("document.querySelectorAll('#prepStats .prep-metric').length >= 4"));
+        assert.ok(await cdp.eval("document.querySelectorAll('#shopSec .shop-card .offer-effects').length >= 4"));
+      }
       await cdp.clickSelector('#bagOpen');
+      if (workbench) {
+        assert.equal(await cdp.eval("document.getElementById('uiShopPanel').getClientRects().length > 0"), true);
+      }
       const bagDeckRect = await cdp.eval("(() => { const r = document.getElementById('dock').getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) }; })()");
-      assert.deepEqual(bagDeckRect, shopDeckRect, 'Console dock must keep identical width/height between Shop and Bag');
+      assert.deepEqual(bagDeckRect, shopDeckRect, 'Changing section focus must preserve the console dimensions');
       const bagBeforeSelection = await cdp.eval('window.BG60.game.bag.length');
       const hoverDetail = await cdp.eval(`(() => {
         const item = document.querySelector('#bagTray .bag-item');

@@ -211,10 +211,10 @@ export function createBuildHud(runtimeCtx, deps) {
         ...duals.map(d => `<span class="glance-chip"${attr(`${d.name}\n${d.desc}`)}>${esc(d.icons)} ${esc(d.name)}</span>`),
       ].join('');
 
-      body.innerHTML =
+      body.innerHTML = withIcons(
         `<div class="glance-prog-list">${progCards.join('') || '<div class="ui-hint">穿戴构装与灵印后显示羁绊进度</div>'}</div>` +
         (comboChips ? `<div class="glance-syn-row" style="cursor:default">${comboChips}</div>` : '') +
-        `<div class="glance-skill-grid">${skillChips || '<span class="ui-hint">尚未习得神通</span>'}</div>`;
+        `<div class="glance-skill-grid">${skillChips || '<span class="ui-hint">尚未习得神通</span>'}</div>`);
     }
 
     body.querySelectorAll('[data-open-seal]').forEach(btn => btn.addEventListener('click', () => { game.inspTarget = { type: 'seal' }; deps.hudController.renderAllUI(true); }));

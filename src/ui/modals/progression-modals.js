@@ -337,11 +337,11 @@ export function createProgressionModals(runtimeCtx, deps) {
     const qName = quality === 'tian' ? '👑 天道秘宝加持（六选一）' : quality === 'di' ? '💎 地道秘宝加持（四选一）' : '✨ 秘宝加持（三选一）';
     const gridCls = choices.length >= 5 ? 'choices six' : choices.length === 4 ? 'choices four' : 'choices';
     const box = getEl('modalBox');
-    box.innerHTML = `
+    box.innerHTML = withIcons(`
     <h2>${qName}</h2>
     <p class="lead">选择 <strong>1 条规则弯折词条</strong>塑造本局流派；已拥有的 Lv.1 词条可原地升阶为 <strong>Lv.2 精通</strong>！</p>
     <div class="${gridCls}" id="modalChoices"></div>
-  `;
+  `);
     const grid = box.querySelector('#modalChoices');
     for (const p of choices) {
       const curLv = runtimeCtx.game.hero.perks[p.key] || 0;
@@ -375,11 +375,11 @@ export function createProgressionModals(runtimeCtx, deps) {
     m.choices = choices;
     const box = getEl('modalBox');
     const title = legendBias ? '👑 首领传说宝箱' : shrineTier ? '🩸 血煞妖碑高阶宝箱' : '📦 精英构装宝箱';
-    box.innerHTML = `
+    box.innerHTML = withIcons(`
     <h2>${title} · 三选一</h2>
     <p class="lead">每件装备为<strong>独立实例</strong>（品质与 <strong>1/2/3 槽</strong>独立随机，锁定当前来源阶段，不再同名合星覆盖词条）。多余装备可在属性面板选择<strong>出售换金</strong>或<strong>拆解获锻材</strong>！</p>
     <div class="choices" id="modalChoices"></div>
-  `;
+  `);
     const grid = box.querySelector('#modalChoices');
     const setCounts = getGearSetCounts();
     for (const inst of choices) {

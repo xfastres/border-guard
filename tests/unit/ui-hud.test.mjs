@@ -134,7 +134,7 @@ test('HUD rendering skips clean panels and repaints them all after reset while r
     const events = new Map();
     return {
       ...hudElement(), children, events, updates: 0, dataset: {}, style: { setProperty() {} },
-      set innerHTML(value) { this.updates++; },
+      set innerHTML(value) { this.html = value; this.updates++; },
       set textContent(value) { this.text = value; this.updates++; },
       get textContent() { return this.text; },
       replaceChildren() { this.updates++; children.length = 0; },
@@ -182,7 +182,7 @@ test('HUD rendering skips clean panels and repaints them all after reset while r
 
   hud.renderAllUI();
   assert.equal(getEl('pauseBtn').textContent, '继续');
-  assert.equal(getEl('soundBtn').textContent, '🔇');
+  assert.match(getEl('soundBtn').html, /<svg[^>]+icon-mute/);
   const shopButton = getEl('shopSec').children[0];
   const panels = [
     ...['battleHudBody', 'leftHudBody', 'sealStrip', 'skillStrip', 'bagTray', 'inspStats'].map(getEl),
