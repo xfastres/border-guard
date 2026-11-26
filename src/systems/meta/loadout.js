@@ -7,6 +7,7 @@ export function createMetaLoadout(ctx, persistence) {
 
   function isMetaLoadoutLocked(){
     if (!ctx.game) return false;
+    if (ctx.game.debugRun) return true;
     if (ctx.game.phase === 'won' || ctx.game.phase === 'lost') return false;
     return !!ctx.game.metaRunLocked;
   }
@@ -135,7 +136,7 @@ export function createMetaLoadout(ctx, persistence) {
     const mainSpec = getMetaMainSpec(activeLoadout?.main);
     const mainElem = mainSpec?.elem || null;
 
-    // 1. Active Gear Pool (anti-dilution: stays fixed at targetActiveGearPoolSize = 23!)
+    // 1. Unlocked items replace pieces of the same quality in the active gear pool.
     const targetGearSize = cfg.activePoolControl.targetActiveGearPoolSize;
     const unlockedGearExtras = [];
     for (const packId of (save.unlockedPacks || [])) {
@@ -164,7 +165,7 @@ export function createMetaLoadout(ctx, persistence) {
       activeGearKeys.push(extraKey);
     }
 
-    // 2. Active Affix Pool (anti-dilution: stays fixed at targetActiveAffixPoolSize = 12, ALWAYS keeping all 6 Fire/Frost chain affixes!)
+    // 2. Unlocks substitute general affixes and preserve all build chains.
     const targetAffixSize = cfg.activePoolControl.targetActiveAffixPoolSize;
     const unlockedAffixExtras = [];
     for (const packId of (save.unlockedPacks || [])) {

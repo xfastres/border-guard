@@ -225,7 +225,9 @@ export function createHeroStats(ctx, { unlock, meta }) {
     const rawAspd = Math.max(0.5, 1 + gm.aspd + berkLv * 0.18 + holyAura + (syn.wind >= 2 ? 0.25 : 0) + (h.ultTimer > 0 ? 0.80 : 0) + bloodAspd + dashAspd + greedAspd + destinyTemperAspd);
     const { attackSpeedSoftCap, attackSpeedOverflowScale } = BALANCE.combat;
     const aspd = Math.min(rawAspd, attackSpeedSoftCap) + Math.max(0, rawAspd - attackSpeedSoftCap) * attackSpeedOverflowScale;
-    const dmgMult = 1 + gm.dmgPct + shieldAffixDmg + (h.lv - 1) * BALANCE.progression.heroDmgPerLevel + r.dmgBonus + bloodDmg + goldDmg + sealDmgBonus + bloodKillDmg + destinyTemperDmg;
+    const { gearDamageSoftCap, gearDamageOverflowScale } = BALANCE.combat;
+    const gearDamage = Math.min(gm.dmgPct, gearDamageSoftCap) + Math.max(0, gm.dmgPct - gearDamageSoftCap) * gearDamageOverflowScale;
+    const dmgMult = 1 + gearDamage + shieldAffixDmg + (h.lv - 1) * BALANCE.progression.heroDmgPerLevel + r.dmgBonus + bloodDmg + goldDmg + sealDmgBonus + bloodKillDmg + destinyTemperDmg;
 
     const ownedSkills = Object.values(h.skills).filter(v => v > 0).length;
     const mmLv = perkLv(ctx.game, 'mono_mastery');

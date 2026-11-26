@@ -202,7 +202,7 @@ export const HERO_SKILLS = {
   },
   firewave: {
     key:'firewave', name:'烈焰剑波', icon:'🔥', tag:'指向穿透',
-    desc: lv => `优先朝鼠标方向发射 ${Math.min(4, Math.ceil(lv/2) + 1)} 道穿透烈焰剑气，清线极快（当前 Lv.${lv}）。`
+    desc: lv => `优先朝鼠标方向发射 ${Math.min(4, Math.ceil(lv/2) + 1)} 道穿透剑气。同一轮多道剑气打中同一强敌时，后续剑气伤害递减（当前 Lv.${lv}）。`
   },
   thunder: {
     key:'thunder', name:'天雷轰顶', icon:'⚡', tag:'锁强清屏',
@@ -217,8 +217,8 @@ export const HERO_SKILLS = {
     desc: lv => `定时在领主脚下引爆巨型震荡波，造成重伤与击退晕眩（当前 Lv.${lv}）。`
   },
   berserk: {
-    key:'berserk', name:'狂战血怒', icon:'🩸', tag:'吸血磁铁',
-    desc: lv => `领主攻速 +${lv*18}%、暴击 +${lv*8}%、命中吸血系数 +${lv*2}（受每秒总量限制）、经验磁铁范围大幅扩大。`
+    key:'berserk', name:'狂战血怒', icon:'🩸', tag:'近身血斩',
+    desc: lv => `定时近斩并吸血，超载时可扫到目标附近敌人。攻速 +${lv*18}%、暴击 +${lv*8}%、有效命中吸血 +${lv*2}（受每秒上限限制），拾取范围增大。`
   }
 };
 
@@ -304,8 +304,8 @@ export const W10_SKILL_BRANCHES = {
     },
     {
       key: 'bl_expanding_storm', skillKey: 'blades', name: '裂空剑阵 · 呼吸扩缩', icon: '🌪️',
-      tag: '轨道扩缩 · 剑气震退', hookType: 'frost_slow_shield',
-      desc: '飞刃轨道在1.2格至2.7格间周期呼吸扩张，扩张极点向四周迸发剑气环使敌人【减速】并为领主凝结+10【寒冰护盾】！'
+      tag: '轨道扩缩 · 命中凝盾', hookType: 'frost_slow_shield',
+      desc: '飞刃轨道周期性收缩与扩张。飞刃命中时使敌人减速 45%，并凝结 8 点寒冰护盾。'
     }
   ],
   thunder: [
@@ -318,7 +318,7 @@ export const W10_SKILL_BRANCHES = {
     {
       key: 'th_arc_web', skillKey: 'thunder', name: '千鸟雷网 · 广域跳链', icon: '⚡',
       tag: '超长弹射 · 状态震爆', hookType: 'fire_mark_detonate',
-      desc: '弹射目标+3且跳距扩大40%，雷链命中带【火标】或【减速】敌人时直接触发1.8格【火标引爆】！'
+      desc: '每道雷链可击中最多 6 个目标。落雷起点挂一层火标，尝试触发半径 1.8 格的引爆。'
     },
     {
       key: 'th_storm_orb', skillKey: 'thunder', name: '雷球巡猎 · 寒雷凝盾', icon: '🔮',

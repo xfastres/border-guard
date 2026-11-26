@@ -5,9 +5,9 @@ export const GEAR_SETS = {
   sword:   { key:'sword',   name:'剑影套', icon:'⚔️', col:'#72f2b4', d2:'暴击 +12%，移动每 1.6s 迸射 2 道穿云剑气', d3:'暴击 +20%，迸射 3 道穿云剑气且减速 25%' },
   flame:   { key:'flame',   name:'烈阳套', icon:'☀️', col:'#ff7b47', d2:'火/爆伤 +25%，暴击灼烧敌触发 1.6格 赤焰爆轰', d3:'火/爆伤 +40%，赤焰爆轰范围扩至 2.2格' },
   frost:   { key:'frost',   name:'玄冥套', icon:'❄️', col:'#6ce2ff', d2:'对减速敌伤 +20%，命中 22% 凝结 +10 护盾(上限60)', d3:'对减速敌伤 +35%，凝盾率 35% 且碎盾冰封周围 1s' },
-  thunder: { key:'thunder', name:'紫雷套', icon:'⚡', col:'#c68cff', d2:'闪电链每跳增伤 +12%(不衰减)，冲刺终点劈 3连紫雷', d3:'闪电链弹射 +1，冲刺起终点各劈 4连紫雷' },
+  thunder: { key:'thunder', name:'紫雷套', icon:'⚡', col:'#c68cff', d2:'闪电链每跳保留 96% 伤害，冲刺终点劈 3 连紫雷', d3:'闪电链弹射 +1，冲刺起终点各劈 4 连紫雷' },
   blood:   { key:'blood',   name:'血煞套', icon:'🩸', col:'#ff5c7a', d2:'吸血上限 +45%，击杀精英/Boss永久 +12血上限与 +3%全伤(10层)', d3:'吸血上限 +80%，半血下受击减伤 22%' },
-  greed:   { key:'greed',   name:'天财套', icon:'💰', col:'#ffe478', d2:'每持40金攻速+4%/移速+3%(上限+28%)，过波+12金', d3:'上限升至 +45%，构装叠星倍率额外 +15%' }
+  greed:   { key:'greed',   name:'天财套', icon:'💰', col:'#ffe478', d2:'每持40金攻速+4%/移速+3%(上限+28%)，过波额外 6 金', d3:'上限升至 +45%，构装叠星倍率额外 +15%' }
 };
 
 export const DUAL_RESONANCES = [
@@ -18,7 +18,7 @@ export const DUAL_RESONANCES = [
   { key:'holy_omni',     name:'圣耀万法', icons:'✨+☯️', req:['holy','_any'],    col:'#ffe478', desc:'主印触发叠 +6 圣光盾(上限75)，全暴击伤害 +25%' }
 ];
 
-/* 4-Tier Equipment Pool (5 Common / 5 Rare / 9 Epic / 4 Legend-Curse = 23 Gears, each with elem & set!) */
+/* Four quality tiers. Every piece has an element and a gear set. */
 export const GEARS = {
   smolder_edge: {"key": "smolder_edge", "name": "余烬短刃", "icon": "◈", "rarity": "common", "elem": "fire", "set": "flame", "desc": "火标触发率 32%。适合在早期先挂标。", "mod": {"fireMarkChance": 0.32, "dmgPct": 0.07}},
   ember_focus: {"key": "ember_focus", "name": "焚芯石", "icon": "◈", "rarity": "epic", "elem": "fire", "set": "flame", "desc": "提升引爆伤害，射程减小。适合在近处控制爆炸落点。", "mod": {"fireDetonateBonus": 0.25, "rangePct": -0.08}},
@@ -224,18 +224,23 @@ export const GEAR_AFFIXES = {
 export const GEAR_AFFIX_KEYS = Object.keys(GEAR_AFFIXES);
 export const BASE_AFFIX_KEYS = GEAR_AFFIX_KEYS.filter(id => !GEAR_AFFIXES[id].unlockPack);
 
-export const BUILD_AFFIX_CHAINS = [["wind_flow", "御风回锋", ["wind_edge", "wind_relay", "wind_pin"]], ["storm_circuit", "蓄雷回路", ["storm_charge", "storm_return", "storm_fork"]], ["blood_rite", "血契回锋", ["blood_reserve", "blood_leech", "blood_debt"]], ["holy_oath", "持盾裁决", ["holy_oath", "holy_light", "holy_judgment"]]];
+export const BUILD_AFFIX_CHAINS = [
+  ['wind_flow', '御风回锋', ['wind_edge', 'wind_relay', 'wind_pin'], '冲刺后，第一次风击强化贯穿剑路。', '回锋命中后额外生成护盾。'],
+  ['storm_circuit', '蓄雷回路', ['storm_charge', 'storm_return', 'storm_fork'], '同一目标反复受雷击时，增强过载。', '过载所需电荷减少一格。'],
+  ['blood_rite', '血契回锋', ['blood_reserve', 'blood_leech', 'blood_debt'], '超载花费部分生命，并增强近身血刃。', '每次血刃可回收更多已花费的生命。'],
+  ['holy_oath', '持盾裁决', ['holy_oath', 'holy_light', 'holy_judgment'], '圣光命中时，用护盾换取更强的裁决。', '裁决扫中多个目标时返还部分护盾。'],
+];
 
-const BUILD_GEAR_SYNERGIES = BUILD_AFFIX_CHAINS.flatMap(([chain, name, req]) => [
+const BUILD_GEAR_SYNERGIES = BUILD_AFFIX_CHAINS.flatMap(([chain, name, req, duoDesc, trioDesc]) => [
   {
     id: `${chain}_duo`, chain, tier: 2, priority: 20, req: req.slice(0, 2),
     name, icon: '◇', badgeClass: 'duo', short: '双词条联动',
-    desc: '由对应的有效攻击或主动操作触发，详见各词条。',
+    desc: duoDesc,
   },
   {
     id: `${chain}_trio`, chain, tier: 3, priority: 100, req,
     name: `${name}·圆满`, icon: '◇', badgeClass: 'trio', short: '完整三联动',
-    desc: '替代同系双联动，追加第三条词条描述的效果，机制伤害进一步提高。',
+    desc: `${duoDesc}${trioDesc}`,
   },
 ]);
 

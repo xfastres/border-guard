@@ -5,7 +5,6 @@ import {
   SEAL_FUSE_NEED,
   SUB_SEAL_RESONANCE,
 } from '../../data/index.js';
-import BALANCE from '../../data/balance.js';
 import { clamp } from '../../core/math.js';
 import { getSourceStageSpec } from '../../core/state-queries.js';
 import { gearBase, gearLabel, isGearInstance } from './instance.js';

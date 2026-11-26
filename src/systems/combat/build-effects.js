@@ -106,7 +106,7 @@ export function createBuildEffects(ctx, deps) {
   function afterBuildHit(target, actualHpDmg, opts, gm) {
     if (opts.buildEcho || actualHpDmg <= 0 || target.hp <= 0 || ctx.game.phase !== 'wave') return;
     const { hero, waveClock } = ctx.game;
-    const state = hero.routeCombat;
+    const state = (hero.routeCombat ??= {});
     const w20 = getW20ActiveState(ctx.game);
     const direction = w20.baseEffectActive ? w20.directionKey : null;
     const card = w20.enhancementKey;

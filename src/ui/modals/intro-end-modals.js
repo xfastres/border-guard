@@ -187,8 +187,8 @@ export function createIntroEndModals(runtimeCtx, deps) {
       </table>
     </div>` : ''}
     <div class="modal-footer">
-      <button class="btn" id="endMetaBtn" type="button" style="padding:9px 15px;font-size:13px">⚙️ 局外传承配置（💠${getMetaSave().legacyShards}）</button>
-      <button class="btn gold" id="restartGo" type="button" style="padding:9px 18px;font-size:14px">🔁 快速重开</button>
+      ${settle?.practice ? '' : `<button class="btn" id="endMetaBtn" type="button" style="padding:9px 15px;font-size:13px">⚙️ 局外传承配置（💠${getMetaSave().legacyShards}）</button>`}
+      <button class="btn gold" id="restartGo" type="button" style="padding:9px 18px;font-size:14px">${settle?.practice ? '返回开始页' : '🔁 快速重开'}</button>
     </div>
   `;
     box.querySelector('#endRetrySaveBtn')?.addEventListener('click', () => retryPendingMetaSave());
@@ -201,7 +201,12 @@ export function createIntroEndModals(runtimeCtx, deps) {
       }
     });
     box.querySelector('#endMetaBtn')?.addEventListener('click', () => deps.metaModal.openMetaLegacyModal({ context: 'settlement', returnTo: 'end' }));
-    box.querySelector('#restartGo')?.addEventListener('click', () => startNewRun());
+    box.querySelector('#restartGo')?.addEventListener('click', () => {
+      if (!settle?.practice) return startNewRun();
+      startNewRun(undefined, false, { preRunSetup: true });
+      showIntroModal();
+      runtimeCtx.game.pendingModals.push({ type: 'starter' });
+    });
     getEl('modalBackdrop').hidden = false;
   }
 

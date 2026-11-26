@@ -419,7 +419,7 @@ export function createWavesSystem(ctx, deps) {
           : ctx.game.wave === 25 ? `玄冥妖皇携【${rolledEncounter?.name || '成型敌群'}】降临！注意走位躲避寒潮与弹幕！`
           : ctx.game.wave === 30 ? `终局决战 · 深渊主宰（本局辅助：${ctx.game.bossIntel.w30Aux}）！80% 血线锁血冲击波请入安全区，末段打空即胜！`
           : '高能首领战！注意走位躲避破阵重击，斩首必爆高阶宝箱！')
-        : ctx.game.wave === 21 ? '⚡ 第二次大型突破已生效！畅快体验聚焰连爆 / 凛冬反制 / 破阵蓄势与已有装备的实战联动！'
+        : ctx.game.wave === 21 ? `第二次大型突破【${lockedDir?.name || '已激活'}】生效。用这一波验证新招式与已有装备的配合。`
         : ctx.game.wave === 29 ? `前哨紧凑强敌来袭（W30 情报已揭晓 · 辅助：${ctx.game.bossIntel.w30Aux}）！通关后开启 90 秒独立最终整备！`
         : w22Info ? `同源威胁【${w22Info.themeName}】· ${w22Info.comboLabel}（${w22Info.counterHint}）`
         : rolledEncounter ? `本波独立抽中敌群【${rolledEncounter.name}】！检验成型构筑！`

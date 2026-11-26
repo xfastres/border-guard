@@ -4,7 +4,7 @@ import { GEAR_AFFIXES, GEAR_RARITY_LABELS } from '../../data/equipment-data.js';
 
 export function createShopConfirmModals(runtimeCtx, deps) {
   const { getEl } = deps;
-  const { describeGearEffect, getGearSynergyHints } = deps.equipment;
+  const { describeGearEffect, getGearSynergyHints, gearLabel } = deps.equipment;
   const { cancelShopPurchaseConfirm, confirmShopPurchase } = deps.economy;
   const { getPendingDestinyOffer } = deps.progression;
   const { startW30Early } = deps.run;
@@ -15,7 +15,7 @@ export function createShopConfirmModals(runtimeCtx, deps) {
     const item = draft ? runtimeCtx.game.shop?.[draft.shopIdx] : null;
     if (!draft || !item || item.bought) { cancelShopPurchaseConfirm(); return; }
     const box = getEl('modalBox');
-    const w29Note = runtimeCtx.game.finalPrep?.active ? ` · <span style="color:#ff9090">⏳ W29 整备倒计时继续运行 (${Math.ceil(runtimeCtx.game.finalPrep.timer)}s)</span>` : '';
+    const w29Note = runtimeCtx.game.finalPrep?.active ? ' · <span style="color:#ff9090">W29 整备倒计时继续运行</span>' : '';
     let detailLine = '';
     let gearComparison = '';
     if (item.itemType === 'pill') {
@@ -28,7 +28,7 @@ export function createShopConfirmModals(runtimeCtx, deps) {
       detailLine = `${g.icon} ${g.name} [${GEAR_RARITY_LABELS[g.rarity]} · ${stSpec.label} · ${g.slotsCount}槽] · 词条：${afTxt}`;
       const equipped = runtimeCtx.game.hero.gear;
       const hints = getGearSynergyHints?.(g) ?? [];
-      const current = equipped.map(item => `<li>${item.name} · ${describeGearEffect?.(item) || ''}</li>`).join('');
+      const current = equipped.map(item => `<li>${item.name || gearLabel(item)} · ${describeGearEffect(item)}</li>`).join('');
       gearComparison = `<div class="shop-compare"><div><strong>商品属性</strong><p>${describeGearEffect?.(g) || ''}</p>${hints.length ? `<p>${hints.join(' · ')}</p>` : ''}</div>
         <div><strong>当前穿戴</strong>${current ? `<ul>${current}</ul>` : '<p>构装槽空闲</p>'}</div></div>`;
     } else {
@@ -37,7 +37,7 @@ export function createShopConfirmModals(runtimeCtx, deps) {
     }
     box.innerHTML = `
     <h2>🛒 确认购买【${draft.label}】</h2>
-    <p class="lead">${detailLine}<br>花费 <strong>💰 ${item.cost} 金币</strong>（当前持有 💰 ${runtimeCtx.game.gold}）${w29Note}。未确认的草稿在倒计时归零时自动清空、零扣款。</p>
+    <p class="lead">${detailLine}<br>花费 <strong>${item.cost} 金币</strong>（持有 ${runtimeCtx.game.gold}）${w29Note}。</p>
     ${gearComparison}
     <div class="modal-footer">
       <button class="btn" id="shopConfirmCancelBtn" type="button">取消（零扣款）</button>

@@ -47,7 +47,7 @@ export function createDebugPresets(runtimeCtx, { systems, ui }) {
 
     // Compute level & baseMaxHp appropriate for wave & tier
     const tierLvOffset = normTier === 'strong' ? 2 : normTier === 'weak' ? -1 : 0;
-    const baseLv = Math.max(1, Math.round(1 + (targetWave - 1) * 0.78) + tierLvOffset);
+    const baseLv = Math.max(1, Math.round(1 + (targetWave - 1) * 0.92) + tierLvOffset);
     h.lv = baseLv;
     h.xp = 0;
     h.xpNext = xpForLevel(h.lv);

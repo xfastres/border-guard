@@ -16,7 +16,7 @@ const RARITY_SYMBOLS = {
 export function createDockUI(runtimeCtx, deps) {
   const { getEl: $, audio, feedback: { toast } } = deps;
   const { getSealStarCap, getSubSealSlotCap } = deps.unlock;
-  const { getShopElemBuyCount, isBagSeal, getGearSellGold, getGearDismantleMaterials, openShopPurchaseConfirm, buyShopItem } = deps.economy;
+  const { getShopElemBuyCount, isBagSeal, getGearSellGold, getGearDismantleMaterials, openShopPurchaseConfirm } = deps.economy;
   const {
     getGearSynergyHints, evaluateItemSynergies, describeGearEffect, isGearInstance, normalizeGearInstance,
     describeGearInstance, equipGearFromBag, dismantleBagGear, sellBagGear,
@@ -138,11 +138,7 @@ export function createDockUI(runtimeCtx, deps) {
           audio.unlock();
           const game = runtimeCtx.game;
           if (game.shop[idx]?.bought) return;
-          if (game.finalPrep?.active && game.finalPrep?.started) {
-            openShopPurchaseConfirm(idx);
-            return;
-          }
-          buyShopItem(idx);
+          openShopPurchaseConfirm(idx);
         });
         sec.append(btn);
         shopCardNodes.push({
@@ -161,7 +157,8 @@ export function createDockUI(runtimeCtx, deps) {
         const p = PILLS[item.pillKey];
         node.btn.className = 'shop-card pill-card';
         node.btn.style.setProperty('--elem-c', '#6be596');
-        node.btn.disabled = item.bought || game.gold < item.cost;
+        node.btn.disabled = item.bought;
+        node.btn.classList.toggle('unaffordable', game.gold < item.cost);
         node.btn.title = `${p.name}：${p.desc}`;
         node.tag.hidden = item.bought;
         node.tag.textContent = '● 丹药';
@@ -190,7 +187,8 @@ export function createDockUI(runtimeCtx, deps) {
         const sym = RARITY_SYMBOLS[g.rarity] || '●';
         node.btn.className = `shop-card gear-card ${g.rarity}` + (synHints.length || itemSyns.length ? ' mergeable' : '');
         node.btn.style.setProperty('--elem-c', el.color);
-        node.btn.disabled = item.bought || game.gold < item.cost;
+        node.btn.disabled = item.bought;
+        node.btn.classList.toggle('unaffordable', game.gold < item.cost);
         node.btn.title = `${g.name} [${sym} ${GEAR_RARITY_LABELS[g.rarity]} · ${stSpec.label} · ${g.slotsCount}槽]\n基础：${describeGearEffect(g)}\n词条：\n${afLines}${itemSyns.length ? `\n单件联动：${itemSyns.map(s => s.name).join('/')}` : ''}${synHints.length ? `\n提示：${synHints.join('；')}` : ''}\n定价：阶段${g.sourceStage} · ${el.name}系已购 ${buyCnt} 次`;
         node.tag.hidden = item.bought;
         node.tag.textContent = `${sym} ${GEAR_RARITY_LABELS[g.rarity]}·${g.slotsCount}槽`;
@@ -214,7 +212,8 @@ export function createDockUI(runtimeCtx, deps) {
 
       node.btn.className = 'shop-card' + ((canFuseMain || canFuseSub || canAddSub) ? ' mergeable' : '') + (atCap ? ' locked-cap' : '');
       node.btn.style.setProperty('--elem-c', el.color);
-      node.btn.disabled = item.bought || game.gold < item.cost || atCap;
+      node.btn.disabled = item.bought || atCap;
+      node.btn.classList.toggle('unaffordable', game.gold < item.cost);
       const resDesc = SUB_SEAL_RESONANCE[spec.elem].desc(Math.min(3, item.star));
       const dualHint = DUAL_RESONANCES.filter(d => d.req.includes(spec.elem) || d.req[1] === '_any').map(d => `${d.icons}${d.name}`).join(' / ');
       node.btn.title = `${spec.name} ${item.star}★（${el.icon}${el.name} · 计入+1~+2羁绊）\n[主印] ${spec.desc}\n[辅印] ${resDesc}\n[双系共鸣] ${dualHint}`;

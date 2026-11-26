@@ -601,6 +601,7 @@ export function createHeroSkills(ctx, deps) {
           const tfCombo = hasCombo(game, 'thunder_fire');
           const baseDmg = Math.round((sb.firewave.dmg + fwLv * sb.firewave.perLv) * hs.skillDmgMult);
 
+          const priorityHits = new Set();
           if (fwBranch === 'fw_ring_detonate') {
             // 燎原火环: 8-way radial fire ring around hero + instant fire mark & detonation
             const ringCnt = 8;
@@ -608,7 +609,7 @@ export function createHeroSkills(ctx, deps) {
             for (let i = 0; i < ringCnt; i++) {
               const a = (Math.PI * 2 * i) / ringCnt;
               pushProjectile({
-                kind: 'firewave', w10Branch: 'fw_ring_detonate', x: h.x, y: h.y,
+                priorityHits, kind: 'firewave', w10Branch: 'fw_ring_detonate', x: h.x, y: h.y,
                 vx: Math.cos(a) * 10.5, vy: Math.sin(a) * 10.5,
                 life: 0.36 * hs.skillRangeMult, r: 0.58, pierce: 3 + Math.floor(fwLv / 2), hitSet: new Set(),
                 dmg: baseDmg,
@@ -625,7 +626,7 @@ export function createHeroSkills(ctx, deps) {
               const tx = clamp(target.x + Math.cos(offAng) * offDist, 1.0, W - 1.0);
               const ty = clamp(target.y + Math.sin(offAng) * offDist, 1.0, H - 1.0);
               pushProjectile({
-                kind: 'fireball', w10Branch: 'fw_mortar_cluster',
+                priorityHits, kind: 'fireball', w10Branch: 'fw_mortar_cluster',
                 sx: h.x, sy: h.y, x: h.x, y: h.y, tx, ty,
                 t: 0, dur: 0.42, splash: 1.85 * hs.skillRangeMult,
                 dmg: Math.round(baseDmg * 1.15), star: 2, burn: 22,
@@ -638,7 +639,7 @@ export function createHeroSkills(ctx, deps) {
             for (let i = 0; i < count; i++) {
               const a = baseAng + (i - (count - 1) / 2) * 0.13;
               pushProjectile({
-                kind: 'firewave', w10Branch: 'fw_brand_pierce', x: h.x, y: h.y,
+                priorityHits, kind: 'firewave', w10Branch: 'fw_brand_pierce', x: h.x, y: h.y,
                 vx: Math.cos(a) * 13.8, vy: Math.sin(a) * 13.8,
                 life: 0.56 * hs.skillRangeMult, r: 0.56, pierce: 4 + Math.floor(fwLv / 2), hitSet: new Set(),
                 dmg: Math.round(baseDmg * 1.12),
@@ -652,7 +653,7 @@ export function createHeroSkills(ctx, deps) {
             for (let i = 0; i < count; i++) {
               const a = baseAng + (i - (count - 1) / 2) * 0.20;
               pushProjectile({
-                kind: 'firewave', w10Branch: 'fw_homing_ember', bounceLeft: 1, x: h.x, y: h.y,
+                priorityHits, kind: 'firewave', w10Branch: 'fw_homing_ember', bounceLeft: 1, x: h.x, y: h.y,
                 vx: Math.cos(a) * 12.2, vy: Math.sin(a) * 12.2,
                 life: 0.50 * hs.skillRangeMult, r: 0.54, pierce: 2 + Math.floor(fwLv / 2), hitSet: new Set(),
                 dmg: baseDmg,
@@ -666,7 +667,7 @@ export function createHeroSkills(ctx, deps) {
             for (let i = 0; i < count; i++) {
               const a = baseAng + (i - (count - 1) / 2) * 0.24;
               pushProjectile({
-                kind: 'firewave', x: h.x, y: h.y,
+                priorityHits, kind: 'firewave', x: h.x, y: h.y,
                 vx: Math.cos(a) * 11.5, vy: Math.sin(a) * 11.5,
                 life: 0.42 * hs.skillRangeMult, r: 0.52, pierce: 2 + Math.floor(fwLv / 2), hitSet: new Set(),
                 dmg: baseDmg,

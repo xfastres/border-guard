@@ -1273,6 +1273,7 @@ body:has(#inspector:not([hidden])) #leftHud.build-hud {
 }
 .shop-compare ul { padding-left: 17px; margin: 6px 0; font-size: 12px; }
 .shop-compare p, .practice-setup p { margin: 5px 0; font-size: 12px; }
+#shopSec .shop-card.unaffordable .cost { color: #ff9c9c; }
 .practice-setup summary { cursor: pointer; }
 .practice-controls { margin-top: 8px; align-items: end; }
 .practice-controls label { display: grid; gap: 4px; }

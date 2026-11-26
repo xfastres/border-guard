@@ -71,7 +71,8 @@ export function createCombatDamage(ctx, deps) {
       affixes: affixCnt > 0 ? pickEliteAffixes(affixCnt) : [],
       cd: 0.4, slow: 0, slowT: 0, freezeT: 0, burnDps: 0, burnT: 0, vulnT: 0, frenzyT: 0,
       fireMarkT: 0, fireMarkStacks: 0, fireMarkSource: null, fireDetonateCd: 0,
-      flash: 0, bossTimer: kind === 'boss6' ? (w30Cfg.coreCooldownOpening || 5.2) : 5.0,
+      flash: 0, bossTimer: kind === 'boss6' ? (w30Cfg.coreCooldownOpening || 5.2)
+        : kind === 'boss4' ? BALANCE.combat.w20FirstCoreDelay : 5.0,
       bossAuxTimer: kind === 'boss6' ? (w30Cfg.auxCooldownMid || 9.5) : 3.6,
       bossAuxCasts: 0, bossChaseQueue: 0, bossChaseCd: 0, bossPhase: 0, frenzied: false,
       signatureThresholdHp: kind === 'boss6' ? Math.round(hp * (w30Cfg.signatureThresholdPct ?? 0.80)) : 0,

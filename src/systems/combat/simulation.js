@@ -17,6 +17,13 @@ export function createCombatSimulation(ctx, deps) {
     return heroVitals.damageHero(amt, sourceMeta);
   }
 
+  function getVolleyDamage(projectile, enemy) {
+    if (!projectile.priorityHits || (!enemy.elite && !enemy.boss)) return projectile.dmg;
+    if (projectile.priorityHits.has(enemy.id)) return Math.round(projectile.dmg * BALANCE.combat.fireRepeatPriorityMult);
+    projectile.priorityHits.add(enemy.id);
+    return projectile.dmg;
+  }
+
   /* ==================== MAIN SEAL & SUB-SEAL RESONANCE (ON-HIT IMPACT ERUPTION) ==================== */
   function pushProjectile(p){
     if (ctx.game.projectiles.length >= MAX_PROJECTILES) ctx.game.projectiles.shift();
@@ -214,7 +221,7 @@ export function createCombatSimulation(ctx, deps) {
             p.hitSet.add(e.id);
             if (p.kind === 'firewave') {
               const hadMarkOrBurn = (e.fireMarkT > 0 || e.burnT > 0);
-              deps.damage.dealDamage(e, p.dmg, {
+              deps.damage.dealDamage(e, getVolleyDamage(p, e), {
                 fromHero: !p.isCombo,
                 skillKey: p.w10Branch === 'bk_blood_crescent' ? 'berserk' : (p.isCombo ? 'combo' : 'firewave'),
                 critChance:p.critChance, critDmg:p.critDmg, col:'#ff9a52',
@@ -300,7 +307,7 @@ export function createCombatSimulation(ctx, deps) {
         ctx.ports.vfx.addRing(p.tx, p.ty, isFire ? '#ff7b47' : '#6ce2ff', p.splash);
         for (const e of ctx.game.enemies) {
           if (e.hp > 0 && dist(e, {x:p.tx, y:p.ty}) <= p.splash + e.r) {
-            deps.damage.dealDamage(e, p.dmg, { ...p.opts, col: isFire ? '#ff9f66' : '#8ceeff' });
+            deps.damage.dealDamage(e, getVolleyDamage(p, e), { ...p.opts, col: isFire ? '#ff9f66' : '#8ceeff' });
             if (p.w10Branch === 'fw_mortar_cluster' && e.hp > 0) {
               deps.hooks.applyFireMark(e, 1, 'fw_mortar_cluster', 5.0);
               deps.hooks.triggerFireDetonation(e, 1.20, 1.85, 'firewave');
@@ -797,7 +804,7 @@ export function createCombatSimulation(ctx, deps) {
         }
         e.bossTimer -= dt;
         if (e.bossTimer <= 0) {
-          e.bossTimer = e.frenzied ? 4.5 : 6.0;
+          e.bossTimer = e.frenzied ? 4.5 : e.kind === 'boss4' ? BALANCE.combat.w20CoreCooldown : 6.0;
           const scale = Math.pow(BALANCE.wave.normalHpGrowth || 1.115, ctx.game.wave - 1);
           const teleBuf = deps.meta.hasMetaAux('aux_telegraph_buffer') ? 0.20 : 0;
           if (e.kind === 'boss1') {

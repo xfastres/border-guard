@@ -158,7 +158,7 @@
     "shopPricing": {
       "sameElemStep": 0.13,
       "highRarityAffixChance": 0.18,
-      "sameElemResetByStage": true
+      "sameElemResetByStage": false
     },
     "materialEnhance": {
       "matCostByNextLv": [
@@ -183,7 +183,7 @@
     "synergyCombat": {
       "fireDuoDetonateMult": 1.1,
       "fireTrioDetonateMult": 1.2,
-      "fireTrioFocusMaxTotalRatio": 0.76,
+      "fireTrioFocusMaxTotalRatio": 0.64,
       "frostDuoShieldCd": 0.64,
       "frostTrioShieldCd": 0.58
     }
@@ -941,7 +941,7 @@
     "coreCooldownOpening": 4.8,
     "coreCooldownMid": 4.0,
     "coreCooldownFinal": 3.55,
-    "healOrbHpPct": 0.105
+    "healOrbHpPct": 0.085
   },
   "enemies": {
     "mage": {
@@ -998,6 +998,8 @@
     "critDamageCap": 3.8,
     "attackSpeedSoftCap": 2.35,
     "attackSpeedOverflowScale": 0.42,
+    "gearDamageSoftCap": 2.2,
+    "gearDamageOverflowScale": 0.42,
     "statusMultiplierSoftCap": 2.0,
     "statusOverflowScale": 0.36,
     "extraShotCap": 3,
@@ -1011,6 +1013,8 @@
     },
     "bossShamanHealingPct": 0.0015,
     "normalShamanHealingPct": 0.05,
+    "w20FirstCoreDelay": 3.6,
+    "w20CoreCooldown": 5.1,
     "fireDetonateCooldown": 0.44,
     "corpseBossCapSkillMult": 170,
     "chainDecay": 0.88,
@@ -1020,7 +1024,6 @@
     "routes": {
       "wind": {
         "duration": 3,
-        "cooldown": 0.7,
         "base": 205,
         "echo": 0.55,
         "reach": 4.1,
@@ -1042,7 +1045,7 @@
         "minimumLife": 0.28,
         "duration": 5,
         "cooldown": 0.76,
-        "base": 168,
+        "base": 310,
         "echo": 0.5,
         "reach": 2.9,
         "maxTargets": 2,
@@ -1065,10 +1068,11 @@
     },
     "fireDetonatePower": 0.84,
     "windSealDuelMult": 2.15,
-    "lancePriorityMult": 1.85,
-    "stompPriorityMult": 1.8,
-    "bloodSkillPriorityMult": 1.65,
-    "thunderSoloMult": 1.4
+    "lancePriorityMult": 2.16,
+    "stompPriorityMult": 2.3,
+    "bloodSkillPriorityMult": 2.47,
+    "thunderSoloMult": 1.64,
+    "fireRepeatPriorityMult": 0.46
   },
   "metaProgression": {
     "activePoolControl": {
@@ -1098,7 +1102,7 @@
           "storm_conduit",
           "aegis_pulse"
         ],
-        "desc": "横向解锁 2 条机制词条【引雷导流】与【镇岳灵脉冲】，开局保持活跃词条池定容 12 条防稀释。"
+        "desc": "横向解锁【引雷导流】与【镇岳灵脉冲】，开局各替换一条通用词条，保持 24 条活跃词条。"
       },
       {
         "id": "pack_challenge_marks",
