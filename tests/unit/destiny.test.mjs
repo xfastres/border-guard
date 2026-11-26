@@ -1,3 +1,4 @@
+import { BASE_GEAR_KEYS } from '../../src/data/equipment-data.js';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { mulberry32 } from '../../src/core/rng.js';
@@ -54,7 +55,7 @@ function setup(overrides = {}, { foresight = false } = {}) {
     },
   };
   const system = createDestinyGamble(ctx, {
-    meta: { hasMetaAux(key) { assert.equal(key, 'aux_destiny_foresight'); return foresight; } },
+    meta: { getActiveRunGearKeys: () => BASE_GEAR_KEYS, pickWeightedByMainLegacy: (pool, _elem, rnd) => pool[Math.floor(rnd() * pool.length)], hasMetaAux(key) { assert.equal(key, 'aux_destiny_foresight'); return foresight; } },
     unlock: { getSealStarCap: () => 5, getSubSealSlotCap: () => 2 },
     equipment,
     economy: {
@@ -89,7 +90,7 @@ test('progression exports the factory and pure helpers, and config pins all bett
   const cfg = getDestinyConfig();
   assert.equal(cfg.minBet, 30);
   assert.equal(cfg.emptyTribulationChance, 0.22);
-  assert.deepEqual(cfg.betQuickPresets, [30, 60, 100, 120, 220, 320]);
+  assert.deepEqual(cfg.betQuickPresets, [30, 60, 100, 120, 220, 240, 320]);
   assert.deepEqual(cfg.preciousThresholds, { rare: 60, transferToken: 100, epic: 120, destinyExclusive: 120, legend: 220 });
   assert.deepEqual(cfg.transferTokenYieldByBet, [{ minBet: 100, count: 1 }, { minBet: 240, count: 2 }]);
   for (const [bet, band, rare, token, epic, legend] of [
@@ -130,9 +131,9 @@ test('quality respects the four bet bands and uses the seeded runtime RNG by def
 test('category draws respect each 25% boundary and duplicate selection policy', () => {
   const { game, system } = setup();
   assert.deepEqual(getDestinyConfig().categoryWeights, { seal: 0.25, gear: 0.25, pill: 0.25, special: 0.25 });
-  assert.equal(getDestinyConfig().allowDuplicateCategories, true);
+  assert.equal(getDestinyConfig().allowDuplicateCategories, false);
   const boundaries = draws(0, 0.25, 0.251, 0.5, 0.501, 0.75, 0.751, 0.999);
-  assert.deepEqual(system.rollDestinyCategories(8, boundaries), ['seal', 'seal', 'gear', 'gear', 'pill', 'pill', 'special', 'special']);
+  assert.deepEqual(system.rollDestinyCategories(8, boundaries, true), ['seal', 'seal', 'gear', 'gear', 'pill', 'pill', 'special', 'special']);
   boundaries.check();
   assert.deepEqual(system.rollDestinyCategories(3, () => 0, true), ['seal', 'seal', 'seal']);
   const unique = draws(0, 0, 0, 0);
@@ -299,7 +300,7 @@ test('a fixed seed generates three indexed candidates in the legacy RNG order', 
   assert.deepEqual(offer.choices.map(c => [c.choiceIndex, c.subType, c.rarity, c.enhancementKey ?? c.kind ?? c.gear.baseKey]), [
     [0, 'destiny_exclusive', 'epic', 'destiny_resonance_crown'],
     [1, 'seal', 'epic', 'holy'],
-    [2, 'gear', 'common', 'wood_talisman'],
+    [2, 'gear', 'common', 'bronze_tassel'],
   ]);
   assert.equal(offer.choices[2].synNote, '单件联动：试炼联动');
   assert.equal(offer.choices[2].desc, '构装效果');
@@ -308,7 +309,7 @@ test('a fixed seed generates three indexed candidates in the legacy RNG order', 
   assert.deepEqual(game.destiny.lastOutcome, { outcome: 'win', bet: 120, wave: 29, offerId: offer.offerId });
   assert.deepEqual(events, [
     ['gold', -120, 'destiny_gamble_bet'],
-    ['createGear', 'wood_talisman', { rarity: 'common', wave: 29, origin: 'destiny_gamble', highRarityChance: 0.16, rndFn: game.rnd }],
+    ['createGear', 'bronze_tassel', { rarity: 'common', wave: 29, origin: 'destiny_gamble', highRarityChance: 0.16, rndFn: game.rnd }],
     ['play', 'chest', 1.2], ['flash', 'gold'], ['modal'], ['render', true],
   ]);
 });

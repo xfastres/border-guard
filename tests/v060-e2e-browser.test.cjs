@@ -16,6 +16,7 @@ const { spawn } = require('node:child_process');
 const { resolveChromeBin, toFileUrl } = require('./helpers/chrome-bin.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
+const OVERHAUL_BUILD = Boolean(process.env.BG_GAME_HTML);
 const HTML_PATH = process.env.BG_GAME_HTML
   ? path.resolve(ROOT, process.env.BG_GAME_HTML)
   : path.join(ROOT, 'Border-Guard-v0.60.html');
@@ -279,7 +280,7 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     assert.equal(afterStarter.learnedCount, 1, 'Exactly 1 starter active skill must be learned');
 
     // =========================================================================
-    // SCENARIO 2: Real Shop Direct Buy (W1), Bag Cap Reject (BUG-03),
+    // SCENARIO 2: Real Shop Buy (W1), Bag Cap Reject (BUG-03),
     //             and W29 Timed Final Prep Confirmation Modal (BUG-08)
     // =========================================================================
     const w1ShopInfo = await cdp.eval(`(() => {
@@ -289,16 +290,25 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     })()`);
     assert.ok(w1ShopInfo.idx >= 0, 'W1 shop must contain an affordable gear or pill card');
 
-    // Real click on normal-wave shop button -> buys directly, NO confirmation modal!
+    // On the overhaul branch the first click previews the offer without spending gold.
     if (await cdp.eval("Boolean(document.getElementById('shopOpen')) && document.getElementById('shopSec').getClientRects().length === 0")) await cdp.clickSelector('#shopOpen');
     await cdp.clickSelector(`#shopSec .shop-card[data-shop-idx="${w1ShopInfo.idx}"]`);
+    if (OVERHAUL_BUILD) {
+      const preview = await cdp.eval(`({
+        type: window.BG60.game.activeModal?.type,
+        gold: window.BG60.game.gold,
+        bought: window.BG60.game.shop[${w1ShopInfo.idx}].bought
+      })`);
+      assert.deepEqual(preview, { type: 'shop_confirm', gold: w1ShopInfo.goldBefore, bought: false });
+      await cdp.clickSelector('#shopConfirmBuyBtn');
+    }
     const afterDirectBuy = await cdp.eval(`({
       modal: window.BG60.game.activeModal,
       draft: window.BG60.game.shopConfirmDraft,
       gold: window.BG60.game.gold,
       bought: window.BG60.game.shop[${w1ShopInfo.idx}].bought
     })`);
-    assert.equal(afterDirectBuy.modal, null, 'Normal W1 shop click must buy directly without confirm modal');
+    assert.equal(afterDirectBuy.modal, null, 'W1 shop purchase must complete with the modal closed');
     assert.equal(afterDirectBuy.draft, null);
     assert.equal(afterDirectBuy.bought, true);
     assert.equal(afterDirectBuy.gold, w1ShopInfo.goldBefore - w1ShopInfo.cost);
@@ -316,6 +326,10 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     assert.ok(fullBagShop.gearIdx >= 0);
     if (await cdp.eval("Boolean(document.getElementById('shopOpen')) && document.getElementById('shopSec').getClientRects().length === 0")) await cdp.clickSelector('#shopOpen');
     await cdp.clickSelector(`#shopSec .shop-card[data-shop-idx="${fullBagShop.gearIdx}"]`);
+    if (OVERHAUL_BUILD) {
+      assert.equal(await cdp.eval("Boolean(document.querySelector('.shop-compare'))"), true);
+      await cdp.clickSelector('#shopConfirmBuyBtn');
+    }
     const afterFullBagClick = await cdp.eval(`({
       bagLen: window.BG60.game.bag.length,
       gold: window.BG60.game.gold,

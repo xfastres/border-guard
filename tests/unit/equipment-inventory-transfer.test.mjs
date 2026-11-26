@@ -119,9 +119,9 @@ test('a bag seal cannot replace gear but can be equipped safely as a main seal',
 test('selling, salvage alias and dismantling settle only their original currency for gear and seals', () => {
   const { game, gear, inventory, economy } = setup();
   for (const [action, item, reason, type, delta] of [
-    ['sellBagGear', gear('sell', 'bronze_tassel', [null]), 'sell_bag_gear', 'gold', 10],
+    ['sellBagGear', gear('sell', 'bronze_tassel', [null]), 'sell_bag_gear', 'gold', 6],
     ['sellBagGear', bagSeal(), 'sell_bag_seal', 'gold', 33],
-    ['salvageBagGear', gear('salvage', 'bronze_tassel', [null]), 'sell_bag_gear', 'gold', 10],
+    ['salvageBagGear', gear('salvage', 'bronze_tassel', [null]), 'sell_bag_gear', 'gold', 6],
     ['dismantleBagGear', gear('dismantle', 'bronze_tassel', [null]), 'dismantle_bag_gear', 'materials', 1],
     ['dismantleBagGear', bagSeal(), 'dismantle_bag_seal', 'materials', 4],
   ]) {
@@ -132,7 +132,7 @@ test('selling, salvage alias and dismantling settle only their original currency
       [[reason, type, delta]]);
     assert.equal(game.transferTokens, 2);
   }
-  assert.equal(game.gold, 153);
+  assert.equal(game.gold, 145);
   assert.equal(game.materials, 15);
   assert.equal(economy.getResourceLedger().length, 5);
 });
@@ -143,9 +143,7 @@ test('enhancement preserves gear identity and slot contents while raising the ex
     enhanceLv: 2, sourceStage: 3, rarity: 'epic',
   });
   game.hero.gear.push(item);
-  assert.deepEqual(inventory.enhanceGear({ location: 'equipped', idx: 0 }), {
-    ok: true, uid: 'enhance', enhanceLv: 3, cost: 5, materialsLeft: 5,
-  });
+  assert.deepEqual(inventory.enhanceGear({ location: 'equipped', idx: 0 }), {"ok":true,"uid":"enhance","enhanceLv":3,"cost":6,"materialsLeft":4});
   assert.equal(game.hero.gear[0], item);
   assert.equal(item.rarity, 'epic');
   assert.equal(item.sourceStage, 3);
@@ -155,7 +153,7 @@ test('enhancement preserves gear identity and slot contents while raising the ex
     { id: 'fire_burst', tier: 4, rarity: 'rare' },
   ]);
   assert.equal(game.hero.hp, 80);
-  assert.equal(game.hero.maxHp, 316);
+  assert.equal(game.hero.maxHp, 297);
   assert.deepEqual(globalSynergies(game), ['fire_detonate_duo']);
   assert.equal(game.transferTokens, 2);
 });
@@ -168,7 +166,7 @@ test('enhancement rejects insufficient materials, capped gear and bag seals with
   game.materials = 2;
   const before = structuredClone(game.bag);
   assert.deepEqual(inventory.enhanceGear('capped'), { ok: false, reason: 'max_level' });
-  assert.deepEqual(inventory.enhanceGear({ uid: 'short' }), { ok: false, reason: 'insufficient_materials', need: 3 });
+  assert.deepEqual(inventory.enhanceGear({ uid: 'short' }), {"ok":false,"reason":"insufficient_materials","need":4});
   assert.deepEqual(inventory.enhanceGear({ location: 'bag', idx: 2 }), { ok: false, reason: 'not_found' });
   assert.deepEqual(game.bag, before);
   assert.equal(game.materials, 2);
@@ -264,9 +262,9 @@ test('transfer cost and error copy are available as pure functions and through t
   const { transfer } = transferSetup();
   assert.equal(transfer.getAffixTransferCost, equipmentSystem.getAffixTransferCost);
   assert.equal(transfer.describeTransferError, equipmentSystem.describeTransferError);
-  assert.deepEqual(transfer.getAffixTransferCost('fire_brand'), { costTokens: 1, costGold: 28, isOverwrite: false });
-  assert.deepEqual(transfer.getAffixTransferCost('fire_burst', true), { costTokens: 1, costGold: 63, isOverwrite: true });
-  assert.deepEqual(transfer.getAffixTransferCost('fire_chain'), { costTokens: 1, costGold: 68, isOverwrite: false });
+  assert.deepEqual(transfer.getAffixTransferCost('fire_brand'), {"costTokens":1,"costGold":24,"isOverwrite":false});
+  assert.deepEqual(transfer.getAffixTransferCost('fire_burst', true), {"costTokens":1,"costGold":54,"isOverwrite":true});
+  assert.deepEqual(transfer.getAffixTransferCost('fire_chain'), {"costTokens":1,"costGold":58,"isOverwrite":false});
   assert.equal(transfer.describeTransferError('same_gear'), '源装备与目标装备不能为同一件构装');
   assert.equal(transfer.describeTransferError('no_game'), '转移条件不满足 (no_game)');
 });
@@ -331,13 +329,13 @@ test('commit revalidates previewed prices and W29 lock without partially applyin
   assert.deepEqual(transfer.commitAffixTransfer(), { ok: false, reason: 'no_transfer_params' });
   assert.equal(transfer.previewAffixTransfer(params).canCommit, true);
   for (const [tokens, gold, reason] of [
-    [0, 100, 'insufficient_transfer_tokens'], [1, 27, 'insufficient_gold'],
+    [0, 100, 'insufficient_transfer_tokens'], [1, 23, 'insufficient_gold'],
   ]) {
     game.transferTokens = tokens;
     game.gold = gold;
     const before = structuredClone({ ...game, rnd: null });
     assert.deepEqual(transfer.validateAffixTransfer(params), {
-      ok: false, reason, costTokens: 1, costGold: 28, isOverwrite: false, haveTokens: tokens, haveGold: gold,
+      ok: false, reason, costTokens: 1, costGold: 24, isOverwrite: false, haveTokens: tokens, haveGold: gold,
     });
     const errorText = transfer.describeTransferError(reason);
     assert.deepEqual(transfer.commitAffixTransfer(), {
@@ -368,9 +366,9 @@ test('commit fills an empty slot then overwrites a slot and recalculates item an
   const moved = { id: 'fire_brand', tier: 3, rarity: 'common' };
   assert.deepEqual(first, {
     ok: true, sourceUid: 'source', targetUid: 'target', sourceSlot: 0, targetSlot: 1,
-    costTokens: 1, costGold: 28, isOverwrite: false, movedAffix: moved, replacedAffix: null,
+    costTokens: 1, costGold: 24, isOverwrite: false, movedAffix: moved, replacedAffix: null,
     sourceSynergies: [], targetSynergies: ['fire_ember_duo'], globalSynergies: ['fire_ember_duo'],
-    transferTokensLeft: 1, goldLeft: 72,
+    transferTokensLeft: 1, goldLeft: 76,
   });
   assert.equal(game.bag[0], source);
   assert.equal(game.hero.gear[0], target);
@@ -384,22 +382,22 @@ test('commit fills an empty slot then overwrites a slot and recalculates item an
   const second = transfer.commitAffixTransfer({ ...params, sourceSlot: 1, targetSlot: 0 });
   assert.deepEqual(second, {
     ok: true, sourceUid: 'source', targetUid: 'target', sourceSlot: 1, targetSlot: 0,
-    costTokens: 1, costGold: 63, isOverwrite: true,
+    costTokens: 1, costGold: 54, isOverwrite: true,
     movedAffix: { id: 'fire_burst', tier: 3, rarity: 'rare' }, replacedAffix: overwritten,
     sourceSynergies: [], targetSynergies: ['fire_detonate_duo'], globalSynergies: ['fire_detonate_duo'],
-    transferTokensLeft: 0, goldLeft: 9,
+    transferTokensLeft: 0, goldLeft: 22,
   });
   assert.equal(second.replacedAffix, overwritten);
   assert.deepEqual(source.affixes, [null, null, null]);
   assert.equal(source.extractedCount, 4);
   assert.deepEqual(target.affixes, [second.movedAffix, moved]);
   assert.equal(game.stats.affixTransfers, 2);
-  assert.equal(game.hero.maxHp, 281);
+  assert.equal(game.hero.maxHp, 276);
   assert.equal(game.hero.hp, 80);
   assert.deepEqual(globalSynergies(game), ['fire_detonate_duo']);
   assert.deepEqual(economy.getResourceLedger().map(e => [e.type, e.delta, e.reason]), [
-    ['transferTokens', -1, 'affix_transfer'], ['gold', -28, 'affix_transfer'],
-    ['transferTokens', -1, 'affix_transfer'], ['gold', -63, 'affix_transfer'],
+    ['transferTokens', -1, 'affix_transfer'], ['gold', -24, 'affix_transfer'],
+    ['transferTokens', -1, 'affix_transfer'], ['gold', -54, 'affix_transfer'],
   ]);
   assert.deepEqual(effects.map(([name]) => name), [
     'play', 'ring', 'float', 'toast', 'modal', 'render',

@@ -99,13 +99,13 @@ test('fire trio transfers to marked targets in order and focuses unused hops on 
   const start = enemy({ fireMarkT: 5 });
   const next = enemy({ x: 13, fireMarkT: 5 });
   const last = enemy({ x: 16, fireMarkT: 5 });
-  assert.equal(combat.triggerFireDetonation(start, 100), 239);
-  assert.deepEqual([start.hp, next.hp, last.hp], [900, 922, 939]);
+  assert.equal(combat.triggerFireDetonation(start, 100), 201);
+  assert.deepEqual([start.hp, next.hp, last.hp], [916,934,949]);
   assert.deepEqual(game.bolts.map(bolt => bolt.pts.map(p => p.x)), [[10, 13], [13, 16]]);
   assert.equal(game.stats.fireChainTransfers, 2);
   const boss = enemy({ x: 25, boss: true });
   assert.equal(combat.isIsolatedHighValueTarget(boss), true);
-  assert.equal(combat.triggerFireDetonation(boss, 100), 190);
+  assert.equal(combat.triggerFireDetonation(boss, 100), 138);
   assert.equal(game.stats.fireFocusedDetonations, 1);
 });
 
@@ -121,7 +121,7 @@ test('fire chain guard blocks nested transfers and resets even when a hop throws
     dealDamage(target, amount) {
       if (target === hop) {
         assert.equal(ctx.counters.inFireChainTransfer, true);
-        assert.equal(hooks.triggerFireDetonation(nested, 100), 100);
+        assert.equal(hooks.triggerFireDetonation(nested, 100), 84);
         throw failure;
       }
       return amount;
@@ -146,14 +146,14 @@ test('W20 聚焰 pulls and marks a nearby enemy, with a supernova zone at the ho
   assert.equal(boss.fireMarkSource, 'w20_fire_pull');
   assert.equal(game.stats.w20FirePulls, 1);
   assert.equal(game.stats.w20BaseProcs, 1);
-  assert.deepEqual(game.zones.map(z => [z.kind, z.x, z.dps]), [['lava', 12.5, 27]]);
+  assert.deepEqual(game.zones.map(z => [z.kind, z.x, z.dps]), [["lava",12.5,23]]);
 });
 
 test('W20 孤星焚核 applies vulnerability and both focus hits', () => {
   const { combat, game, enemy, w20 } = setup();
   w20('fire_chain_surge', 'w20_fire_isolated_exec');
   const boss = enemy({ boss: true });
-  assert.equal(combat.triggerFireDetonation(boss, 100), 296);
+  assert.equal(combat.triggerFireDetonation(boss, 100), 247);
   assert.equal(boss.vulnT, 3.5);
   assert.equal(game.stats.w20EnhancementProcs, 1);
 });
@@ -162,12 +162,12 @@ test('W20 聚焰漩涡 creates its zone and 余烬散射 launches four fire-mark
   const { combat, game, enemy, w20 } = setup();
   w20('fire_chain_surge', 'w20_fire_mark_vortex');
   combat.triggerFireDetonation(enemy(), 100);
-  assert.deepEqual(game.zones.map(z => [z.kind, z.r, z.dps]), [['fireVortex', 2.8, 28]]);
+  assert.deepEqual(game.zones.map(z => [z.kind, z.r, z.dps]), [["fireVortex",2.8,24]]);
   w20('fire_chain_surge', 'w20_fire_ember_barrage');
   const source = enemy({ x: 20 });
   combat.triggerFireDetonation(source, 100);
   assert.equal(game.projectiles.length, 4);
-  assert.ok(game.projectiles.every(p => p.opts.applyFireMarkOnHit && p.hitSet.has(source.id) && p.dmg === 42));
+  assert.ok(game.projectiles.every(p => p.opts.applyFireMarkOnHit && p.hitSet.has(source.id) && p.dmg === 35));
 });
 
 test('W20 灵韵回响 triggers on the third fire detonation and applies both elements and a shield', () => {
@@ -192,7 +192,7 @@ test('destiny ember primes one detonation, then consumes its single damage boost
   const { combat, game, enemy } = setup();
   game.hero.destinyEnhancements.destiny_ember_echo = true;
   const targets = [enemy(), enemy({ x: 20 }), enemy({ x: 30 })];
-  assert.deepEqual(targets.map(e => combat.triggerFireDetonation(e, 100)), [100, 118, 100]);
+  assert.deepEqual(targets.map(e => combat.triggerFireDetonation(e, 100)), [84,99,84]);
   assert.equal(targets[0].fireMarkSource, 'destiny_ember_echo');
   assert.equal(game.hero.destinyEmberNextBoost, false);
   assert.equal(game.stats.destinyEnhancementProcs, 2);
@@ -214,7 +214,7 @@ test('frost slow preserves unstoppable immunity and applies the frost legacy dur
   assert.equal(game.hero.combatStateStats.frostSlowsApplied, 1);
 });
 
-test('frost shield composes gear, W20 and destiny caps and accumulates incoming shield for W20 ward', () => {
+test('frost shield composes gear, W20 and destiny caps and accumulates only Gained shield for W20 ward', () => {
   const { combat, game, w20 } = setup({
     gear: { frostShieldCapBonus: 7 }, gearSynergy: { hasFrostDuo: true, hasFrostTrio: true },
     main: { id: 'main_frost', effects: { frostShieldDurationBonus: 1.1 } },
@@ -229,7 +229,11 @@ test('frost shield composes gear, W20 and destiny caps and accumulates incoming 
   assert.equal(combat.gainFrostShield(1, { noFullShieldPulse: true }), 0);
   assert.equal(game.hero.shield, 197);
   assert.equal(game.hero.shieldTimer, 6.1);
-  assert.equal(game.hero.w20ShieldPillarAccum, 0);
+  assert.equal(game.hero.w20ShieldPillarAccum, 12);
+  assert.equal(game.zones.length, 0);
+  game.hero.shield -= 30;
+  assert.equal(combat.gainFrostShield(30, { noFullShieldPulse: true }), 30);
+  assert.equal(game.hero.w20ShieldPillarAccum, 2);
   assert.deepEqual(game.zones.map(z => [z.kind, z.w20Source, z.t]), [['frostTrail', 'w20_frost_pillar_ward', 3.2]]);
 });
 
@@ -304,21 +308,21 @@ test('elite spawning draws position, affixes and AI timers in order and applies 
   const { combat, game, draws } = setup({ wave: 24 });
   const elite = combat.spawnEnemy('elite', 'east', 2.5);
   assert.deepEqual(elite.affixes.map(a => a.key), ['sprint', 'shield', 'volley']);
-  assert.deepEqual([elite.hp, elite.maxHp, elite.dmg, elite.spd, elite.baseSpd], [650, 650, 42, 1.74, 1.74]);
+  assert.deepEqual([elite.hp, elite.maxHp, elite.dmg, elite.spd, elite.baseSpd], [850,850,55,1.75,1.75]);
   assert.equal(elite.aiCd, 2.5261082428973167);
   assert.equal(elite.affixTimer, 3.400024612806737);
   assert.equal(draws.length, 6);
   assert.deepEqual(combat.pickEliteAffixes().map(a => a.key), ['vortex']);
-  assert.equal(game.curWaveTel.ehpTotal, 650);
+  assert.equal(game.curWaveTel.ehpTotal, 850);
 });
 
 test('W30 boss registers 80% and 35% thresholds when spawned at a supplied position', () => {
   const { combat, game, draws } = setup();
   const boss = combat.spawnEnemy('boss6', null, 1, { x: 16, y: 15 });
   assert.deepEqual([boss.x, boss.y], [16, 15]);
-  assert.deepEqual([boss.signatureThresholdHp, boss.finalThresholdHp], [11040000, 4830000]);
+  assert.deepEqual([boss.signatureThresholdHp, boss.finalThresholdHp], [8960000,3920000]);
   assert.deepEqual([game.w30Battle.bossId, game.w30Battle.bossMaxHp, game.w30Battle.signatureThresholdHp, game.w30Battle.finalThresholdHp],
-    [boss.id, 13800000, 11040000, 4830000]);
+    [boss.id, 11200000, 8960000, 3920000]);
   assert.equal(draws.length, 2);
 });
 
@@ -350,7 +354,7 @@ test('released W30 boss enters final phase at 35% and spawns exactly one healing
   combat.dealDamage(boss, 10);
   assert.equal(game.healOrbs.length, 1);
   assert.equal(game.w30Battle.healOrbsSpawned, 1);
-  assert.equal(game.healOrbs[0].hpPct, 0.18);
+  assert.equal(game.healOrbs[0].hpPct, 0.085);
 });
 
 test('绝对零度 caps missing-health damage on a boss, honors the cooldown and executes frozen non-bosses', () => {
@@ -370,11 +374,11 @@ test('绝对零度 caps missing-health damage on a boss, honors the cooldown and
 test('雷火劫印 adds its burn burst and only heals from HP damage', () => {
   const { combat, game, enemy } = setup({ perks: { dual_cataclysm: 2 } });
   const target = enemy({ burnT: 4, burnDps: 10, shield: 300 });
-  assert.equal(combat.dealDamage(target, 50, { isThunder: true }), 124);
+  assert.equal(combat.dealDamage(target, 50, { isThunder: true }), 109);
   assert.equal(target.burnT, 3);
   assert.equal(game.hero.hp, 100);
   target.shield = 0;
-  assert.equal(combat.dealDamage(target, 50, { isThunder: true }), 118);
+  assert.equal(combat.dealDamage(target, 50, { isThunder: true }), 106);
   assert.equal(game.hero.hp, 103);
 });
 
@@ -408,12 +412,12 @@ test('blood set lifesteal shares its cap across hits and halves it while station
   const target = enemy();
   combat.dealDamage(target, 100, { lifesteal: 100 });
   combat.dealDamage(target, 100, { lifesteal: 200 });
-  assert.deepEqual([game.hero.hp, game.hero.leechUsed], [199, 99]);
+  assert.deepEqual([game.hero.hp, game.hero.leechUsed], [140,40]);
   assert.equal(combat.applyHeroLifesteal(50), 0);
   game.hero.leechUsed = 0;
   game.hero.moving = false;
-  assert.equal(combat.applyHeroLifesteal(100), 50);
-  assert.equal(game.hero.hp, 249);
+  assert.equal(combat.applyHeroLifesteal(100), 20);
+  assert.equal(game.hero.hp, 160);
 });
 
 test('W20 totem and W30 pillar kills strip their boss shields, with an orb only from the pillar', () => {
@@ -476,6 +480,7 @@ test('血煞妖王 awards the shrine chest and ledger bonuses and advances the b
 test('first elite chest skips RNG and the second chest uses the draw after both XP gem rolls', () => {
   for (const [seed, chestCount] of [[123, 1], [124, 2]]) {
     const { combat, game, enemy, draws, resources } = setup({ seed });
+    game.wave = 2;
     combat.onEnemyKilled(enemy({ hp: 0, elite: true }), {});
     assert.equal(game.chests.length, 1);
     assert.equal(draws.length, 4);
@@ -487,14 +492,14 @@ test('first elite chest skips RNG and the second chest uses the draw after both 
   }
 });
 
-test('thunder set extends the chain and increases hop damage across the legacy radius', () => {
+test('thunder set extends the chain and slows hop decay across the same radius', () => {
   const { combat, game, enemy, cues } = setup({ sets: { thunder: 3 }, main: { id: 'main_thunder', effects: { thunderChainRadiusBonus: 0.6 } } });
   const start = enemy();
   const second = enemy({ x: 13 });
   const third = enemy({ x: 16 });
   const fourth = enemy({ x: 19 });
   assert.equal(combat.fireChainLightning(start, 100, 2, { ox: 0, oy: 0, comboThunderFire: true }), undefined);
-  assert.deepEqual([start.hp, second.hp, third.hp, fourth.hp], [900, 888, 875, 1000]);
+  assert.deepEqual([start.hp, second.hp, third.hp, fourth.hp], [900,904,908,1000]);
   assert.deepEqual(game.bolts, [{
     pts: [{ x: 0, y: 0 }, { x: 10, y: 10 }, { x: 13, y: 10 }, { x: 16, y: 10 }],
     t: 0.24, max: 0.24, col: '#cf96ff', comboThunderFire: true,

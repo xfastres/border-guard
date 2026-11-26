@@ -212,19 +212,19 @@ test('gear aggregation multiplies legacy stars and instance base stats while sca
     affixes: [{ id: 'vamp_siphon' }, { id: 'frost_ward', tier: 2 }, { id: 'fire_chain', tier: 2 }],
   };
   const gear = ['coin_pouch#2', cup, 'titan_crown'];
-  near(stats.aggregateGear(gear.slice(0, 2)).dmgPct, 0.644864);
-  near(stats.aggregateGear(gear).dmgPct, 1.4716936);
+  near(stats.aggregateGear(gear.slice(0, 2)).dmgPct, 0.603);
+  near(stats.aggregateGear(gear).dmgPct, 1.4243);
   hero.perks.dao_fortune = 1;
-  near(stats.aggregateGear(gear).dmgPct, 1.4716936);
+  near(stats.aggregateGear(gear).dmgPct, 1.4243);
   hero.perks.dao_fortune = 2;
   const gm = stats.aggregateGear(gear);
-  near(gm.dmgPct, 1.810617);
-  near(gm.lifesteal, 2.32);
-  near(gm.markedDmgPct, 0.1856);
+  near(gm.dmgPct, 1.752625);
+  near(gm.lifesteal, 2.22);
+  near(gm.markedDmgPct, 0.1776);
   assert.equal(gm.flatHp, 38);
   assert.equal(gm.frostShieldCapBonus, 33);
   assert.equal(gm.burnKillHeal, 3);
-  assert.equal(gm.bonusGold, 7);
+  assert.equal(gm.bonusGold, 6);
 
   const cursed = stats.aggregateGear(['asura_blood#3', 'split_bow#3', 'heavy_greatsword#3']);
   assert.equal(cursed.extraShot, 1);
@@ -317,10 +317,10 @@ test('hero crit surge converts dash crit overflow to critical damage at the corr
   near(stats.getHeroStats().critDmg, 1.75);
   hero.dashBuffT = 1;
   assert.equal(stats.getHeroStats().crit, 1);
-  near(stats.getHeroStats().critDmg, 2.86);
+  near(stats.getHeroStats().critDmg, 2.3605);
   hero.perks.crit_surge = 1;
   assert.equal(stats.getHeroStats().crit, 1);
-  near(stats.getHeroStats().critDmg, 2.29);
+  near(stats.getHeroStats().critDmg, 2.047);
 });
 
 test('hero stats combine destiny enhancements, shielded modifiers and the wind main legacy', () => {
@@ -336,12 +336,12 @@ test('hero stats combine destiny enhancements, shielded modifiers and the wind m
     },
   });
   const hs = stats.getHeroStats();
-  near(hs.dmgMult, 1.2948);
-  near(hs.aspd, 1.2404);
-  near(hs.skillDmgMult, 1.501968);
+  near(hs.dmgMult, 1.281);
+  near(hs.aspd, 1.225);
+  near(hs.skillDmgMult, 1.48596);
   near(hs.crit, 0.32);
   near(hs.critDmg, 2);
-  near(hs.moveSpd, 6.66176);
+  near(hs.moveSpd, 6.58563);
   near(hs.magnet, 3.7);
   game.metaLoadout.main = null;
   hero.destinyDashBuffT = 0;
@@ -349,8 +349,8 @@ test('hero stats combine destiny enhancements, shielded modifiers and the wind m
   hero.shield = 0;
   near(stats.getHeroStats().magnet, 2.9);
   near(stats.getHeroStats().crit, 0.12);
-  near(stats.getHeroStats().moveSpd, 5.6);
-  near(stats.getHeroStats().dmgMult, 1.1788);
+  near(stats.getHeroStats().moveSpd, 5.55);
+  near(stats.getHeroStats().dmgMult, 1.17);
 });
 
 test('each 3-star seal keeps the distinct standard and mastery stats', () => {
@@ -390,7 +390,7 @@ test('seal stats combine sub-seal resonance, dual resonance, essence, overclock 
   assert.equal(ss.shots, 2);
   near(ss.splash, 4.992);
   assert.deepEqual([ss.slow, ss.slowDur, ss.burn], [0.55, 2.2, 20]);
-  near(stats.getHeroStats().moveSpd, 6.44);
+  near(stats.getHeroStats().moveSpd, 6.3825);
 
   game.seal = seal('wind', 1);
   game.subSeals = [seal('fire', 3), seal('holy', 3)];

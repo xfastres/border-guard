@@ -17,6 +17,7 @@ test('Modular v0.60 game opens from file:// and boots on desktop and mobile view
 
   for (const viewport of [
     { name: 'desktop', width: 1440, height: 900 },
+    { name: 'desktop-full-hd', width: 1920, height: 1080 },
     { name: 'mobile', width: 390, height: 844 },
   ]) {
     const dom = execFileSync(

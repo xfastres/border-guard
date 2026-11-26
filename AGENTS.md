@@ -41,7 +41,7 @@
 - `npm run test:modular-game`：用 Chrome 通过 `file://` 检查单文件在桌面与手机视口离线启动。
 - `npm run test:e2e:modular`：对模块化单文件交付产物运行 6 场景真实 Chrome 交互 E2E。
 - `npm run test:baseline`：运行根目录原版 `Border-Guard-v0.60.html` 全部 43 项回归测试。
-- `npm run test:all`：依次执行上述全部 7 组测试套件。
+- `npm run test:all`：运行当前玩法门禁与冻结原版回归。`test:parity` 留作玩法重构前的历史等价校验。
 
 正式单文件交付产物为 `release/Border-Guard-v0.60.html`（由 `npm run build` 生成，`.gitignore` 已忽略构建输出目录，根目录原版 `Border-Guard-v0.60.html` 保持冻结未变）。
 

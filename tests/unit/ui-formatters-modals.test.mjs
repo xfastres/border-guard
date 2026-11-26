@@ -33,7 +33,7 @@ test('each skill breakdown preserves current stats, W10 labels and max-level cop
     thunder: '召唤 3 道 3连天雷 · 单次 60 伤 · 间隔 1.29s',
     nova: '冰环半径 2.43格 · 单次 51 伤 + 减速 · 间隔 1.93s',
     stomp: '震荡半径 2.48格 · 单次 80 伤 + 0.75s 晕眩 · 间隔 2.11s',
-    berserk: '攻速 +36% · 暴击 +16% · 移速 +0.70 · 吸血 +4 · 磁铁 +1.7格',
+    berserk: '攻速 +36% · 暴击 +16% · 移速 +0.46 · 吸血 +4 · 磁铁 +1.7格',
   };
   const formatters = createUiFormatters({ getW10BranchSpec: key => W10_SKILL_BRANCHES[key][0] });
   for (const [key, cur] of Object.entries(currentAtLevelTwo)) {

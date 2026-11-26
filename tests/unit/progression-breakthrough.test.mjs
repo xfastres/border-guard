@@ -150,7 +150,7 @@ test('W10 offers three seeded branches and applies the selected breakthrough wit
   assert.deepEqual(events, [
     ['renderW10'], ['syncHp'], ['flash', 'gold'], ['play', 'level', 1.25], ['ring', 2, 3, '#ffd666', 4.2],
     ['banner', '⚡ W10 大型突破完成 · 【烈焰剑波 · 追魂火鸦 · 锁标弹射】！',
-      '主灵印上限升至 4★ · 辅灵印扩至 2 槽 · 解锁【重锤震地】神通池！', 'good'],
+      '主灵印上限升至 4★ · 辅灵印扩至 2 槽 · 开启下一阶段神通池！', 'good'],
     ['close'], ['combos', true], ['render', true],
   ]);
 });
@@ -241,7 +241,7 @@ test('W20 recommends and locks a direction without activating its battle effect'
   game.wave = 16;
   assert.equal(api.isW20PreselectOpen(), true);
   assert.deepEqual(api.selectW20PreselectDirection('unknown'), {
-    ok: false, reason: 'invalid_direction', validKeys: [FIRE, FROST, BREAKER],
+    ok: false, reason: 'invalid_direction', validKeys: ['wind_stride', 'storm_circuit', 'blood_requital', 'sanctum_verdict', FIRE, FROST, BREAKER],
   });
   game.wave = 21;
   assert.equal(api.isW20PreselectOpen(), false);
@@ -312,8 +312,9 @@ test('W20 capacity rejects groups below 2K+2 before spending or drawing', () => 
 test('W20 rerolls whole groups with no adjacent overlap and increasing material costs', () => {
   const fixture = setup({ wave: 20, pendingBreakthrough: 'w20', activeModal: { type: 'w20_breakthrough' } });
   const { game, events } = fixture;
+  game.materials = 40;
   const api = w20For(fixture);
-  assert.deepEqual([0, 1, 2, 3].map(api.getW20RerollCost), [4, 6, 8, 10]);
+  assert.deepEqual([0, 1, 2, 3].map(api.getW20RerollCost), [5, 8, 11, 14]);
   const expected = ['w20_fire_ember_barrage', 'w20_shared_elemental_echo'];
   assert.deepEqual(keys(api.drawW20CandidateGroup(FIRE).cards), expected);
   game.rnd = mulberry32(37);
@@ -325,7 +326,7 @@ test('W20 rerolls whole groups with no adjacent overlap and increasing material 
   assert.deepEqual(game.w20Draft.history, [expected]);
 
   let previous = expected;
-  for (const [index, cost, balance, nextCost] of [[1, 4, 26, 6], [2, 6, 20, 8], [3, 8, 12, 10], [4, 10, 2, 12]]) {
+  for (const [index, cost, balance, nextCost] of [[1, 5, 35, 8], [2, 8, 27, 11], [3, 11, 16, 14], [4, 14, 2, 17]]) {
     const rerolled = api.rerollW20Enhancements();
     assert.equal(rerolled.ok, true);
     assert.equal(rerolled.rerollCount, index);
@@ -339,17 +340,17 @@ test('W20 rerolls whole groups with no adjacent overlap and increasing material 
     assert.deepEqual(game.w20Draft.history.at(-1), next);
     previous = next;
   }
-  assert.equal(api.getW20RerollCost(), 12);
+  assert.equal(api.getW20RerollCost(), 17);
   let draws = 0;
   game.rnd = () => { draws++; return 0; };
   const draft = structuredClone(game.w20Draft);
   assert.deepEqual(api.rerollW20Enhancements(), {
-    ok: false, reason: 'insufficient_materials', cost: 12, materialsLeft: 2, candidates: previous,
+    ok: false, reason: 'insufficient_materials', cost: 17, materialsLeft: 2, candidates: previous,
   });
-  assert.equal(draws, 2, 'legacy draws before checking for insufficient materials');
+  assert.equal(draws, 0, 'insufficient materials must leave the seeded RNG untouched');
   assert.deepEqual(game.w20Draft, draft);
   assert.deepEqual(events.filter(([name]) => name === 'materials').map(([, delta, reason]) => [delta, reason]),
-    [[-4, 'w20_reroll'], [-6, 'w20_reroll'], [-8, 'w20_reroll'], [-10, 'w20_reroll']]);
+    [[-5, 'w20_reroll'], [-8, 'w20_reroll'], [-11, 'w20_reroll'], [-14, 'w20_reroll']]);
   assert.equal(events.filter(([name]) => name === 'renderW20').length, 4);
   assert.deepEqual(api.pickW20Enhancement('unknown'), { ok: false, reason: 'invalid_enhancement_choice', candidates: previous });
   const choice = W20_ENHANCEMENTS[previous[0]];
@@ -389,7 +390,7 @@ test('Perk claims apply blood oath HP and distinct Lv.1/Lv.2 dao fortune rewards
   const fixture = setup({ rnd: () => 0 });
   const { game, events } = fixture;
   const { pickPerk } = rewardsFor(fixture);
-  assert.equal(pickPerk('unknown'), undefined);
+  assert.equal(pickPerk('unknown'), false);
   assert.deepEqual(events, []);
   for (const level of [1, 2]) {
     pickPerk('blood_oath');
@@ -403,8 +404,8 @@ test('Perk claims apply blood oath HP and distinct Lv.1/Lv.2 dao fortune rewards
   pickPerk('dao_fortune');
   assert.equal(game.hero.perks.dao_fortune, 2);
   assert.deepEqual(events.filter(([name]) => ['gold', 'grantGear'].includes(name)), [
-    ['gold', 35, 'perk_dao_fortune'], ['grantGear', 'flame_fan', { origin: 'drop' }],
-    ['grantGear', 'split_bow', { origin: 'drop' }],
+    ['gold', 35, 'perk_dao_fortune'], ['grantGear', 'windcord', { origin: 'drop' }],
+    ['grantGear', 'ember_focus', { origin: 'drop' }],
   ]);
   assert.deepEqual(events.slice(0, 5), [
     ['syncHp'], ['play', 'level', 1.15], ['toast', '词条生效！【血煞魔躯 Lv.1】'], ['close'], ['render', true],
@@ -413,12 +414,12 @@ test('Perk claims apply blood oath HP and distinct Lv.1/Lv.2 dao fortune rewards
 
 test('chest offers preserve seeded rarity selection, source options, and key aliases', () => {
   for (const [wave, legendBias, shrineTier, origin, bonus, expected, nextRandom] of [
-    [5, false, false, 'elite_chest', 0.14, ['swift_boots', 'blood_bead', 'frost_mirror'], 0.1765399652067572],
-    [5, false, true, 'shrine_chest', 0.24, ['frost_mirror', 'bronze_tassel', 'jade_pendant'], 0.5882677019108087],
-    [5, true, false, 'boss_chest', 0.32, ['frost_orb', 'flame_fan', 'thunder_wood'], 0.5882677019108087],
-    [16, false, true, 'shrine_chest', 0.24, ['heavy_greatsword', 'flame_fan', 'crit_axe'], 0.5882677019108087],
-    [21, false, false, 'elite_chest', 0.26, ['greed_cup', 'heavy_greatsword', 'frost_orb'], 0.1765399652067572],
-    [21, true, false, 'boss_chest', 0.44, ['heavy_greatsword', 'split_bow', 'haste_glass'], 0.5882677019108087],
+    [5, false, false, 'elite_chest', 0.14, ['swift_boots', 'frost_mirror', 'flame_fan'], 0.1765399652067572],
+    [5, false, true, 'shrine_chest', 0.24, ['flame_fan', 'smolder_edge', 'reed_sword'], 0.5882677019108087],
+    [5, true, false, 'boss_chest', 0.32, ['haste_glass', 'windcord', 'shatter_maul'], 0.5882677019108087],
+    [16, false, true, 'shrine_chest', 0.24, ['heavy_greatsword', 'windcord', 'circuit_mirror'], 0.5882677019108087],
+    [21, false, false, 'elite_chest', 0.26, ['greed_cup', 'heavy_greatsword', 'burn_core'], 0.1765399652067572],
+    [21, true, false, 'boss_chest', 0.44, ['heavy_greatsword', 'ember_focus', 'bloodseal_disc'], 0.5882677019108087],
   ]) {
     const fixture = setup({ wave });
     const { game, events } = fixture;

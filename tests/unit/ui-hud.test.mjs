@@ -168,7 +168,7 @@ test('HUD rendering skips clean panels and repaints them all after reset while r
   };
   const runtimeCtx = createRuntimeContext({ game });
   runtimeCtx.setPaused(true);
-  const purchases = [];
+  const previews = [];
   const hud = createHudSystem(runtimeCtx, {
     getEl, perfStats: { fps: 60 }, audio: { enabled: false, unlock() {} },
     feedback: {}, formatters: {}, modals: {}, progression: { isW20PreselectOpen: () => false, getPendingDestinyOffer: () => null },
@@ -177,7 +177,7 @@ test('HUD rendering skips clean panels and repaints them all after reset while r
     run: { getWavePhaseMeta: () => ({ tag: '初探' }), getWaveEncounterInfo: () => null, getEndgameOmenState: () => ({ triggered: false }) },
     hero: { getSynergyCounts: () => ({}), getActiveGearSets: () => [], getGearSetCounts: () => ({}), getActiveDualResonances: () => [] },
     equipment: { getActiveGearAffixSynergies: () => ({ active: [] }) },
-    economy: { sealTotalPoints: () => 1, buyShopItem: idx => purchases.push(idx) },
+    economy: { sealTotalPoints: () => 1, openShopPurchaseConfirm: idx => previews.push(idx) },
   });
 
   hud.renderAllUI();
@@ -200,8 +200,8 @@ test('HUD rendering skips clean panels and repaints them all after reset while r
 
   runtimeCtx.setGame({ ...game, shop: [{ ...game.shop[0], bought: true }] });
   shopButton.events.get('click')();
-  assert.deepEqual(purchases, []);
+  assert.deepEqual(previews, []);
   runtimeCtx.setGame(game);
   shopButton.events.get('click')();
-  assert.deepEqual(purchases, [0]);
+  assert.deepEqual(previews, [0]);
 });

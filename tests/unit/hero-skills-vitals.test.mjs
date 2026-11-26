@@ -522,7 +522,7 @@ for (const [branch, damage, shield, projectiles] of [
       assert.deepEqual(calls('detonate'), [[target, 1.15, 1.85, 'berserk']]);
     }
     if (branch === 'bk_frost_armor') assert.deepEqual(calls('slow'), [[target, 0.55, 2.8, branch]]);
-    assert.deepEqual(calls('lifesteal'), branch === 'bk_blood_crescent' ? [[6]] : []);
+    assert.deepEqual(calls('lifesteal'), []);
   });
 }
 
@@ -563,11 +563,11 @@ test('W30 heal orbs honor holy magnet range, cap healing and record shield gain 
 test('one XP award can cross even and odd levels with one modal and the correct HP gains', () => {
   const { h, game, vitals, calls } = setup({ hero: { hp: 5 }, run: { xpCombo: 14 } });
   vitals.gainHeroXp(h.xpNext + xpForLevel(2) + 1);
-  assert.deepEqual([h.lv, h.xp, h.xpNext, h.realm, h.baseMaxHp, h.maxHp, h.hp, game.xpCombo], [3, 1, xpForLevel(3), 4, 142, 142, 95, 14]);
+  assert.deepEqual([h.lv, h.xp, h.xpNext, h.realm, h.baseMaxHp, h.maxHp, h.hp, game.xpCombo], [3, 1, xpForLevel(3), 4, 142, 142, 56, 14]);
   assert.deepEqual(calls('modal'), [[{ type: 'levelup' }]]);
   assert.match(calls('float')[0][2], /Lv\.2 · 领悟神通！$/);
   assert.match(calls('float')[1][2], /Lv\.3 · 灵脉淬体！$/);
-  assert.match(calls('toast')[0][0], /生命上限 \+24、恢复 \+50/);
+  assert.match(calls('toast')[0][0], /生命上限 \+24、恢复 \+27/);
 });
 
 test('damage ignores invulnerable and noncombat heroes, and holy extends prep and wave invulnerability', () => {
@@ -590,7 +590,7 @@ test('damage rounds stacked mitigation before shield absorption and records only
   const source = { attackerName: '首领', attackerKind: 'boss6', skillName: '重击', isBoss: true, isBossCore: true };
   const { h, game, vitals, calls } = setup({ gear: { dmgReduce: 0.2 }, sets: { blood: 3 }, hero: { hp: 45,
     shield: 20, armorBreakT: 2, perks: { frost_domain: 2 }, destinyEnhancements: { destiny_aegis_bulwark: true } } });
-  vitals.damageHero(83, source);
+  vitals.damageHero(83, { ...source, damageTuned: true });
   assert.deepEqual([h.hp, h.shield, h.invuln, game.curWaveTel.hitsTaken, game.curWaveTel.dmgTaken,
     game.curWaveTel.minHpPct, game.runMetrics.hpLost], [18, 0, 0.28, 1, 27, 18, 27]);
   assert.deepEqual(game.combatLog.hits, [{ wave: 20, waveClock: 10, runClock: 10, ...source,
@@ -682,7 +682,7 @@ test('undying will saves one lethal hit per wave, updates the vignette again, th
 });
 
 test('combat log caps recent entries at 160 while keeping full source totals', () => {
-  const source = { attackerName: '偏将', skillName: '连击', isBossAux: true, auxKey: 'shaman' };
+  const source = { attackerName: '偏将', skillName: '连击', damageTuned: true, isBossAux: true, auxKey: 'shaman' };
   const { h, game, vitals } = setup({ hero: { hp: 1000, maxHp: 1000 } });
   for (let i = 1; i <= 161; i++) {
     game.waveClock = i;
@@ -705,7 +705,7 @@ test('threat summaries use the effective or settled clock and group only in-wind
   for (const [clock, attackerName, amt] of [[6.99, '旧伤', 10], [7, '偏将', 4], [9, '首领', 9], [11, '偏将', 5], [13, '未来', 10]]) {
     game.waveClock = clock;
     h.invuln = 0;
-    vitals.damageHero(amt, { attackerName, skillName: '合击', isBossCore: attackerName === '首领' });
+    vitals.damageHero(amt, { attackerName, skillName: '合击', damageTuned: true, isBossCore: attackerName === '首领' });
   }
   game.runMetrics.totalEffectiveSec = 15.126;
   assert.equal(vitals.getCombatLogNowSec(), 15.13);

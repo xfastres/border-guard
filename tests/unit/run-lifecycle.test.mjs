@@ -105,12 +105,12 @@ function setup(wave = 1) {
   return { ctx, game, run, meta, calls, setClock: value => { nowMs = value; } };
 }
 
-test('state factory preserves full legacy defaults and the first three seeded draws', () => {
+test('state factory preserves the overhaul defaults and the first three seeded draws', () => {
   const deps = { generateRunId: value => `test-${value}` };
   const first = createRunState(seed, deps);
   const second = createRunState(seed, deps);
-  // Captured from the pre-extraction makeGame with the same run ID and empty loadout.
-  assert.equal(fingerprint(first), '87001d77d00c0991847c72d4808a41a30653a41f75860b4319c0e2ee5f641dd7');
+  // Captured from the overhaul state with the same run ID and empty loadout.
+  assert.equal(fingerprint(first), "e6345c6b851d67cadea8f74622c0c280a97d87167f2e89a296cf81208891d573");
   assert.equal(fingerprint(first), fingerprint(second));
   assert.equal(createRunState(seed).runId, createRunState(seed).runId);
   assert.deepEqual(first.metaLoadout, { main: null, aux: [] });
@@ -157,7 +157,7 @@ test('makeGame publishes terrain before Meta reads and copies the loadout snapsh
 
 test('wave queries expose the shared W22–24 threat and hide W25–28 rolls during prep', () => {
   const { run, game } = setup(25);
-  assert.deepEqual(getWavePhaseMeta(1), { tag: '爬升·初探', kind: 'climb', mobMult: 1, hpMult: 1 });
+  assert.deepEqual(getWavePhaseMeta(1), {"tag":"爬升·初探","kind":"climb","mobMult":1,"hpMult":1.04});
   assert.equal(run.getWavePhaseMeta, getWavePhaseMeta);
   assert.equal(run.getW25To28Pool, getW25To28Pool);
   const theme = run.getW22To24Theme();
@@ -187,16 +187,16 @@ test('wave queries expose the shared W22–24 threat and hide W25–28 rolls dur
   assert.equal(run.getWaveEncounterInfo(21), null);
 });
 
-test('fixed-seed wave queues match legacy spawn times, composition, scaling and next RNG draw', () => {
+test('fixed-seed wave queues pin configured spawn times, composition, scaling and next RNG draw', () => {
   const { run, ctx } = setup();
   for (const [wave, length, eliteCount, boss, hash, nextDraw] of [
-    [1, 51, 0, [], '75800f3ba803dff667bf644c0e3be2293c8803bb0ae4065e281172c77d7d388e', 0.4458085505757481],
-    [10, 93, 1, ['boss2'], '17036890e9d113ae7548cfd3a3e42676f46f091bbd109fabadfc61d764ab5a66', 0.613921316107735],
-    [21, 191, 2, [], '1672f8e8cdd99bd6216224148509b738152f93659775baad45817731f65738ec', 0.8118562148883939],
-    [22, 168, 3, [], 'f068434aec74d2eea880e7fb80f99c8ea3cec1e6bf2242a71974046cfca0d2ba', 0.14606466190889478],
-    [25, 186, 3, ['boss5'], 'f88f64219c99611cba02dcb2ad37917af456cd809cd1fe49e21794df15b8d9a0', 0.3117202613502741],
-    [29, 198, 3, [], '0fe288de0fc1200291c4dd194ef69a541c9f2a4ea92780d64823524674e2d900', 0.4442473645322025],
-    [30, 17, 0, ['boss6'], '197b5a422987a1b91ac89f7ba28811a79a987738852db665ebe3cbaf95f958cc', 0.03457674151286483],
+    [1, 48, 0, [], '06645b0cd1effa16c6a367d0655d134e867f0e5ea3bb2a0ae80a0bc6abce1f3a', 0.4794528018683195],
+    [10, 90, 1, ['boss2'], '75c65e84bcf92e6587ac0b41edaf8717545d350c38b55b45219e3ab49660a2de', 0.5017722758930176],
+    [21, 174, 2, [], '2a883295b2d39e1dccf12b63497a314fd1053b5c8f3cbf08d6db4ce0e5166c60', 0.39480025437660515],
+    [22, 140, 2, [], 'caf142ff69c8b34ad06aebf8e72a30a2dbed00adf8044505febd617505aee153', 0.2767167519778013],
+    [25, 170, 3, ['boss5'], '787283120c8227833500941e5a894162523348bd47445abaafbf8f4bc4b39cdc', 0.14606466190889478],
+    [29, 179, 3, [], 'b32b30a72da956897881eecc17ae7db50dc520b4b858691b32a7c4b7b199adb4', 0.2212787210009992],
+    [30, 17, 0, ['boss6'], '58262e2f69902fbdacac1c2898a3c427ce4b8a72193696e7e63293b9bba2ff53', 0.03457674151286483],
   ]) {
     ctx.setGame(run.makeGame(seed));
     const queue = run.buildWaveQueue(wave);
@@ -468,9 +468,9 @@ test('startNewRun sets context, resets ports and opens the starter in legacy ord
 
 test('clear awards bounty, Greed, interest and refining materials before deciding auto-wave pause', () => {
   const { run, game, ctx, calls } = setup(27);
-  const { waveClearBase, waveClearPerWave } = BALANCE.economy;
+  const { waveClearBase, waveClearPerWave, clearGreedBonus, interestCap } = BALANCE.economy;
   game.hero.gear = Object.values(GEARS).filter(gear => gear.set === 'greed').slice(0, 2).map(gear => gear.key);
-  const bonus = waveClearBase + 27 * waveClearPerWave + 12;
+  const bonus = Math.round(waveClearBase + 27 * waveClearPerWave + clearGreedBonus);
   game.gold = 500;
   game.hero.perks.gold_power = 1;
   game.hero.maxHp = 1000;
@@ -480,7 +480,7 @@ test('clear awards bounty, Greed, interest and refining materials before decidin
   game.autoWave = true;
   const materials = game.materials;
   run.completeWaveClear();
-  assert.equal(ctx.game.gold, 500 + 25 + bonus);
+  assert.equal(ctx.game.gold, 500 + interestCap + bonus);
   assert.ok(game.materials > materials);
   assert.deepEqual(game.runMetrics.ledger.filter(e => e.reason.startsWith('wave_clear')).map(e => e.reason), [
     'wave_clear_bonus', 'wave_clear_interest', 'wave_clear_materials',
@@ -554,8 +554,10 @@ test('finishGame closes W30 telemetry and settles Meta only once per run on vict
     assert.ok(calls.some(([name, active]) => name === 'setDangerVignette' && active === false));
     assert.ok(calls.some(([name, outcome]) => name === 'showEndModal' && outcome === victory));
     const shards = meta.getMetaSave().legacyShards;
-    run.finishGame(victory);
-    assert.equal(game.metaSettlement.duplicateBlocked, true);
+    const first = game.metaSettlement;
+    run.finishGame(!victory);
+    assert.equal(game.metaSettlement, first);
+    assert.equal(game.phase, victory ? 'won' : 'lost');
     assert.equal(meta.getMetaSave().legacyShards, shards);
     assert.equal(game.w30Battle.phaseTimeline.length, 2);
   }
@@ -601,7 +603,7 @@ test('tick triggers W28 mid-wave omen and holy regeneration', () => {
   const hp = game.hero.hp;
   game.waveClock = game.stormWarnAt - 1;
   run.tick(1);
-  assert.equal(game.hero.hp, hp + 5);
+  assert.equal(game.hero.hp, hp + BALANCE.combat.holyRegen);
   assert.equal(game.endgameOmen.midWaveTriggered, true);
   assert.ok(calls.some(([name, effect]) => name === 'flashScreen' && effect === 'fail'));
 });

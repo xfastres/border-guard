@@ -72,9 +72,9 @@ test('equipment core assembles the 22 methods and preserves legacy and instance 
 
 test('base stats multiply source stages 1–3 by each enhancement level 0–5', () => {
   const expected = [
-    [1, 1.18, 1.36, 1.54, 1.72, 1.9],
-    [1.18, 1.3924, 1.6048, 1.8172, 2.0296, 2.242],
-    [1.38, 1.6284, 1.8768, 2.1252, 2.3736, 2.622],
+    [1, 1.125, 1.25, 1.375, 1.50, 1.625],
+    [1.12, 1.26, 1.40, 1.54, 1.68, 1.82],
+    [1.24, 1.395, 1.55, 1.705, 1.86, 2.015],
   ];
   for (const [index, levels] of expected.entries()) {
     for (const [enhanceLv, mult] of levels.entries()) {
@@ -127,10 +127,10 @@ test('affix rolls, gear creation and legacy normalization preserve seeded result
   ]);
   assert.equal(rndFn(), 0.17481389874592423);
   assert.deepEqual(equipment.createGearInstance('flame_fan', { enhanceLv: 2 }), {
-    uid: 'g1_2573', baseKey: 'flame_fan', name: '离火羽扇', icon: '🪭', elem: 'fire', set: 'flame',
+    uid: 'g1_2573', baseKey: 'flame_fan', name: '离火羽扇', icon: '◇', elem: 'fire', set: 'flame',
     rarity: 'rare', sourceStage: 3, slotsCount: 2,
     affixes: [
-      { id: 'wind_tempest', tier: 3, rarity: 'common' },
+      { id: 'thunder_spark', tier: 3, rarity: 'rare' },
       { id: 'fire_brand', tier: 3, rarity: 'common' },
     ],
     enhanceLv: 2, paidGold: 0, extractedCount: 0, origin: 'drop',
@@ -239,8 +239,8 @@ test('active synergies cache on the current hero and recompute after equipment c
 
 test('fire and frost hints show partial, duo and trio progress, including candidate previews', () => {
   const cases = [
-    [fire, 'fire_detonate', '火系引爆', '穿戴后激活🔥火系双词条联动！', '穿戴后升级🔥【炽炎连环引爆】完整三联动！'],
-    [frost, 'frost_aegis', '冰系护体', '穿戴后激活❄️冰系双词条联动！', '穿戴后升级❄️【凛冬寒盾反制】完整三联动！'],
+    [fire, 'fire_detonate', '火系引爆', '穿戴后激活【焚标引爆】双词条联动', '穿戴后升级【炽炎连环引爆】完整三联动'],
+    [frost, 'frost_aegis', '冰系护体', '穿戴后激活【寒冰护体】双词条联动', '穿戴后升级【凛冬寒盾反制】完整三联动'],
   ];
   for (const [ids, chain, label, duoPreview, trioPreview] of cases) {
     const hero = { gear: [item('a', ids[0])] };
@@ -286,7 +286,7 @@ test('gear descriptions retain legacy multipliers, empty slots, enhancement and 
     uid: 'describe', sourceStage: 2, slotsCount: 3, enhanceLv: 2,
     affixes: [null, 'fire_brand', { id: 'fire_burst', tier: 2 }],
   });
-  assert.equal(describeGearEffect(inst), '攻速 +22% · 全伤 +13%');
+  assert.equal(describeGearEffect(inst), "攻速 +20% · 全伤 +11%");
   assert.equal(describeGearInstance(inst),
-    '[凡品·阶段2(W11-20)·3槽·+2] 攻速 +22% · 全伤 +13% | 词条:[空槽1] + 🔥炽炎烙印(T3) + 💥爆燃核心(T2) | 联动:焚标引爆');
+    "[凡品·阶段2(W11-20)·3槽·+2] 攻速 +20% · 全伤 +11% | 词条:[空槽1] + 🔥炽炎烙印(T3) + 💥爆燃核心(T2) | 联动:焚标引爆");
 });

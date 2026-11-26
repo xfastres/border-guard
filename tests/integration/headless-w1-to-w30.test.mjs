@@ -335,6 +335,15 @@ function playRun(seed) {
       assert.equal(enhance.enhanceLv, 1);
       assert.equal(game.materials, oldMaterials - enhance.cost);
     }
+    if (wave >= 11 && wave < 30) {
+      const mainOffer = game.shop.findIndex(offer => offer.itemType === 'seal' && offer.kind === game.seal?.kind
+        && !offer.bought && offer.cost <= game.gold && game.seal.star < systems.unlock.getSealStarCap());
+      if (mainOffer >= 0) assert.equal(shop.buyShopItem(mainOffer), true);
+      if (wave >= 21 && game.hero.gear[0].enhanceLv < 4) {
+        const result = equipmentInventory.enhanceGear({ location: 'equipped', idx: 0 });
+        assert.ok(result.ok || result.reason === 'insufficient_materials');
+      }
+    }
     if (wave === 16 || wave === 20) {
       assert.equal(w20.isW20PreselectOpen(), true);
       assert.equal(w20.selectW20PreselectDirection('fire_chain_surge').ok, true);
@@ -453,8 +462,8 @@ test('BUG-01: final prep uses elapsed clock time while paused and automatically 
   assert.equal(finalPrep.lastClockMs, start + 20_000);
   assert.equal(finalPrep.deadlineMs, start + 90_000);
   assert.equal(runMetrics.w29FinalPrepSec, 20);
-  // Current runtime recomputes the displayed timer after a rollback even though the deadline stays fixed.
-  assert.equal(finalPrep.timer, 80);
+  // A clock rollback cannot return elapsed prep time to the player.
+  assert.equal(finalPrep.timer, 70);
 
   clock.ms = start + 89_000;
   run.tick(FRAME);
@@ -533,7 +542,7 @@ test('BUG-04: W29 settles queued rewards before timing and preserves the level-u
   ctx.ports.modals.queueModal({ type: 'destiny_gamble' });
   // Drive the real roll into three common XP pills so any automatic choice levels the hero.
   const samples = [0.99, 0.6, 0.6, 0.6];
-  const roll = destiny.rollDestinyGamble(30, { rndFn: () => samples.shift() ?? 0 });
+  const roll = destiny.rollDestinyGamble(30, { rndFn: () => samples.shift() ?? 0, allowDuplicateCategories: true });
   assert.deepEqual(roll.pendingOffer.choices.map(choice => choice.pillKey), ['xp', 'xp', 'xp']);
   clock.ms = game.finalPrep.deadlineMs;
   run.tick(FRAME);

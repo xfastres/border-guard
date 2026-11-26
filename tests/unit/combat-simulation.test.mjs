@@ -565,7 +565,7 @@ test('shaman heals nearby allies, frenzies them and includes the Meta telegraph 
     const far = enemy(3, { x: 20, hp: 80 });
     const { game, sim } = fixture({ state: { enemies: [shaman, ally, far] }, aux: hasBuffer ? ['aux_telegraph_buffer'] : [] });
     sim.updateEnemies(0.1);
-    assert.deepEqual([shaman.hp, ally.hp, far.hp, shaman.shamanTimer], [100, 89, 80, 2.6]);
+    assert.deepEqual([shaman.hp, ally.hp, far.hp, shaman.shamanTimer], [100,88,80,2.6]);
     assert.deepEqual([shaman.frenzyT, ally.frenzyT, far.frenzyT], [2.4, 2.3, 0]);
     const [zone] = game.zones;
     assert.deepEqual([zone.kind, zone.leaveLava, zone.x, zone.y, zone.dmg, zone.t, zone.max, zone.sourceMeta.skillName],
@@ -648,7 +648,7 @@ test('assembled combat routes a hero hit through damage, simulation and the fire
     meta: { ...deps.meta, getActiveMetaMain: () => null }, hero: deps.hero, heroVitals: deps.heroVitals,
     equipment: { getActiveGearAffixSynergies: () => ({}) }, economy: {}, run: {},
   });
-  assert.equal(Object.keys(system).length, 27);
+  assert.equal(Object.keys(system).length, 31);
   assert.equal(system.pointToSegDist, pointToSegDist);
   assert.equal(system.dealDamage(target, 10, { fromHero: true }), 10);
   assert.deepEqual([target.hp, target.fireMarkStacks, target.fireMarkSource], [50, 1, 'seal_fire_mastery']);

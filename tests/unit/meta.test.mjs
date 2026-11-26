@@ -115,7 +115,7 @@ test('import, export and reset round-trip through context-local fallback and ref
   assert.deepEqual(game.metaLoadout, original.loadout);
   assert.deepEqual(meta.importMetaSave(backup), { ok: true, migratedFrom: null, save: changed });
   assert.deepEqual(game.metaLoadout, changed.loadout);
-  assert.equal(game.metaRunState.activeGearKeys.length, 23);
+  assert.equal(game.metaRunState.activeGearKeys.length, 38);
   assert.equal(meta.exportMetaSave(), backup);
   assert.equal(meta.importMetaSave('{bad').reason, 'parse_error');
   assert.equal(meta.exportMetaSave(), backup);
@@ -160,10 +160,10 @@ test('four points and three auxiliary slots apply before and after unlocks, and 
   assert.equal(meta.getActiveRunAffixKeys().includes('storm_conduit'), false);
   assert.equal(meta.getActiveMetaMain().id, 'main_frost');
   const pools = meta.buildActiveRunPools(meta.getMetaSave());
-  assert.equal(new Set(pools.activeGearKeys).size, 23);
-  assert.equal(new Set(pools.activeAffixKeys).size, 12);
-  assert.equal(pools.activeGearKeys.length, 23);
-  assert.equal(pools.activeAffixKeys.length, 12);
+  assert.equal(new Set(pools.activeGearKeys).size, 38);
+  assert.equal(new Set(pools.activeAffixKeys).size, 24);
+  assert.equal(pools.activeGearKeys.length, 38);
+  assert.equal(pools.activeAffixKeys.length, 24);
   for (const id of ['ember_censer', 'glacier_bell', 'flame_fan', 'frost_mirror']) {
     assert.ok(pools.activeGearKeys.includes(id), id);
   }

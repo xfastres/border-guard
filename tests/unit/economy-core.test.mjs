@@ -109,14 +109,14 @@ test('resource sync only updates balance snapshots and reset restarts the accoun
 test('shop prices rise per element, respect the cap and keep counts across stages by default', () => {
   const game = { wave: 10, shopElemBuyStage: 1, shopElemBuyCounts: { fire: 0, frost: 0 } };
   const { economy } = setup(game);
-  for (const [count, price] of [[0, 42], [1, 50], [2, 57], [100, 104]]) {
+  for (const [count, price] of [[0, 42], [1, 47], [2, 53], [100, 104]]) {
     game.shopElemBuyCounts.fire = count;
     assert.equal(economy.getShopElemBuyCount('fire'), count);
     assert.equal(economy.calcShopGearPrice('rare', 'fire'), price);
     assert.equal(economy.calcShopGearPrice('rare', 'frost'), 42);
   }
   game.shopElemBuyCounts.fire = 2;
-  for (const [wave, price] of [[11, 74], [20, 74], [21, 94]]) {
+  for (const [wave, price] of [[11, 69], [20, 69], [21, 87]]) {
     game.wave = wave;
     assert.equal(economy.calcShopGearPrice('rare', 'fire'), price);
     assert.equal(economy.getShopElemBuyCount('fire'), 2);
@@ -131,7 +131,7 @@ test('the stage reset option clears all element counts at W11 and W21', () => {
   try {
     const game = { wave: 10, shopElemBuyStage: 1, shopElemBuyCounts: { fire: 2, frost: 3 } };
     const { economy } = setup(game);
-    for (const [lastWave, nextStage, before, after] of [[10, 2, 57, 55], [20, 3, 74, 69]]) {
+    for (const [lastWave, nextStage, before, after] of [[10, 2, 53, 55], [20, 3, 69, 69]]) {
       game.wave = lastWave;
       Object.assign(game.shopElemBuyCounts, { fire: 2, frost: 3 });
       assert.equal(economy.calcShopGearPrice('rare', 'fire'), before);
@@ -150,10 +150,10 @@ test('shop rarity bands produce fixed-seed keys and use exactly two run RNG draw
   const { economy } = setup(game);
   const seeds = [7, 42, 12345, 123456];
   const bands = [
-    [[1, 5], ['flame_fan', 'wood_talisman', 'jade_pendant', 'iron_whetstone']],
-    [[6, 10], ['split_bow', 'wood_talisman', 'jade_pendant', 'blood_bead']],
-    [[11, 20], ['titan_crown', 'frost_mirror', 'jade_pendant', 'eagle_scope']],
-    [[21, 30], ['titan_crown', 'frost_orb', 'thunder_wood', 'eagle_scope']],
+    [[1, 5], ['windcord', 'blood_cord', 'copper_needle', 'wood_talisman']],
+    [[6, 10], ['ember_focus', 'blood_cord', 'copper_needle', 'frost_mirror']],
+    [[11, 20], ['titan_crown', 'dawn_mirror', 'copper_needle', 'vamp_fang']],
+    [[21, 30], ['titan_crown', 'crit_axe', 'scarlet_bracer', 'vamp_fang']],
   ];
   for (const [waves, keys] of bands) {
     for (const wave of waves) {
@@ -193,12 +193,12 @@ test('gear sell value uses rarity and source stage, and shop prices cap resale b
   const { economy } = setup(game);
   const gear = { rarity: 'legend', sourceStage: 3, slotsCount: 1 };
   assert.equal(getGearSellGold(null), 0);
-  assert.equal(getGearSellGold('flame_fan#2'), 16);
-  assert.equal(economy.getGearSellGold(gear), 78);
+  assert.equal(getGearSellGold('flame_fan#2'), 10);
+  assert.equal(economy.getGearSellGold(gear), 41);
   game.wave = 29;
-  assert.equal(economy.getGearSellGold({ ...gear, slotsCount: 3 }), 78);
-  assert.equal(getGearSellGold({ ...gear, sourceStage: 2 }), 59);
-  assert.equal(getGearSellGold({ ...gear, paidGold: 26 }), 18);
+  assert.equal(economy.getGearSellGold({ ...gear, slotsCount: 3 }), 41);
+  assert.equal(getGearSellGold({ ...gear, sourceStage: 2 }), 35);
+  assert.equal(getGearSellGold({ ...gear, paidGold: 26 }), 16);
   for (const rarity of ['common', 'rare', 'epic', 'legend']) {
     for (const sourceStage of [1, 2, 3]) {
       const paidGold = economy.calcShopGearPrice(rarity, 'fire', [1, 11, 21][sourceStage - 1]);
@@ -212,8 +212,8 @@ test('salvage craft adds one dismantle material only to epic and legend gear', (
   const { economy } = setup(game);
   assert.equal(economy.getGearDismantleMaterials(null), 0);
   for (const [aux, amounts] of [
-    [[], [2, 3, 5, 8]],
-    [['aux_salvage_craft'], [2, 3, 6, 9]],
+    [[], [1, 3, 4, 7]],
+    [['aux_salvage_craft'], [1, 3, 5, 8]],
   ]) {
     game.metaLoadout.aux = aux;
     for (const [i, rarity] of ['common', 'rare', 'epic', 'legend'].entries()) {
@@ -226,7 +226,7 @@ test('gear enhancement costs materials by level and stops at max level or for se
   assert.equal(getGearEnhanceCost(null), null);
   assert.equal(getGearEnhanceCost('flame_fan'), null);
   assert.equal(getGearEnhanceCost({ itemType: 'seal' }), null);
-  for (const [enhanceLv, cost] of [2, 3, 5, 7, 10, 14, null].entries()) {
+  for (const [enhanceLv, cost] of [2, 4, 6, 9, 13, 18, null].entries()) {
     assert.equal(getGearEnhanceCost({ enhanceLv }), cost);
   }
 });
@@ -270,7 +270,7 @@ test('refinement drops cover enemy types and wave band boundaries', () => {
   for (const [waves, expected] of [
     [[1, 20], [0, 1, 2, 3]],
     [[21, 24], [0, 2, 4, 6]],
-    [[25, 29], [0, 3, 4, 6]],
+    [[25, 29], [0, 2, 4, 6]],
   ]) {
     for (const wave of waves) {
       game.wave = wave;

@@ -106,7 +106,7 @@ test('商路先机 waives only the first refresh of the wave and takes priority 
   game.hero.perks.gold_power = 0;
   assert.equal(shop.rollShop(), true);
   assert.equal(game.gold, 192);
-  assert.equal(game.rerollCost, 10);
+  assert.equal(game.rerollCost, 12);
   assert.equal(game.metaRunState.freeRefreshUses, 1);
   assert.deepEqual(ledger(), [['gold', -8, 'shop_reroll']]);
 });
@@ -120,14 +120,14 @@ test('gold_power Lv.2 waives refresh below 25% and paid refreshes use escalating
     game.rnd = () => calls++ === 0 ? roll : rnd();
     assert.equal(shop.rollShop(), true);
     assert.equal(game.gold, free ? 200 : 192);
-    assert.equal(game.rerollCost, free ? 8 : 10);
+    assert.equal(game.rerollCost, free ? 8 : 12);
     assert.equal(ledger().length, free ? 0 : 1);
     assert.equal(effects[0][0], free ? 'toast' : 'audio');
     assert.equal(calls, 19);
     assert.equal(draws.length, 18);
   }
 
-  const { game, shop, draws, ledger } = setup({ gold: 18 });
+  const { game, shop, draws, ledger } = setup({ gold: 20 });
   game.hero.perks.gold_power = 1;
   assert.equal(shop.rollShop(), true);
   assert.equal(draws.length, 18);
@@ -136,25 +136,25 @@ test('gold_power Lv.2 waives refresh below 25% and paid refreshes use escalating
   assert.equal(shop.rollShop(), false);
   assert.equal(game.shop, lastRow);
   assert.equal(game.gold, 0);
-  assert.equal(game.rerollCost, 12);
-  assert.deepEqual(ledger(), [['gold', -8, 'shop_reroll'], ['gold', -10, 'shop_reroll']]);
+  assert.equal(game.rerollCost, 16);
+  assert.deepEqual(ledger(), [['gold', -8, 'shop_reroll'], ['gold', -12, 'shop_reroll']]);
 });
 
 test('fixed seeds preserve all four offers and RNG order for each last-slot item type', () => {
-  // Characterized against the pre-extraction shop at W10.
+  // Seeded W10 fixtures cover a pill row and two gear rows.
   for (const [seed, expected, drawCount, next] of [
     [12345, [
       ['seal', 817934412, 'holy', 1, 28], ['seal', 766396467, 'frost', 1, 20],
-      ['gear', 627660528, 'swift_boots', 'common', 26], ['pill', 305045148, 'heal', null, 24],
+      ['gear', 627660528, 'iron_whetstone', 'common', 26], ['pill', 305045148, 'heal', null, 24],
     ], 18, 0.772419034736231],
     [1, [
-      ['seal', 527447039, 'thunder', 2, 52], ['seal', 612838860, 'holy', 1, 28],
-      ['gear', 154493134, 'wood_talisman', 'common', 26], ['gear', 590382493, 'blood_bead', 'rare', 42],
+      ['seal', 527447039, 'thunder', 2, 59], ['seal', 612838860, 'holy', 1, 28],
+      ['gear', 154493134, 'blood_cord', 'common', 26], ['gear', 590382493, 'frost_mirror', 'rare', 42],
     ], 25, 0.7986842156387866],
     [4, [
       ['seal', 81841019, 'holy', 1, 28], ['seal', 973861920, 'fire', 1, 22],
-      ['gear', 743346156, 'iron_whetstone', 'common', 26], ['seal', 471344085, 'thunder', 1, 26],
-    ], 22, 0.34795377077534795],
+      ['gear', 743346156, 'jade_pendant', 'common', 26], ['gear', 527572519, 'swift_boots', 'common', 26],
+    ], 27, 0.34286920516751707],
   ]) {
     const { game, shop, draws, ledger, effects } = setup({ seed });
     assert.equal(shop.rollShop(true), true);
@@ -208,13 +208,13 @@ test('gear locks the paid price and reprices only unsold gear of the same elemen
     gearOffer(equipment, 'flame_fan', 3), gearOffer(equipment, 'frost_mirror', 4),
   ];
   assert.equal(shop.buyShopItem(0), true);
-  assert.deepEqual(row.map(item => item.cost), [42, 50, 50, 42]);
+  assert.deepEqual(row.map(item => item.cost), [42,47,47,42]);
   assert.equal(shop.buyShopItem(1), true);
-  assert.deepEqual(row.map(item => item.cost), [42, 50, 57, 42]);
-  assert.deepEqual(game.bag.map(item => [item.paidGold, item.origin]), [[42, 'shop'], [50, 'shop']]);
+  assert.deepEqual(row.map(item => item.cost), [42,47,53,42]);
+  assert.deepEqual(game.bag.map(item => [item.paidGold, item.origin]), [[42,"shop"],[47,"shop"]]);
   assert.deepEqual(game.shopElemBuyCounts, { fire: 2 });
-  assert.equal(game.gold, 108);
-  assert.deepEqual(ledger(), [['gold', -42, 'shop_buy_gear'], ['gold', -50, 'shop_buy_gear']]);
+  assert.equal(game.gold, 111);
+  assert.deepEqual(ledger(), [["gold",-42,"shop_buy_gear"],["gold",-47,"shop_buy_gear"]]);
 });
 
 test('buying the fourth offer restocks all slots for free', () => {
@@ -273,7 +273,7 @@ test('sub-seals use a free slot, merge up to 3 stars and preserve the main seal'
   assert.deepEqual(ledger(), [['gold', -46, 'shop_buy_sub_seal'], ['gold', -46, 'shop_upgrade_sub_seal']]);
 });
 
-test('full sub-seal slots cause main seal replacement with an 80% investment refund', () => {
+test('full sub-seal slots cause main seal replacement with a discounted fusion refund', () => {
   const { game, shop, ledger } = setup({
     seal: { kind: 'fire', elem: 'fire', star: 2, prog: 1, route: 'mastery' },
     subSeals: [{ kind: 'frost', elem: 'frost', star: 1, prog: 0 }],
@@ -283,11 +283,11 @@ test('full sub-seal slots cause main seal replacement with an 80% investment ref
   assert.equal(shop.buyShopItem(0), true);
   assert.deepEqual(game.seal, { kind: 'wind', elem: 'wind', star: 1, prog: 0, route: null, cd: 0, dmgDealt: 0, kills: 0 });
   assert.deepEqual(game.subSeals, subs);
-  assert.equal(game.gold, 238);
-  assert.deepEqual(ledger(), [['gold', -22, 'shop_switch_main_seal'], ['gold', 60, 'switch_main_seal_refund']]);
+  assert.equal(game.gold, 219);
+  assert.deepEqual(ledger(), [["gold",-22,"shop_switch_main_seal"],["gold",41,"switch_main_seal_refund"]]);
 });
 
-test('selling seals refunds 80% of fusion points and clears the empty main inspection target', () => {
+test('selling seals refunds the configured fraction of fusion points and clears the empty main inspection target', () => {
   const { game, shop, ledger } = setup({
     seal: { kind: 'fire', star: 3, prog: 1 }, subSeals: [{ kind: 'frost', star: 2 }],
     inspTarget: { kind: 'seal' },
@@ -302,8 +302,8 @@ test('selling seals refunds 80% of fusion points and clears the empty main inspe
   assert.equal(shop.sellSeal(), false);
   assert.equal(game.seal, null);
   assert.equal(game.inspTarget, null);
-  assert.equal(game.gold, 337);
-  assert.deepEqual(ledger(), [['gold', 37, 'sell_sub_seal'], ['gold', 100, 'sell_main_seal']]);
+  assert.equal(game.gold, 294);
+  assert.deepEqual(ledger(), [["gold",25,"sell_sub_seal"],["gold",69,"sell_main_seal"]]);
 });
 
 test('seal specialization validates state and charges only for mastery', () => {
@@ -314,7 +314,7 @@ test('seal specialization validates state and charges only for mastery', () => {
   assert.deepEqual(shop.chooseSealRoute('standard'), { ok: false, reason: 'star_too_low' });
   seal.star = 3;
   assert.deepEqual(shop.chooseSealRoute('unknown'), { ok: false, reason: 'invalid_route' });
-  assert.deepEqual(shop.chooseSealRoute('mastery'), { ok: false, reason: 'insufficient_gold', need: 35 });
+  assert.deepEqual(shop.chooseSealRoute('mastery'), { ok: false, reason: 'insufficient_gold', need: 68 });
   assert.equal(seal.route, null);
   assert.deepEqual(shop.chooseSealRoute('standard'), {
     ok: true, route: 'standard', cost: 0, spec: SEAL_SPECIALIZATIONS.fire.standard,
@@ -324,13 +324,13 @@ test('seal specialization validates state and charges only for mastery', () => {
   assert.equal(game.gold, 34);
   assert.deepEqual(ledger(), []);
 
-  const paid = setup({ gold: 35, seal: { ...seal, route: null } });
+  const paid = setup({ gold: 68, seal: { ...seal, route: null } });
   assert.deepEqual(paid.shop.chooseSealRoute('mastery'), {
-    ok: true, route: 'mastery', cost: 35, spec: SEAL_SPECIALIZATIONS.fire.mastery,
+    ok: true, route: 'mastery', cost: 68, spec: SEAL_SPECIALIZATIONS.fire.mastery,
   });
   assert.equal(paid.game.seal.route, 'mastery');
   assert.equal(paid.game.gold, 0);
-  assert.deepEqual(paid.ledger(), [['gold', -35, 'seal_route']]);
+  assert.deepEqual(paid.ledger(), [['gold', -68, 'seal_route']]);
 });
 
 test('BUG-08 drafts can only open for an unsold item during prep', () => {

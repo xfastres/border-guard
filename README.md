@@ -13,7 +13,9 @@
   - `src/ui/`：样式（8 份 CSS）、Web Audio 音频、VFX、提示反馈、Canvas 2D 渲染与相机、共享格式化、弹窗系统、零闪烁 HUD 协调器与输入控制器。
   - `src/debug/`：测试预设 `presets.js` 与 `window.BG60` / `window.BG52` 公开调试 API `test-api.js`。
   - `src/app/`：根装配 `bootstrap.js`（提供零 DOM 纯系统工厂 `createGameSystems` 与浏览器启动 `bootBrowserGame`）与主循环 `game-loop.js`。
-- **离线单文件构建**：使用 Vite + `vite-plugin-singlefile` 将全部源码与样式内联打包为单个可离线双击打开的正式交付 HTML：`release/Border-Guard-v0.60.html`（521,949 字节，1 个内联 `<script>`，0 外部静态资源依赖；`release/` 已被 `.gitignore` 忽略，运行 `npm run build` 即可生成）。
+- **离线单文件构建**：运行 `npm run build` 生成 `release/Border-Guard-v0.60.html`，可离线双击打开。
+
+30 波玩法重构通过 `balance/v060-overhaul.json` 提供运行时数值覆盖。开局面板的「阶段练习」支持选波次、流派与配装。变更、模拟与下周试玩步骤见 [30 波重构报告](docs/v0.60-review/30-wave-overhaul-report.md)。
 
 ### 开发、构建与验证命令（要求 Node.js >= 22.12，浏览器测试需本机 Chrome/Chromium）
 
@@ -21,14 +23,16 @@
 npm run dev                 # 启动开发服务器
 npm run build               # 构建并校验离线单文件 HTML
 npm run preview             # 预览构建产物
-npm run test:unit           # 298 项 ES 模块单元测试（含 AST 架构边界门禁）
-npm run test:integration    # 12 项零 DOM/零浏览器纯 ES 模块 W1→W30 全链路与 BUG-01~10 集成测试
+npm run test:unit           # ES 模块单元测试（含 AST 架构边界门禁）
+npm run test:integration    # 无浏览器运行 W1→W30、构筑触发和局内流程
 npm run test:arch           # AST 零循环依赖、单向分层、纯层无 DOM、legacy 退役与冻结原版哈希门禁
-npm run test:parity         # 真实 Chrome CDP 同种子（2026 / 1337 / 9527）原版 vs 模块版全量等价校验
+npm run test:parity         # 历史行为等价校验，在玩法重构前的模块化提交运行
 npm run test:modular-game   # 真实 Chrome file:// 桌面（1440×900）+ 手机（390×844）离线启动校验
 npm run test:e2e:modular    # 真实 Chrome 交互 E2E（6 场景，0 未捕获异常）
 npm run test:baseline       # 原版 Border-Guard-v0.60.html 全部 43 项回归测试
-npm run test:all            # 依次运行以上全部 7 组测试套件
+npm run test:all            # 当前玩法门禁与冻结原版回归
+npm run simulate:balance -- 105 . campaign  # 105 种子，运行真实 30 波系统
+npm run simulate:balance -- 84 . boss       # 七条路线 × 三档配装 × 四个种子
 ```
 
 如需手动指定 Chrome 路径，可设置环境变量 `CHROME_BIN`（如 Windows 下 `C:/Program Files/Google/Chrome/Application/chrome.exe`）。协同规范见 [AGENTS.md](AGENTS.md)，阶段记录见 [progress.md](progress.md) 与 [findings.md](findings.md)，阶段二优化计划见 [docs/v0.60-review/stage2-optimization-plan.md](docs/v0.60-review/stage2-optimization-plan.md)，v0.16–v0.52 历史版本与归档文档见 [archive/README.md](archive/README.md)。
