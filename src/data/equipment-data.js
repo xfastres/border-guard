@@ -20,6 +20,23 @@ export const DUAL_RESONANCES = [
 
 /* 4-Tier Equipment Pool (5 Common / 5 Rare / 9 Epic / 4 Legend-Curse = 23 Gears, each with elem & set!) */
 export const GEARS = {
+  smolder_edge: {"key": "smolder_edge", "name": "余烬短刃", "icon": "◈", "rarity": "common", "elem": "fire", "set": "flame", "desc": "火标触发率 32%。适合在早期先挂标。", "mod": {"fireMarkChance": 0.32, "dmgPct": 0.07}},
+  ember_focus: {"key": "ember_focus", "name": "焚芯石", "icon": "◈", "rarity": "epic", "elem": "fire", "set": "flame", "desc": "提升引爆伤害，射程减小。适合在近处控制爆炸落点。", "mod": {"fireDetonateBonus": 0.25, "rangePct": -0.08}},
+  ice_lantern: {"key": "ice_lantern", "name": "凝霜引灯", "icon": "❄", "rarity": "common", "elem": "frost", "set": "frost", "desc": "命中减速并扩大寒盾容量。", "mod": {"slowOnHit": 0.22, "frostShieldCapBonus": 15}},
+  white_jade_guard: {"key": "white_jade_guard", "name": "白玉护心", "icon": "❄", "rarity": "epic", "elem": "frost", "set": "frost", "desc": "提高寒盾上限与持盾伤害，盾破时收益下降。", "mod": {"frostShieldCapBonus": 38, "shieldedDmgPct": 0.25}},
+  reed_sword: {"key": "reed_sword", "name": "芦叶短剑", "icon": "◇", "rarity": "common", "elem": "wind", "set": "sword", "desc": "冲刺后首个风系命中可斩出穿透回锋。", "mod": {"windFlow": 0.2, "rangePct": 0.08}},
+  windcord: {"key": "windcord", "name": "穿云束带", "icon": "◇", "rarity": "rare", "elem": "wind", "set": "sword", "desc": "强化回锋与移速，擅长绕到怪群侧面。", "mod": {"windFlow": 0.33, "movePct": 0.11}},
+  trailing_edge: {"key": "trailing_edge", "name": "逐影古剑", "icon": "◇", "rarity": "epic", "elem": "wind", "set": "sword", "desc": "以少量生命换取更长的剑路与更重的回锋。", "mod": {"windFlow": 0.45, "hpPct": -0.09, "rangePct": 0.18}, "unlockPack": "pack_gear_duel"},
+  copper_needle: {"key": "copper_needle", "name": "导雷铜针", "icon": "ϟ", "rarity": "common", "elem": "thunder", "set": "thunder", "desc": "雷击开始在同一目标积攒电荷，充满时释放过载。", "mod": {"stormLoad": 0.2, "aspd": 0.07}},
+  lightning_rod: {"key": "lightning_rod", "name": "引霆杖", "icon": "ϟ", "rarity": "rare", "elem": "thunder", "set": "thunder", "desc": "强化电荷过载，延伸雷击搜索距离。", "mod": {"stormLoad": 0.34, "rangePct": 0.11}},
+  circuit_mirror: {"key": "circuit_mirror", "name": "九转电镜", "icon": "ϟ", "rarity": "epic", "elem": "thunder", "set": "thunder", "desc": "提高过载爆发，代价是攻速略慢。", "mod": {"stormLoad": 0.43, "aspd": -0.07, "dmgPct": 0.24}},
+  shatter_maul: {"key": "shatter_maul", "name": "锻骨槌", "icon": "ϟ", "rarity": "rare", "elem": "thunder", "set": "blood", "desc": "提高重击全伤与最大生命，移动略慢。", "mod": {"dmgPct": 0.29, "flatHp": 24, "movePct": -0.07}},
+  blood_cord: {"key": "blood_cord", "name": "血纹束绳", "icon": "◈", "rarity": "common", "elem": "fire", "set": "blood", "desc": "开超载时少量耗血。贴近有效命中，以血刃回收消耗。", "mod": {"bloodRite": 0.17, "flatHp": 22}},
+  scarlet_bracer: {"key": "scarlet_bracer", "name": "赤脉护臂", "icon": "◈", "rarity": "rare", "elem": "fire", "set": "blood", "desc": "提高血刃伤害与有效命中的少量吸血。", "mod": {"bloodRite": 0.25, "lifesteal": 1.7}},
+  bloodseal_disc: {"key": "bloodseal_disc", "name": "还魂血璧", "icon": "◈", "rarity": "epic", "elem": "fire", "set": "blood", "desc": "提高血刃与吸血，牺牲一点最大生命。", "mod": {"bloodRite": 0.41, "lifesteal": 2.3, "hpPct": -0.08}},
+  sunward_charm: {"key": "sunward_charm", "name": "日曜坠", "icon": "☼", "rarity": "common", "elem": "holy", "set": "greed", "desc": "护盾充足时，圣击可消耗护盾裁决。", "mod": {"holyOath": 0.16, "flatHp": 18}},
+  dawn_mirror: {"key": "dawn_mirror", "name": "晨曦盘", "icon": "☼", "rarity": "rare", "elem": "holy", "set": "greed", "desc": "圣符更易维持护盾，提高裁决爆发。", "mod": {"holyOath": 0.31, "rangePct": 0.08}},
+  litany_mail: {"key": "litany_mail", "name": "誓光甲", "icon": "☼", "rarity": "epic", "elem": "holy", "set": "greed", "desc": "强化护盾裁决并减伤，换位较慢。", "mod": {"holyOath": 0.45, "dmgReduce": 0.08, "movePct": -0.06}, "unlockPack": "pack_gear_duel"},
   // Tier 1: Common (凡品 · 绿)
   bronze_tassel:   { key:'bronze_tassel',   name:'青铜剑穗', icon:'🎐', rarity:'common', elem:'wind',    set:'sword',   desc:'【凡器】攻击速度 +14%，全伤害 +8%', mod:{ aspd:0.14, dmgPct:0.08 } },
   jade_pendant:    { key:'jade_pendant',    name:'引灵玉佩', icon:'📿', rarity:'common', elem:'frost',   set:'frost',   desc:'【凡器】神通范围与磁铁 +22%，移速 +8%', mod:{ rangePct:0.22, movePct:0.08 } },
@@ -27,7 +44,7 @@ export const GEARS = {
   iron_whetstone:  { key:'iron_whetstone',  name:'玄铁磨石', icon:'🪨', rarity:'common', elem:'thunder', set:'thunder', desc:'【凡器】暴击率 +10%，全伤害 +10%', mod:{ crit:0.10, dmgPct:0.10 } },
   swift_boots:     { key:'swift_boots',     name:'踏风草靴', icon:'🥾', rarity:'common', elem:'wind',    set:'sword',   desc:'【凡器】移速 +14%，攻速 +10%', mod:{ movePct:0.14, aspd:0.10 } },
   // Tier 2: Rare (灵品 · 蓝)
-  flame_fan:       { key:'flame_fan',       name:'离火羽扇', icon:'🪭', rarity:'rare',   elem:'fire',    set:'flame',   desc:'【灵器】爆炸溅射 +0.65格，全伤害 +18%', mod:{ splashBonus:0.65, dmgPct:0.18 } },
+  flame_fan:       { key:'flame_fan',       name:'离火羽扇', icon:'◇', rarity:'rare',   elem:'fire',    set:'flame',   desc:'【灵器】爆炸溅射 +0.65格，全伤害 +18%', mod:{ splashBonus:0.65, dmgPct:0.18 } },
   thunder_wood:    { key:'thunder_wood',    name:'雷击桃木', icon:'🌩️', rarity:'rare',   elem:'thunder', set:'thunder', desc:'【灵器】命中 22% 触发连锁雷，暴击率 +10%', mod:{ chainProc:0.22, crit:0.10 } },
   frost_mirror:    { key:'frost_mirror',    name:'寒冰护镜', icon:'🪞', rarity:'rare',   elem:'frost',   set:'frost',   desc:'【灵器】攻击减速敌人 25%，最大生命 +55', mod:{ slowOnHit:0.25, flatHp:55 } },
   blood_bead:      { key:'blood_bead',      name:'嗜血念珠', icon:'🧿', rarity:'rare',   elem:'fire',    set:'blood',   desc:'【灵器】攻击回血 +1.8，全伤害 +14%', mod:{ lifesteal:1.8, dmgPct:0.14 } },
@@ -67,6 +84,66 @@ export const GEAR_STAR_MULT = [1, 1.6, 2.3]; // Kept exported for backward compa
 
 /* ==================== STAGE 2: AFFIX POOL, CONFLICT GROUPS & DUO/TRIO SYNERGIES ==================== */
 export const GEAR_AFFIXES = {
+  wind_edge: {
+    id: 'wind_edge', name: '风刃入鞘', icon: '◇', elem: 'wind', chain: 'wind_flow', rarity: 'common', conflictGroup: null,
+    desc: (t = 1) => `冲刺后的首次风系命中可斩出回锋。 机制威力 +${Math.round((0.12 + (t - 1) * 0.025) * 100)}%。`,
+    mod: (t = 1) => ({ windFlow: 0.12 + (t - 1) * 0.025 })
+  },
+  wind_relay: {
+    id: 'wind_relay', name: '借风串刃', icon: '◇', elem: 'wind', chain: 'wind_flow', rarity: 'rare', conflictGroup: null,
+    desc: (t = 1) => `回锋强化，额外获得 5% 移速。 机制威力 +${Math.round((0.15 + (t - 1) * 0.025) * 100)}%。`,
+    mod: (t = 1) => ({ windFlow: 0.15 + (t - 1) * 0.025, movePct: 0.05 })
+  },
+  wind_pin: {
+    id: 'wind_pin', name: '回锋罡护', icon: '◇', elem: 'wind', chain: 'wind_flow', rarity: 'epic', conflictGroup: null,
+    desc: (t = 1) => `回锋强化，补齐三词条后回锋返还护盾。 机制威力 +${Math.round((0.19 + (t - 1) * 0.025) * 100)}%。`,
+    mod: (t = 1) => ({ windFlow: 0.19 + (t - 1) * 0.025 })
+  },
+  storm_charge: {
+    id: 'storm_charge', name: '蓄电子母', icon: '◇', elem: 'thunder', chain: 'storm_circuit', rarity: 'common', conflictGroup: null,
+    desc: (t = 1) => `雷击叠电荷。同一目标满荷时释放过载。 机制威力 +${Math.round((0.12 + (t - 1) * 0.025) * 100)}%。`,
+    mod: (t = 1) => ({ stormLoad: 0.12 + (t - 1) * 0.025 })
+  },
+  storm_return: {
+    id: 'storm_return', name: '引雷折回', icon: '◇', elem: 'thunder', chain: 'storm_circuit', rarity: 'rare', conflictGroup: null,
+    desc: (t = 1) => `提高过载爆发，并额外获得 6% 范围。 机制威力 +${Math.round((0.15 + (t - 1) * 0.025) * 100)}%。`,
+    mod: (t = 1) => ({ stormLoad: 0.15 + (t - 1) * 0.025, rangePct: 0.06 })
+  },
+  storm_fork: {
+    id: 'storm_fork', name: '九节导体', icon: '◇', elem: 'thunder', chain: 'storm_circuit', rarity: 'epic', conflictGroup: null,
+    desc: (t = 1) => `增强过载。完整联动需要的电荷减少一格。 机制威力 +${Math.round((0.19 + (t - 1) * 0.025) * 100)}%。`,
+    mod: (t = 1) => ({ stormLoad: 0.19 + (t - 1) * 0.025 })
+  },
+  blood_reserve: {
+    id: 'blood_reserve', name: '赤契血刃', icon: '◇', elem: 'fire', chain: 'blood_rite', rarity: 'common', conflictGroup: null,
+    desc: (t = 1) => `超载可以支付生命。贴近有效命中用血刃回收代价。 机制威力 +${Math.round((0.12 + (t - 1) * 0.025) * 100)}%。`,
+    mod: (t = 1) => ({ bloodRite: 0.12 + (t - 1) * 0.025 })
+  },
+  blood_leech: {
+    id: 'blood_leech', name: '逆脉余锋', icon: '◇', elem: 'fire', chain: 'blood_rite', rarity: 'rare', conflictGroup: null,
+    desc: (t = 1) => `增强血刃，有效攻击额外少量吸血。 机制威力 +${Math.round((0.15 + (t - 1) * 0.025) * 100)}%。`,
+    mod: (t = 1) => ({ bloodRite: 0.15 + (t - 1) * 0.025, lifesteal: 1.0 })
+  },
+  blood_debt: {
+    id: 'blood_debt', name: '回元血符', icon: '◇', elem: 'fire', chain: 'blood_rite', rarity: 'epic', conflictGroup: null,
+    desc: (t = 1) => `增强血刃。完整联动提高每次命中的生命回收上限。 机制威力 +${Math.round((0.19 + (t - 1) * 0.025) * 100)}%。`,
+    mod: (t = 1) => ({ bloodRite: 0.19 + (t - 1) * 0.025 })
+  },
+  holy_oath: {
+    id: 'holy_oath', name: '启曜之誓', icon: '◇', elem: 'holy', chain: 'holy_oath', rarity: 'common', conflictGroup: null,
+    desc: (t = 1) => `持盾时，圣击可消耗护盾施放裁决。 机制威力 +${Math.round((0.12 + (t - 1) * 0.025) * 100)}%。`,
+    mod: (t = 1) => ({ holyOath: 0.12 + (t - 1) * 0.025 })
+  },
+  holy_light: {
+    id: 'holy_light', name: '晨光护印', icon: '◇', elem: 'holy', chain: 'holy_oath', rarity: 'rare', conflictGroup: null,
+    desc: (t = 1) => `强化照击产生的护盾和裁决。 机制威力 +${Math.round((0.15 + (t - 1) * 0.025) * 100)}%。`,
+    mod: (t = 1) => ({ holyOath: 0.15 + (t - 1) * 0.025 })
+  },
+  holy_judgment: {
+    id: 'holy_judgment', name: '断隙圣文', icon: '◇', elem: 'holy', chain: 'holy_oath', rarity: 'epic', conflictGroup: null,
+    desc: (t = 1) => `增强裁决。完整联动打中多个目标时返还部分护盾。 机制威力 +${Math.round((0.19 + (t - 1) * 0.025) * 100)}%。`,
+    mod: (t = 1) => ({ holyOath: 0.19 + (t - 1) * 0.025 })
+  },
   // Fire Detonation Chain (火系引爆链路)
   fire_brand: {
     id:'fire_brand', name:'炽炎烙印', icon:'🔥', elem:'fire', chain:'fire_detonate', rarity:'common', conflictGroup:null,
@@ -147,7 +224,23 @@ export const GEAR_AFFIXES = {
 export const GEAR_AFFIX_KEYS = Object.keys(GEAR_AFFIXES);
 export const BASE_AFFIX_KEYS = GEAR_AFFIX_KEYS.filter(id => !GEAR_AFFIXES[id].unlockPack);
 
+export const BUILD_AFFIX_CHAINS = [["wind_flow", "御风回锋", ["wind_edge", "wind_relay", "wind_pin"]], ["storm_circuit", "蓄雷回路", ["storm_charge", "storm_return", "storm_fork"]], ["blood_rite", "血契回锋", ["blood_reserve", "blood_leech", "blood_debt"]], ["holy_oath", "持盾裁决", ["holy_oath", "holy_light", "holy_judgment"]]];
+
+const BUILD_GEAR_SYNERGIES = BUILD_AFFIX_CHAINS.flatMap(([chain, name, req]) => [
+  {
+    id: `${chain}_duo`, chain, tier: 2, priority: 20, req: req.slice(0, 2),
+    name, icon: '◇', badgeClass: 'duo', short: '双词条联动',
+    desc: '由对应的有效攻击或主动操作触发，详见各词条。',
+  },
+  {
+    id: `${chain}_trio`, chain, tier: 3, priority: 100, req,
+    name: `${name}·圆满`, icon: '◇', badgeClass: 'trio', short: '完整三联动',
+    desc: '替代同系双联动，追加第三条词条描述的效果，机制伤害进一步提高。',
+  },
+]);
+
 export const GEAR_SYNERGIES = [
+  ...BUILD_GEAR_SYNERGIES,
   // Fire Detonation Chain: Trio strictly replaces all Fire Duos!
   {
     id:'fire_detonate_trio', chain:'fire_detonate', tier:3, priority:100, conflictGroup:'fire_chain_duo',

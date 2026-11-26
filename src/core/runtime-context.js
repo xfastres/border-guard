@@ -1,3 +1,5 @@
+import { isFinalPrepActionLocked } from './state-queries.js';
+
 const noop = () => {};
 
 export function createNoopPorts() {
@@ -70,6 +72,19 @@ export function createRuntimeContext({ game = null, ports: initialPorts = {}, on
   }
   bindPorts(initialPorts);
 
+  const counters = {
+    gearUidSeq: 1,
+    modalOfferSeq: 1,
+    inFireChainTransfer: false,
+    monotonicClockOverride: null,
+    inMainLoopFrame: false,
+  };
+
+  function getMonotonicNowMs() {
+    const override = counters.monotonicClockOverride?.();
+    return Number.isFinite(override) ? override : ports.clock.perfNow();
+  }
+
   return {
     get game() { return game; },
     setGame(nextGame) {
@@ -98,13 +113,9 @@ export function createRuntimeContext({ game = null, ports: initialPorts = {}, on
         pendingUnsavedSettlement: null,
       },
     },
-    counters: {
-      gearUidSeq: 1,
-      modalOfferSeq: 1,
-      inFireChainTransfer: false,
-      monotonicClockOverride: null,
-      inMainLoopFrame: false,
-    },
+    counters,
+    getMonotonicNowMs,
+    isFinalPrepActionLocked: () => isFinalPrepActionLocked(game, getMonotonicNowMs()),
     ports,
     bindPorts,
   };

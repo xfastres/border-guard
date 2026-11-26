@@ -1,5 +1,6 @@
+import { getBuildRoute } from '../../core/state-queries.js';
 import { PERKS, PERK_LIST } from '../../data/core-data.js';
-import { GEARS, GEAR_KEYS } from '../../data/equipment-data.js';
+import { GEARS } from '../../data/equipment-data.js';
 
 export function createRewardsSystem(ctx, { meta, equipment, economy, hero }) {
   const { getActiveRunGearKeys, pickWeightedByMainLegacy, lockMetaLoadoutForRun } = meta;
@@ -56,7 +57,7 @@ export function createRewardsSystem(ctx, { meta, equipment, economy, hero }) {
 
   function pickPerk(key){
     const p = PERKS[key];
-    if (!p) return;
+    if (!p || (ctx.game.hero.perks[key] || 0) >= 2) return false;
     const nextLv = (ctx.game.hero.perks[key] || 0) + 1;
     ctx.game.hero.perks[key] = Math.min(2, nextLv);
     if (key === 'blood_oath') {
@@ -65,13 +66,13 @@ export function createRewardsSystem(ctx, { meta, equipment, economy, hero }) {
     } else if (key === 'dao_fortune') {
       if (nextLv === 1) {
         changeGold(35, 'perk_dao_fortune');
-        const rares = GEAR_KEYS.filter(k => GEARS[k].rarity === 'rare');
+        const rares = getActiveRunGearKeys().filter(k => GEARS[k].rarity === 'rare');
         const rk = rares[Math.floor(ctx.game.rnd() * rares.length)];
-        grantGear(rk);
+        if (rk) grantGear(rk);
       } else if (nextLv === 2) {
-        const epics = GEAR_KEYS.filter(k => GEARS[k].rarity === 'epic');
+        const epics = getActiveRunGearKeys().filter(k => GEARS[k].rarity === 'epic');
         const rk = epics[Math.floor(ctx.game.rnd() * epics.length)];
-        grantGear(rk);
+        if (rk) grantGear(rk);
       }
     }
     ctx.ports.audio.play('level', 1.15);
@@ -92,7 +93,7 @@ export function createRewardsSystem(ctx, { meta, equipment, economy, hero }) {
     const takeRarity = r => {
       const pool = byRarity[r].filter(g => !specs.includes(g));
       if (!pool.length) return null;
-      const g = pickWeightedByMainLegacy(pool, item => item?.elem || null, ctx.game.rnd) || pool[0];
+      const g = pickWeightedByMainLegacy(pool, item => item?.elem || null, ctx.game.rnd, getBuildRoute(ctx.game)?.elem) || pool[0];
       specs.push(g);
       return g;
     };

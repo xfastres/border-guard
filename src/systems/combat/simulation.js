@@ -60,6 +60,9 @@ export function createCombatSimulation(ctx, deps) {
     };
 
     if (a.kind === 'wind') {
+      if ((hitEnemy.boss || hitEnemy.elite) && !alive.some(e => e !== hitEnemy && dist(e, hitEnemy) <= 2.75)) {
+        deps.damage.dealDamage(hitEnemy, Math.round(st.dmg * BALANCE.combat.windSealDuelMult), { ...dmgOpts, isWind: true, col: '#baf9df' });
+      }
       const baseAng = Math.atan2(hy - h.y, hx - h.x);
       let totalShots = st.shots;
       if (syn.wind >= 4 && ctx.game.rnd() < 0.35) totalShots += 2;
@@ -134,7 +137,7 @@ export function createCombatSimulation(ctx, deps) {
     }
     if (deps.hero.hasDualRes('holy_omni')) {
       const prevHolyShield = h.shield || 0;
-      h.shield = Math.min(75, prevHolyShield + 6);
+      h.shield = Math.max(prevHolyShield, Math.min(75, prevHolyShield + 6));
       const holyShieldGain = Math.max(0, Math.round(h.shield - prevHolyShield));
       if (holyShieldGain > 0 && ctx.game.stats) ctx.game.stats.shieldGained = (ctx.game.stats.shieldGained || 0) + holyShieldGain;
       h.shieldTimer = Math.max(h.shieldTimer, 4.0);
@@ -204,7 +207,10 @@ export function createCombatSimulation(ctx, deps) {
         if (p.life <= 0) { p.done = true; continue; }
         for (const e of ctx.game.enemies) {
           if (e.hp <= 0 || p.hitSet.has(e.id)) continue;
-          if (Math.hypot(e.x - p.x, e.y - p.y) <= p.r + e.r) {
+          const dx = e.x - p.x;
+          const dy = e.y - p.y;
+          const reach = p.r + e.r;
+          if (dx * dx + dy * dy <= reach * reach) {
             p.hitSet.add(e.id);
             if (p.kind === 'firewave') {
               const hadMarkOrBurn = (e.fireMarkT > 0 || e.burnT > 0);
@@ -266,7 +272,15 @@ export function createCombatSimulation(ctx, deps) {
                   if (o.hp > 0 && dist(o, p) <= p.splash + o.r) deps.damage.dealDamage(o, p.dmg, { ...p.opts, col:'#9affc8' });
                 }
               } else {
-                deps.damage.dealDamage(e, p.dmg, { ...p.opts, col:'#a8ffd2' });
+                let damage = p.falloff ? p.dmg * Math.pow(p.falloff, p.hitSet.size - 1) : p.dmg;
+                if (p.opts?.skillKey === 'swordlance' && p.hitSet.size === 1 && (e.boss || e.elite)) damage *= BALANCE.combat.lancePriorityMult;
+                damage = Math.round(damage);
+                deps.damage.dealDamage(e, damage, { ...p.opts, col: p.opts?.col || '#a8ffd2' });
+                if (p.rebound && p.hitSet.size === 1 && e.hp > 0) {
+                  const h = ctx.game.hero;
+                  ctx.game.beams.push({ x1: e.x, y1: e.y, x2: h.x, y2: h.y, t: 0.22, max: 0.22, w: 3, col: '#a6f7d8' });
+                  deps.damage.dealDamage(e, Math.round(damage * 0.56), { ...p.opts, buildEcho: true, fromHero: false, noChainProc: true });
+                }
               }
               if (p.pierce > 0) p.pierce--;
               else { p.done = true; break; }
@@ -418,7 +432,7 @@ export function createCombatSimulation(ctx, deps) {
           z.hitHero = true;
           damageHero(z.dmg || 68, z.sourceMeta || {
             attackerName: '深渊主宰', attackerKind: 'boss6',
-            skillName: '终焉裂空冲击波 (W30核心招牌)',
+            skillName: '终焉裂空冲击波 (W30核心招牌)', damageTuned: true,
             isBoss: true, isBossCore: true, isBossAux: false
           });
         }
@@ -449,11 +463,12 @@ export function createCombatSimulation(ctx, deps) {
       if (deps.damage.isEnemyUnstoppable(e)) { e.slow = 0; e.slowT = 0; e.freezeT = 0; }
       else if (e.slowT > 0) { e.slowT = Math.max(0, e.slowT - dt); if (e.slowT === 0) e.slow = 0; }
       if (e.burnT > 0) {
+        const burnTick = Math.max(0, (e.burnDps || 0) * Math.min(e.burnT, dt));
         e.burnT = Math.max(0, e.burnT - dt);
-        const burnTick = Math.max(0, (e.burnDps || 0) * dt);
+        if (e.burnT === 0) e.burnDps = 0;
         if (e.kind === 'boss6' && e.signatureLockActive) {
           // STRICT HP LOCK during signature: burn timer ticks, 0 HP deducted, 0 burn dmg recorded!
-          e.hp = Math.max(e.hp, e.signatureThresholdHp);
+          e.hp = e.signatureThresholdHp;
         } else if (burnTick > 0) {
           let remBurn = burnTick;
           let actualBurnDmg = 0;
@@ -570,7 +585,10 @@ export function createCombatSimulation(ctx, deps) {
           ctx.ports.vfx.addRing(e.x, e.y, '#ff9f43', 3.4);
           for (const o of ctx.game.enemies) {
             if (o.hp > 0 && dist(o, e) <= 3.4) {
-              o.hp = Math.min(o.maxHp, o.hp + Math.round(o.maxHp * 0.06));
+              if (!o.signatureLockActive) {
+                const healPct = o.boss ? BALANCE.combat.bossShamanHealingPct : BALANCE.combat.normalShamanHealingPct;
+                o.hp = Math.min(o.maxHp, o.hp + Math.round(o.maxHp * healPct));
+              }
               o.frenzyT = Math.max(o.frenzyT, 2.4);
             }
           }
@@ -600,7 +618,7 @@ export function createCombatSimulation(ctx, deps) {
         if (e.kind === 'boss6') {
           const w30Cfg = BALANCE.w30Boss || {};
           if (e.signatureLockActive) {
-            e.hp = Math.max(e.hp, e.signatureThresholdHp);
+            e.hp = e.signatureThresholdHp;
             e.signatureTimer = Math.max(0, (e.signatureTimer || 0) - dt);
             if (e.signatureStage === 'telegraph' && e.signatureTimer <= 0) {
               const shockSec = w30Cfg.signatureShockwaveSeconds || 2.2;
@@ -1008,16 +1026,27 @@ export function createCombatSimulation(ctx, deps) {
       const hitDist = 0.62 + e.r;
       if (dHero <= hitDist) {
         if (e.cd <= 0) {
-          e.cd = 0.95;
-          damageHero(e.dmg, {
+          const sourceMeta = {
             attackerName: e.name || e.kind,
             attackerKind: e.kind,
             skillName: e.kind === 'void_guard' ? '暗潮近卫突刺 (W30随机辅助)' : e.boss ? '首领近身重击' : '近身撞击',
             isBoss: !!e.boss,
             isBossCore: !!e.boss,
             isBossAux: e.kind === 'void_guard',
-            auxKey: e.kind === 'void_guard' ? 'void_guards' : null
-          });
+            auxKey: e.kind === 'void_guard' ? 'void_guards' : null,
+            damageTuned: true
+          };
+          if (e.boss) {
+            const windup = BALANCE.combat.bossMeleeWindup;
+            e.cd = windup + 0.95;
+            ctx.game.zones.push({
+              kind: 'bossSlam', x: e.x, y: e.y, r: hitDist + 0.55,
+              t: windup, max: windup, dmg: Math.round(e.dmg * BALANCE.combat.bossMeleeDamageMult), sourceMeta
+            });
+          } else {
+            e.cd = 0.95;
+            damageHero(e.dmg, sourceMeta);
+          }
         }
         continue;
       }
@@ -1040,7 +1069,9 @@ export function createCombatSimulation(ctx, deps) {
         const b = ctx.game.enemies[j];
         if (b.hp <= 0) continue;
         const dx = b.x - a.x, dy = b.y - a.y;
-        const d = Math.hypot(dx, dy), md = a.r + b.r;
+        const md = a.r + b.r;
+        if (Math.abs(dx) >= md || Math.abs(dy) >= md) continue;
+        const d = Math.hypot(dx, dy);
         if (d > 0.001 && d < md) {
           const push = (md - d) * 0.28;
           a.x -= dx / d * push; a.y -= dy / d * push;

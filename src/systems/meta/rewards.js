@@ -104,6 +104,11 @@ export function createMetaRewards(ctx, persistence, loadout) {
   // Re-read persisted run IDs to block duplicate settlement even after a reload.
   function settleRunMetaRewards(victory){
     if (!ctx.game) return null;
+    if (ctx.game.debugRun) {
+      const preview = { practice: true, eligible: false, totalShardsGranted: 0, newlyClaimedMilestones: [] };
+      ctx.game.metaSettlement = preview;
+      return preview;
+    }
     const runId = ctx.game.runId || (ctx.game.runId = generateRunId(ctx.game.seed));
 
     // If this exact runId already has a pending unsaved settlement (previous write failed), do NOT double-award!
@@ -162,8 +167,14 @@ export function createMetaRewards(ctx, persistence, loadout) {
     const shrinesThisRun = (ctx.game.telemetry || []).filter(t => t.shrineCleared).length;
     save.stats.shrinesClearedTotal = (save.stats.shrinesClearedTotal || 0) + shrinesThisRun;
 
+    const challengeMarks = [];
+    if (save.unlockedPacks.includes('pack_challenge_marks')) {
+      if (victory && (ctx.game.stats.destinyRolls || 0) === 0) challengeMarks.push('零赌清修');
+      if (shrinesThisRun >= 3) challengeMarks.push('妖碑狩猎');
+    }
     const record = {
       ...breakdown,
+      challengeMarks,
       runId,
       victory: !!victory,
       newlyClaimedMilestones: newMilestones.map(m => ({ id: m.id, name: m.name, desc: m.desc, shardReward: m.shardReward })),

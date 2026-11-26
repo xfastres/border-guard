@@ -1,6 +1,6 @@
 import BALANCE from '../../data/balance.js';
 import { GEARS } from '../../data/index.js';
-import { getSourceStageForWave, getSourceStageSpec } from '../../core/state-queries.js';
+import { getBuildRoute, getSourceStageForWave, getSourceStageSpec } from '../../core/state-queries.js';
 import { gearBase } from '../equipment/index.js';
 
 // Recycle value depends STRICTLY on inst.rarity and inst.sourceStage (NEVER slotsCount or current wave!)
@@ -30,6 +30,10 @@ export function getGearEnhanceCost(inst){
   if (curLv >= maxLv) return null;
   const table = Array.isArray(cfg.matCostByNextLv) ? cfg.matCostByNextLv : [2, 3, 5, 7, 10, 14];
   return table[curLv] ?? (2 + curLv * 2);
+}
+
+export function getGearEnhanceGoldCost(inst){
+  return BALANCE.equipment.materialEnhance.goldCostByNextLv[inst?.enhanceLv || 0] ?? 0;
 }
 
 export function getBagCapacity(){
@@ -109,7 +113,7 @@ export function createEconomyPricing(ctx, { meta, equipment }) {
     const activePool = getActiveRunGearKeys();
     const pool = activePool.filter(k => GEARS[k]?.rarity === rarity);
     const list = pool.length ? pool : activePool;
-    return pickWeightedByMainLegacy(list, k => GEARS[k]?.elem || null, rndFn) || list[0];
+    return pickWeightedByMainLegacy(list, k => GEARS[k]?.elem || null, rndFn, getBuildRoute(ctx.game)?.elem) || list[0];
   }
 
   function getGearDismantleMaterials(inst){
@@ -162,7 +166,7 @@ export function createEconomyPricing(ctx, { meta, equipment }) {
     getGearSellGold,
     getGearDismantleMaterials,
     getGearEnhanceCost,
-    getBagCapacity,
+    getGearEnhanceGoldCost,    getBagCapacity,
     hasBagSpace,
     tryStoreGearInBag,
     isBagSeal,

@@ -110,7 +110,7 @@ export function createHeroStats(ctx, { unlock, meta }) {
       // Stage 2 Affix independent modifiers
       fireMarkChance:0, fireDmgPct:0, fireDetonateBonus:0, markedDmgPct:0, burnKillHeal:0,
       chilledDmgPct:0, frostShieldCapBonus:0, shieldedDmgPct:0, shieldedMovePct:0,
-      dmgReduce:0, bonusGoldChance:0
+      dmgReduce:0, bonusGoldChance:0, windFlow:0, stormLoad:0, bloodRite:0, holyOath:0
     };
     const dfBoost = perkLv(ctx.game, 'dao_fortune') >= 2 ? 1.25 : 1;
     const greedSetBoost = (getGearSetCounts(gearList).greed || 0) >= 3 ? 1.15 : 1;
@@ -125,7 +125,8 @@ export function createHeroStats(ctx, { unlock, meta }) {
           const scaled = key === 'extraShot' ? val : (val < 0 ? val : val * mult);
           if (key === 'slowOnHit') m.slowOnHit = Math.max(m.slowOnHit, Math.min(0.65, scaled));
           else if (key === 'chainProc') m[key] = Math.min(0.8, m[key] + scaled);
-          else m[key] += scaled;
+          else if (key === 'fireMarkChance') m[key] = Math.max(m[key], Math.min(0.98, scaled));
+          else if (key in m) m[key] += scaled;
         }
       }
       // Aggregate every independent affix on this instance (preserved regardless of duo/trio synergy!)
@@ -147,7 +148,8 @@ export function createHeroStats(ctx, { unlock, meta }) {
         }
       }
     }
-    m.extraShot = Math.round(m.extraShot);
+    m.dmgReduce = Math.min(0.35, m.dmgReduce);
+    m.extraShot = Math.min(BALANCE.combat.extraShotCap, Math.round(m.extraShot));
     m.bonusGold = Math.round(m.bonusGold);
     m.flatHp = Math.round(m.flatHp);
     m.frostShieldCapBonus = Math.round(m.frostShieldCapBonus);
@@ -220,7 +222,9 @@ export function createHeroStats(ctx, { unlock, meta }) {
     const destinyDashCrit = (hasDestinyEnhancement(ctx.game, 'destiny_phantom_stride') && (h.destinyDashBuffT || 0) > 0) ? 0.20 : 0;
     const destinyFrostMove = (hasDestinyEnhancement(ctx.game, 'destiny_glacial_aegis') && (h.destinyFrostMoveT || 0) > 0) ? 0.12 : 0;
 
-    const aspd = Math.max(0.5, 1 + gm.aspd + berkLv * 0.18 + holyAura + (syn.wind >= 2 ? 0.25 : 0) + (h.ultTimer > 0 ? 0.80 : 0) + bloodAspd + dashAspd + greedAspd + destinyTemperAspd);
+    const rawAspd = Math.max(0.5, 1 + gm.aspd + berkLv * 0.18 + holyAura + (syn.wind >= 2 ? 0.25 : 0) + (h.ultTimer > 0 ? 0.80 : 0) + bloodAspd + dashAspd + greedAspd + destinyTemperAspd);
+    const { attackSpeedSoftCap, attackSpeedOverflowScale } = BALANCE.combat;
+    const aspd = Math.min(rawAspd, attackSpeedSoftCap) + Math.max(0, rawAspd - attackSpeedSoftCap) * attackSpeedOverflowScale;
     const dmgMult = 1 + gm.dmgPct + shieldAffixDmg + (h.lv - 1) * BALANCE.progression.heroDmgPerLevel + r.dmgBonus + bloodDmg + goldDmg + sealDmgBonus + bloodKillDmg + destinyTemperDmg;
 
     const ownedSkills = Object.values(h.skills).filter(v => v > 0).length;
@@ -238,9 +242,10 @@ export function createHeroStats(ctx, { unlock, meta }) {
       + (windGaleLv >= 1 && h.dashBuffT > 0 ? 1.0 : 0) + destinyDashCrit;
     const overflowCrit = Math.max(0, rawCrit - 1.0);
     const crit = Math.min(1.0, rawCrit);
-    const critDmg = (syn.holy >= 4 ? 2.2 : BALANCE.progression.heroBaseCritMultiplier) + gm.critDmg + holyMasteryCritDmg + (hasDualRes('holy_omni') ? 0.25 : 0)
-      + (csLv === 2 ? overflowCrit * 3 : csLv === 1 ? overflowCrit * 2 : 0)
+    const rawCritDmg = (syn.holy >= 4 ? 2.2 : BALANCE.progression.heroBaseCritMultiplier) + gm.critDmg + holyMasteryCritDmg + (hasDualRes('holy_omni') ? 0.25 : 0)
+      + (csLv === 2 ? overflowCrit * 3 * BALANCE.combat.critOverflowScale : csLv === 1 ? overflowCrit * 2 * BALANCE.combat.critOverflowScale : 0)
       + (perkLv(ctx.game, 'sword_rain') >= 2 ? 0.60 : 0) + destinyCrownCritDmg;
+    const critDmg = Math.min(rawCritDmg, BALANCE.combat.critDamageCap);
 
     const moveSpd = (BALANCE.progression.heroBaseMove + berkLv * BALANCE.progression.heroMovePerBerserkLv)
       * (1 + gm.movePct + shieldAffixMove + greedMove + wfDualMove + destinyFrostMove + (windGaleLv === 2 ? 0.30 : windGaleLv === 1 ? 0.20 : 0) + (perkLv(ctx.game, 'ult_engine') >= 1 && h.ultTimer > 0 ? 0.30 : 0));

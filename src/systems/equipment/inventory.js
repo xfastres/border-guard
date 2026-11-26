@@ -5,8 +5,9 @@ import {
   SEAL_FUSE_NEED,
   SUB_SEAL_RESONANCE,
 } from '../../data/index.js';
+import BALANCE from '../../data/balance.js';
 import { clamp } from '../../core/math.js';
-import { getSourceStageSpec, isFinalPrepActionLocked } from '../../core/state-queries.js';
+import { getSourceStageSpec } from '../../core/state-queries.js';
 import { gearBase, gearLabel, isGearInstance } from './instance.js';
 
 export function createEquipmentInventory(ctx, { equipment, economy, unlock, hero }) {
@@ -17,6 +18,7 @@ export function createEquipmentInventory(ctx, { equipment, economy, unlock, hero
     getBagCapacity,
     getGearDismantleMaterials,
     getGearEnhanceCost,
+    getGearEnhanceGoldCost,
     getGearSellGold,
     hasBagSpace,
     isBagSeal,
@@ -27,7 +29,7 @@ export function createEquipmentInventory(ctx, { equipment, economy, unlock, hero
 
   function equipGearFromBag(bagIdx){
     const game = ctx.game;
-    if (isFinalPrepActionLocked(game)) return false;
+    if (ctx.isFinalPrepActionLocked()) return false;
     if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
     const raw = game.bag[bagIdx];
     if (isBagSeal(raw)) {
@@ -65,7 +67,7 @@ export function createEquipmentInventory(ctx, { equipment, economy, unlock, hero
 
   function replaceEquippedGear(slotIdx, bagIdx){
     const game = ctx.game;
-    if (isFinalPrepActionLocked(game)) return { ok: false, reason: 'final_prep_locked' };
+    if (ctx.isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
     if (slotIdx < 0 || slotIdx >= game.hero.gear.length) return { ok: false, reason: 'invalid_slot_idx' };
     if (bagIdx < 0 || bagIdx >= game.bag.length) return { ok: false, reason: 'invalid_bag_idx' };
     if (isBagSeal(game.bag[bagIdx])) {
@@ -86,7 +88,7 @@ export function createEquipmentInventory(ctx, { equipment, economy, unlock, hero
 
   function unequipGear(slotIdx){
     const game = ctx.game;
-    if (isFinalPrepActionLocked(game)) return false;
+    if (ctx.isFinalPrepActionLocked()) return false;
     const list = game.hero.gear;
     if (!list || slotIdx < 0 || slotIdx >= list.length) return false;
     if (!hasBagSpace(1)) {
@@ -106,7 +108,7 @@ export function createEquipmentInventory(ctx, { equipment, economy, unlock, hero
 
   function sellBagGear(bagIdx){
     const game = ctx.game;
-    if (isFinalPrepActionLocked(game)) return false;
+    if (ctx.isFinalPrepActionLocked()) return false;
     if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
     const inst = game.bag[bagIdx];
     if (isBagSeal(inst)) {
@@ -133,7 +135,7 @@ export function createEquipmentInventory(ctx, { equipment, economy, unlock, hero
 
   function dismantleBagGear(bagIdx){
     const game = ctx.game;
-    if (isFinalPrepActionLocked(game)) return false;
+    if (ctx.isFinalPrepActionLocked()) return false;
     if (bagIdx < 0 || bagIdx >= game.bag.length) return false;
     const inst = game.bag[bagIdx];
     if (isBagSeal(inst)) {
@@ -292,7 +294,7 @@ export function createEquipmentInventory(ctx, { equipment, economy, unlock, hero
 
   function claimRewardStashItem(stashIdx = 0){
     const game = ctx.game;
-    if (isFinalPrepActionLocked(game)) return { ok: false, reason: 'final_prep_locked' };
+    if (ctx.isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
     if (!game?.rewardStash || stashIdx < 0 || stashIdx >= game.rewardStash.length) {
       return { ok: false, reason: 'invalid_stash_index' };
     }
@@ -313,7 +315,7 @@ export function createEquipmentInventory(ctx, { equipment, economy, unlock, hero
   // STRICTLY preserving rarity, sourceStage, slotsCount, and affix IDs!
   function enhanceGear(target){
     const game = ctx.game;
-    if (isFinalPrepActionLocked(game)) return { ok: false, reason: 'final_prep_locked' };
+    if (ctx.isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
     if (!game?.hero) return { ok: false, reason: 'no_game' };
     let inst = null;
     if (typeof target === 'string') {
@@ -333,6 +335,12 @@ export function createEquipmentInventory(ctx, { equipment, economy, unlock, hero
       ctx.ports.ui.toast(`材料强化需要 ⚙️${cost} 普通材料（当前 ${game.materials || 0}）！`, true);
       return { ok: false, reason: 'insufficient_materials', need: cost };
     }
+    const goldCost = getGearEnhanceGoldCost?.(inst) ?? 0;
+    if (game.gold < goldCost) {
+      ctx.ports.ui.toast(`精修还需 ${goldCost} 金币`, true);
+      return { ok: false, reason: 'insufficient_gold', need: goldCost };
+    }
+    if (goldCost > 0) changeGold(-goldCost, 'equipment_refine');
     changeMaterials(-cost, 'enhance_gear');
     inst.enhanceLv = (inst.enhanceLv || 0) + 1;
     // Upgrade numeric tier of existing affixes while strictly preserving affix IDs, slotsCount, rarity, sourceStage!

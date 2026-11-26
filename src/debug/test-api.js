@@ -136,7 +136,7 @@ export function createPublicGameApi(runtimeCtx, { systems, ui, presets, gameLoop
   function hasW20Enhancement(enhKey){ return queries.hasW20Enhancement(runtimeCtx.game, enhKey); }
   function hasDestinyEnhancement(key){ return queries.hasDestinyEnhancement(runtimeCtx.game, key); }
   function getOwnedDestinyEnhancements(){ return queries.getOwnedDestinyEnhancements(runtimeCtx.game); }
-  function isFinalPrepActionLocked(){ return queries.isFinalPrepActionLocked(runtimeCtx.game); }
+  function isFinalPrepActionLocked(){ return runtimeCtx.isFinalPrepActionLocked(); }
   function hasPendingW29WaveRewards(){ return queries.hasPendingW29WaveRewards(runtimeCtx.game); }
   function getFinalPrepState(){ return queries.getFinalPrepState(runtimeCtx.game); }
 

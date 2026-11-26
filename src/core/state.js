@@ -22,6 +22,8 @@ function buildRunState(seed, rnd, deps = {}){
     autoWavePausedForDecision: false,
     harvestTimer: 0,
     wave: 1,
+    nextTowerId: 1,
+    debugRun: false,
     waveClock: 0,
     stormWarnAt: 999,
     stormWarned: false,
@@ -44,6 +46,7 @@ function buildRunState(seed, rnd, deps = {}){
       lockedAtWave: null
     },
     w20Draft: null,
+    w10SkillDrafts: null,
     destiny: {
       pendingOffer: null, // { offerId, bet, wave, choices: [...], claimed: false, claimedChoiceIndex: null }
       lastOffer: null,
@@ -141,7 +144,9 @@ function buildRunState(seed, rnd, deps = {}){
       leechUsed: 0, leechTimer: 0,
       gear: [], // up to 4 independent gear instances
       activeGearSynergies: null,
-      skills: {}, // Chosen via 3-choice starter active skill modal!
+      skills: {},
+      starterSkill: null,
+      routeCombat: {},
       w10Branch: {}, // { [skillKey]: branchKey }
       breakthroughs: {
         w10: null,
@@ -164,7 +169,7 @@ function buildRunState(seed, rnd, deps = {}){
       },
       combos: {},
       perks: {},
-      skillTimers: { firewave: 0.3, thunder: 0.4, nova: 0.4, stomp: 0.5, spirit: 0 },
+      skillTimers: { swordlance: 0, sunward: 0, firewave: 0.3, thunder: 0.4, nova: 0.4, stomp: 0.5, spirit: 0 },
       bladeAngle: 0,
       bladeHitMap: new Map(),
       shatterCdMap: new Map()
@@ -247,7 +252,7 @@ function buildRunState(seed, rnd, deps = {}){
       w20BaseProcs: 0, w20EnhancementProcs: 0, w20FirePulls: 0, w20FrostCounterProcs: 0, w20BreakerSlams: 0,
       w20BossAuxTriggers: 0, w20TotemsDestroyed: 0,
       destinyRolls: 0, destinyEmptyTribulations: 0, destinyClaims: 0, destinyEnhancementProcs: 0, affixTransfers: 0,
-      skillDmg: { blades:0, firewave:0, thunder:0, nova:0, stomp:0, berserk:0, dash:0, spirit:0, combo:0, perk:0, burn:0 }
+      skillDmg: { swordlance:0, sunward:0, route:0, blades:0, firewave:0, thunder:0, nova:0, stomp:0, berserk:0, dash:0, spirit:0, combo:0, perk:0, burn:0 }
     }
   };
   return g;

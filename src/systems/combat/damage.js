@@ -50,7 +50,8 @@ export function createCombatDamage(ctx, deps) {
     const bw = BALANCE.wave;
     const waveSpdMult = bw.enemySpeedBands.reduce((m, band) => ctx.game.wave >= band.from ? band.mult : m, 1);
     const wDmgMult = (1 + (ctx.game.wave - 1) * bw.enemyDamageGrowthPerWave) *
-      (ctx.game.wave >= bw.enemyDamageLateStart ? Math.pow(bw.enemyDamageLateGrowth, ctx.game.wave - (bw.enemyDamageLateStart - 1)) : 1);
+      (ctx.game.wave >= bw.enemyDamageLateStart ? Math.pow(bw.enemyDamageLateGrowth, ctx.game.wave - (bw.enemyDamageLateStart - 1)) : 1)
+      * (bw.pressure[ctx.game.wave - 1] ?? 1);
     const w30Cfg = BALANCE.w30Boss || {};
     const baseSpd = Number((sp.spd * waveSpdMult).toFixed(2));
     const e = {
@@ -203,7 +204,7 @@ export function createCombatDamage(ctx, deps) {
     const bloodSet = deps.hero.gearSetTier('blood');
     const bloodMult = bloodSet >= 3 ? 1.80 : bloodSet >= 2 ? 1.45 : 1.0;
     const afkMult = (ctx.game.phase === 'wave' && !h.moving && h.invuln <= 0) ? 0.50 : 1.0;
-    const cap = Math.max(8, Math.round(h.maxHp * 0.055 * bloodMult * afkMult));
+    const cap = Math.max(8, Math.round(h.maxHp * BALANCE.combat.leechHpFractionPerSecond * bloodMult * afkMult));
     const avail = Math.max(0, cap - (h.leechUsed || 0));
     const heal = Math.min(rawAmt, avail, h.maxHp - h.hp);
     if (heal > 0) {
@@ -214,7 +215,7 @@ export function createCombatDamage(ctx, deps) {
   }
 
   function dealDamage(e, rawDmg, opts = {}){
-    if (!e || e.hp <= 0) return 0;
+    if (!e || e.hp <= 0 || ctx.game.phase === 'won' || ctx.game.phase === 'lost') return 0;
     const wasSignatureLocked = !!(e.kind === 'boss6' && e.signatureLockActive);
     const syn = deps.hero.getSynergyCounts();
     const frostSet = deps.hero.gearSetTier('frost');
@@ -257,6 +258,10 @@ export function createCombatDamage(ctx, deps) {
       if (dcLv >= 2) dcHealPending = true;
     }
 
+    const statusCap = BALANCE.combat.statusMultiplierSoftCap;
+    if (dmg > rawDmg * statusCap) {
+      dmg = rawDmg * statusCap + (dmg - rawDmg * statusCap) * BALANCE.combat.statusOverflowScale;
+    }
     const isCrit = opts.critChance ? ctx.game.rnd() < opts.critChance : false;
     if (isCrit) dmg *= (opts.critDmg || 1.7);
     if (isCrit && hasDestinyEnhancement(ctx.game, 'destiny_fate_breaker') && (e.boss || e.elite) && !opts.fromDestinyBreaker && (ctx.game.hero?.destinyBreakerCd || 0) <= 0) {
@@ -285,7 +290,7 @@ export function createCombatDamage(ctx, deps) {
       // STRICT HP LOCK: actual HP deduction = 0, damage-based lifesteal = 0; legitimate hit effects STILL resolve below!
       actualHpDmg = 0;
       actualShieldDmg = 0;
-      e.hp = Math.max(e.hp, e.signatureThresholdHp);
+      e.hp = e.signatureThresholdHp;
       e.flash = 0.08;
       if (ctx.game.w30Battle) {
         ctx.game.w30Battle.signatureHitsDuringLock++;
@@ -339,7 +344,7 @@ export function createCombatDamage(ctx, deps) {
     }
 
     if (!wasSignatureLocked && (isCrit || effectiveDmg >= 28 || ctx.game.floats.length < 40)) {
-      ctx.ports.vfx.addFloat(e.x + (ctx.game.rnd()-0.5)*0.3, e.y - 0.3, isCrit ? `${effectiveDmg}!` : `${effectiveDmg}`, isCrit ? '#ffdf4d' : (opts.col || '#ffffff'), isCrit);
+      ctx.ports.vfx.addFloat(e.x + (ctx.game.rnd()-0.5)*0.3, e.y - 0.3, isCrit ? `${Math.round(effectiveDmg)}!` : String(Math.round(effectiveDmg)), isCrit ? '#ffdf4d' : (opts.col || '#ffffff'), isCrit);
     }
     if (isCrit) {
       ctx.ports.audio.play('crit');
@@ -398,7 +403,7 @@ export function createCombatDamage(ctx, deps) {
         }
       }
     }
-    if (opts.vuln) e.vulnT = Math.max(e.vulnT || 0, 3.0);
+    if (opts.vuln || (opts.vulnBoss && (e.boss || e.elite))) e.vulnT = Math.max(e.vulnT || 0, 3.0);
     if (opts.burn > 0) {
       e.burnDps = Math.max(e.burnDps, opts.burn);
       e.burnT = Math.max(e.burnT, 3.0);
@@ -538,6 +543,7 @@ export function createCombatDamage(ctx, deps) {
     }
 
     if (e.hp <= 0) onEnemyKilled(e, opts);
+    else deps.builds?.afterBuildHit(e, actualHpDmg, opts, gm);
     return effectiveDmg;
   }
 
@@ -551,7 +557,16 @@ export function createCombatDamage(ctx, deps) {
     const affixGold = (gm.bonusGoldChance > 0 && ctx.game.rnd() < gm.bonusGoldChance) ? 1 : 0;
     const bonusGold = (opts.bonusGold || 0) + affixGold;
     const baseGold = (e.elite || e.boss || e.gold >= 2) ? e.gold : (ctx.game.rnd() < BALANCE.economy.singleGoldDropChance ? e.gold : 0);
-    const killGold = baseGold + bonusGold;
+    const tel = ctx.game.curWaveTel;
+    let killGold = baseGold + bonusGold;
+    if (tel && !e.boss && !e.elite) {
+      const goldLimit = Math.round(BALANCE.economy.killGoldBudgetBase + (ctx.game.wave - 1) * BALANCE.economy.killGoldBudgetPerWave);
+      const normalGold = Math.min(baseGold, Math.max(0, goldLimit - tel.killGold));
+      const greedGold = Math.min(bonusGold, Math.max(0, BALANCE.economy.greedKillGoldPerWave - tel.greedGold));
+      tel.killGold += normalGold;
+      tel.greedGold += greedGold;
+      killGold = normalGold + greedGold;
+    }
     if (killGold > 0) deps.economy.changeGold(killGold, e.boss ? 'kill_boss' : e.elite ? 'kill_elite' : 'kill_enemy');
 
     if (gm.burnKillHeal > 0 && (e.burnT > 0 || e.fireMarkT > 0)) {
@@ -646,7 +661,7 @@ export function createCombatDamage(ctx, deps) {
       ctx.ports.vfx.addRing(e.x, e.y, '#ff6d38', rad);
       for (const o of ctx.game.enemies) {
         if (o.id !== e.id && o.hp > 0 && dist(o, e) <= rad) {
-          dealDamage(o, expDmg, { col:'#ff884d', fromCorpse:true, skillKey:'perk', burn: fnLv >= 2 ? 16 : 0 });
+          dealDamage(o, o.boss ? Math.min(expDmg, Math.round(BALANCE.combat.corpseBossCapSkillMult * deps.hero.getHeroStats().skillDmgMult)) : expDmg, { col:'#ff884d', fromCorpse:true, skillKey:'perk', burn: fnLv >= 2 ? 16 : 0 });
         }
       }
     }
@@ -703,7 +718,8 @@ export function createCombatDamage(ctx, deps) {
     // Drop Equipment Chest: Boss always drops Legend Chest; 1st Elite per wave guaranteed, 2nd Elite 25% chance
     if (e.boss || e.elite) {
       ctx.game.stats.elites++;
-      const dropChest = e.boss || !ctx.game.eliteChestDropped || (e.elite && ctx.game.rnd() < 0.25);
+      const guaranteed = BALANCE.economy.eliteChestWaves.includes(ctx.game.wave) && !ctx.game.eliteChestDropped;
+      const dropChest = e.boss || guaranteed || (ctx.game.eliteChestDropped && e.elite && ctx.game.rnd() < 0.25);
       if (dropChest) {
         if (e.elite) ctx.game.eliteChestDropped = true;
         ctx.game.chests.push({ x: e.x, y: e.y, legend: !!e.boss, bob: 0 });
@@ -712,8 +728,8 @@ export function createCombatDamage(ctx, deps) {
         ctx.ports.audio.play('chest');
         ctx.game.shake = Math.max(ctx.game.shake, e.boss ? 10 : 5);
       } else {
-        deps.economy.changeGold(14, 'elite_bounty');
-        ctx.ports.vfx.addFloat(e.x, e.y - 0.5, '💰 精英赏金 +14', '#ffe478', true);
+        deps.economy.changeGold(BALANCE.economy.eliteFallbackBounty, 'elite_bounty');
+        ctx.ports.vfx.addFloat(e.x, e.y - 0.5, '💰 精英赏金 +${BALANCE.economy.eliteFallbackBounty}', '#ffe478', true);
         ctx.ports.audio.play('coin', 1.1);
       }
     }
@@ -724,7 +740,7 @@ export function createCombatDamage(ctx, deps) {
     let cur = startEnemy;
     const thSet = deps.hero.gearSetTier('thunder');
     const totalTargets = maxTargets + (thSet >= 3 ? 1 : 0);
-    const jumpMult = thSet >= 2 ? 1.12 : 0.88;
+    const jumpMult = thSet >= 2 ? BALANCE.combat.chainSetDecay : BALANCE.combat.chainDecay;
     const pts = [{ x: opts.ox ?? startEnemy.x, y: opts.oy ?? startEnemy.y }, { x: startEnemy.x, y: startEnemy.y }];
     dealDamage(cur, dmg, { ...opts, col:'#d8a6ff', noChainProc:true, isThunder:true });
 

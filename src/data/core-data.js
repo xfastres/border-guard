@@ -39,7 +39,7 @@ export const SEAL_FUSE_NEED = [0, 1, 2, 3, 4, 0]; // pts needed to advance from 
 export const ARTIFACTS = {
   wind: {
     key:'wind', elem:'wind', name:'疾风灵印', icon:'🌪️', cost:22,
-    desc:'【风附魔】命中点向外迸射穿刺风刃（3★激2层攻速，5★激4层分裂剑雨）',
+    desc:'【风附魔】命中点迸射穿刺风刃，孤立强敌受到一道集中风斩（3★与5★开启元素羁绊）',
     stars:[
       { dmg:14, cd:0.65, range:3.8, shots:2, pierce:1, splash:0 },
       { dmg:22, cd:0.56, range:4.3, shots:3, pierce:1, splash:0 },
@@ -170,7 +170,7 @@ export const PERKS = {
   undying_will:     { key:'undying_will',     family:'体修', name:'不灭金身', icon:'👑', rarity:'epic',   d1:'每波 1 次免死：致命伤转无敌 2.5s + 回 50% 血 + 清屏震爆', d2:'免死回 80% 血 + 立刻触发 4s 全军超载狂暴' },
   mono_mastery:     { key:'mono_mastery',     family:'专精', name:'一法破万法',icon:'🎯', rarity:'rare',   d1:'【专精】拥有领主神通 ≤2 种时，神通伤害 ×1.30、范围 +8%', d2:'条件放宽至 ≤3 种，神通伤害 ×1.55、范围 +15%、冷却 -20%' },
   artifact_overclock:{ key:'artifact_overclock',family:'灵印',name:'灵印共鸣',icon:'🔮', rarity:'rare',   d1:'灵印 CD -25%，每 1★ 增全伤 +8%，且提前解锁 +1 辅灵印槽（上限2槽）', d2:'灵印触发额外 +1 弹道/范围 +30%，并提前破境 +1 主印星上限' },
-  gold_power:       { key:'gold_power',       family:'经济', name:'点石成金', icon:'💰', rarity:'common', d1:'每持 50 金全伤 +6%（上限 +42%）；过波享 10% 利息（上限 25）', d2:'每 50 金 +9%（上限 +63%），商店刷新 25% 几率免费' },
+  gold_power:       { key:'gold_power',       family:'经济', name:'点石成金', icon:'💰', rarity:'common', d1:'每持 50 金全伤 +6%（上限 +42%）；过波享 7% 利息（上限 12）', d2:'每 50 金 +9%（上限 +63%），商店刷新 25% 几率免费' },
   crit_surge:       { key:'crit_surge',       family:'通用', name:'破妄神瞳', icon:'👁️', rarity:'common', d1:'暴击 +15%；超出 100% 的溢出暴击率按 1:2 转暴伤', d2:'暴击 +25%；1:3 转暴伤，暴击缩减冲刺/超载 CD 0.15s' },
   ult_engine:       { key:'ult_engine',       family:'通用', name:'燃魂超载', icon:'⚡', rarity:'rare',   d1:'每击杀 25 敌缩减「全军超载(R)」CD 3s；超载移速 +30%', d2:'每击杀 15 敌减 4s，超载持续时间延至 8s' },
   dao_fortune:      { key:'dao_fortune',      family:'通用', name:'天命垂青', icon:'🌟', rarity:'epic',   d1:'立刻获 1 件灵品(蓝)构装 + 35 金；精英/Boss 必额外掉修为大球', d2:'再获 1 件史诗(紫)构装，所有构装叠星倍率额外 +25%' }
@@ -185,7 +185,17 @@ export const PILLS = {
 };
 export const PILL_KEYS = Object.keys(PILLS);
 
+export const HERO_SKILL_STARTERS = BALANCE.progression.starterSkills;
+
 export const HERO_SKILLS = {
+  swordlance: {
+    key:'swordlance', name:'御剑贯虹', icon:'◇', tag:'瞄准 · 直线贯穿',
+    desc: lv => `把剑气射向瞄准方向，可贯穿前方敌阵。第一击对首领与精英尤其有效（Lv.${lv}）。`
+  },
+  sunward: {
+    key:'sunward', name:'日曜护符', icon:'☼', tag:'定向圣击 · 获得护盾',
+    desc: lv => `优先照击精英与首领，同时灼照近旁敌群；命中后生成护盾（Lv.${lv}）。`
+  },
   blades: {
     key:'blades', name:'旋风飞刃', icon:'🌀', tag:'割草核心',
     desc: lv => `召唤 ${lv + 1} 把发光飞刃环绕领主高速旋转，切碎贴身怪海（当前 Lv.${lv}）。`
@@ -196,7 +206,7 @@ export const HERO_SKILLS = {
   },
   thunder: {
     key:'thunder', name:'天雷轰顶', icon:'⚡', tag:'锁强清屏',
-    desc: lv => `每 ${(Math.max(0.85, 2.1 - lv*0.26)).toFixed(2)}s 召唤 ${lv + 1} 道天雷优先劈向首领/精英/祭司（当前 Lv.${lv}）。`
+    desc: lv => `基础间隔 ${(Math.max(BALANCE.progression.skillBase.thunder.minCd, BALANCE.progression.skillBase.thunder.cd - lv * BALANCE.progression.skillBase.thunder.perLvCd)).toFixed(2)}s 召唤 ${lv + 1} 道天雷优先劈向首领/精英/祭司（当前 Lv.${lv}）。`
   },
   nova: {
     key:'nova', name:'冰霜新星', icon:'❄️', tag:'控场碎冰',
@@ -208,7 +218,7 @@ export const HERO_SKILLS = {
   },
   berserk: {
     key:'berserk', name:'狂战血怒', icon:'🩸', tag:'吸血磁铁',
-    desc: lv => `领主攻速 +${lv*18}%、暴击 +${lv*8}%、击杀回血 +${lv*2}、经验磁铁范围大幅扩大。`
+    desc: lv => `领主攻速 +${lv*18}%、暴击 +${lv*8}%、命中吸血系数 +${lv*2}（受每秒总量限制）、经验磁铁范围大幅扩大。`
   }
 };
 
@@ -219,6 +229,18 @@ export const HERO_SKILLS = {
    - Frost: slowT / applyFrostSlow -> gainFrostShield / triggerFrostPulse (减速/冰盾)
 ==================================================================================== */
 export const W10_SKILL_BRANCHES = {
+  swordlance: [
+    { key:'sl_returning_lance', skillKey:'swordlance', name:'回锋定阵', icon:'◇', tag:'折返直刺', hookType:'wind_echo', desc:'每次剑气带回一击，能集中打击正前方强敌。冲刺重置御剑贯虹，使回锋更快接上。' },
+    { key:'sl_cross_lanes', skillKey:'swordlance', name:'交锋三路', icon:'◇', tag:'三向清群', hookType:'wind_echo', desc:'向左右另两条轨道发出较弱剑气，适合清理多路围攻。' },
+    { key:'sl_sever_guard', skillKey:'swordlance', name:'断甲长锋', icon:'◇', tag:'前锋易伤', hookType:'wind_echo', desc:'剑气略窄且贯穿更少，但命中首领或精英可施加易伤。' },
+    { key:'sl_stillpoint', skillKey:'swordlance', name:'轻身御锋', icon:'◇', tag:'站位机动', hookType:'wind_echo', desc:'走动中射出快速长剑。冲刺后首轮贯虹获得额外射程与护盾。' },
+  ],
+  sunward: [
+    { key:'su_verdict', skillKey:'sunward', name:'金轮审判', icon:'☼', tag:'持盾锁强', hookType:'holy_verdict', desc:'有盾时，用两道连续圣击打向首领或精英。' },
+    { key:'su_shelter', skillKey:'sunward', name:'拂晓护壳', icon:'☼', tag:'稳守回盾', hookType:'holy_verdict', desc:'照击改为更近的周身环，命中后额外产盾。' },
+    { key:'su_dawning', skillKey:'sunward', name:'追曦明焰', icon:'☼', tag:'圣击转火', hookType:'holy_verdict', desc:'在目标周围多照射两名敌人，加强分散敌群的处理能力。' },
+    { key:'su_cleansing', skillKey:'sunward', name:'洗锋净印', icon:'☼', tag:'破甲净化', hookType:'holy_verdict', desc:'有效命中可以解除自身破甲，并打出一次额外圣光。' },
+  ],
   firewave: [
     {
       key: 'fw_brand_pierce', skillKey: 'firewave', name: '烙印穿云 · 贯列挂标', icon: '🏹',
@@ -264,6 +286,7 @@ export const W10_SKILL_BRANCHES = {
     }
   ],
   blades: [
+    { key:'bl_crosswinds', skillKey:'blades', name:'切阵御风', icon:'◇', tag:'冲刺放剑', hookType:'wind_echo', desc:'冲刺落点沿前方射出一道贯穿风刃。飞刃保留周身转圈，冲刺后可先打远处威胁。' },
     {
       key: 'bl_twin_orbit', skillKey: 'blades', name: '双环错刃 · 内守外割', icon: '💠',
       tag: '内外双轨 · 斩慢凝盾', hookType: 'frost_slow_shield',
@@ -286,6 +309,7 @@ export const W10_SKILL_BRANCHES = {
     }
   ],
   thunder: [
+    { key:'th_storm_circuit', skillKey:'thunder', name:'留电回路', icon:'ϟ', tag:'同一目标复击', hookType:'storm_circuit', desc:'首道天雷优先劈强敌，第二道复击该目标。孤立目标承受返击，成群时优先把后续雷击分给别的目标。' },
     {
       key: 'th_judgment_pillar', skillKey: 'thunder', name: '天罚雷柱 · 落雷驻场', icon: '🌩️',
       tag: '驻场雷阵 · 雷火烙印', hookType: 'fire_mark_detonate',
@@ -308,6 +332,7 @@ export const W10_SKILL_BRANCHES = {
     }
   ],
   stomp: [
+    { key:'st_rupture', skillKey:'stomp', name:'裂甲陷阵', icon:'◇', tag:'内圈破甲', hookType:'breaker', desc:'震击内圈的精英与首领追加一道重击并短暂易伤。外圈仍可扫开普通怪。' },
     {
       key: 'st_fissure_wave', skillKey: 'stomp', name: '裂地三震 · 指向熔爆', icon: '🌋',
       tag: '前推三震 · 挂标引爆', hookType: 'fire_mark_detonate',
@@ -330,6 +355,7 @@ export const W10_SKILL_BRANCHES = {
     }
   ],
   berserk: [
+    { key:'bk_crimson_pact', skillKey:'berserk', name:'燃血回锋', icon:'◈', tag:'超载血斩', hookType:'blood_requital', desc:'超载期间朝最近强敌挥出血刃，命中可回血。超载外体力越低，血刃越难启动。' },
     {
       key: 'bk_flame_aura', skillKey: 'berserk', name: '焚血战意 · 走位烙印', icon: '🔥',
       tag: '常驻火环 · 自动挂标', hookType: 'fire_mark_detonate',

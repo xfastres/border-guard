@@ -1223,3 +1223,63 @@ body[data-phase="harvest"] .prep-console-wrap{display:none!important}
   .skill-btn .sb{display:none}
   .wave-peek-btn{padding:6px 10px;font-size:12.5px}
 }
+
+/* The top-left island keeps encounter progress while the right rail holds the build. */
+#leftHud.build-hud {
+  left: auto;
+  right: var(--ui-pad, 12px);
+}
+body:has(#inspector:not([hidden])) #leftHud.build-hud {
+  visibility: hidden;
+}
+.hv-shield {
+  color: #a7ecff;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.final-prep-clock {
+  position: fixed;
+  z-index: 80;
+  top: max(8px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 13px;
+  border: 1px solid #cba850;
+  border-radius: 20px;
+  background: #292416;
+  color: #ffe59c;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.final-prep-clock.urgent {
+  background: #461c20;
+  border-color: #ff8189;
+  color: #ffb5b9;
+}
+.route-hint, .shop-compare > div, .practice-setup {
+  padding: 10px;
+  border: 1px solid rgba(163, 215, 197, .22);
+  border-radius: 10px;
+  background: rgba(60, 103, 90, .15);
+}
+.route-hint b, .route-hint span { display: block; }
+.route-hint span { margin-top: 4px; font-size: 12px; color: #c3e2d6; }
+.shop-compare, .practice-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.shop-compare ul { padding-left: 17px; margin: 6px 0; font-size: 12px; }
+.shop-compare p, .practice-setup p { margin: 5px 0; font-size: 12px; }
+.practice-setup summary { cursor: pointer; }
+.practice-controls { margin-top: 8px; align-items: end; }
+.practice-controls label { display: grid; gap: 4px; }
+.practice-controls select { min-height: 34px; max-width: 100%; background: #12232a; color: #d4f0e6; border: 1px solid #57746e; border-radius: 6px; }
+@media (max-width: 640px) {
+  .final-prep-clock { top: auto; bottom: max(10px, env(safe-area-inset-bottom)); font-size: 12px; }
+  body:has(#modalBackdrop:not([hidden])) .final-prep-clock { bottom: auto; top: max(6px, env(safe-area-inset-top)); }
+  .shop-compare { grid-template-columns: minmax(0, 1fr); }
+  #modalBox .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

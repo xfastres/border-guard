@@ -61,8 +61,15 @@ export function createInputController(runtimeCtx, deps) {
       pointerWorld = screenToWorld(e.clientX, e.clientY);
     });
     win.addEventListener('pointerup', () => { pointerDown = false; });
-    win.addEventListener('pointercancel', () => { pointerDown = false; });
-    win.addEventListener('blur', () => { pointerDown = false; keys.clear(); });
+    function cancelMovement() {
+      pointerDown = false;
+      pointerScreen = null;
+      pointerWorld = null;
+      keys.clear();
+      if (runtimeCtx.game?.hero) runtimeCtx.game.hero.goal = null;
+    }
+    win.addEventListener('pointercancel', cancelMovement);
+    win.addEventListener('blur', cancelMovement);
     canvas.addEventListener('contextmenu', e => {
       const game = runtimeCtx.game;
       if (game?.inspTarget) { e.preventDefault(); game.inspTarget = null; renderAllUI(); }
@@ -85,7 +92,7 @@ export function createInputController(runtimeCtx, deps) {
         else if (runtimeCtx.paused) setPaused(false);
         return;
       }
-      if (k === 'tab') { e.preventDefault(); toggleLeftHud(); return; }
+      if (k === 'tab' && !game.activeModal) { e.preventDefault(); toggleLeftHud(); return; }
       if (game.activeModal) return;
       if (k === ' ' || k === 'e') { e.preventDefault(); castHeroDash(); return; }
       if (k === 'r') { castHeroOverdrive(); return; }

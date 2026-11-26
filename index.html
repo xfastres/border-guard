@@ -9,17 +9,21 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23121e24'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38'%3E%E2%9A%94%EF%B8%8F%3C/text%3E%3C/svg%3E" />
 </head>
 <body data-phase="prep" data-dock-tab="shop">
+<div class="final-prep-clock hud-island" id="finalPrepClock" hidden role="timer"></div>
 <canvas id="gameCanvas"></canvas>
 
 <!-- Floating Safe-Zone Top HUD Islands (no full-width web navbar) -->
 <header class="topbar" id="topbar">
   <!-- Top-Left Island: Brand + Wave + Hero Vitals/Realm -->
   <div class="top-left hud-island">
-    <div class="brand" title="边境守卫 v0.60">⚔️</div>
+    <div class="brand" title="边境守卫 v0.60">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m12 3 7 4v5c0 4-4 7-7 9-3-2-7-5-7-9V7zM12 7v9m-3-4h6"/></svg>
+    </div>
     <span class="pill wave-prep" id="wavePill">第 1 / 30 波 · 备战</span>
     <button class="hero-vitals-btn" id="heroPill" type="button" title="当前生命、境界与经验（点击查看属性与突破详情）">
       <span class="hv-row">
         <span class="pill hp" id="heroHpPill">❤️ 220/220</span>
+        <span class="hv-shield" id="heroShield" hidden title="剩余护盾"></span>
         <span class="hv-lv" id="heroLvTxt">炼气·初探 Lv.1</span>
       </span>
       <span class="hv-bars">

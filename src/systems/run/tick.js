@@ -56,6 +56,7 @@ export function createRunTick(ctx, deps) {
 
     ctx.ports.vfx.update(dt);
     deps.hero.updateHero(dt);
+    if (ctx.game.phase === 'won' || ctx.game.phase === 'lost') return;
     ctx.ports.viewport.updateCamera(dt, false);
 
     // Holy Tier-2 passive regen (+5/s)
@@ -63,7 +64,7 @@ export function createRunTick(ctx, deps) {
       ctx.game.holyRegenTimer -= dt;
       if (ctx.game.holyRegenTimer <= 0) {
         ctx.game.holyRegenTimer = 1.0;
-        ctx.game.hero.hp = Math.min(ctx.game.hero.maxHp, ctx.game.hero.hp + 5);
+        ctx.game.hero.hp = Math.min(ctx.game.hero.maxHp, ctx.game.hero.hp + BALANCE.combat.holyRegen);
       }
     }
 
@@ -85,7 +86,7 @@ export function createRunTick(ctx, deps) {
     // Wave Simulation with MAX_ENEMIES soft cap
     ctx.game.waveClock += dt;
     if (ctx.game.wave === MAIN_WAVES && ctx.game.w30Battle?.active) {
-      ctx.game.w30Battle.elapsedSeconds = Number((ctx.game.w30Battle.elapsedSeconds + dt).toFixed(3));
+      ctx.game.w30Battle.elapsedSeconds = ctx.game.waveClock;
     }
     if (ctx.game.curWaveTel) ctx.game.curWaveTel.duration = Number(ctx.game.waveClock.toFixed(1));
 
@@ -128,7 +129,7 @@ export function createRunTick(ctx, deps) {
           ctx.ports.audio.play('boss', 1.1);
           ctx.game.shake = Math.max(ctx.game.shake, 7);
           ctx.ports.vfx.addRing(s.x, s.y, '#ff3b5c', 3.4);
-          ctx.ports.ui.showBanner('🩸 血煞妖碑已觉醒！', '【血煞妖王】现身！斩杀赢章节构装宝箱 + 25 金 + 2 锻材！', 'boss');
+          ctx.ports.ui.showBanner('🩸 血煞妖碑已觉醒！', '【血煞妖王】现身！斩杀赢章节构装宝箱 + 25 金 + ${deps.economy.getEnemyMaterialDrop(boss, ctx.game.wave)} 锻材！', 'boss');
         }
       } else {
         s.charge = Math.max(0, s.charge - dt * 0.5);
@@ -145,10 +146,10 @@ export function createRunTick(ctx, deps) {
 
     deps.combat.updateSeal(dt);
     deps.combat.updateProjectilesAndZones(dt);
-    deps.combat.updateEnemies(dt);
-    deps.hero.updatePickups(dt);
-
     if (ctx.game.phase !== 'wave') return;
+    deps.combat.updateEnemies(dt);
+    if (ctx.game.phase !== 'wave') return;
+    deps.hero.updatePickups(dt);
     const allSpawned = ctx.game.waveQueue.every(w => w.spawned);
     if (allSpawned && ctx.game.enemies.length === 0) {
       deps.telemetry.beginWaveHarvest();

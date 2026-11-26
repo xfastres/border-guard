@@ -25,6 +25,15 @@ export function describeGearEffect(gk){
     else if (k === 'slowOnHit') parts.push(`攻击减速 ${Math.round(Math.min(0.65, val) * 100)}%`);
     else if (k === 'chainProc') parts.push(`命中 ${Math.round(Math.min(0.8, val) * 100)}% 连锁雷`);
     else if (k === 'lifesteal') parts.push(`攻击回血 +${(val * 0.5).toFixed(1)}`);
+    else if (k === 'windFlow') parts.push(`回锋威力 +${Math.round(val * 100)}%`);
+    else if (k === 'bloodRite') parts.push(`血刃威力 +${Math.round(val * 100)}%`);
+    else if (k === 'stormLoad') parts.push(`过载威力 +${Math.round(val * 100)}%`);
+    else if (k === 'holyOath') parts.push(`裁决威力 +${Math.round(val * 100)}%`);
+    else if (k === 'fireMarkChance') parts.push(`火标触发 ${Math.round(val * 100)}%`);
+    else if (k === 'fireDetonateBonus') parts.push(`引爆伤害 +${Math.round(val * 100)}%`);
+    else if (k === 'dmgReduce') parts.push(`减伤 +${Math.round(val * 100)}%`);
+    else if (k === 'frostShieldCapBonus') parts.push(`寒盾上限 +${Math.round(val)}`);
+    else if (k === 'shieldedDmgPct') parts.push(`有盾伤害 +${Math.round(val * 100)}%`);
     else if (k === 'bonusGold') parts.push(`击杀 +${Math.round(val)} 金`);
   }
   return parts.join(' · ');

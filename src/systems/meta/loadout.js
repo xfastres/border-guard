@@ -1,3 +1,4 @@
+import BALANCE from '../../data/balance.js';
 import { BASE_AFFIX_KEYS, BASE_GEAR_KEYS, GEARS, GEAR_AFFIXES } from '../../data/index.js';
 import { getMetaAuxSpec, getMetaConfig, getMetaLoadoutBudget, getMetaMainSpec, getMetaPackSpec } from './config.js';
 
@@ -98,6 +99,7 @@ export function createMetaLoadout(ctx, persistence) {
   }
 
   function unlockMetaItem(kind, id){
+    if (ctx.game?.debugRun) return { ok: false, reason: 'practice_run' };
     const save = getMetaSave();
     let spec = null;
     let list = null;
@@ -252,7 +254,7 @@ export function createMetaLoadout(ctx, persistence) {
   }
 
   // Renormalize after weighting matching elements, keeping the number of drops unchanged.
-  function getMainLegacyWeightTable(items, getElemFn){
+  function getMainLegacyWeightTable(items, getElemFn, focusElem = null){
     const cfg = getMetaConfig();
     const mainSpec = getActiveMetaMain();
     const mainElem = mainSpec?.elem || null;
@@ -260,16 +262,18 @@ export function createMetaLoadout(ctx, persistence) {
     let total = 0;
     const entries = items.map(item => {
       const elem = getElemFn(item);
-      const rawW = (mainElem && elem === mainElem) ? tilt : 1.0;
+      const metaWeight = mainElem && elem === mainElem ? tilt : 1;
+      const focusWeight = focusElem && elem === focusElem ? BALANCE.economy.gearFocusWeight : 1;
+      const rawW = metaWeight * focusWeight;
       total += rawW;
       return { item, elem, rawW };
     });
     return entries.map(e => ({ ...e, prob: total > 0 ? e.rawW / total : 0 }));
   }
 
-  function pickWeightedByMainLegacy(items, getElemFn, rndFn = ctx.game?.rnd || Math.random){
+  function pickWeightedByMainLegacy(items, getElemFn, rndFn = ctx.game?.rnd || Math.random, focusElem = null){
     if (!items || !items.length) return null;
-    const table = getMainLegacyWeightTable(items, getElemFn);
+    const table = getMainLegacyWeightTable(items, getElemFn, focusElem);
     let r = rndFn();
     for (const e of table) {
       r -= e.prob;

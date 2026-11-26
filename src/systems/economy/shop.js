@@ -13,7 +13,7 @@ import {
   SUB_SEAL_RESONANCE,
   UNLOCK_NODES,
 } from '../../data/index.js';
-import { getSourceStageForWave, isFinalPrepActionLocked, perkLv } from '../../core/state-queries.js';
+import { getBuildRoute, getSourceStageForWave, perkLv } from '../../core/state-queries.js';
 
 export function sealTotalPoints(seal){
   if (!seal) return 0;
@@ -35,7 +35,7 @@ export function createShopSystem(ctx, { meta, equipment, economy, unlock, hero, 
 
   function rollShop(free = false){
     const game = ctx.game;
-    if (!free && isFinalPrepActionLocked(game)) return false;
+    if (!free && ctx.isFinalPrepActionLocked()) return false;
     if (!free) {
       const canMetaFreeRefresh = hasMetaAux('aux_shop_first_refresh') && game.metaRunState && !game.metaRunState.freeRefreshUsedThisWave;
       if (canMetaFreeRefresh) {
@@ -61,7 +61,7 @@ export function createShopSystem(ctx, { meta, equipment, economy, unlock, hero, 
     game.shop = [];
 
     const pushSealOffer = () => {
-      const kind = pickWeightedByMainLegacy(ARTIFACT_KEYS, k => ARTIFACTS[k]?.elem || null, game.rnd) || ARTIFACT_KEYS[0];
+      const kind = pickWeightedByMainLegacy(ARTIFACT_KEYS, k => ARTIFACTS[k]?.elem || null, game.rnd, getBuildRoute(game)?.elem) || ARTIFACT_KEYS[0];
       const spec = ARTIFACTS[kind];
       let star = 1;
       const r = game.rnd();
@@ -133,7 +133,7 @@ export function createShopSystem(ctx, { meta, equipment, economy, unlock, hero, 
 
   function chooseSealRoute(routeKey){
     const game = ctx.game;
-    if (isFinalPrepActionLocked(game)) return { ok: false, reason: 'final_prep_locked' };
+    if (ctx.isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
     if (!game?.seal) return { ok: false, reason: 'no_seal' };
     const s = game.seal;
     if (s.star < 3) { ctx.ports.ui.toast('主灵印达到 3★ 后才可选择专精路线！', true); return { ok: false, reason: 'star_too_low' }; }
@@ -156,7 +156,7 @@ export function createShopSystem(ctx, { meta, equipment, economy, unlock, hero, 
 
   function buyShopItem(shopIdx){
     const game = ctx.game;
-    if (isFinalPrepActionLocked(game)) return false;
+    if (ctx.isFinalPrepActionLocked()) return false;
     const item = game.shop[shopIdx];
     if (!item || item.bought) return false;
     if (game.gold < item.cost) { ctx.ports.ui.toast(`需要 ${item.cost} 金币！`, true); return false; }
@@ -307,9 +307,9 @@ export function createShopSystem(ctx, { meta, equipment, economy, unlock, hero, 
       ctx.ports.audio.play('merge', 1.1);
       ctx.ports.ui.toast(`✨ 辅印共鸣激活！【${res.name} ${initStar}★】${res.desc(initStar)}`);
     } else {
-      // Switch Main Seal: refund 80% of old main seal invested value and equip new element!
+      // Switch Main Seal: refund a fraction of its base fusion value and equip the new element.
       const oldSpec = ARTIFACTS[game.seal.kind];
-      const refund = Math.round(oldSpec.cost * sealTotalPoints(game.seal) * 0.8);
+      const refund = Math.round(oldSpec.cost * sealTotalPoints(game.seal) * BALANCE.economy.sealRefundRatio);
       changeGold(-item.cost, 'shop_switch_main_seal');
       if (refund > 0) changeGold(refund, 'switch_main_seal_refund');
       item.bought = true;
@@ -328,10 +328,10 @@ export function createShopSystem(ctx, { meta, equipment, economy, unlock, hero, 
 
   function sellSeal(){
     const game = ctx.game;
-    if (isFinalPrepActionLocked(game)) return false;
+    if (ctx.isFinalPrepActionLocked()) return false;
     if (!game.seal) return false;
     const oldSpec = ARTIFACTS[game.seal.kind];
-    const refund = Math.round(oldSpec.cost * sealTotalPoints(game.seal) * 0.8);
+    const refund = Math.round(oldSpec.cost * sealTotalPoints(game.seal) * BALANCE.economy.sealRefundRatio);
     changeGold(refund, 'sell_main_seal');
     game.seal = null;
     if (!game.subSeals.length) game.inspTarget = null;
@@ -344,11 +344,11 @@ export function createShopSystem(ctx, { meta, equipment, economy, unlock, hero, 
 
   function sellSubSeal(idx){
     const game = ctx.game;
-    if (isFinalPrepActionLocked(game)) return false;
+    if (ctx.isFinalPrepActionLocked()) return false;
     const sub = game.subSeals[idx];
     if (!sub) return false;
     const spec = ARTIFACTS[sub.kind];
-    const refund = Math.round(spec.cost * sealTotalPoints(sub) * 0.8);
+    const refund = Math.round(spec.cost * sealTotalPoints(sub) * BALANCE.economy.sealRefundRatio);
     changeGold(refund, 'sell_sub_seal');
     game.subSeals.splice(idx, 1);
     ctx.ports.vfx.addFloat(game.hero.x, game.hero.y - 0.5, `卸辅印 +${refund} 金`, '#ffe27a');

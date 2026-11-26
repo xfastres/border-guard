@@ -1,7 +1,10 @@
 import BALANCE from '../../data/balance.js';
+import { createRouteSkills } from './route-skills.js';
 import { W, H } from '../../data/index.js';
 import { dist, clamp } from '../../core/math.js';
 import { perkLv, hasCombo, hasW20Direction, hasW20Enhancement, hasDestinyEnhancement } from '../../core/state-queries.js';
+
+const sb = BALANCE.progression.skillBase;
 
 export function createHeroSkills(ctx, deps) {
   const { getActiveMetaMain, hasMetaAux } = deps.meta;
@@ -12,6 +15,8 @@ export function createHeroSkills(ctx, deps) {
     applyFireMark, triggerFireDetonation, applyFrostSlow, triggerFrostPulse, gainFrostShield,
     isEnemyUnstoppable, applyHeroLifesteal, dealDamage, fireChainLightning, pushProjectile,
   } = deps.combat;
+
+  const routeSkills = createRouteSkills(ctx, deps.combat, pickAimTarget);
 
   function executeBreakerShockwave(cx, cy, radius, dmgMult, isAftershock = false){
     const game = ctx.game;
@@ -102,6 +107,8 @@ export function createHeroSkills(ctx, deps) {
     h.y = clamp(h.y + dy * dashDist, 1.2, H - 1.2);
     const dashCadenceAux = hasMetaAux('aux_dash_cadence');
     h.invuln = 0.6 + (dashCadenceAux ? 0.06 : 0);
+    deps.combat.onBuildDash?.();
+    routeSkills.afterDash(dx, dy, hs);
     const prevDashShield = h.shield || 0;
     h.shield = Math.max(prevDashShield, 35);
     const dashShieldGain = Math.max(0, Math.round(h.shield - prevDashShield));
@@ -242,6 +249,7 @@ export function createHeroSkills(ctx, deps) {
     const h = game.hero;
     if (h.ultCd > 0) { ctx.ports.ui.toast(`全军超载冷却中 (${h.ultCd.toFixed(1)}s)`, true); return false; }
     if (game.curWaveTel) game.curWaveTel.ultCount++;
+    deps.combat.beginBloodWindow?.();
     h.ultTimer = perkLv(game, 'ult_engine') >= 2 ? 8.0 : 5.0;
     const hasOdNova = hasDestinyEnhancement(game, 'destiny_overdrive_nova');
     h.ultCd = hasOdNova ? Number((18.0 * 0.78).toFixed(2)) : 18.0;
@@ -427,12 +435,12 @@ export function createHeroSkills(ctx, deps) {
     if (h.skillTimers.spirit <= 0) {
       const tgt = pickAimTarget(alive, 4.5 * hs.rangeMult, false);
       if (tgt) {
-        h.skillTimers.spirit = 0.95 * hs.skillCdMult;
+        h.skillTimers.spirit = sb.spirit.cd * hs.skillCdMult;
         const ang = Math.atan2(tgt.y - h.y, tgt.x - h.x);
         pushProjectile({
           kind: 'arrow', x: h.x, y: h.y, vx: Math.cos(ang) * 15.5, vy: Math.sin(ang) * 15.5,
           life: 0.30 * hs.rangeMult, r: 0.28, pierce: 1, hitSet: new Set(),
-          dmg: Math.round(14 * hs.dmgMult), splash: 0,
+          dmg: Math.round(sb.spirit.dmg * hs.dmgMult), splash: 0,
           opts: { fromHero:true, skillKey:'spirit', critChance:hs.crit, critDmg:hs.critDmg, col:'#9fffe0', lifesteal:hs.lifesteal, bonusGold:hs.gm.bonusGold }
         });
       }
@@ -505,10 +513,10 @@ export function createHeroSkills(ctx, deps) {
             if (Math.hypot(e.x - bx, e.y - by) <= 0.55 + e.r) {
               const hitKey = ring.tag === 'inner' ? `in_${e.id}` : e.id;
               const lastHit = h.bladeHitMap.get(hitKey) || -9;
-              if (now - lastHit >= 0.32) {
+              if (now - lastHit >= sb.blades.hitCd) {
                 h.bladeHitMap.set(hitKey, now);
                 const wasChilled = e.slowT > 0 || e.freezeT > 0;
-                dealDamage(e, Math.round((15 + bLv * 7) * hs.skillDmgMult), {
+                dealDamage(e, Math.round((sb.blades.dmg + bLv * sb.blades.perLv) * hs.skillDmgMult), {
                   fromHero:true, skillKey:'blades',
                   critChance: hs.crit, critDmg: hs.critDmg,
                   col: blBranch === 'bl_crimson_wheel' ? '#ff8a52' : '#8cf2ff',
@@ -560,7 +568,7 @@ export function createHeroSkills(ctx, deps) {
         if (h.wanjianTimer <= 0 && alive.some(e => dist(h, e) <= 4.6 * hs.skillRangeMult)) {
           h.wanjianTimer = 2.4;
           const fwLv = h.skills.firewave || 1;
-          const dmg = Math.round((26 + fwLv * 13) * hs.skillDmgMult * 0.60);
+          const dmg = Math.round((sb.firewave.dmg + fwLv * sb.firewave.perLv) * hs.skillDmgMult * 0.60);
           ctx.ports.vfx.addRing(h.x, h.y, '#ffe478', 2.4);
           ctx.ports.vfx.addFloat(h.x, h.y - 0.75, '⚔️万剑齐发!', '#ffe878', true);
           for (let i = 0; i < count; i++) {
@@ -588,10 +596,10 @@ export function createHeroSkills(ctx, deps) {
         const preferPrio = fwBranch === 'fw_homing_ember' || fwBranch === 'fw_mortar_cluster';
         const target = pickAimTarget(alive, searchRange, preferPrio);
         if (target) {
-          h.skillTimers.firewave = Math.max(0.75, 1.45 - fwLv * 0.14) * hs.skillCdMult;
+          h.skillTimers.firewave = Math.max(sb.firewave.minCd, sb.firewave.cd - fwLv * sb.firewave.perLvCd) * hs.skillCdMult;
           const baseAng = Math.atan2(target.y - h.y, target.x - h.x);
           const tfCombo = hasCombo(game, 'thunder_fire');
-          const baseDmg = Math.round((26 + fwLv * 13) * hs.skillDmgMult);
+          const baseDmg = Math.round((sb.firewave.dmg + fwLv * sb.firewave.perLv) * hs.skillDmgMult);
 
           if (fwBranch === 'fw_ring_detonate') {
             // 燎原火环: 8-way radial fire ring around hero + instant fire mark & detonation
@@ -680,13 +688,13 @@ export function createHeroSkills(ctx, deps) {
       if (h.skillTimers.thunder <= 0) {
         const near = alive.filter(e => dist(h, e) <= 4.8 * hs.skillRangeMult);
         if (near.length) {
-          h.skillTimers.thunder = Math.max(0.75, 1.65 - thLv * 0.18) * hs.skillCdMult;
+          h.skillTimers.thunder = Math.max(sb.thunder.minCd, sb.thunder.cd - thLv * sb.thunder.perLvCd) * hs.skillCdMult;
           const sorted = near.slice().sort((a, b) => {
             const sa = (a.boss ? 1000 : a.elite ? 500 : a.shaman ? 300 : 0) - dist(h, a) * 5;
             const sb = (b.boss ? 1000 : b.elite ? 500 : b.shaman ? 300 : 0) - dist(h, b) * 5;
             return sb - sa;
           });
-          const baseDmg = Math.round((30 + thLv * 15) * hs.skillDmgMult);
+          const baseDmg = Math.round((sb.thunder.dmg + thLv * sb.thunder.perLv) * hs.skillDmgMult);
 
           if (thBranch === 'th_storm_orb') {
             // 雷球巡猎: Fires 2 slow-moving piercing storm orbs that slow enemies & grant frost shield
@@ -707,9 +715,13 @@ export function createHeroSkills(ctx, deps) {
             const strikes = thLv + 1;
             const chainCnt = thBranch === 'th_arc_web' ? 6 : 3;
             for (let s = 0; s < strikes; s++) {
-              const tgt = (thBranch === 'th_heaven_brand' || s === 0) ? sorted[0] : sorted[Math.floor(game.rnd() * sorted.length)];
+              const repeatTarget = thBranch === 'th_heaven_brand' || s === 0 || (thBranch === 'th_storm_circuit' && s === 1);
+              const tgt = repeatTarget ? sorted[0] : sorted[Math.floor(game.rnd() * sorted.length)];
+              const repeatBonus = thBranch === 'th_storm_circuit' && s === 1 ? 1.40 : 1;
+              const priorityBonus = sorted.length === 1 && (tgt?.boss || tgt?.elite) ? BALANCE.combat.thunderSoloMult : 1;
+              const firstHitDamage = Math.round(baseDmg * repeatBonus * priorityBonus);
               if (tgt && tgt.hp > 0) {
-                fireChainLightning(tgt, baseDmg, chainCnt, {
+                fireChainLightning(tgt, firstHitDamage, chainCnt, {
                   fromHero:true, skillKey:'thunder',
                   ox: tgt.x, oy: tgt.y - 3.2, critChance: hs.crit, critDmg: hs.critDmg, bonusGold: hs.gm.bonusGold
                 });
@@ -750,8 +762,8 @@ export function createHeroSkills(ctx, deps) {
         const searchRad = nvBranch === 'nv_seeking_vortex' ? 5.6 * hs.skillRangeMult : nvBranch === 'nv_prism_lance' ? 4.8 * hs.skillRangeMult : rad;
         if (alive.some(e => dist(h, e) <= searchRad + e.r)) {
           const cdFactor = nvBranch === 'nv_trail_aegis' ? 0.82 : 1.0;
-          h.skillTimers.nova = Math.max(1.20, (2.25 - nvLv * 0.16) * cdFactor) * hs.skillCdMult;
-          const baseDmg = Math.round((25 + nvLv * 13) * hs.skillDmgMult);
+          h.skillTimers.nova = Math.max(sb.nova.minCd, (sb.nova.cd - nvLv * sb.nova.perLvCd) * cdFactor) * hs.skillCdMult;
+          const baseDmg = Math.round((sb.nova.dmg + nvLv * sb.nova.perLv) * hs.skillDmgMult);
 
           if (nvBranch === 'nv_seeking_vortex') {
             // 追猎寒涡: Remote frost vortex at priority enemy cluster + frost slow + frost shield
@@ -873,16 +885,22 @@ export function createHeroSkills(ctx, deps) {
           }
           game.shake = Math.max(game.shake, hasQuakeBlood ? 7.5 : 4.5);
           ctx.ports.audio.play('fire', 0.75);
-          const baseDmg = Math.round((40 + stLv * 20) * hs.skillDmgMult * missingMult);
+          const baseDmg = Math.round((sb.stomp.dmg + stLv * sb.stomp.perLv) * hs.skillDmgMult * missingMult);
           let hitCount = 0;
           for (const e of alive) {
             if (dist(h, e) <= rad + e.r) {
               hitCount++;
-              const dealt = dealDamage(e, baseDmg, {
+              const innerPriority = (e.elite || e.boss) && dist(h, e) <= rad * 0.86 + e.r;
+              const damage = innerPriority ? Math.round(baseDmg * BALANCE.combat.stompPriorityMult) : baseDmg;
+              const dealt = dealDamage(e, damage, {
                 fromHero:true, skillKey: hasQuakeBlood ? 'combo' : 'stomp',
                 critChance: hs.crit, critDmg: hs.critDmg, col: hasQuakeBlood ? '#ff8a6b' : '#ffd478', lifesteal: hs.lifesteal, bonusGold: hs.gm.bonusGold
               });
               if (hasQuakeBlood && dealt > 0) applyHeroLifesteal(3);
+              if (stBranch === 'st_rupture' && (e.elite || e.boss) && dist(h, e) <= rad * 0.78 + e.r) {
+                e.vulnT = Math.max(e.vulnT || 0, 2.2);
+                dealDamage(e, Math.round(baseDmg * 0.68), { skillKey: 'stomp', col: '#ffda96', buildEcho: true });
+              }
               if (!e.boss && !isEnemyUnstoppable(e)) e.freezeT = Math.max(e.freezeT, stBranch === 'st_glacier_quake' ? 1.2 : 0.75);
               if ((stBranch === 'st_fissure_wave' || stBranch === 'st_aftershock_ring' || stBranch === 'st_molten_crater') && e.hp > 0) {
                 applyFireMark(e, 2, stBranch, 5.0);
@@ -920,14 +938,31 @@ export function createHeroSkills(ctx, deps) {
     // 6. Berserk Blood (狂战血怒) W10 Active Branch Pulses
     const bzLv = h.skills.berserk || 0;
     const bzBranch = h.w10Branch?.berserk || null;
-    if (bzLv > 0 && bzBranch) {
+    if (bzLv > 0) {
       h.skillTimers.berserk = Math.max(0, (h.skillTimers.berserk || 0) - dt * hs.aspd);
       if (h.skillTimers.berserk <= 0) {
         const pulseRad = (2.6 + bzLv * 0.25) * hs.skillRangeMult;
         if (alive.some(e => dist(h, e) <= pulseRad + 2.0)) {
           h.skillTimers.berserk = 0.85 * hs.skillCdMult;
           const pulseDmg = Math.round((22 + bzLv * 12) * hs.skillDmgMult);
-          if (bzBranch === 'bk_flame_aura') {
+          if (!bzBranch || bzBranch === 'bk_crimson_pact') {
+            const inOverdrive = h.ultTimer > 0;
+            const reach = bzBranch && inOverdrive ? pulseRad + 1.25 : pulseRad * 0.84;
+            const target = pickAimTarget(alive, reach, true);
+            if (target && (!bzBranch || inOverdrive || h.hp >= h.maxHp * 0.55)) {
+              const hit = { fromHero: true, skillKey: 'berserk', critChance: hs.crit, critDmg: hs.critDmg,
+                lifesteal: hs.lifesteal + (inOverdrive ? 4 : 0), col: '#ff98aa' };
+              const priorityBonus = bzBranch && (target.boss || target.elite) ? BALANCE.combat.bloodSkillPriorityMult : 1;
+              const damage = Math.round(pulseDmg * (bzBranch && inOverdrive ? 1.75 : 0.90) * priorityBonus);
+              dealDamage(target, damage, hit);
+              if (inOverdrive) {
+                for (const e of alive) {
+                  if (e !== target && dist(e, target) <= 1.75 + e.r) dealDamage(e, Math.round(damage * 0.54), hit);
+                }
+              }
+              ctx.ports.vfx.addRing(target.x, target.y, '#ff98aa', inOverdrive ? 1.75 : 0.7);
+            }
+          } else if (bzBranch === 'bk_flame_aura') {
             ctx.ports.vfx.addRing(h.x, h.y, '#ff6d38', pulseRad);
             for (const e of alive) {
               if (dist(h, e) <= pulseRad + e.r) {
@@ -949,7 +984,6 @@ export function createHeroSkills(ctx, deps) {
             const tgt = pickAimTarget(alive, 5.2 * hs.skillRangeMult, true);
             if (tgt) {
               const ang = Math.atan2(tgt.y - h.y, tgt.x - h.x);
-              applyHeroLifesteal(6);
               pushProjectile({
                 kind: 'firewave', w10Branch: 'bk_blood_crescent', x: h.x, y: h.y,
                 vx: Math.cos(ang) * 12.5, vy: Math.sin(ang) * 12.5,
@@ -975,6 +1009,7 @@ export function createHeroSkills(ctx, deps) {
         }
       }
     }
+    routeSkills.updateRouteSkills(dt, alive, hs);
   }
 
   return { executeBreakerShockwave, castHeroDash, castHeroOverdrive, pickAimTarget, updateHero };

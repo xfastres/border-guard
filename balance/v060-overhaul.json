@@ -1,0 +1,1129 @@
+{
+  "baseline": "v0.60/gameplay-balance-overhaul",
+  "notes": "Overrides for the 30-wave campaign. Unspecified fields inherit the historical balance; the original HTML and its balance remain frozen.",
+  "progression": {
+    "initialGold": 57,
+    "initialHp": 212,
+    "heroDmgPerLevel": 0.075,
+    "hpEvenLevelHeal": 24,
+    "hpOddLevelHeal": 27,
+    "waveClearHeal": 32,
+    "heroBaseMove": 5.55,
+    "heroMovePerBerserkLv": 0.23,
+    "starterSkills": [
+      "blades",
+      "firewave",
+      "nova",
+      "thunder",
+      "berserk",
+      "stomp",
+      "swordlance",
+      "sunward"
+    ],
+    "skillDraftSize": 3,
+    "skillBase": {
+      "spirit": {
+        "dmg": 14,
+        "cd": 0.95
+      },
+      "blades": {
+        "dmg": 15,
+        "perLv": 7,
+        "hitCd": 0.32
+      },
+      "firewave": {
+        "dmg": 26,
+        "perLv": 13,
+        "cd": 1.45,
+        "perLvCd": 0.14,
+        "minCd": 0.75
+      },
+      "thunder": {
+        "dmg": 30,
+        "perLv": 15,
+        "cd": 1.65,
+        "perLvCd": 0.18,
+        "minCd": 0.75
+      },
+      "nova": {
+        "dmg": 25,
+        "perLv": 13,
+        "cd": 2.25,
+        "perLvCd": 0.16,
+        "minCd": 1.2
+      },
+      "stomp": {
+        "dmg": 40,
+        "perLv": 20
+      },
+      "swordlance": {
+        "dmg": 37,
+        "perLv": 14,
+        "cd": 1.31,
+        "perLvCd": 0.09,
+        "minCd": 0.84,
+        "range": 5.5
+      },
+      "sunward": {
+        "dmg": 29,
+        "perLv": 12,
+        "cd": 1.7,
+        "perLvCd": 0.1,
+        "minCd": 1.1,
+        "range": 5.0
+      }
+    }
+  },
+  "economy": {
+    "waveClearBase": 15,
+    "waveClearPerWave": 0.83,
+    "singleGoldDropChance": 0.38,
+    "rerollStart": 8,
+    "rerollIncrement": 4,
+    "tier2Star2Chance": 0.17,
+    "tier3Star2Chance": 0.32,
+    "tier3Star3Chance": 0.075,
+    "huashenStar3Chance": 0.14,
+    "star2PriceFactor": 2.25,
+    "star3PriceFactor": 4.5,
+    "sealMasteryRouteCost": 68,
+    "gearSecondSlotChance": 0.68,
+    "killGoldBudgetBase": 13,
+    "killGoldBudgetPerWave": 0.35,
+    "eliteFallbackBounty": 5,
+    "greedKillGoldPerWave": 10,
+    "clearGreedBonus": 6,
+    "interestCap": 12,
+    "interestRate": 0.07,
+    "sealRefundRatio": 0.55,
+    "bossTransferTokenWave": 15,
+    "gearFocusWeight": 2.6,
+    "affixElementWeight": 3.1,
+    "eliteChestWaves": [
+      2,
+      4,
+      7,
+      9,
+      12,
+      14,
+      16,
+      18,
+      19,
+      21,
+      23,
+      25,
+      27,
+      29
+    ]
+  },
+  "equipment": {
+    "sourceStages": [
+      {
+        "stage": 1,
+        "minWave": 1,
+        "maxWave": 10,
+        "label": "阶段1(W1-10)",
+        "baseStatMult": 1,
+        "sellMult": 1,
+        "dismantleMult": 1
+      },
+      {
+        "stage": 2,
+        "minWave": 11,
+        "maxWave": 20,
+        "label": "阶段2(W11-20)",
+        "baseStatMult": 1.12,
+        "sellMult": 1.28,
+        "dismantleMult": 1.3
+      },
+      {
+        "stage": 3,
+        "minWave": 21,
+        "maxWave": 30,
+        "label": "阶段3(W21-30)",
+        "baseStatMult": 1.24,
+        "sellMult": 1.53,
+        "dismantleMult": 1.65
+      }
+    ],
+    "recycle": {
+      "sellGoldBase": {
+        "common": 6,
+        "rare": 10,
+        "epic": 17,
+        "legend": 27
+      },
+      "paidGoldSellCapRatio": 0.62
+    },
+    "shopPricing": {
+      "sameElemStep": 0.13,
+      "highRarityAffixChance": 0.18,
+      "sameElemResetByStage": true
+    },
+    "materialEnhance": {
+      "matCostByNextLv": [
+        2,
+        4,
+        6,
+        9,
+        13,
+        18
+      ],
+      "baseStatStepPerLv": 0.125,
+      "affixTierStepPerLv": 0.11,
+      "goldCostByNextLv": [
+        0,
+        0,
+        0,
+        42,
+        70,
+        105
+      ]
+    },
+    "synergyCombat": {
+      "fireDuoDetonateMult": 1.1,
+      "fireTrioDetonateMult": 1.2,
+      "fireTrioFocusMaxTotalRatio": 0.76,
+      "frostDuoShieldCd": 0.64,
+      "frostTrioShieldCd": 0.58
+    }
+  },
+  "affixTransfer": {
+    "goldCostByAffixRarity": {
+      "common": 24,
+      "rare": 40,
+      "epic": 58
+    },
+    "overwriteGoldExtra": 14
+  },
+  "destinyGamble": {
+    "betQuickPresets": [
+      30,
+      60,
+      100,
+      120,
+      220,
+      240,
+      320
+    ],
+    "allowDuplicateCategories": false,
+    "sealEssenceCap": 0.45
+  },
+  "endgameRefinement": {
+    "eliteMaterialDropW25To29": 2,
+    "shopSecondGearChanceW21Plus": 0.88
+  },
+  "wave": {
+    "normalHpGrowth": 1.138,
+    "eliteHpGrowth": 1.14,
+    "eliteCountLateWave": 24,
+    "mobsBase": 43,
+    "mobsPerWave": 4.6,
+    "mobsBaseCap": 154,
+    "mobsFinalCap": 186,
+    "durationPerWave": 0.48,
+    "durationCap": 28,
+    "enemySpeedBands": [
+      {
+        "from": 1,
+        "mult": 1
+      },
+      {
+        "from": 6,
+        "mult": 1.075
+      },
+      {
+        "from": 11,
+        "mult": 1.12
+      },
+      {
+        "from": 16,
+        "mult": 1.19
+      },
+      {
+        "from": 21,
+        "mult": 1.21
+      },
+      {
+        "from": 26,
+        "mult": 1.27
+      }
+    ],
+    "enemyDamageGrowthPerWave": 0.063,
+    "enemyDamageLateGrowth": 1.014,
+    "pressure": [
+      1,
+      1,
+      1.02,
+      1.04,
+      1.16,
+      0.86,
+      1.1,
+      1.13,
+      1.17,
+      1.21,
+      0.89,
+      1.12,
+      1.16,
+      1.2,
+      1.22,
+      1.16,
+      1.21,
+      1.25,
+      1.27,
+      1.29,
+      0.9,
+      1.14,
+      1.18,
+      1.24,
+      1.27,
+      1.26,
+      1.29,
+      1.31,
+      1.33,
+      1.26
+    ],
+    "stages": {
+      "fractionOne": 0.36,
+      "fractionTwo": 0.065,
+      "first": [
+        0.35,
+        0.36,
+        4,
+        false
+      ],
+      "second": [
+        0.39,
+        0.49,
+        2,
+        false
+      ],
+      "third": [
+        0.53,
+        1,
+        6,
+        true
+      ]
+    },
+    "phases": [
+      {
+        "from": 1,
+        "to": 2,
+        "tag": "爬升·初探",
+        "kind": "climb",
+        "mobMult": 1,
+        "hpBase": 1.04,
+        "hpSlope": 0.015,
+        "offset": 1
+      },
+      {
+        "from": 3,
+        "to": 4,
+        "tag": "爬升·合围",
+        "kind": "climb",
+        "mobMult": 1.04,
+        "hpBase": 1.12,
+        "hpSlope": 0.03,
+        "offset": 3
+      },
+      {
+        "from": 5,
+        "to": 5,
+        "tag": "波峰·熔岩首领",
+        "kind": "peak",
+        "mobMult": 0.98,
+        "hpBase": 1.15,
+        "hpSlope": 0,
+        "offset": 5
+      },
+      {
+        "from": 6,
+        "to": 6,
+        "tag": "消退·筑基割草",
+        "kind": "relief",
+        "mobMult": 1.26,
+        "hpBase": 0.8,
+        "hpSlope": 0,
+        "offset": 6
+      },
+      {
+        "from": 7,
+        "to": 9,
+        "tag": "爬升·破阵强敌",
+        "kind": "climb",
+        "mobMult": 1.05,
+        "hpBase": 1.11,
+        "hpSlope": 0.035,
+        "offset": 7
+      },
+      {
+        "from": 10,
+        "to": 10,
+        "tag": "波峰·首次突破首领",
+        "kind": "peak",
+        "mobMult": 0.99,
+        "hpBase": 1.18,
+        "hpSlope": 0,
+        "offset": 10
+      },
+      {
+        "from": 11,
+        "to": 11,
+        "tag": "消退·一破释放",
+        "kind": "relief",
+        "mobMult": 1.22,
+        "hpBase": 0.84,
+        "hpSlope": 0,
+        "offset": 11
+      },
+      {
+        "from": 12,
+        "to": 14,
+        "tag": "爬升·中期联动",
+        "kind": "climb",
+        "mobMult": 1.04,
+        "hpBase": 1.08,
+        "hpSlope": 0.03,
+        "offset": 12
+      },
+      {
+        "from": 15,
+        "to": 15,
+        "tag": "波峰·泰坦首领",
+        "kind": "peak",
+        "mobMult": 1,
+        "hpBase": 1.22,
+        "hpSlope": 0,
+        "offset": 15
+      },
+      {
+        "from": 16,
+        "to": 19,
+        "tag": "爬升·二破预备",
+        "kind": "climb",
+        "mobMult": 1.08,
+        "hpBase": 1.12,
+        "hpSlope": 0.035,
+        "offset": 16
+      },
+      {
+        "from": 20,
+        "to": 20,
+        "tag": "阶段门槛·天劫魔尊",
+        "kind": "peak",
+        "mobMult": 1,
+        "hpBase": 1.22,
+        "hpSlope": 0,
+        "offset": 20
+      },
+      {
+        "from": 21,
+        "to": 21,
+        "tag": "消退·二破强势期",
+        "kind": "relief",
+        "mobMult": 1.23,
+        "hpBase": 0.89,
+        "hpSlope": 0,
+        "offset": 21
+      },
+      {
+        "from": 22,
+        "to": 24,
+        "tag": "爬升·同源威胁递进",
+        "kind": "climb",
+        "mobMult": 1.03,
+        "hpBase": 1.03,
+        "hpSlope": 0.045,
+        "offset": 22
+      },
+      {
+        "from": 25,
+        "to": 27,
+        "tag": "检验·成型敌群轮换",
+        "kind": "climb",
+        "mobMult": 1.08,
+        "hpBase": 1.13,
+        "hpSlope": 0.025,
+        "offset": 25
+      },
+      {
+        "from": 28,
+        "to": 28,
+        "tag": "预兆·终局阴云",
+        "kind": "climb",
+        "mobMult": 1.11,
+        "hpBase": 1.2,
+        "hpSlope": 0,
+        "offset": 28
+      },
+      {
+        "from": 29,
+        "to": 29,
+        "tag": "前哨·紧凑强敌",
+        "kind": "peak",
+        "mobMult": 1.12,
+        "hpBase": 1.22,
+        "hpSlope": 0,
+        "offset": 29
+      },
+      {
+        "from": 30,
+        "to": 30,
+        "tag": "终局决战·终焉魔帝",
+        "kind": "peak",
+        "mobMult": 1,
+        "hpBase": 1.04,
+        "hpSlope": 0,
+        "offset": 30
+      }
+    ],
+    "w22To24Themes": {
+      "mobile_rush": {
+        "key": "mobile_rush",
+        "name": "高机动突进压迫",
+        "primaryThreat": "mobile_rush",
+        "threatLabel": "高速突进与霸体撕裂防线",
+        "counterHint": "预留冲刺位移，优先用减速/聚怪打断合围并先清侧翼影狼与妖火祭司",
+        "waves": {
+          "22": {
+            "comboLabel": "初阶试探 · 影狼斥候+远程掩护",
+            "pressureLevel": 1,
+            "packBonus": 0,
+            "mobMultAdj": 0.93,
+            "normal": [
+              [
+                "wolf",
+                0.52
+              ],
+              [
+                "slime",
+                0.76
+              ],
+              [
+                "mage",
+                0.94
+              ],
+              [
+                "brute",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "wolf",
+                0.5
+              ],
+              [
+                "mage",
+                0.8
+              ],
+              [
+                "brute",
+                1
+              ]
+            ],
+            "hpMultAdj": 0.93
+          },
+          "23": {
+            "comboLabel": "组合升压 · 双突进冲锋+毒虫封路",
+            "pressureLevel": 2,
+            "packBonus": 1,
+            "mobMultAdj": 1.02,
+            "normal": [
+              [
+                "wolf",
+                0.42
+              ],
+              [
+                "brute",
+                0.72
+              ],
+              [
+                "bomber",
+                0.9
+              ],
+              [
+                "mage",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "wolf",
+                0.36
+              ],
+              [
+                "brute",
+                0.78
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ],
+            "hpMultAdj": 0.95
+          },
+          "24": {
+            "comboLabel": "高压合围 · 狂暴双突进+祭司点名",
+            "pressureLevel": 3,
+            "packBonus": 2,
+            "mobMultAdj": 1.05,
+            "normal": [
+              [
+                "wolf",
+                0.36
+              ],
+              [
+                "brute",
+                0.68
+              ],
+              [
+                "shaman",
+                0.86
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "wolf",
+                0.3
+              ],
+              [
+                "brute",
+                0.66
+              ],
+              [
+                "shaman",
+                0.88
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ]
+          }
+        }
+      },
+      "flame_siege": {
+        "key": "flame_siege",
+        "name": "持续火圈与重甲推进",
+        "primaryThreat": "flame_siege",
+        "threatLabel": "持续地形封锁与重甲压境",
+        "counterHint": "保持弧线拉扯避免被火圈和毒池逼入死角，及时点杀后排祭司",
+        "waves": {
+          "22": {
+            "comboLabel": "初阶试探 · 重甲前推+祭司火圈",
+            "pressureLevel": 1,
+            "packBonus": 0,
+            "mobMultAdj": 0.93,
+            "normal": [
+              [
+                "brute",
+                0.27
+              ],
+              [
+                "shaman",
+                0.49
+              ],
+              [
+                "slime",
+                0.8
+              ],
+              [
+                "mage",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "brute",
+                0.37
+              ],
+              [
+                "shaman",
+                0.58
+              ],
+              [
+                "slime",
+                0.8
+              ],
+              [
+                "mage",
+                1
+              ]
+            ],
+            "hpMultAdj": 0.93
+          },
+          "23": {
+            "comboLabel": "组合升压 · 重甲火圈+毒爆双重封地",
+            "pressureLevel": 2,
+            "packBonus": 1,
+            "mobMultAdj": 1.02,
+            "normal": [
+              [
+                "brute",
+                0.38
+              ],
+              [
+                "shaman",
+                0.62
+              ],
+              [
+                "bomber",
+                0.86
+              ],
+              [
+                "mage",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "brute",
+                0.5
+              ],
+              [
+                "shaman",
+                0.76
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ],
+            "hpMultAdj": 0.95
+          },
+          "24": {
+            "comboLabel": "高压合围 · 重甲双祭司+影狼侧袭",
+            "pressureLevel": 3,
+            "packBonus": 2,
+            "mobMultAdj": 1.05,
+            "normal": [
+              [
+                "brute",
+                0.34
+              ],
+              [
+                "shaman",
+                0.6
+              ],
+              [
+                "bomber",
+                0.8
+              ],
+              [
+                "wolf",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "brute",
+                0.44
+              ],
+              [
+                "shaman",
+                0.72
+              ],
+              [
+                "bomber",
+                0.86
+              ],
+              [
+                "wolf",
+                1
+              ]
+            ]
+          }
+        }
+      },
+      "arcane_crossfire": {
+        "key": "arcane_crossfire",
+        "name": "远程火力网与控场合围",
+        "primaryThreat": "arcane_crossfire",
+        "threatLabel": "扇形弹幕交叉火力与阵型分割",
+        "counterHint": "斜向切入外圈清理法师与祭司，利用护盾或冲刺穿过弹幕缝隙",
+        "waves": {
+          "22": {
+            "comboLabel": "初阶试探 · 扇形法阵+盾墙掩护",
+            "pressureLevel": 1,
+            "packBonus": 0,
+            "mobMultAdj": 0.93,
+            "normal": [
+              [
+                "mage",
+                0.46
+              ],
+              [
+                "slime",
+                0.74
+              ],
+              [
+                "brute",
+                0.92
+              ],
+              [
+                "wolf",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "mage",
+                0.52
+              ],
+              [
+                "brute",
+                0.86
+              ],
+              [
+                "wolf",
+                1
+              ]
+            ],
+            "hpMultAdj": 0.93
+          },
+          "23": {
+            "comboLabel": "组合升压 · 法师祭司联动+重甲护阵",
+            "pressureLevel": 2,
+            "packBonus": 1,
+            "mobMultAdj": 1.02,
+            "normal": [
+              [
+                "mage",
+                0.42
+              ],
+              [
+                "shaman",
+                0.68
+              ],
+              [
+                "brute",
+                0.88
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "mage",
+                0.44
+              ],
+              [
+                "shaman",
+                0.74
+              ],
+              [
+                "brute",
+                1
+              ]
+            ],
+            "hpMultAdj": 0.95
+          },
+          "24": {
+            "comboLabel": "高压合围 · 交叉弹幕+影狼毒爆逼位",
+            "pressureLevel": 3,
+            "packBonus": 2,
+            "mobMultAdj": 1.05,
+            "normal": [
+              [
+                "mage",
+                0.36
+              ],
+              [
+                "shaman",
+                0.62
+              ],
+              [
+                "wolf",
+                0.84
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ],
+            "heavy": [
+              [
+                "mage",
+                0.38
+              ],
+              [
+                "shaman",
+                0.66
+              ],
+              [
+                "wolf",
+                0.86
+              ],
+              [
+                "bomber",
+                1
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "w29Outpost": {
+      "name": "前哨精锐·紧凑合围群",
+      "desc": "较 W28 同向小幅升压：出怪节奏更紧凑、批次更密、敌人稍耐打；W29 战后开启 90 秒独立最终整备。",
+      "durationMult": 0.95,
+      "packBonus": 1,
+      "packOffsetMult": 0.87,
+      "spawnJitterMult": 0.89,
+      "hpMultAdj": 1.03,
+      "mobMultAdj": 1.02,
+      "normal": [
+        [
+          "wolf",
+          0.26
+        ],
+        [
+          "brute",
+          0.45
+        ],
+        [
+          "shaman",
+          0.6
+        ],
+        [
+          "mage",
+          0.77
+        ],
+        [
+          "slime",
+          0.9
+        ],
+        [
+          "bomber",
+          1
+        ]
+      ],
+      "heavy": [
+        [
+          "brute",
+          0.29
+        ],
+        [
+          "shaman",
+          0.5
+        ],
+        [
+          "wolf",
+          0.72
+        ],
+        [
+          "mage",
+          0.86
+        ],
+        [
+          "slime",
+          1
+        ]
+      ]
+    }
+  },
+  "w20Breakthrough": {
+    "rerollBaseCost": 5,
+    "rerollStep": 3,
+    "baseEffects": {
+      "fireTrioBonusFocusCap": 0.93
+    }
+  },
+  "w30Boss": {
+    "signatureDamage": 125,
+    "coreCooldownOpening": 4.8,
+    "coreCooldownMid": 4.0,
+    "coreCooldownFinal": 3.55,
+    "healOrbHpPct": 0.105
+  },
+  "enemies": {
+    "mage": {
+      "dmg": 10
+    },
+    "wolf": {
+      "dmg": 9
+    },
+    "brute": {
+      "dmg": 17
+    },
+    "elite": {
+      "hp": 340,
+      "gold": 8
+    },
+    "boss1": {
+      "hp": 3850,
+      "gold": 31
+    },
+    "boss2": {
+      "hp": 11200,
+      "gold": 42
+    },
+    "boss3": {
+      "hp": 27000,
+      "gold": 51
+    },
+    "boss4": {
+      "hp": 62000,
+      "gold": 64
+    },
+    "boss5": {
+      "hp": 115000,
+      "gold": 74
+    },
+    "boss6": {
+      "hp": 11200000,
+      "gold": 125
+    },
+    "totem": {
+      "gold": 0
+    },
+    "pillar": {
+      "gold": 0
+    },
+    "void_guard": {
+      "gold": 0
+    }
+  },
+  "combat": {
+    "leechHpFractionPerSecond": 0.022,
+    "holyRegen": 3,
+    "critOverflowScale": 0.55,
+    "critDamageCap": 3.8,
+    "attackSpeedSoftCap": 2.35,
+    "attackSpeedOverflowScale": 0.42,
+    "statusMultiplierSoftCap": 2.0,
+    "statusOverflowScale": 0.36,
+    "extraShotCap": 3,
+    "bossHazardByWave": {
+      "5": 1.12,
+      "10": 1.25,
+      "15": 1.42,
+      "20": 1.62,
+      "25": 1.75,
+      "30": 2.2
+    },
+    "bossShamanHealingPct": 0.0015,
+    "normalShamanHealingPct": 0.05,
+    "fireDetonateCooldown": 0.44,
+    "corpseBossCapSkillMult": 170,
+    "chainDecay": 0.88,
+    "chainSetDecay": 0.96,
+    "bossMeleeWindup": 0.78,
+    "bossMeleeDamageMult": 0.72,
+    "routes": {
+      "wind": {
+        "duration": 3,
+        "cooldown": 0.7,
+        "base": 205,
+        "echo": 0.55,
+        "reach": 4.1,
+        "width": 0.86,
+        "maxTargets": 3,
+        "soloMult": 1.65
+      },
+      "thunder": {
+        "threshold": 5,
+        "cooldown": 1.35,
+        "base": 240,
+        "echo": 0.62,
+        "reach": 3.25,
+        "maxTargets": 2,
+        "soloMult": 1.65
+      },
+      "blood": {
+        "cost": 0.082,
+        "minimumLife": 0.28,
+        "duration": 5,
+        "cooldown": 0.76,
+        "base": 168,
+        "echo": 0.5,
+        "reach": 2.9,
+        "maxTargets": 2,
+        "refund": 0.62
+      },
+      "holy": {
+        "shieldCost": 18,
+        "cooldown": 1.3,
+        "base": 130,
+        "echo": 0.6,
+        "reach": 2.6,
+        "maxTargets": 2,
+        "shieldGain": 18
+      },
+      "shared": {
+        "guard": 22,
+        "guardCd": 2.5,
+        "vulnerability": 2.5
+      }
+    },
+    "fireDetonatePower": 0.84,
+    "windSealDuelMult": 2.15,
+    "lancePriorityMult": 1.85,
+    "stompPriorityMult": 1.8,
+    "bloodSkillPriorityMult": 1.65,
+    "thunderSoloMult": 1.4
+  },
+  "metaProgression": {
+    "activePoolControl": {
+      "targetActiveGearPoolSize": null,
+      "targetActiveAffixPoolSize": null
+    },
+    "unlockPacks": [
+      {
+        "id": "pack_gear_ember_frost",
+        "type": "gear_pack",
+        "name": "炎霜奇器谱",
+        "icon": "🏺",
+        "unlockCost": 70,
+        "items": [
+          "ember_censer",
+          "glacier_bell"
+        ],
+        "desc": "横向解锁 2 件灵品机制构装【赤焰熏炉】与【玄霜玉铃】，开局按防稀释规则等量替换非主系基础构装进入本局池。"
+      },
+      {
+        "id": "pack_affix_tactics",
+        "type": "affix_pack",
+        "name": "奇门词条录",
+        "icon": "📜",
+        "unlockCost": 95,
+        "items": [
+          "storm_conduit",
+          "aegis_pulse"
+        ],
+        "desc": "横向解锁 2 条机制词条【引雷导流】与【镇岳灵脉冲】，开局保持活跃词条池定容 12 条防稀释。"
+      },
+      {
+        "id": "pack_challenge_marks",
+        "type": "challenge",
+        "name": "边境试炼印",
+        "icon": "🏅",
+        "unlockCost": 110,
+        "items": [
+          "challenge_no_gamble",
+          "challenge_shrine_hunter"
+        ],
+        "desc": "解锁横向挑战徽记【零赌清修】与【妖碑狩猎】，记录于局内与结算荣光榜（不附带任何基础数值增益）。"
+      },
+      {
+        "id": "pack_gear_duel",
+        "type": "gear_pack",
+        "name": "回锋武备谱",
+        "icon": "◇",
+        "unlockCost": 70,
+        "items": [
+          "trailing_edge",
+          "litany_mail"
+        ],
+        "desc": "横向解锁御风和圣盾构装各一件，按同品质替换加入本局池。"
+      }
+    ]
+  }
+}

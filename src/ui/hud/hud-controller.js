@@ -152,6 +152,20 @@ export function createHudController(runtimeCtx, deps) {
     const aliveEnemies = (game.enemies || []).filter(e => e.hp > 0);
     const rem = game.enemies.length + game.waveQueue.filter(w => !w.spawned).length;
     const boss = aliveEnemies.find(e => String(e.kind || '').startsWith('boss'));
+    const shieldPill = $('heroShield');
+    if (shieldPill) {
+      shieldPill.hidden = !(h.shield > 0);
+      shieldPill.textContent = `盾 ${Math.ceil(h.shield || 0)}`;
+    }
+    const clock = $('finalPrepClock');
+    if (clock) {
+      const prep = game.finalPrep;
+      clock.hidden = !prep?.active || !prep.started;
+      if (!clock.hidden) {
+        clock.textContent = `最终整备 · ${Math.ceil(prep.timer)} 秒`;
+        clock.classList.toggle('urgent', prep.timer <= 20);
+      }
+    }
     const bossBanner = $('waveBossBanner');
     if (bossBanner) {
       bossBanner.hidden = game.phase !== 'wave';
@@ -161,7 +175,7 @@ export function createHudController(runtimeCtx, deps) {
         const fillEl = $('waveBossFill');
         if (boss) {
           const pct = clamp((boss.hp / Math.max(1, boss.maxHp)) * 100, 0, 100);
-          if (titleEl) titleEl.textContent = `⚠️ ${boss.name || '首领'} · ${Math.ceil(pct)}%`;
+          if (titleEl) titleEl.textContent = `${boss.name || '首领'} · ${boss.signatureLockActive ? '锁血 · 进入安全区' : boss.finalPhaseEntered ? '末段 · ' : ''}${Math.ceil(pct)}%`;
           if (trackEl) trackEl.hidden = false;
           if (fillEl?.style) fillEl.style.width = `${pct}%`;
         } else {

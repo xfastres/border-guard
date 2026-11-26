@@ -99,7 +99,7 @@ export function createCombatHooks(ctx, deps) {
     const w20BossBreaker = hasW20Enhancement(ctx.game, 'w20_shared_boss_breaker');
     const allowChainTransfer = !ctx.counters.inFireChainTransfer && (hasFireTrio || w20FireBase);
 
-    e.fireDetonateCd = 0.22;
+    e.fireDetonateCd = BALANCE.combat.fireDetonateCooldown;
     const stacks = Math.max(1, e.fireMarkStacks || 1);
     const stackMult = 1 + Math.max(0, stacks - 1) * 0.25;
     let destinyDetBoost = 1;
@@ -108,7 +108,7 @@ export function createCombatHooks(ctx, deps) {
       ctx.game.hero.destinyEmberNextBoost = false;
       recordDestinyProc('destiny_ember_echo');
     }
-    const detDmg = Math.max(10, Math.round(baseDmg * stackMult * destinyDetBoost));
+    const detDmg = Math.max(10, Math.round(baseDmg * stackMult * destinyDetBoost * BALANCE.combat.fireDetonatePower));
     if (consumeMark) {
       e.fireMarkStacks = Math.max(0, (e.fireMarkStacks || 1) - 1);
       if (e.fireMarkStacks <= 0) e.fireMarkT = 0;
@@ -507,7 +507,7 @@ export function createCombatHooks(ctx, deps) {
     const prevShield = h.shield || 0;
     const overflow = Math.max(0, prevShield + gain - maxShield);
     const wasFullOrOverflow = prevShield >= maxShield * 0.92 || (prevShield + gain >= maxShield);
-    h.shield = Math.min(maxShield, prevShield + gain);
+    h.shield = Math.max(prevShield, Math.min(maxShield, prevShield + gain));
     const actualGain = Math.max(0, Math.round(h.shield - prevShield));
     h.shieldTimer = Math.max(h.shieldTimer || 0, duration);
     h.frostShieldActive = true;
@@ -528,7 +528,7 @@ export function createCombatHooks(ctx, deps) {
     }
     // Stage 3 W20 Enhancement [w20_frost_pillar_ward]: every 40 cumulative frost shield drops a 3.2s frost ward zone
     if (hasW20Enhancement(ctx.game, 'w20_frost_pillar_ward') && arg2?.source !== 'w20_frost_pillar_ward') {
-      h.w20ShieldPillarAccum = (h.w20ShieldPillarAccum || 0) + gain;
+      h.w20ShieldPillarAccum = (h.w20ShieldPillarAccum || 0) + actualGain;
       if (h.w20ShieldPillarAccum >= 40) {
         h.w20ShieldPillarAccum -= 40;
         recordW20Proc('enhancement');

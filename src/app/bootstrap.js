@@ -119,6 +119,7 @@ export function bootBrowserGame({ win = window, doc = win.document } = {}) {
   const formatters = createUiFormatters({ getW10BranchSpec: w10.getW10BranchSpec });
   const modals = createModalsSystem(runtimeCtx, {
     getEl,
+    startPractice: options => presets.loadTestPreset(options),
     meta,
     equipment: { ...equipmentCore, ...affixTransfer },
     economy: { ...economyCore, ...shop, ...shopConfirm },

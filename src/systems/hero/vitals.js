@@ -172,7 +172,8 @@ export function createHeroVitals(ctx, deps) {
     if (h.invuln > 0 || !['prep','wave'].includes(game.phase)) return;
     const holyInvulnBonus = getActiveMetaMain()?.id === 'main_holy' ? Number(getActiveMetaMain()?.effects?.invulnBonus || 0.10) : 0;
     h.invuln = 0.28 + holyInvulnBonus;
-    let rem = amt;
+    const hazard = sourceMeta?.isBossCore || sourceMeta?.isBossAux;
+    let rem = amt * (hazard && !sourceMeta.damageTuned ? BALANCE.combat.bossHazardByWave[game.wave] ?? 1 : 1);
     const gm = aggregateGear(h.gear);
     if ((h.armorBreakT || 0) > 0) rem = Math.round(rem * 1.25);
     if (perkLv(game, 'frost_domain') >= 2) rem = Math.max(1, Math.round(rem * 0.80));
@@ -201,6 +202,7 @@ export function createHeroVitals(ctx, deps) {
     } else if (hadFrostShield && h.w10Branch?.nova === 'nv_prism_lance') {
       triggerFrostPulse(2.8, 36, 0.9, 'w10');
     }
+    if (game.phase === 'won' || game.phase === 'lost') return;
     let shieldAbsorbed = 0;
     if (h.shield > 0) {
       shieldAbsorbed = Math.min(h.shield, rem);
@@ -213,6 +215,7 @@ export function createHeroVitals(ctx, deps) {
         triggerFrostPulse(3.2, 42, 1.0, 'w10');
       }
     }
+    if (game.phase === 'won' || game.phase === 'lost') return;
     const prevHp = h.hp;
     let actualHpLoss = 0;
     if (rem > 0) {

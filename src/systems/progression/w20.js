@@ -1,3 +1,4 @@
+import { BUILD_ROUTES, SKILL_BUILD_KEYS } from '../../data/build-data.js';
 import BALANCE from '../../data/balance.js';
 import { W20_DIRECTIONS, W20_DIRECTION_KEYS, W20_ENHANCEMENTS } from '../../data/progression-data.js';
 import { clamp } from '../../core/math.js';
@@ -104,6 +105,9 @@ export function createW20Breakthrough(ctx, { equipment, economy }) {
 
   function getRecommendedW20Direction(){
     if (!ctx.game?.hero) return 'fire_chain_surge';
+    const primary = ctx.game.hero.breakthroughs?.w10?.skillKey || ctx.game.hero.starterSkill;
+    const route = BUILD_ROUTES[SKILL_BUILD_KEYS[primary]];
+    if (route) return route.direction;
     const syn = getActiveGearAffixSynergies();
     if (syn.hasFrostTrio || syn.hasFrostDuo || (ctx.game.hero.skills?.nova || 0) > (ctx.game.hero.skills?.firewave || 0)) {
       return 'frost_bastion_counter';
@@ -250,8 +254,20 @@ export function createW20Breakthrough(ctx, { equipment, economy }) {
     const K = draft.groupSize || (BALANCE.w20Breakthrough?.groupSize || 2);
     const cost = getW20RerollCost(draft.rerollCount);
 
+    if ((ctx.game.materials || 0) < cost) {
+      ctx.ports.ui.toast(`锻材不足！本次整组重抽需 ${cost} 锻材（当前 ⚙️ ${ctx.game.materials || 0}）`, true);
+      return {
+        ok: false,
+        reason: 'insufficient_materials',
+        cost,
+        materialsLeft: ctx.game.materials || 0,
+        candidates: draft.candidates.slice()
+      };
+    }
+
     // Strict 2K+2 capacity redline check BEFORE deducting any materials!
-    const draw = drawW20CandidateGroup(draft.directionKey, draft.candidates, K);
+    const recent = [...new Set((draft.history || [draft.candidates]).slice(-2).flat())];
+    const draw = drawW20CandidateGroup(draft.directionKey, recent, K);
     if (!draw.ok) {
       ctx.ports.ui.toast(`候选池容量不足（需至少 ${draw.required} 张，当前 ${draw.available} 张），已保留当前候选与锻材余额！`, true);
       return {
@@ -260,17 +276,6 @@ export function createW20Breakthrough(ctx, { equipment, economy }) {
         required: draw.required,
         available: draw.available,
         materialsLeft: ctx.game.materials,
-        candidates: draft.candidates.slice()
-      };
-    }
-
-    if ((ctx.game.materials || 0) < cost) {
-      ctx.ports.ui.toast(`锻材不足！本次整组重抽需 ${cost} 锻材（当前 ⚙️ ${ctx.game.materials || 0}）`, true);
-      return {
-        ok: false,
-        reason: 'insufficient_materials',
-        cost,
-        materialsLeft: ctx.game.materials || 0,
         candidates: draft.candidates.slice()
       };
     }

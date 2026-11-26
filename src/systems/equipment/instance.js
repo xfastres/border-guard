@@ -115,7 +115,7 @@ export function createGearInstances(ctx, meta) {
         let wt = sp.rarity === 'epic' ? (wantHighRarity ? 2.6 : 1.0)
           : sp.rarity === 'rare' ? (wantHighRarity ? 2.2 : 1.5)
           : 2.0;
-        if (elem && sp.elem === elem) wt *= 2.4;
+        if (elem && sp.elem === elem) wt *= BALANCE.economy.affixElementWeight;
         if (mainElem && sp.elem === mainElem) wt *= mainTilt;
         totalWeight += wt;
         return { id, wt };

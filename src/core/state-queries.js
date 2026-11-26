@@ -1,4 +1,4 @@
-import { SOURCE_STAGES, DESTINY_ENHANCEMENTS } from '../data/index.js';
+import { BUILD_ROUTES, SKILL_BUILD_KEYS, SOURCE_STAGES, DESTINY_ENHANCEMENTS } from '../data/index.js';
 
 export function getSourceStageForWave(wave = 1){
   const w = Math.max(1, Math.round(Number(wave) || 1));
@@ -8,6 +8,12 @@ export function getSourceStageForWave(wave = 1){
 
 export function getSourceStageSpec(stage = 1){
   return SOURCE_STAGES.find(s => s.stage === Number(stage)) || SOURCE_STAGES[0];
+}
+
+export function getBuildRoute(game){
+  const hero = game?.hero;
+  const key = hero?.breakthroughs?.w10?.skillKey || hero?.starterSkill;
+  return BUILD_ROUTES[SKILL_BUILD_KEYS[key]] ?? null;
 }
 
 export function perkLv(game, key){ return game?.hero?.perks?.[key] || 0; }
@@ -48,11 +54,11 @@ export function getOwnedDestinyEnhancements(game){
   return Object.keys(map).filter(k => map[k] && DESTINY_ENHANCEMENTS[k]).map(k => DESTINY_ENHANCEMENTS[k]);
 }
 
-export function isFinalPrepActionLocked(game){
+export function isFinalPrepActionLocked(game, nowMs = null){
   const fp = game?.finalPrep;
   if (!fp) return false;
   if (fp.locked || fp.transitioning) return true;
-  if (fp.active && fp.started && fp.timer <= 0) return true;
+  if (fp.active && fp.started && (fp.timer <= 0 || (Number.isFinite(nowMs) && Number.isFinite(fp.deadlineMs) && nowMs >= fp.deadlineMs))) return true;
   return false;
 }
 

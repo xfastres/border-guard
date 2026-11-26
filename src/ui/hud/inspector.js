@@ -11,7 +11,7 @@ export function createInspectorUI(runtimeCtx, deps) {
   const { getEl: $, feedback: { toast } } = deps;
   const { getSealStarCap, getSubSealSlotCap, getActiveUnlockNode, getRealmStageLabel } = deps.unlock;
   const { getSealStats, getSynergyCounts, getHeroStats } = deps.hero;
-  const { chooseSealRoute, sealTotalPoints, sellSeal, sellSubSeal, isBagSeal, getGearEnhanceCost, getGearSellGold, getGearDismantleMaterials, getBagCapacity } = deps.economy;
+  const { chooseSealRoute, sealTotalPoints, sellSeal, sellSubSeal, isBagSeal, getGearEnhanceCost, getGearEnhanceGoldCost, getGearSellGold, getGearDismantleMaterials, getBagCapacity } = deps.economy;
   const {
     getActiveGearAffixSynergies, gearLabel, describeGearEffect, isGearInstance, normalizeGearInstance,
     unequipGear, equipGearFromBag, enhanceGear, sellBagGear, dismantleBagGear, replaceEquippedGear, claimRewardStashItem,
@@ -113,14 +113,14 @@ export function createInspectorUI(runtimeCtx, deps) {
         const spec = ARTIFACTS[a.kind];
         const sell = document.createElement('button');
         sell.type = 'button'; sell.className = 'btn danger full'; sell.dataset.act = 'sell';
-        const refund = Math.round(spec.cost * sealTotalPoints(a) * 0.8);
-        sell.innerHTML = `<span>卸售主灵印</span><small>返还 +${refund} 金（80% 折价）</small>`;
+        const refund = Math.round(spec.cost * sealTotalPoints(a) * BALANCE.economy.sealRefundRatio);
+        sell.innerHTML = `<span>卸售主灵印</span><small>返还 +${refund} 金</small>`;
         sell.addEventListener('click', sellSeal);
         acts.append(sell);
       }
       game.subSeals.forEach((sub, idx) => {
         const sp = ARTIFACTS[sub.kind];
-        const refund = Math.round(sp.cost * sealTotalPoints(sub) * 0.8);
+        const refund = Math.round(sp.cost * sealTotalPoints(sub) * BALANCE.economy.sealRefundRatio);
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'btn danger';
         b.innerHTML = `<span>卸售辅印${idx+1} (${sp.name})</span><small>返还 +${refund} 金</small>`;
@@ -201,6 +201,7 @@ export function createInspectorUI(runtimeCtx, deps) {
       h.gear.forEach((inst, sIdx) => {
         const stSpec = getSourceStageSpec(inst.sourceStage);
         const enhCost = getGearEnhanceCost(inst);
+        const enhGold = getGearEnhanceGoldCost?.(inst) ?? 0;
         const row = document.createElement('div');
         row.className = 'gear-fx-row';
         row.innerHTML = `
@@ -213,8 +214,8 @@ export function createInspectorUI(runtimeCtx, deps) {
         const enhBtn = document.createElement('button');
         enhBtn.type = 'button';
         enhBtn.className = 'btn';
-        enhBtn.disabled = enhCost === null || (game.materials || 0) < enhCost;
-        enhBtn.textContent = enhCost === null ? `已满强化 (+${maxEnhLv})` : `⚙️ 锻材强化 (${enhCost}锻材 → +${inst.enhanceLv + 1})`;
+        enhBtn.disabled = enhCost === null || (game.materials || 0) < enhCost || game.gold < enhGold;
+        enhBtn.textContent = enhCost === null ? `已满强化 (+${maxEnhLv})` : `⚙️ 锻材强化 (${enhCost}锻材${enhGold ? ` + ${enhGold}金` : ''} → +${inst.enhanceLv + 1})`;
         enhBtn.addEventListener('click', () => enhanceGear({ location: 'equipped', idx: sIdx }));
         const uneqBtn = document.createElement('button');
         uneqBtn.type = 'button';
@@ -267,6 +268,7 @@ export function createInspectorUI(runtimeCtx, deps) {
         const sellVal = getGearSellGold(g);
         const disMats = getGearDismantleMaterials(g);
         const enhCost = getGearEnhanceCost(g);
+        const enhGold = getGearEnhanceGoldCost?.(g) ?? 0;
         const card = document.createElement('div');
         card.className = 'gear-fx-row';
         card.style.width = '100%';
@@ -287,8 +289,8 @@ export function createInspectorUI(runtimeCtx, deps) {
         }
         const enhBtn = document.createElement('button');
         enhBtn.type = 'button'; enhBtn.className = 'btn';
-        enhBtn.disabled = enhCost === null || (game.materials || 0) < enhCost;
-        enhBtn.textContent = enhCost === null ? '满强化' : `⚙️强化(${enhCost}材)`;
+        enhBtn.disabled = enhCost === null || (game.materials || 0) < enhCost || game.gold < enhGold;
+        enhBtn.textContent = enhCost === null ? '满强化' : `⚙️强化(${enhCost}材${enhGold ? ` + ${enhGold}金` : ''})`;
         enhBtn.addEventListener('click', () => enhanceGear({ location: 'bag', idx }));
         const sellBtn = document.createElement('button');
         sellBtn.type = 'button'; sellBtn.className = 'btn';

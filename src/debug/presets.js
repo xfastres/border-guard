@@ -1,7 +1,7 @@
 import { clamp, xpForLevel } from '../core/math.js';
 import { getSourceStageForWave } from '../core/state-queries.js';
 import BALANCE from '../data/balance.js';
-import { ARTIFACTS, HERO_GEAR_SLOTS, HERO_SKILLS, MAIN_WAVES, W10_SKILL_BRANCHES, W20_DIRECTIONS, W20_ENHANCEMENTS } from '../data/index.js';
+import { ARTIFACTS, BUILD_ROUTES, GEARS, HERO_GEAR_SLOTS, HERO_SKILLS, MAIN_WAVES, W10_SKILL_BRANCHES, W20_DIRECTIONS, W20_ENHANCEMENTS } from '../data/index.js';
 
 export function createDebugPresets(runtimeCtx, { systems, ui }) {
   const { makeGame } = systems.run;
@@ -19,19 +19,23 @@ export function createDebugPresets(runtimeCtx, { systems, ui }) {
   function loadTestPreset({ wave = 10, tier = 'standard', build = 'fire', materials, gold, transferTokens, seed = 2026 } = {}){
     const targetWave = clamp(Math.round(Number(wave) || 10), 1, MAIN_WAVES);
     const normTier = ['weak', 'standard', 'strong'].includes(tier) ? tier : 'standard';
-    const normBuild = ['fire', 'frost'].includes(build) ? build : 'fire';
+    const normBuild = Object.hasOwn(BUILD_ROUTES, build) ? build : 'fire';
+    const route = BUILD_ROUTES[normBuild];
     const runSeed = Number.isFinite(Number(seed)) ? Number(seed) : 2026;
 
     runtimeCtx.setPaused(false);
     closeModal();
     runtimeCtx.setGame(makeGame(runSeed));
     const game = runtimeCtx.game;
+    game.debugRun = true;
+    game.metaRunLocked = true;
     game.wave = targetWave;
     game.phase = 'prep';
     game.subPhase = null;
     game.pendingModals = [];
     game.activeModal = null;
     game.pendingBreakthrough = null;
+    runtimeCtx.ports.modals.hideBackdrop();
     game.w10Draft = null;
     game.w20Draft = null;
     game.inspTarget = null;
@@ -61,10 +65,10 @@ export function createDebugPresets(runtimeCtx, { systems, ui }) {
     // Set breakthroughs, vouchers, W16-W20 preselection, W19 intel & W28 omen
     if (hasW10) {
       h.vouchers.w10 = true;
-      const primarySkill = normBuild === 'frost' ? 'nova' : 'firewave';
+      const primarySkill = route.skill;
       const branchKey = normBuild === 'frost'
         ? (normTier === 'strong' ? 'nv_glacial_bastion' : 'nv_seeking_vortex')
-        : (normTier === 'strong' ? 'fw_ring_detonate' : 'fw_brand_pierce');
+        : normBuild === 'fire' && normTier === 'strong' ? 'fw_ring_detonate' : route.branch;
       const branchSpec = (W10_SKILL_BRANCHES[primarySkill] || []).find(b => b.key === branchKey) || W10_SKILL_BRANCHES[primarySkill][0];
       h.w10Branch[primarySkill] = branchSpec.key;
       h.breakthroughs.w10 = {
@@ -82,7 +86,7 @@ export function createDebugPresets(runtimeCtx, { systems, ui }) {
       game.stats.breakthroughsCompleted = 1;
     }
 
-    const defaultW20DirKey = normBuild === 'frost' ? 'frost_bastion_counter' : 'fire_chain_surge';
+    const defaultW20DirKey = route.direction;
     const defaultW20Dir = W20_DIRECTIONS[defaultW20DirKey];
     if (targetWave >= 19) {
       game.bossIntel.w20Revealed = true;
@@ -101,7 +105,7 @@ export function createDebugPresets(runtimeCtx, { systems, ui }) {
       h.vouchers.w20 = true;
       const defaultEnhKey = normBuild === 'frost'
         ? (normTier === 'strong' ? 'w20_frost_overflow_nova' : 'w20_frost_dash_ring')
-        : (normTier === 'strong' ? 'w20_fire_supernova_chain' : 'w20_fire_isolated_exec');
+        : normBuild === 'fire' && normTier === 'strong' ? 'w20_fire_supernova_chain' : route.enhancement;
       const enhSpec = W20_ENHANCEMENTS[defaultEnhKey];
       game.w20State = {
         preselectedDirection: defaultW20Dir.key,
@@ -146,25 +150,18 @@ export function createDebugPresets(runtimeCtx, { systems, ui }) {
 
     // Initialize learned skills according to build, wave, and tier
     const mainLv = clamp(
-      (targetWave >= 21 ? 5 : targetWave >= 11 ? 4 : targetWave >= 6 ? 3 : 2) + (normTier === 'strong' ? 1 : normTier === 'weak' ? -1 : 0),
+      (targetWave >= 21 ? 5 : targetWave >= 11 ? 4 : targetWave >= 6 ? 3 : targetWave === 1 ? 1 : 2) + (normTier === 'strong' ? 1 : normTier === 'weak' ? -1 : 0),
       1, 5
     );
     const secLv = clamp(mainLv - 1, 1, 5);
     const tertLv = clamp(mainLv - 2, 1, 5);
-    h.skills = { blades:0, firewave:0, thunder:0, nova:0, stomp:0, berserk:0 };
-    if (normBuild === 'fire') {
-      h.skills.firewave = mainLv;
-      h.skills.blades = secLv;
-      if (targetWave >= 6) h.skills.thunder = secLv;
-      if (targetWave >= 10) h.skills.berserk = tertLv;
-      if (hasW10 && targetWave >= 15) h.skills.stomp = tertLv;
-    } else {
-      h.skills.nova = mainLv;
-      h.skills.blades = secLv;
-      if (targetWave >= 6) h.skills.thunder = secLv;
-      if (targetWave >= 10) h.skills.berserk = tertLv;
-      if (hasW10 && targetWave >= 15) h.skills.stomp = tertLv;
-    }
+    h.skills = { [route.skill]: mainLv };
+    h.starterSkill = route.skill;
+    const support = route.skill === 'blades' ? 'nova' : 'blades';
+    if (targetWave >= 5) h.skills[support] = secLv;
+    if (targetWave >= 6 && route.skill !== 'thunder') h.skills.thunder = secLv;
+    if (targetWave >= 10 && route.skill !== 'berserk') h.skills.berserk = tertLv;
+    if (targetWave >= 15 && route.skill !== 'stomp') h.skills.stomp = tertLv;
 
     // Initialize Main Seal & Sub-Seals within unlocked caps
     const sealCap = getSealStarCap();
@@ -174,8 +171,8 @@ export function createDebugPresets(runtimeCtx, { systems, ui }) {
       desiredMainStar + (normTier === 'strong' ? 1 : normTier === 'weak' ? -1 : 0),
       1, sealCap
     );
-    const mainKind = normBuild === 'frost' ? 'frost' : 'fire';
-    game.seal = {
+    const mainKind = route.elem;
+    game.seal = targetWave === 1 ? null : {
       id: game.nextTowerId++,
       kind: mainKind,
       elem: ARTIFACTS[mainKind].elem,
@@ -188,7 +185,7 @@ export function createDebugPresets(runtimeCtx, { systems, ui }) {
     };
 
     game.subSeals = [];
-    const subOrder = normBuild === 'frost' ? ['wind', 'thunder'] : ['thunder', 'wind'];
+    const subOrder = ['thunder', 'wind', 'holy'].filter(kind => kind !== mainKind);
     const subStar = clamp(
       (targetWave >= 20 ? 3 : targetWave >= 11 ? 2 : 1) + (normTier === 'strong' ? 1 : normTier === 'weak' ? -1 : 0),
       1, 3
@@ -215,14 +212,13 @@ export function createDebugPresets(runtimeCtx, { systems, ui }) {
         : 0;
     const gearPool = normBuild === 'frost'
       ? ['frost_mirror', 'frost_orb', 'jade_pendant', 'seal_astrolabe']
-      : ['flame_fan', 'burn_core', 'crit_axe', 'vamp_fang'];
-    const coreAffixes = normBuild === 'frost'
-      ? (normTier === 'strong' ? ['frost_chill', 'frost_ward', 'frost_nova_counter'] : normTier === 'standard' ? ['frost_chill', 'frost_ward'] : ['frost_chill'])
-      : (normTier === 'strong' ? ['fire_brand', 'fire_burst', 'fire_chain'] : normTier === 'standard' ? ['fire_brand', 'fire_burst'] : ['fire_brand']);
+      : normBuild === 'fire' ? ['flame_fan', 'burn_core', 'crit_axe', 'vamp_fang']
+        : [...route.gear.filter(key => GEARS[key]), 'vamp_fang'];
+    const coreAffixes = route.affixes.slice(0, normTier === 'strong' ? 3 : normTier === 'standard' ? 2 : 1);
     const auxAffixSets = normBuild === 'frost'
       ? [['iron_bastion'], ['wind_tempest'], ['fortune_mint']]
       : [['fury_crit'], ['vamp_siphon'], ['wind_tempest']];
-    const slotCount = targetWave >= 20 ? 4 : targetWave >= 10 ? (normTier === 'weak' ? 2 : 3) : 2;
+    const slotCount = targetWave === 1 ? 0 : targetWave >= 20 ? 4 : targetWave >= 10 ? (normTier === 'weak' ? 2 : 3) : 2;
     h.gear = [];
     for (let i = 0; i < slotCount && i < gearPool.length; i++) {
       const gk = gearPool[i];
@@ -241,7 +237,7 @@ export function createDebugPresets(runtimeCtx, { systems, ui }) {
     h.destinyEnhancements = {};
     if (normTier === 'strong' && targetWave >= 21) {
       h.destinyEnhancements = normBuild === 'frost'
-        ? { destiny_fate_breaker: true, destiny_frost_refraction: true }
+        ? { destiny_fate_breaker: true, destiny_glacial_aegis: true }
         : { destiny_fate_breaker: true, destiny_ember_echo: true };
     }
 
@@ -363,6 +359,9 @@ export function createDebugPresets(runtimeCtx, { systems, ui }) {
     closeModal();
     runtimeCtx.setGame(makeGame(Number.isFinite(Number(data.seed)) ? Number(data.seed) : 2026));
     const game = runtimeCtx.game;
+    game.debugRun = true;
+    game.metaRunLocked = true;
+    runtimeCtx.ports.modals.hideBackdrop();
     game.wave = clamp(Math.round(Number(data.wave || 1)), 1, MAIN_WAVES);
     game.phase = 'prep';
     game.gold = Math.max(0, Math.round(Number(data.gold ?? BALANCE.progression.initialGold)));

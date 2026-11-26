@@ -1,12 +1,11 @@
 import { ARTIFACTS, PILLS } from '../../data/index.js';
-import { isFinalPrepActionLocked } from '../../core/state-queries.js';
 
 export function createShopConfirm(ctx, { buyShopItem }) {
 
   function openShopPurchaseConfirm(shopIdx){
     const game = ctx.game;
     if (!game || game.phase !== 'prep') return { ok: false, reason: 'not_in_prep' };
-    if (isFinalPrepActionLocked(game)) return { ok: false, reason: 'final_prep_locked' };
+    if (ctx.isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
     const item = game.shop?.[shopIdx];
     if (!item || item.bought) return { ok: false, reason: 'invalid_shop_item' };
     const label = item.itemType === 'pill'
@@ -38,7 +37,7 @@ export function createShopConfirm(ctx, { buyShopItem }) {
   function confirmShopPurchase(){
     const game = ctx.game;
     if (!game) return { ok: false, reason: 'no_game' };
-    if (isFinalPrepActionLocked(game)) {
+    if (ctx.isFinalPrepActionLocked()) {
       game.shopConfirmDraft = null;
       return { ok: false, reason: 'final_prep_locked' };
     }

@@ -2,18 +2,11 @@ import BALANCE from '../../data/balance.js';
 import { hasPendingW29WaveRewards } from '../../core/state-queries.js';
 
 export function isCancelablePrepModal(m){
-  return !!(m && ['destiny_gamble', 'affix_transfer', 'shop_confirm', 'w30_early_confirm', 'meta_legacy'].includes(m.type));
+  return !!(m && ['destiny_gamble', 'affix_transfer', 'shop_confirm', 'w30_early_confirm', 'meta_legacy', 'intro'].includes(m.type));
 }
 
 export function createFinalPrepSystem(ctx, deps) {
-  function getMonotonicNowMs(){
-    const override = ctx.counters.monotonicClockOverride;
-    if (typeof override === 'function') {
-      const v = Number(override());
-      if (Number.isFinite(v)) return v;
-    }
-    return ctx.ports.clock.perfNow();
-  }
+  const { getMonotonicNowMs } = ctx;
 
   function setMonotonicClockForTest(fn){
     ctx.counters.monotonicClockOverride = typeof fn === 'function' ? fn : null;
@@ -56,7 +49,7 @@ export function createFinalPrepSystem(ctx, deps) {
     }
     if (fp.locked || fp.transitioning) return false;
 
-    const curNowMs = Number.isFinite(nowMs) ? nowMs : getMonotonicNowMs();
+    const curNowMs = Math.max(fp.lastClockMs ?? -Infinity, Number.isFinite(nowMs) ? nowMs : getMonotonicNowMs());
     if (!Number.isFinite(fp.deadlineMs)) {
       const remSec = Math.max(0, Number(fp.timer || 0));
       fp.startedAtMs = curNowMs;
@@ -138,7 +131,7 @@ export function createFinalPrepSystem(ctx, deps) {
       const started = deps.waves.startWave();
       return { ok: !!started, reason: started ? null : 'start_wave_blocked' };
     }
-    if (fp.locked || fp.transitioning) {
+    if (fp.locked || fp.transitioning || syncW29FinalPrepClock({ allowFallbackDt: false })) {
       return { ok: false, reason: 'final_prep_locked' };
     }
     if (fp.awaitingWaveRewards || hasPendingW29WaveRewards(ctx.game)) {

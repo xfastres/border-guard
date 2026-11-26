@@ -1,3 +1,4 @@
+import { BUILD_ROUTES } from '../../data/build-data.js';
 import { MAIN_WAVES } from '../../data/core-data.js';
 
 export function createIntroEndModals(runtimeCtx, deps) {
@@ -22,7 +23,7 @@ export function createIntroEndModals(runtimeCtx, deps) {
     const budget = getMetaLoadoutBudget(save.loadout);
     const box = getEl('modalBox');
     box.innerHTML = `
-    <h2>⚔️ 边境守卫 v0.60 · 30 波完整试玩版</h2>
+    <h2>⚔️ 边境守卫 v0.60 · 30 波 · 数值与构筑重做</h2>
     <p class="lead">64×48 修仙秘境自由游走！从 <strong>W1</strong> 迎战 6 大首领与 <strong>W10 / W20 双大型突破</strong>，激活双/三词条实战联动，完成 <strong>W29 实时 90 秒整备</strong>并决战 <strong>W30 深渊主宰</strong>！</p>
     <div class="meta-lock-banner" style="margin-bottom:10px">
       <div>💠 当前局外传承：<strong>${mainSpec ? `${mainSpec.icon}${mainSpec.name}` : '未选'}</strong> · 辅助（${budget.auxCount}/3 · ${budget.auxPoints}/4点）：<strong>${auxSpecs.map(a => `${a.icon}${a.name}`).join(' / ') || '无'}</strong></div>
@@ -34,7 +35,7 @@ export function createIntroEndModals(runtimeCtx, deps) {
     <div class="intro-grid">
       <div class="intro-box">
         <h4>🔥❄️ 跨阶段双/三词条实战联动</h4>
-        <p>构装独立随机 <strong>1/2/3 槽词条</strong>，与 W10 分支和 W20 突破共享火标/减速状态；完整三联动替代原双联动，呈现群体连爆、孤立聚焦与持盾主动冰环！</p>
+        <p>火标、寒盾、回锋、蓄雷、血契、裁决与重击各有打法。选择两条相合词条可以启动机制，再补第三条完成联动。</p>
       </div>
       <div class="intro-box">
         <h4>🏪 常规经济 · 天命赌局 · 词条转移台</h4>
@@ -49,6 +50,20 @@ export function createIntroEndModals(runtimeCtx, deps) {
         <p>开局锁定 <strong>1 主传承 + 最多 3 辅助（固定 4 点）</strong>，主传承权重倾斜 ×1.35 并保持活跃池定容防稀释；三维结算提供真实伤害归因与单局防重复发奖。</p>
       </div>
     </div>
+    <details class="practice-setup">
+      <summary>阶段练习</summary>
+      <div class="practice-controls">
+        <label>波次 <select id="practiceWave">
+          ${[1, 7, 10, 15, 20, 25, 29, 30].map(wave => `<option value="${wave}">W${wave}</option>`).join('')}
+        </select></label>
+        <label>构筑 <select id="practiceBuild">
+          ${Object.entries(BUILD_ROUTES).map(([key, route]) => `<option value="${key}">${route.name}</option>`).join('')}
+        </select></label>
+        <label>配装 <select id="practiceTier"><option value="standard">标准</option><option value="weak">基础</option><option value="strong">优秀</option></select></label>
+        <button type="button" class="btn" id="practiceGo">加载练习</button>
+      </div>
+      <p>加载该波备战。练习结算不计入正式传承。</p>
+    </details>
     <div class="modal-footer">
       <button class="btn" id="introMetaBtnFoot" type="button" style="padding:9px 14px;font-size:13px">⚙️ 配置局外传承</button>
       <button class="btn gold" id="introGo" type="button" style="padding:9px 22px;font-size:14px">⚔️ 锁定传承 · 踏入秘境！</button>
@@ -57,6 +72,14 @@ export function createIntroEndModals(runtimeCtx, deps) {
     const openMetaFromIntro = () => deps.metaModal.openMetaLegacyModal({ context: 'pre_run', returnTo: 'intro' });
     box.querySelector('#introMetaBtn')?.addEventListener('click', openMetaFromIntro);
     box.querySelector('#introMetaBtnFoot')?.addEventListener('click', openMetaFromIntro);
+    box.querySelector('#practiceGo')?.addEventListener('click', () => {
+      audio.unlock();
+      deps.startPractice?.({
+        wave: Number(box.querySelector('#practiceWave').value),
+        build: box.querySelector('#practiceBuild').value,
+        tier: box.querySelector('#practiceTier').value,
+      });
+    });
     box.querySelector('#introGo')?.addEventListener('click', () => {
       audio.unlock();
       if (!runtimeCtx.game.metaRunLocked) {
@@ -108,12 +131,12 @@ export function createIntroEndModals(runtimeCtx, deps) {
       ? threat.topThreats.slice(0, 3).map(t => `${t.attackerName}·${t.skillName}(${t.hits}次/-${t.totalHpLost}血)`).join('；')
       : '近 5 秒无受击记录';
 
-    const shardDetailText = settle?.eligible
+    const shardDetailText = settle?.practice ? '阶段练习 · 无传承结算' : settle?.eligible
       ? `波段推进 +${(settle.band1Shards || 0) + (settle.band2Shards || 0) + (settle.band3Shards || 0)}（W3-10:${settle.band1Shards} / W11-20:${settle.band2Shards} / W21-29:${settle.band3Shards}）· 首领 +${settle.bossBonus} · 突破 +${(settle.w10Bonus || 0) + (settle.w20Bonus || 0)}${settle.w30VictoryBonus ? ` · W30通关大奖 +${settle.w30VictoryBonus}` : ''}`
       : '未通过 W3 且未击败首领：防速死刷取规则生效，本局传承碎片收益为 0（有效推进后即可获得长期成长）';
     const newMsList = (settle?.newlyClaimedMilestones || []).map(m => `${m.name}(+💠${m.shardReward})`).join('、') || '无新增';
     const saveFailed = !!(settle && (settle.saveStatus === 'failed' || settle.persisted === false));
-    const dupGuardText = settle?.duplicateBlocked
+    const dupGuardText = settle?.practice ? '阶段练习记录仅在当前画面显示。' : settle?.duplicateBlocked
       ? '🛡️ 防重放已拦截（本 runId 奖励此前已发放，本次 +0）'
       : saveFailed
         ? `⚠️ 本地存档写入失败，本局奖励尚未持久化（原因：${settle.saveError || 'storage_write_failed'}）`
@@ -144,7 +167,7 @@ export function createIntroEndModals(runtimeCtx, deps) {
         <p>击杀：<b>${runtimeCtx.game.stats.kills}</b>（首领 <b>${runtimeCtx.game.stats.bossKills || 0}</b> / 精英 <b>${runtimeCtx.game.stats.elites}</b>） · 总输出：<b>${Math.round(runtimeCtx.game.stats.dmgTotal).toLocaleString()}</b><br>
         最低血线：<b>${lowestHp}%</b> · 受击总计：<b>${runtimeCtx.game.combatLog?.totalHitsTaken || 0}</b> 次（失血 ${runtimeCtx.game.combatLog?.totalHpLost || 0} / 护盾吸收 ${runtimeCtx.game.combatLog?.totalShieldAbsorbed || 0}）<br>
         W10：<b>${w10Info}</b> · W20：<b>${w20Info}</b><br>
-        装备联动：<b>${synNames}</b>（火标${runtimeCtx.game.stats.fireMarksApplied||0}/引爆${runtimeCtx.game.stats.fireDetonations||0}/传递${runtimeCtx.game.stats.fireChainTransfers||0} · 冰缓${runtimeCtx.game.stats.frostSlowsApplied||0}/冰盾+${runtimeCtx.game.stats.frostShieldGained||0}/冰环${(runtimeCtx.game.stats.frostHitPulses||0)+(runtimeCtx.game.stats.frostDashPulses||0)+(runtimeCtx.game.stats.frostFullShieldPulses||0)}）<br>
+        装备联动：<b>${synNames}</b><br>
         资源收支：金币 +${rm.goldEarned||0}/-${rm.goldSpent||0}(余${runtimeCtx.game.gold}) · 锻材 +${rm.materialsEarned||0}/-${rm.materialsSpent||0}(余${runtimeCtx.game.materials||0}) · 转印符 +${rm.transferTokensEarned||0}/-${rm.transferTokensSpent||0}(余${runtimeCtx.game.transferTokens||0}) · 赌局 ${runtimeCtx.game.stats.destinyRolls||0}次</p>
         <div class="attr-log">${fatalHtml}<br><b>近 5 秒真实威胁：</b>${recentThreatHtml}</div>
       </div>
@@ -152,7 +175,7 @@ export function createIntroEndModals(runtimeCtx, deps) {
         <h4>③ 长期成长与资源结算 · 传承碎片与里程碑</h4>
         <p>本局实发传承碎片：<b style="color:#72f2b4;font-size:14px">💠 +${settle?.totalShardsGranted ?? 0}</b>（当前余额：<b>💠 ${getMetaSave().legacyShards}</b>） · ${dupGuardText}<br>
         收益明细：${shardDetailText}<br>
-        新增一次性里程碑：<b>${newMsList}</b>（累计已完成 ${getMetaSave().claimedMilestones.length}/${getMetaConfig().milestones.length}）</p>${saveWarningHtml}
+        新增一次性里程碑：<b>${newMsList}${settle?.challengeMarks?.length ? ` · 试炼徽记：${settle.challengeMarks.join("、")}` : ""}</b>（累计已完成 ${getMetaSave().claimedMilestones.length}/${getMetaConfig().milestones.length}）</p>${saveWarningHtml}
       </div>
     </div>
     ${recentRows ? `

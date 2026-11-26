@@ -1,3 +1,4 @@
+import BALANCE from '../../data/balance.js';
 import { HERO_SKILLS, W10_SKILL_BRANCHES } from '../../data/core-data.js';
 
 export function createW10Breakthrough(ctx, { meta, unlock, hero }) {
@@ -23,6 +24,7 @@ export function createW10Breakthrough(ctx, { meta, unlock, hero }) {
     m.claimedChoice = key;
 
     if (!ctx.game.metaRunLocked) lockMetaLoadoutForRun();
+    if (m.type === 'starter') ctx.game.hero.starterSkill = key;
     ctx.game.hero.skills[key] = (ctx.game.hero.skills[key] || 0) + 1;
     ctx.ports.audio.play('merge', 1.1);
     ctx.ports.ui.toast(`领主习得【${HERO_SKILLS[key].name} Lv.${ctx.game.hero.skills[key]}】！`);
@@ -30,6 +32,21 @@ export function createW10Breakthrough(ctx, { meta, unlock, hero }) {
     ctx.ports.modals.closeModal();
     ctx.ports.ui.renderAllUI(true);
     return true;
+  }
+
+  function rollSkillChoices() {
+    const { hero, rnd } = ctx.game;
+    const main = hero.starterSkill;
+    const pool = [...new Set([...unlock.getUnlockedSkillPool(), ...Object.keys(hero.skills).filter(key => hero.skills[key] > 0)])];
+    const available = pool.filter(key => (hero.skills[key] || 0) < 5);
+    const picks = [];
+    const count = BALANCE.progression.skillDraftSize;
+    while (picks.length < count && available.length) {
+      const roll = rnd();
+      const idx = !picks.length && available.includes(main) ? available.indexOf(main) : Math.floor(roll * available.length);
+      picks.push(available.splice(idx, 1)[0]);
+    }
+    return picks;
   }
 
   function getLearnedSkillKeys(){
@@ -54,7 +71,8 @@ export function createW10Breakthrough(ctx, { meta, unlock, hero }) {
     if (!learned.includes(skillKey)) {
       return { ok: false, reason: 'skill_not_learned', learned };
     }
-    const branches = rollW10BranchChoices(skillKey);
+    const drafts = (ctx.game.w10SkillDrafts ??= {});
+    const branches = drafts[skillKey] ??= rollW10BranchChoices(skillKey);
     ctx.game.w10Draft = {
       skillKey,
       choices: branches.map(b => b.key),
@@ -74,7 +92,7 @@ export function createW10Breakthrough(ctx, { meta, unlock, hero }) {
     const skillKey = ctx.game.w10Draft.skillKey;
     const allBranches = W10_SKILL_BRANCHES[skillKey] || [];
     const branch = allBranches.find(b => b.key === branchKey);
-    if (!branch) {
+    if (!branch || !ctx.game.w10Draft.choices.includes(branchKey)) {
       return { ok: false, reason: 'invalid_branch_key', skillKey };
     }
     const h = ctx.game.hero;
@@ -93,6 +111,7 @@ export function createW10Breakthrough(ctx, { meta, unlock, hero }) {
     };
     ctx.game.pendingBreakthrough = null;
     ctx.game.w10Draft = null;
+    ctx.game.w10SkillDrafts = null;
     ctx.game.stats.breakthroughsCompleted = (ctx.game.stats.breakthroughsCompleted || 0) + 1;
     h.realm = getActiveUnlockNode().idx;
     h.baseMaxHp += 40;
@@ -103,7 +122,7 @@ export function createW10Breakthrough(ctx, { meta, unlock, hero }) {
     ctx.ports.vfx.addRing(h.x, h.y, '#ffd666', 4.2);
     ctx.ports.ui.showBanner(
       `⚡ W10 大型突破完成 · 【${HERO_SKILLS[skillKey]?.name} · ${branch.name}】！`,
-      `主灵印上限升至 ${getSealStarCap()}★ · 辅灵印扩至 ${getSubSealSlotCap()} 槽 · 解锁【重锤震地】神通池！`,
+      `主灵印上限升至 ${getSealStarCap()}★ · 辅灵印扩至 ${getSubSealSlotCap()} 槽 · 开启下一阶段神通池！`,
       'good'
     );
     if (ctx.game.activeModal && ctx.game.activeModal.type === 'w10_breakthrough') {
@@ -118,6 +137,7 @@ export function createW10Breakthrough(ctx, { meta, unlock, hero }) {
     getW10BranchSpec,
     pickHeroSkill,
     getLearnedSkillKeys,
+    rollSkillChoices,
     rollW10BranchChoices,
     selectW10BreakthroughSkill,
     pickW10BreakthroughBranch,

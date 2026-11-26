@@ -1,9 +1,9 @@
 import BALANCE from '../../data/balance.js';
 import { ARTIFACTS, ARTIFACT_KEYS } from '../../data/core-data.js';
-import { GEARS, GEAR_KEYS, GEAR_RARITY_LABELS } from '../../data/equipment-data.js';
+import { GEARS, GEAR_RARITY_LABELS } from '../../data/equipment-data.js';
 import { DESTINY_ENHANCEMENTS, DESTINY_ENHANCEMENT_KEYS, DESTINY_SPECIAL_BOONS, DESTINY_SPECIAL_BOON_KEYS, DESTINY_PILLS } from '../../data/destiny-data.js';
+import { getBuildRoute } from '../../core/state-queries.js';
 import { clamp } from '../../core/math.js';
-import { isFinalPrepActionLocked } from '../../core/state-queries.js';
 
 export function getDestinyConfig(){
   const raw = BALANCE.destinyGamble || {};
@@ -60,7 +60,7 @@ export function getDestinyBetBand(bet){
 }
 
 export function createDestinyGamble(ctx, { meta, unlock, equipment, economy, hero, combat }) {
-  const { hasMetaAux } = meta;
+  const { hasMetaAux, getActiveRunGearKeys, pickWeightedByMainLegacy } = meta;
   const { getSealStarCap, getSubSealSlotCap } = unlock;
   const { createGearInstance, evaluateItemSynergies, getGearSynergyHints, describeGearEffect, grantGearSafely, grantSealSafely } = equipment;
   const { changeGold, changeMaterials, changeTransferTokens } = economy;
@@ -239,9 +239,10 @@ export function createDestinyGamble(ctx, { meta, unlock, equipment, economy, her
     }
 
     if (category === 'gear') {
-      const pool = GEAR_KEYS.filter(k => GEARS[k].rarity === rarity);
-      const list = pool.length ? pool : GEAR_KEYS;
-      const baseKey = list[Math.floor(rndFn() * list.length)];
+      const activePool = getActiveRunGearKeys();
+      const pool = activePool.filter(k => GEARS[k].rarity === rarity);
+      const list = pool.length ? pool : activePool;
+      const baseKey = pickWeightedByMainLegacy(list, key => GEARS[key].elem, rndFn, getBuildRoute(ctx.game)?.elem);
       const gear = createGearInstance(baseKey, {
         rarity,
         wave: ctx.game.wave,
@@ -410,7 +411,7 @@ export function createDestinyGamble(ctx, { meta, unlock, equipment, economy, her
   // Single atomic checkout: validates bet & pendingOffer, deducts gold ONCE, resolves empty tribulation OR generates 3 candidates!
   function rollDestinyGamble(betAmount, opts = {}){
     if (!ctx.game || !ctx.game.destiny) return { ok: false, reason: 'no_game' };
-    if (isFinalPrepActionLocked(ctx.game)) return { ok: false, reason: 'final_prep_locked' };
+    if (ctx.isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
     if (ctx.game.phase !== 'prep') {
       ctx.ports.ui.toast('仅在备战期（含 W29 终局整备）可开启天命赌局！', true);
       return { ok: false, reason: 'not_in_prep' };
@@ -560,7 +561,7 @@ export function createDestinyGamble(ctx, { meta, unlock, equipment, economy, her
   // Unified single-checkout STRICTLY IDEMPOTENT reward claim entry (reusable by Stage 5 W29 timeout!)
   function claimDestinyReward(choiceIndex, opts = {}){
     if (!ctx.game?.destiny) return { ok: false, reason: 'no_game' };
-    if (isFinalPrepActionLocked(ctx.game) && !opts.allowDuringFinalPrepResolve) {
+    if (ctx.isFinalPrepActionLocked() && !opts.allowDuringFinalPrepResolve) {
       return { ok: false, reason: 'final_prep_locked' };
     }
     const offer = ctx.game.destiny.pendingOffer;
@@ -594,7 +595,8 @@ export function createDestinyGamble(ctx, { meta, unlock, equipment, economy, her
       grantResult = grantGearSafely(chosen.gear, { origin: 'destiny_gamble', silent: !!opts.silent });
     } else if (chosen.category === 'seal') {
       if (chosen.subType === 'seal_essence') {
-        ctx.game.hero.sealEssenceBonus = Number(((ctx.game.hero.sealEssenceBonus || 0) + (chosen.bonusPct || 0.15)).toFixed(4));
+        const totalBonus = (ctx.game.hero.sealEssenceBonus || 0) + (chosen.bonusPct || 0.15);
+        ctx.game.hero.sealEssenceBonus = Math.min(BALANCE.destinyGamble.sealEssenceCap, Number(totalBonus.toFixed(4)));
         grantResult = { ok: true, action: 'seal_essence_applied', sealEssenceBonus: ctx.game.hero.sealEssenceBonus };
         ctx.ports.audio.play('merge', 1.2);
         if (!opts.silent) ctx.ports.ui.toast(`✨ 吸收【${chosen.name}】，主灵印永久伤害累计 +${Math.round(ctx.game.hero.sealEssenceBonus * 100)}%！`);

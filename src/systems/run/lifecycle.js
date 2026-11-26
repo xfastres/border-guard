@@ -29,9 +29,9 @@ export function createRunLifecycle(ctx, deps) {
     ctx.game.healOrbs = [];
 
     const clearedWave = ctx.game.wave;
-    const greedBonus = deps.hero.gearSetTier('greed') >= 2 ? 12 : 0;
-    const clearBonus = BALANCE.economy.waveClearBase + clearedWave * BALANCE.economy.waveClearPerWave + greedBonus;
-    const interest = perkLv(ctx.game, 'gold_power') >= 1 ? Math.min(25, Math.floor(ctx.game.gold * 0.10)) : 0;
+    const greedBonus = deps.hero.gearSetTier('greed') >= 2 ? BALANCE.economy.clearGreedBonus : 0;
+    const clearBonus = Math.round(BALANCE.economy.waveClearBase + clearedWave * BALANCE.economy.waveClearPerWave + greedBonus);
+    const interest = perkLv(ctx.game, 'gold_power') >= 1 ? Math.min(BALANCE.economy.interestCap, Math.floor(ctx.game.gold * BALANCE.economy.interestRate)) : 0;
     const clearMatBonus = deps.economy.getWaveClearMaterialBonus(clearedWave);
     if (clearBonus > 0) deps.economy.changeGold(clearBonus, 'wave_clear_bonus');
     if (interest > 0) deps.economy.changeGold(interest, 'wave_clear_interest');
@@ -72,6 +72,10 @@ export function createRunLifecycle(ctx, deps) {
       }
     } else if (clearedWave === 15) {
       ctx.game.shopTierBonus = Math.max(ctx.game.shopTierBonus, 3);
+      if (clearedWave === BALANCE.economy.bossTransferTokenWave) {
+        deps.economy.changeTransferTokens(1, 'w15_boss_transfer_token');
+        ctx.ports.ui.toast('W15 首领赏金 · 获得 1 枚转印符，可用于一条词条的转移。');
+      }
     } else if (clearedWave === 18) {
       // W19 prep: reveal W20 Boss fixed core + rolled fair auxiliary mechanic!
       ctx.game.bossIntel.w20Revealed = true;
@@ -171,6 +175,7 @@ export function createRunLifecycle(ctx, deps) {
   }
 
   function finishGame(victory){
+    if (!ctx.game || ['won', 'lost'].includes(ctx.game.phase)) return;
     if (ctx.game.curWaveTel) deps.telemetry.finalizeCurrentTelemetry();
     if (ctx.game.combatLog && !Number.isFinite(ctx.game.combatLog.settledAtRunClock)) {
       ctx.game.combatLog.settledAtRunClock = deps.hero.getCombatLogNowSec();

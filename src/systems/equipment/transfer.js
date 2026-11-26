@@ -1,6 +1,5 @@
 import BALANCE from '../../data/balance.js';
 import { GEAR_AFFIXES } from '../../data/index.js';
-import { isFinalPrepActionLocked } from '../../core/state-queries.js';
 import { gearLabel, isGearInstance } from './instance.js';
 import { evaluateItemSynergies } from './synergy.js';
 
@@ -229,7 +228,7 @@ export function createAffixTransfer(ctx, { equipment, economy, hero }) {
   function commitAffixTransfer(params = null){
     const game = ctx.game;
     if (!game?.hero) return { ok: false, reason: 'no_game' };
-    if (isFinalPrepActionLocked(game)) return { ok: false, reason: 'final_prep_locked' };
+    if (ctx.isFinalPrepActionLocked()) return { ok: false, reason: 'final_prep_locked' };
     const input = params || game.transferDraft;
     if (!input) return { ok: false, reason: 'no_transfer_params' };
 

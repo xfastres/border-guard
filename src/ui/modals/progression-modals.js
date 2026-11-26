@@ -1,6 +1,6 @@
 import BALANCE from '../../data/balance.js';
 import { getSourceStageSpec } from '../../core/state-queries.js';
-import { COMBO_LIST, ELEMENTS, HERO_SKILLS, W10_SKILL_BRANCHES } from '../../data/core-data.js';
+import { COMBO_LIST, ELEMENTS, HERO_SKILLS, HERO_SKILL_STARTERS, W10_SKILL_BRANCHES } from '../../data/core-data.js';
 import { GEAR_RARITY_LABELS, GEAR_SETS } from '../../data/equipment-data.js';
 import { W20_DIRECTIONS, W20_DIRECTION_KEYS, W20_ENHANCEMENTS } from '../../data/progression-data.js';
 
@@ -13,7 +13,7 @@ export function createProgressionModals(runtimeCtx, deps) {
   const { getSkillBreakdown, renderAffixChipsHtml } = deps.formatters;
   const { getHeroStats, getGearSetCounts } = deps.hero;
   const {
-    getActiveUnlockNode, getRealmStageLabel, getUnlockedSkillPool, getLearnedSkillKeys, pickHeroSkill,
+    getActiveUnlockNode, getRealmStageLabel, getLearnedSkillKeys, pickHeroSkill, rollSkillChoices,
     selectW10BreakthroughSkill, pickW10BreakthroughBranch, isW20PreselectOpen, getRecommendedW20Direction,
     getW20BossIntel, getValidW20EnhancementPool, selectW20PreselectDirection, getW20RerollCost,
     pickW20Enhancement, rerollW20Enhancements, rollPerkChoices, pickPerk, pickChestGearChoices, pickGearReward,
@@ -23,7 +23,7 @@ export function createProgressionModals(runtimeCtx, deps) {
   function renderStarterModal(){
     const m = runtimeCtx.game?.activeModal;
     if (!m || m.type !== 'starter') return;
-    const starters = ['blades', 'firewave', 'nova'];
+    const starters = HERO_SKILL_STARTERS;
     if (!m.offerId) m.offerId = `starter_${counters.modalOfferSeq++}`;
     if (!Array.isArray(m.choices) || !m.choices.length) m.choices = starters.slice();
     if (typeof m.claimed !== 'boolean') m.claimed = false;
@@ -67,14 +67,9 @@ export function createProgressionModals(runtimeCtx, deps) {
       choices = m.choices.map(k => HERO_SKILLS[k]).filter(s => s && (runtimeCtx.game.hero.skills[s.key] || 0) < 5);
     }
     if (!choices.length) {
-      const unlockedKeys = getUnlockedSkillPool();
-      const pool = unlockedKeys.map(k => HERO_SKILLS[k]).filter(s => s && (runtimeCtx.game.hero.skills[s.key] || 0) < 5);
-      if (!pool.length) { changeGold(20, 'max_skill_pool_bonus'); toast('当前阶段神通池已全满级！额外奖励 +20 金币！'); deps.modalManager.closeModal(); return; }
-      const copy = pool.slice();
-      while (choices.length < 3 && copy.length) {
-        choices.push(copy.splice(Math.floor(runtimeCtx.game.rnd() * copy.length), 1)[0]);
-      }
-      m.choices = choices.map(s => s.key);
+      m.choices = rollSkillChoices();
+      if (!m.choices.length) { changeGold(20, 'max_skill_pool_bonus'); toast('当前阶段神通池已全满级！额外奖励 +20 金币！'); deps.modalManager.closeModal(); return; }
+      choices = m.choices.map(key => HERO_SKILLS[key]);
     }
 
     const box = getEl('modalBox');

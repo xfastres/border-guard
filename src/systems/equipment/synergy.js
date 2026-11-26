@@ -1,4 +1,4 @@
-import { GEAR_AFFIXES, GEAR_SYNERGIES } from '../../data/index.js';
+import { BUILD_AFFIX_CHAINS, GEAR_AFFIXES, GEAR_SYNERGIES } from '../../data/index.js';
 
 export function evaluateSynergySetFromAffixIds(affixIdSet){
   const matched = GEAR_SYNERGIES.filter(s => s.req.every(r => affixIdSet.has(r)));
@@ -87,6 +87,10 @@ export function createGearSynergies(ctx) {
     const frostHint = buildChainHint('frost_aegis', '冰系护体', ['frost_chill', 'frost_ward', 'frost_nova_counter'], globalAffixIds, active);
     if (fireHint) hints.push(fireHint);
     if (frostHint) hints.push(frostHint);
+    for (const [chain, title, req] of BUILD_AFFIX_CHAINS) {
+      const hint = buildChainHint(chain, title, req, globalAffixIds, active);
+      if (hint) hints.push(hint);
+    }
 
     return {
       active,
@@ -121,12 +125,8 @@ export function createGearSynergies(ctx) {
     const cur = evaluateEquipmentSynergies(ctx.game?.hero?.gear || []);
     if (!candidateInst) return cur.hints;
     const withCand = evaluateEquipmentSynergies([...(ctx.game?.hero?.gear || []), candidateInst]);
-    const changes = [];
-    if (withCand.hasFireTrio && !cur.hasFireTrio) changes.push('穿戴后升级🔥【炽炎连环引爆】完整三联动！');
-    else if (withCand.hasFireDuo && !cur.hasFireDuo && !cur.hasFireTrio) changes.push('穿戴后激活🔥火系双词条联动！');
-    if (withCand.hasFrostTrio && !cur.hasFrostTrio) changes.push('穿戴后升级❄️【凛冬寒盾反制】完整三联动！');
-    else if (withCand.hasFrostDuo && !cur.hasFrostDuo && !cur.hasFrostTrio) changes.push('穿戴后激活❄️冰系双词条联动！');
-    return changes;
+    return withCand.active.filter(next => !cur.active.some(old => old.chain === next.chain && old.tier >= next.tier))
+      .map(next => `穿戴后${next.tier === 3 ? '升级' : '激活'}【${next.name}】${next.tier === 3 ? '完整三联动' : '双词条联动'}`);
   }
 
   return {

@@ -125,6 +125,7 @@ export function createWavesSystem(ctx, deps) {
         activeMix = wSpec;
         packBonus = wSpec.packBonus || 0;
         mobMultAdj = wSpec.mobMultAdj ?? 1;
+        hpMultAdj = wSpec.hpMultAdj ?? 1;
       }
     } else if (w >= 25 && w <= 28) {
       if (!encounterSpec) encounterSpec = rollW25To28Encounter(w, false);
@@ -379,13 +380,14 @@ export function createWavesSystem(ctx, deps) {
 
     // Start Wave Telemetry sampler
     const h = ctx.game.hero;
+    h.routeCombat = {};
     ctx.game.curWaveTel = {
       wave: ctx.game.wave, phaseTag: meta.tag, kind: meta.kind,
       encounterId: rolledEncounter?.id || ctx.game.wavePlan.currentEncounter?.themeKey || (ctx.game.wave === 29 ? 'w29_outpost' : ctx.game.wave === 30 ? 'w30_boss6' : null),
       duration: 0, minHpPct: Math.round(h.hp * 100 / Math.max(1, h.maxHp)),
       dmgTaken: 0, hitsTaken: 0, moveDist: 0, dashCount: 0, ultCount: 0,
       shrineTried: false, shrineCleared: false, ehpTotal: 0,
-      dmgDealtStart: ctx.game.stats.dmgTotal, goldStart: ctx.game.gold
+      dmgDealtStart: ctx.game.stats.dmgTotal, goldStart: ctx.game.gold, killGold: 0, greedGold: 0
     };
 
     // Stage 3: W28 Endgame Omen trigger at wave start

@@ -1,4 +1,5 @@
 import BALANCE from './balance.js';
+import { ROUTE_DIRECTIONS, ROUTE_ENHANCEMENTS } from './build-data.js';
 
 export const ELITE_AFFIXES = [
   { key:'sprint', name:'疾奔', col:'#ffaa44' },
@@ -12,6 +13,7 @@ export const W20_BOSS_AUX_POOL = (BALANCE.w20Breakthrough?.bossAuxPool || []).sl
 export const W30_BOSS_AUX_POOL = (BALANCE.w30Boss?.auxPool || []).slice();
 
 export const W20_DIRECTIONS = {
+  ...ROUTE_DIRECTIONS,
   fire_chain_surge: {
     key: 'fire_chain_surge',
     name: '聚焰连爆',
@@ -44,6 +46,7 @@ export const W20_DIRECTION_KEYS = Object.keys(W20_DIRECTIONS);
 
 // Each locked direction has 5 exclusive cards + 3 compatible shared cards = 8 valid candidates (strictly >= 2K+2 = 6 for K=2, even >= 8 for K=3)
 export const W20_ENHANCEMENTS = {
+  ...ROUTE_ENHANCEMENTS,
   // ---- Fire Chain Surge (5 exclusive) ----
   w20_fire_supernova_chain: {
     key: 'w20_fire_supernova_chain',

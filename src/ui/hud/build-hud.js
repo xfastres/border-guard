@@ -1,4 +1,4 @@
-import { getOwnedDestinyEnhancements } from '../../core/state-queries.js';
+import { getBuildRoute, getOwnedDestinyEnhancements } from '../../core/state-queries.js';
 import {
   ARTIFACTS, SEAL_SPECIALIZATIONS, SUB_SEAL_RESONANCE, SEAL_FUSE_NEED, ELEMENTS, HERO_GEAR_SLOTS,
   GEARS, GEAR_AFFIXES, GEAR_RARITY_LABELS, GEAR_SETS, HERO_SKILLS, W10_SKILL_BRANCHES, COMBO_LIST, GEAR_SYNERGIES,
@@ -76,6 +76,10 @@ export function createBuildHud(runtimeCtx, deps) {
     $('leftTabSyn')?.classList.toggle('active', activeTab === 'syn');
 
     if (activeTab === 'build') {
+      const route = getBuildRoute(game);
+      const routeHint = route
+        ? `<div class="route-hint"><b>${esc(route.name)}</b><span>${esc(route.tactic)}</span></div>`
+        : '';
       // 1. Main + Sub Seals Compact Bar
       let sealHtml = '';
       const subSummary = [0, 1].map(i => {
@@ -160,6 +164,7 @@ export function createBuildHud(runtimeCtx, deps) {
       }
 
       body.innerHTML = sealHtml +
+        routeHint +
         `<div class="glance-gear-grid">${gearTiles}</div>` +
         `<button type="button" class="glance-syn-row" data-switch-syn${attr('点击切换查看全部套装、词条联动与神通详情')}>${chips.slice(0, 4).join('')}</button>`;
     } else {

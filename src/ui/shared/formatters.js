@@ -1,3 +1,4 @@
+import BALANCE from '../../data/balance.js';
 import { HERO_SKILLS } from '../../data/core-data.js';
 import { GEAR_AFFIXES } from '../../data/equipment-data.js';
 
@@ -9,6 +10,16 @@ export function formatSkillBreakdown(key, lv, hs, branchSpec = null){
   const cdM = hs.skillCdMult || 1;
   const br = branchSpec;
   const brNote = br ? ` · 【W10:${br.name}】` : '';
+  if (key === 'swordlance' || key === 'sunward') {
+    const cfg = BALANCE.progression.skillBase[key];
+    const damage = level => Math.round((cfg.dmg + level * cfg.perLv) * sm);
+    const cd = (Math.max(cfg.minCd, cfg.cd - lv * cfg.perLvCd) * cdM / hs.aspd).toFixed(2);
+    return {
+      name: `${spec.icon} ${spec.name}${brNote}`, lvText: `Lv.${lv}/5`,
+      cur: `${damage(lv)} 基础伤害 · 间隔 ${cd}s · ${spec.tag}`,
+      next: nextLv ? `升至 Lv.${nextLv}：基础伤害 ${damage(lv)} → ${damage(nextLv)}` : '已满级 Lv.5',
+    };
+  }
   if (key === 'blades') {
     const dmg = Math.round((15 + lv * 7) * sm);
     const cnt = lv + 1 + (br?.key === 'bl_twin_orbit' ? 2 : 0);
@@ -67,7 +78,7 @@ export function formatSkillBreakdown(key, lv, hs, branchSpec = null){
   }
   return {
     name: `${spec.icon} ${spec.name}${brNote}`, lvText: `Lv.${lv}/5`,
-    cur: `攻速 +${lv*18}% · 暴击 +${lv*8}% · 移速 +${(lv*0.35).toFixed(2)} · 吸血 +${lv*2} · 磁铁 +${(lv*0.85).toFixed(1)}格${br ? ` · ${br.tag}` : ''}`,
+    cur: `攻速 +${lv*18}% · 暴击 +${lv*8}% · 移速 +${(lv*BALANCE.progression.heroMovePerBerserkLv).toFixed(2)} · 吸血 +${lv*2} · 磁铁 +${(lv*0.85).toFixed(1)}格${br ? ` · ${br.tag}` : ''}`,
     next: nextLv ? `升至 Lv.${nextLv}：攻速 +${nextLv*18}%、暴击 +${nextLv*8}%、吸血 +${nextLv*2}、磁铁再扩` : '已满级 Lv.5'
   };
 }
