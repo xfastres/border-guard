@@ -14,7 +14,7 @@ export function createCanvasRenderer(runtimeCtx, {
   const visible = (x, y, radius = 0) => Math.abs(x - cam.x) <= halfW + radius && Math.abs(y - cam.y) <= halfH + radius;
   const { drawArena, drawLighting } = createArenaDrawer(runtimeCtx, { ctx, cam, perfStats, makeSurface });
   const { drawArtifacts, drawHero, drawEnemies, drawPickups } = createEntitiesDrawer(runtimeCtx, {
-    ctx, hero, unlock, combat, visible, scene: battleVfx,
+    ctx, hero, unlock, combat, visible, scene: battleVfx, makeSurface,
   });
   const { drawZones, drawProjectilesBeamsBolts, drawRingsAndFloats } = createEffectsDrawer(runtimeCtx, { ctx, visible, scene: battleVfx, now });
   const { drawTopTelegraphs, drawW30BossTopBar, drawEdgeIndicators } = createOverlaysDrawer(runtimeCtx, { ctx, cam, worldToScreen });
@@ -36,9 +36,11 @@ export function createCanvasRenderer(runtimeCtx, {
     ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     ctx.fillStyle = '#080f15';
     ctx.fillRect(0, 0, cam.w, cam.h);
-    const jitter = battleVfx.quality === 'off' ? 0 : Math.min(6, game.shake * .32 + battleVfx.shake * 28);
-    const sx = Math.sin(time * .16) * jitter;
-    const sy = Math.cos(time * .137) * jitter * .68;
+    const base = quality === 'off' ? 0 : Math.min(2, game.shake * .22);
+    const impulse = quality === 'off' ? 0 : battleVfx.shake * (quality === 'high' ? 23 : 12);
+    const kick = Math.sin(time * .091) * impulse;
+    const sx = Math.sin(time * .16) * base + kick * battleVfx.impulseX;
+    const sy = Math.cos(time * .137) * base * .55 + kick * battleVfx.impulseY;
 
     ctx.save();
     ctx.translate(cam.w / 2 + sx, cam.h / 2 + sy);

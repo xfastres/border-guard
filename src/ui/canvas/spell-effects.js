@@ -35,7 +35,21 @@ function traceStamp(ctx, e, r, u) {
     ctx.arc(x, y, r, 0, TAU);
     spokes(ctx, x, y, r * 1.11, kind === 'boss' ? 12 : 8, angle);
     polygon(ctx, x, y, r * .85, 4, Math.PI / 4 + u * .36);
+  } else if (kind === 'fire') {
+    ctx.ellipse(x, y + r * .16, r, r * .67, angle * .2, 0, TAU);
+    ctx.moveTo(x + r * .61, y); ctx.arc(x, y, r * .61, 0, TAU);
+    spokes(ctx, x, y, r * 1.12, 5 + e.tier, angle, .88);
+  } else if (kind === 'blood') {
+    for (let i = 0; i < 3; i++) {
+      const a = angle + i * TAU / 3;
+      ctx.moveTo(x, y);
+      ctx.quadraticCurveTo(x + Math.cos(a - .7) * r, y + Math.sin(a - .7) * r, x + Math.cos(a) * r, y + Math.sin(a) * r);
+    }
   } else if (kind === 'thunder') {
+    const height = r * (1.2 + e.tier * .5);
+    ctx.moveTo(x + r * .22, y - height);
+    ctx.lineTo(x - r * .12, y - height * .57);
+    ctx.lineTo(x + r * .1, y - height * .63); ctx.lineTo(x, y);
     for (let i = 0; i < 9; i++) {
       const a = angle + i * TAU / 9;
       const x1 = Math.cos(a), y1 = Math.sin(a);
@@ -73,6 +87,15 @@ export function drawSpellSurface(ctx, scene, visible) {
     }
     ctx.globalAlpha = (1 - u) * .89;
     ctx.strokeStyle = style.core; ctx.lineWidth = 1 + .55 * e.tier; ctx.stroke();
+    if (e.star) {
+      ctx.beginPath();
+      spokes(ctx, e.x, e.y, r + 7, e.star * 2, e.angle - u, .72);
+      ctx.strokeStyle = style.color; ctx.lineWidth = 2; ctx.stroke();
+      if (e.star >= 3 && cap.glow) {
+        ctx.beginPath(); polygon(ctx, e.x, e.y, r * .76, e.star + 2, e.angle + u * .8);
+        ctx.strokeStyle = style.core; ctx.lineWidth = 1; ctx.stroke();
+      }
+    }
     if (e.tier) {
       ctx.beginPath();
       polygon(ctx, e.x, e.y, r * 1.15, e.kind === 'frost' ? 6 : 8, e.angle - u);
@@ -164,7 +187,8 @@ export function drawAttackBody(ctx, p, game, scene) {
     : p.kind === 'firewave' || p.kind === 'fireball' ? 'fire' : p.kind === 'frostball' || branch.startsWith('nv_') || branch.includes('frost') ? 'frost'
       : branch.startsWith('th_') ? 'thunder' : p.opts?.skillKey === 'swordlance' ? 'lance' : p.opts?.isWind ? 'wind' : 'blades';
   const style = EFFECT_STYLE[kind];
-  const tier = effectTier(game, kind);
+  const sealRank = Math.min(5, p.opts?.tower?.star || 1);
+  const tier = Math.max(effectTier(game, kind), Math.floor((sealRank - 1) / 2));
   const heavy = scene?.limits.glow;
   const tail = scene?.quality === 'off' ? 7 : 14 + tier * 10;
   ctx.save();

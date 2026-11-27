@@ -211,3 +211,52 @@ body[data-fx="off"] :is(.shield-gain,.prep-console-wrap .workbench,.wave-dock,.b
   .workbench #uiBagPanel .bag-item { width: 68px; min-width: 68px; }
   .market-receipt { position: sticky; bottom: 0; }
 }
+
+/* Persistent shortcuts, away from the decision area. */
+.utility-rail { position:fixed; z-index:25; left:var(--safe-x,12px); top:calc(var(--top-h) + 10px); display:flex; gap:3px; padding:4px; border-radius:11px; }
+.utility-rail button { position:relative; display:grid; place-items:center; width:37px; height:37px; color:#d0dbce; background:transparent; border:1px solid transparent; border-radius:7px; cursor:pointer; }
+.utility-rail .ui-icon { width:19px; height:19px; }
+.utility-rail button:hover,.utility-rail button:focus-visible,.utility-rail button.active { background:#233838; color:#f5d8a2; border-color:#a7956e80; }
+.utility-rail button:disabled { opacity:.45; cursor:default; }
+.utility-rail .rail-badge { position:absolute; bottom:-2px; right:-4px; background:#192c2b; border:1px solid #788b74; color:#e6e8ce; font:700 9px/13px system-ui; min-width:13px; border-radius:4px; padding:0 2px; }
+.utility-rail [hidden], .prep-controls [hidden] { display:none; }
+#inspectorDialog { margin:auto; border:0; padding:0; background:transparent; color:inherit; width:min(620px,94vw); max-width:none; overflow:visible; }
+#inspectorDialog:not([open]) { display:none; }
+#inspectorDialog::backdrop { background:rgba(5,11,15,.70); }
+#inspectorDialog #inspector { position:relative; inset:auto; box-sizing:border-box; width:100%; max-width:none; max-height:82vh; max-height:82dvh; overflow:auto; margin:0; background:#152226; }
+#inspectorDialog .insp-head { position:sticky; top:-14px; z-index:1; background:#152226; padding-block:9px; }
+.inspect-clock { color:#ffd68e; font-size:12px; }
+.utility-item { padding:9px 4px; border-bottom:1px solid #829c8e36; }
+.prep-controls { grid-area:controls; display:flex; align-items:center; justify-content:end; flex-wrap:wrap; gap:4px; }
+.dock.console-deck.workbench { grid-template-areas:"market build" "inventory controls" "inventory start"; grid-template-rows:auto auto minmax(56px,1fr); max-height:min(62vh,calc(100vh - var(--top-h) - 62px)); overflow:auto; }
+.workbench .prep-inventory { grid-template-columns:minmax(155px,.75fr) minmax(0,1.45fr); }
+.workbench #uiBagPanel .bag-tray { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(84px,max-content); justify-content:start; align-items:stretch; height:auto; min-height:91px; padding:4px 3px 7px; overflow-x:auto; }
+.workbench #uiBagPanel .bag-tray:has(.bag-empty) { grid-template-columns:1fr; }
+.workbench #uiBagPanel .bag-item { width:88px; min-width:0; height:auto; min-height:80px; justify-content:center; gap:4px; }
+.workbench #uiBagPanel .bag-item .nm,.workbench .loadout-slot span,.workbench #shopSec .nm,.workbench .offer-affixes { white-space:normal; overflow:visible; overflow-wrap:anywhere; max-width:100%; text-overflow:clip; line-height:1.3; }
+.workbench .loadout-slot { min-height:76px; padding:4px; }
+.workbench #shopSec .shop-card { height:auto; min-height:154px; }
+.fate-tools { display:flex; align-items:center; justify-content:space-between; margin:12px 0; }
+.fate-shelf { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.fate-box { display:grid; justify-items:start; gap:9px; border:1px solid #877b55; background:linear-gradient(155deg,#263831,#111c20); border-radius:10px; padding:14px; text-align:left; color:#ecddbb; cursor:pointer; }
+.fate-box .ui-icon { width:30px; height:30px; color:#dfbc78; }
+.fate-box span { font-size:12px; color:#b4c6ba; }
+.fate-box b { color:#ffdc83; }
+.fate-box:disabled { opacity:.55; cursor:default; }
+.fate-custom,.settle-detail { margin:12px 0; }
+.fate-custom summary,.settle-detail summary { cursor:pointer; }
+.fate-custom input { width:6em; }
+@media(max-width:700px) {
+  .utility-rail { left:6px; gap:1px; padding:2px; }
+  .utility-rail button { width:34px; height:35px; }
+  .dock.console-deck.workbench { grid-template-areas:"market" "inventory" "build" "controls" "start"; grid-template-rows:auto; max-height:min(62dvh,calc(100dvh - var(--top-h) - 62px)); }
+  .workbench .prep-inventory { grid-template-columns:minmax(0,1fr); }
+  .workbench .loadout-slot { min-height:58px; }
+  .fate-shelf { gap:5px; }
+  .fate-box { padding:8px; }
+}
+
+.workbench .market-receipt { top:6px; left:auto; right:8px; max-width:80%; }
+@media(max-width:700px) {
+  #leftHud.build-hud { top:calc(var(--top-h) + 56px); }
+}

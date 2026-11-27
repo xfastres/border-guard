@@ -75,6 +75,7 @@ function traceRune(ctx, x, y, radius, angle) {
 export function createArenaDrawer(runtimeCtx, { ctx, cam, perfStats, makeSurface }) {
   let texture;
   const tonedTiles = new Map();
+  const patterns = new Map();
   let lightingKey = '';
   let lighting = null;
 
@@ -99,23 +100,30 @@ export function createArenaDrawer(runtimeCtx, { ctx, cam, perfStats, makeSurface
   }
 
   function drawArena(quality) {
-    if (texture === undefined) texture = makeStoneTile(makeSurface);
+    if (quality !== 'off' && texture === undefined) texture = makeStoneTile(makeSurface);
     const halfW = (cam.w / (2 * cam.zoom)) / CELL;
     const halfH = (cam.h / (2 * cam.zoom)) / CELL;
     const x0 = Math.max(0, Math.floor(cam.x / CELL - halfW) - 1);
     const x1 = Math.min(W, Math.ceil(cam.x / CELL + halfW) + 1);
     const y0 = Math.max(0, Math.floor(cam.y / CELL - halfH) - 1);
     const y1 = Math.min(H, Math.ceil(cam.y / CELL + halfH) + 1);
-    if (texture) {
+    if (texture && quality !== 'off') {
       const tile = quality === 'high' ? texture : lowDetailTile();
-      ctx.save();
-      ctx.beginPath(); ctx.rect(0, 0, W * CELL, H * CELL); ctx.clip();
-      const left = Math.floor(x0 * CELL / STONE_TILE) * STONE_TILE;
-      const top = Math.floor(y0 * CELL / STONE_TILE) * STONE_TILE;
-      for (let y = top; y < y1 * CELL; y += STONE_TILE) {
-        for (let x = left; x < x1 * CELL; x += STONE_TILE) ctx.drawImage(tile, x, y);
+      if (!patterns.has(tile)) patterns.set(tile, ctx.createPattern?.(tile, 'repeat') || null);
+      const pattern = patterns.get(tile);
+      if (pattern) {
+        ctx.fillStyle = pattern;
+        ctx.fillRect(x0 * CELL, y0 * CELL, (x1 - x0) * CELL, (y1 - y0) * CELL);
+      } else {
+        ctx.save();
+        ctx.beginPath(); ctx.rect(0, 0, W * CELL, H * CELL); ctx.clip();
+        const left = Math.floor(x0 * CELL / STONE_TILE) * STONE_TILE;
+        const top = Math.floor(y0 * CELL / STONE_TILE) * STONE_TILE;
+        for (let y = top; y < y1 * CELL; y += STONE_TILE) {
+          for (let x = left; x < x1 * CELL; x += STONE_TILE) ctx.drawImage(tile, x, y);
+        }
+        ctx.restore();
       }
-      ctx.restore();
     } else {
       ctx.fillStyle = '#162124';
       ctx.fillRect(x0 * CELL, y0 * CELL, (x1 - x0) * CELL, (y1 - y0) * CELL);
@@ -124,6 +132,7 @@ export function createArenaDrawer(runtimeCtx, { ctx, cam, perfStats, makeSurface
 
     let propsDrawn = 0;
     for (const p of runtimeCtx.terrainProps) {
+      if (quality === 'off') break;
       const pad = p.rad || 1;
       if (p.x + pad < x0 || p.x - pad > x1 || p.y + pad < y0 || p.y - pad > y1) continue;
       propsDrawn++;

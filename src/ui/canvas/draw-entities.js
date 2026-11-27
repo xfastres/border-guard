@@ -5,7 +5,7 @@ import { effectTier } from '../vfx/battle-vfx.js';
 import { drawEnemyBody, drawTraveler } from './silhouettes.js';
 import { polygon } from './spell-effects.js';
 
-export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat, visible = () => true, scene }) {
+export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat, visible = () => true, scene, makeSurface }) {
   const { getHeroStats, hasDualRes } = hero;
   const { getRealm } = unlock;
   const { isEnemyUnstoppable } = combat;
@@ -41,7 +41,13 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat, vi
       const col = (inCombat && game.seal) ? ELEMENTS[game.seal.elem].color : rCol;
       ctx.save();
       ctx.beginPath();
-      ctx.arc(hx, hy, 22 + h.realm * 2 + Math.sin(performance.now() / 160) * 2, 0, Math.PI * 2);
+      const radius = 22 + h.realm * 2;
+      const time = performance.now() / 1000;
+      ctx.arc(hx, hy, radius + Math.sin(time * 6) * 2, 0, Math.PI * 2);
+      if (inCombat && game.seal?.star >= 3 && scene?.quality !== 'off') {
+        polygon(ctx, hx, hy, radius - 4, game.seal.kind === 'frost' ? 6 : 5, time * .35);
+        if (game.seal.star >= 5) polygon(ctx, hx, hy, radius + 3, 5, -time * .35);
+      }
       ctx.strokeStyle = col;
       ctx.globalAlpha = inCombat ? 0.44 : 0.28;
       ctx.lineWidth = 2.2 + h.realm * 0.35;
@@ -145,6 +151,31 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat, vi
     ctx.fillRect(hx - 17, hy - 24, 34 * r, 4);
   }
 
+  // Unmarked common enemies share immutable sprites in the two lower detail modes.
+  // Status overlays, elite auras and hit feedback continue through the vector path.
+  const commonSprites = new Map();
+  function paintEnemy(e, x, y, radius, clock) {
+    const quality = scene?.quality;
+    if (quality !== 'high' && makeSurface && !e.boss && !e.elite && !e.totem && !e.pillar
+        && !(e.flash > 0 || e.freezeT > 0 || e.fireMarkT > 0 || e.slowT > 0 || e.shield > 0)) {
+      const key = [e.kind, e.col, radius].join('|');
+      let surface = commonSprites.get(key);
+      if (!surface && commonSprites.size < 32) {
+        const half = Math.ceil(radius) + 3;
+        surface = makeSurface(half * 2, half * 2);
+        if (surface) {
+          drawEnemyBody(surface.getContext('2d'), e, half, half, radius, 0, 'low');
+          commonSprites.set(key, surface);
+        }
+      }
+      if (surface) {
+        ctx.drawImage(surface, x - surface.width / 2, y - surface.height / 2);
+        return;
+      }
+    }
+    drawEnemyBody(ctx, e, x, y, radius, clock, quality);
+  }
+
   function drawEnemies(){
     const game = runtimeCtx.game;
     for (const e of game.enemies) {
@@ -160,8 +191,15 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat, vi
         ctx.setLineDash([8, 6]);
         ctx.beginPath();
         ctx.moveTo(ex, ey);
-        ctx.lineTo(ex + e.aiVx * lineLen, ey + e.aiVy * lineLen);
+        const endX = ex + e.aiVx * lineLen, endY = ey + e.aiVy * lineLen;
+        ctx.lineTo(endX, endY);
         ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = e.aiTimer <= .16 ? '#fff1ad' : '#ff9c79';
+        ctx.beginPath(); ctx.moveTo(endX, endY);
+        ctx.lineTo(endX - e.aiVx * 12 - e.aiVy * 6, endY - e.aiVy * 12 + e.aiVx * 6);
+        ctx.lineTo(endX - e.aiVx * 12 + e.aiVy * 6, endY - e.aiVy * 12 - e.aiVx * 6);
+        ctx.closePath(); ctx.fill();
         ctx.restore();
       }
 
@@ -180,7 +218,17 @@ export function createEntitiesDrawer(runtimeCtx, { ctx, hero, unlock, combat, vi
         ctx.fillText('霸体', ex, ey - rad - 16);
         ctx.restore();
       }
-      drawEnemyBody(ctx, e, ex, ey, rad, game.waveClock, scene?.quality);
+      if (e.flash > 0 && scene?.quality !== 'off') {
+        // The recoil is painted around the enemy center. The combat position stays authoritative.
+        const strength = clamp(e.flash / .10, 0, 1) * (e.boss ? .045 : .13);
+        const dx = ex - game.hero.x * CELL, dy = ey - game.hero.y * CELL;
+        const length = Math.hypot(dx, dy) || 1;
+        ctx.save();
+        ctx.translate(ex + dx / length * strength * 16, ey + dy / length * strength * 16);
+        ctx.scale(1 + strength, 1 - strength);
+        drawEnemyBody(ctx, e, 0, 0, rad, game.waveClock, scene?.quality);
+        ctx.restore();
+      } else paintEnemy(e, ex, ey, rad, game.waveClock);
 
       // Fire Mark indicator (W10 Fire breakthrough hook)
       if (e.fireMarkT > 0) {

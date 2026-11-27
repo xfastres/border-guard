@@ -185,7 +185,8 @@ export function createEffectsDrawer(runtimeCtx, { ctx, scene, visible = () => tr
       const f = game.floats[i];
       if (!visible(f.x * CELL, f.y * CELL, 26)) continue;
       const alpha = clamp(f.t / f.max * 1.4, 0, 1);
-      const crit = /^\d+!$|斩杀/u.test(f.txt);
+      const execution = /斩杀/u.test(f.txt);
+      const crit = execution || /^\d+!$/.test(f.txt);
       const dx = crit && scene?.limits.glow ? Math.sin(f.t * 38) * 2.5 : 0;
       const text = withoutIcons(f.txt);
       const x = f.x * CELL + dx, y = f.y * CELL;
@@ -193,7 +194,11 @@ export function createEffectsDrawer(runtimeCtx, { ctx, scene, visible = () => tr
       ctx.font = crit ? '900 22px sans-serif' : f.big ? '900 15px sans-serif' : '800 12px sans-serif';
       ctx.fillStyle = '#000';
       ctx.fillText(text, x + 1, y + 1);
-      ctx.fillStyle = f.col;
+      if (execution) {
+        ctx.strokeStyle = '#502014'; ctx.lineWidth = 3;
+        ctx.strokeText(text, x, y);
+      }
+      ctx.fillStyle = execution ? '#ffe49c' : f.col;
       ctx.fillText(text, x, y);
     }
     ctx.globalAlpha = 1;

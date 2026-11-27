@@ -1,3 +1,4 @@
+import { ARTIFACTS, PILLS } from '../../data/index.js';
 import { withoutIcons } from '../shared/icons.js';
 
 // Market and inventory navigation, on-demand intel, and tooltips.
@@ -8,19 +9,18 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
   let openingGame = null;
   let target = null;
   let currentText = '';
-  let tipTimer = null;
 
   const isOpen = () => Boolean(backdrop && backdrop.hidden === false);
 
   const hideTip = () => {
-    clearTimeout(tipTimer);
-    tipTimer = null;
     if (tip) tip.hidden = true;
     target = null;
     currentText = '';
   };
 
   function setDockTab(tab) {
+    if (runtimeCtx.game?.activeModal) return;
+    if (runtimeCtx.game?.phase !== 'prep') { openPanel(tab); return; }
     const isBag = tab === 'bag';
     const selected = $(isBag ? 'uiBagPanel' : 'uiShopPanel');
     selected?.scrollIntoView?.({ block: 'nearest' });
@@ -48,7 +48,7 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
     }
   }
 
-  function openIntel() {
+  function openPanel(view = 'intel') {
     const game = runtimeCtx.game;
     if (!game || game.activeModal || !backdrop) return;
     if (!isOpen()) {
@@ -60,7 +60,27 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
     hideTip();
     backdrop.dataset.phase = game.phase;
     backdrop.dataset.wave = String(game.wave);
+    const preview = $('utilityPreview');
+    $('uiIntelPanel').hidden = view !== 'intel';
+    const labels = { intel: '战场情报', bag: '背包', shop: '商店' };
+    $('uiPanelTitle').textContent = labels[view];
+    preview.hidden = view === 'intel';
+    if (!preview.hidden) {
+      const items = view === 'bag' ? game.bag.map(g => g.name || ARTIFACTS[g.kind]?.name)
+        : game.shop.map(s => (s.gear?.name || PILLS[s.pillKey]?.name || ARTIFACTS[s.kind]?.name || '灵印')
+          + (s.bought ? ' · 已购' : ' · ' + s.cost + ' 金'));
+      preview.replaceChildren();
+      const note = document.createElement('p');
+      note.textContent = view === 'shop' ? '备战时可购买和刷新。' : '备战时可穿戴、出售或拆解。';
+      preview.append(note);
+      for (const name of items.length ? items : ['空']) {
+        const row = document.createElement('div');
+        row.className = 'utility-item'; row.textContent = name;
+        preview.append(row);
+      }
+    }
     backdrop.hidden = false;
+    $('uiPanelClose')?.focus?.();
     renderAllUI(true);
   }
 
@@ -79,8 +99,8 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
   });
 
   // On-demand Intel overlay & Wave Hero Peek
-  $('intelOpen')?.addEventListener('click', openIntel);
-  $('waveIntelBtn')?.addEventListener('click', openIntel);
+  $('intelOpen')?.addEventListener('click', () => openPanel());
+  $('waveIntelBtn')?.addEventListener('click', () => openPanel());
   $('waveHeroBtn')?.addEventListener('click', () => {
     const game = runtimeCtx.game;
     if (!game) return;
@@ -92,7 +112,7 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
   backdrop?.addEventListener('click', e => { if (e.target === backdrop) closeIntel(); });
   backdrop?.addEventListener('bg-close-panel', () => closeIntel(false));
 
-  // Layer-2 Detail Tooltip (positioned away from screen center; 240ms debounce on real pointer move, instant on focus/synthetic event)
+  // Hover and keyboard focus share an immediate, viewport-clamped tooltip.
   const readTarget = el => el?.closest?.('[data-detail], [title]');
   function renderTipNow(el) {
     if (!tip || !el || !el.isConnected) { hideTip(); return; }
@@ -123,32 +143,16 @@ export function bindCompactPanels(runtimeCtx, { getEl: $, win, renderAllUI, clea
     tip.style.top = `${top}px`;
   }
 
-  function scheduleTip(el, immediate = false) {
-    clearTimeout(tipTimer);
-    tipTimer = null;
-    if (!el || !el.isConnected) { hideTip(); return; }
-    if (immediate) {
-      renderTipNow(el);
-      return;
-    }
-    tipTimer = setTimeout(() => renderTipNow(el), 220);
-  }
-
   if (typeof document !== 'undefined' && document.addEventListener) {
     document.addEventListener('pointerover', e => {
       const el = readTarget(e.target);
       if (!el) return;
-      // Synthetic PointerEvent (isTrusted === false) renders immediately for deterministic tests; real hover uses 220ms anti-flicker delay.
-      scheduleTip(el, e.isTrusted === false);
+      renderTipNow(el);
     });
     document.addEventListener('pointerout', e => {
       if (target && (!e.relatedTarget?.nodeType || !target.contains(e.relatedTarget))) hideTip();
-      else if (tipTimer && (!e.relatedTarget?.nodeType || !readTarget(e.target)?.contains(e.relatedTarget))) {
-        clearTimeout(tipTimer);
-        tipTimer = null;
-      }
     });
-    document.addEventListener('focusin', e => scheduleTip(readTarget(e.target), true));
+    document.addEventListener('focusin', e => renderTipNow(readTarget(e.target)));
     document.addEventListener('focusout', hideTip);
     document.addEventListener('pointerdown', hideTip);
     win.addEventListener('resize', hideTip);

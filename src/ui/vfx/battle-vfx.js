@@ -88,7 +88,7 @@ export function createBattleVfx(runtimeCtx, { preferReducedMotion = false } = {}
   let hitX = 0, hitY = 0, hitTime = -10;
   let clock = 0, lastTrail = -10, qualityAt = -Infinity, emitCount = 0;
   let state = 8269;
-  let shake = 0;
+  let shake = 0, impulseX = 0, impulseY = 0, lastImpact = -1;
 
   function random() {
     // Private visual stream. Gameplay and its replay retain the original RNG sequence.
@@ -122,7 +122,7 @@ export function createBattleVfx(runtimeCtx, { preferReducedMotion = false } = {}
     lastX = h.x; lastY = h.y; lastShield = h.shield || 0; lastDash = h.dashCd || 0;
     lastUlt = h.ultTimer || 0; lastLeech = h.leechUsed || 0; lastHp = h.hp;
     for (const key of Object.keys(SKILL_EFFECT)) priorTimers[key] = h.skillTimers?.[key] || 0;
-    heading = 0; lastTrail = -10; clock = 0; hitTime = -10; shake = 0;
+    heading = 0; lastTrail = -10; clock = 0; hitTime = -10; shake = 0; lastImpact = -1; impulseX = impulseY = 0;
     particles.clear();
     stamps.clear();
     trails.clear();
@@ -151,7 +151,7 @@ export function createBattleVfx(runtimeCtx, { preferReducedMotion = false } = {}
     const e = stamps.take(cap.stamps);
     e.kind = kind; e.x = x * CELL; e.y = y * CELL;
     e.radius = Math.max(9, Math.min(152, radius * CELL));
-    e.tier = tier; e.label = label; e.toX = null; e.toY = null; e.angle = random() * Math.PI * 2;
+    e.star = 0; e.tier = tier; e.label = label; e.toX = null; e.toY = null; e.angle = random() * Math.PI * 2;
     e.time = e.max = (kind === 'boss' ? .72 : .40) + tier * .11;
     const count = Math.min(cap.emission - emitCount, (quality === 'low' ? 3 : 5) + tier * 3);
     for (let i = 0; i < count; i++) {
@@ -166,6 +166,29 @@ export function createBattleVfx(runtimeCtx, { preferReducedMotion = false } = {}
     }
     emitCount += Math.max(count, 0);
     return e;
+  }
+
+  function sealCast(kind, star, x, y) {
+    if (quality === 'off' || !EFFECT_STYLE[kind]) return;
+    const game = runtimeCtx.game;
+    if (game !== previousGame) reset(game);
+    const rank = Math.max(1, Math.min(5, star || 1));
+    const stamp = burst(kind, x, y, .70 + rank * .17, Math.floor((rank - 1) / 2));
+    if (stamp) stamp.star = rank;
+  }
+
+  function impact(x, y, kind) {
+    if (quality === 'off') return;
+    const game = runtimeCtx.game;
+    if (game !== previousGame) reset(game);
+    if (clock - lastImpact < .13) return;
+    lastImpact = clock;
+    const dx = x - game.hero.x, dy = y - game.hero.y;
+    const length = Math.hypot(dx, dy) || 1;
+    impulseX = dx / length;
+    impulseY = dy / length;
+    shake = kind === 'blades' ? .09 : .15;
+    burst(kind, x, y, kind === 'blades' ? .54 : 1.1, 0);
   }
 
   function onRing(x, y, color, radius) {
@@ -184,8 +207,7 @@ export function createBattleVfx(runtimeCtx, { preferReducedMotion = false } = {}
       hitX = x; hitY = y; hitTime = clock;
     }
     if ((/^[\d]+!$|斩杀/u).test(message) && shake < .04) {
-      shake = .12;
-      burst('blades', x, y + .24, .54, 0);
+      impact(x, y + .24, 'blades');
     }
   }
 
@@ -241,7 +263,9 @@ export function createBattleVfx(runtimeCtx, { preferReducedMotion = false } = {}
       }
       if (dash) burst(dashKind, h.x, h.y, 1.1);
       if (overdrive) burst(h.skills?.berserk ? 'blood' : 'holy', h.x, h.y, 2.25);
-      if (lastShield > 0 && h.shield <= 0 && h.invuln > 0) burst('frost', h.x, h.y, 1.38, 1);
+      if (lastShield > h.shield && (h.invuln > 0 || h.hp < lastHp)) {
+        burst(h.shield > 0 ? 'ward' : 'frost', h.x, h.y, h.shield > 0 ? .94 : 1.38, h.shield > 0 ? 0 : 1);
+      }
       if (h.shield > lastShield && h.shield - lastShield >= 8 && clock - hitTime < .24) {
         burst('ward', h.x, h.y, 1.23, 0, `+${Math.round(h.shield - lastShield)} 盾`);
       }
@@ -260,9 +284,9 @@ export function createBattleVfx(runtimeCtx, { preferReducedMotion = false } = {}
   }
 
   return {
-    sample, advance, onRing, onFloat, cycleMode,
+    sample, advance, onRing, onFloat, cycleMode, sealCast, impact,
     get quality() { return quality; }, get mode() { return mode; }, get limits() { return EFFECT_LIMITS[quality]; },
-    get heading() { return heading; }, get shake() { return shake; },
+    get heading() { return heading; }, get shake() { return shake; }, get impulseX() { return impulseX; }, get impulseY() { return impulseY; },
     particles: particles.entries, stamps: stamps.entries, trails: trails.entries,
   };
 }

@@ -350,6 +350,25 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
         assert.ok(await cdp.eval("document.querySelectorAll('#prepStats .prep-metric').length >= 4"));
         assert.ok(await cdp.eval("document.querySelectorAll('#shopSec .shop-card .offer-effects').length >= 4"));
       }
+      if (OVERHAUL_BUILD) {
+        assert.equal(await cdp.eval("document.getElementById('inspectorDialog').open"), false);
+        for (const [width, height] of [[1440, 900], [1920, 1080], [390, 844]]) {
+          await cdp.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
+          await cdp.eval('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))');
+          const clipped = await cdp.eval(`Array.from(document.querySelectorAll('#bagTray .bag-item')).some(item => {
+            const outer = item.getBoundingClientRect();
+            return ['.ic', '.nm', '.slot-tag'].some(selector => {
+              const el = item.querySelector(selector);
+              if (!el) return true;
+              const r = el.getBoundingClientRect();
+              return r.top < outer.top - 1 || r.bottom > outer.bottom + 1 || el.scrollWidth > el.clientWidth + 1;
+            });
+          })`);
+          assert.equal(clipped, false, width + 'px: bag content must fit inside the item');
+        }
+        await cdp.send('Emulation.clearDeviceMetricsOverride');
+        await cdp.eval('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))');
+      }
       await cdp.clickSelector('#bagOpen');
       if (workbench) {
         assert.equal(await cdp.eval("document.getElementById('uiShopPanel').getClientRects().length > 0"), true);
@@ -485,6 +504,13 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     await cdp.pressKey('c', 'KeyC');
     await cdp.waitFor('document.getElementById("inspector") && !document.getElementById("inspector").hidden && document.querySelectorAll("#inspActions button").length > 0', { label: 'Inspector open via [C]' });
 
+    if (OVERHAUL_BUILD) {
+      assert.equal(await cdp.eval("document.querySelector('#inspectorDialog').matches(':modal')"), true);
+      await cdp.pressKey('Escape');
+      assert.equal(await cdp.eval("document.getElementById('inspectorDialog').open"), false);
+      await cdp.clickSelector('#prepBuildOpen');
+      await cdp.waitFor("document.querySelector('#inspectorDialog').matches(':modal')");
+    }
     // Real click "穿戴" button in #inspActions
     await cdp.eval(`(() => {
       const btns = Array.from(document.querySelectorAll('#inspActions button'));
@@ -653,6 +679,7 @@ test('Real Headless Chrome E2E: 6 interactive DOM scenarios with 0 uncaught JS e
     })()`);
     assert.equal(quotaSetup.hasRetryBtn, true, 'Settlement DOM must display #endRetrySaveBtn on QuotaExceededError');
     assert.equal(quotaSetup.hasExportBtn, true, 'Settlement DOM must display #endExportBackupBtn on QuotaExceededError');
+    if (OVERHAUL_BUILD) assert.ok(!quotaSetup.modalHtml.includes(quotaSetup.runId), 'Player settlement must not expose the internal run ID');
     assert.ok(quotaSetup.modalHtml.includes('本地存档写入失败'), 'Settlement DOM must show explicit storage failure warning');
     assert.equal(quotaSetup.settle.saveStatus, 'failed');
 

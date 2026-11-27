@@ -1,6 +1,6 @@
 import { setIconText } from '../shared/icons.js';
 import { clamp } from '../../core/math.js';
-import { HERO_GEAR_SLOTS, MAIN_WAVES, W20_DIRECTIONS } from '../../data/index.js';
+import { MAIN_WAVES, W20_DIRECTIONS } from '../../data/index.js';
 
 export function createHudController(runtimeCtx, deps) {
   const { getEl: $, getViewportWidth = () => window.innerWidth, audio, perfStats, progression, run, unlock } = deps;
@@ -75,11 +75,9 @@ export function createHudController(runtimeCtx, deps) {
     const goldTxt = `🪙 ${game.gold}`;
     if (fresh || lastGold !== game.gold) {
       lastGold = game.gold;
-      $('goldPill').textContent = goldTxt;
-      $('dockGoldNum').textContent = game.gold;
-      for (const el of [$('goldPill'), $('dockGoldNum')]) {
-        el.classList.remove('gold-bump'); void el.offsetWidth; el.classList.add('gold-bump');
-      }
+      const coin = $('goldPill');
+      setIconText(coin, goldTxt);
+      coin.classList.remove('gold-bump'); void coin.offsetWidth; coin.classList.add('gold-bump');
     }
     const matEl = $('matPill');
     if (matEl) {
@@ -145,14 +143,17 @@ export function createHudController(runtimeCtx, deps) {
     if (destinyBtn) {
       const pendingOffer = getPendingDestinyOffer();
       destinyBtn.disabled = isWave || ['won', 'lost'].includes(game.phase);
-      setIconText(destinyBtn, pendingOffer ? '🎲 天命待领 (3选1)!' : '🎲 天命赌局');
+      const badge = $('fateCount');
+      if (badge) { badge.hidden = !pendingOffer; badge.textContent = '1'; }
+      destinyBtn.title = pendingOffer ? '天命赌局 · 有一组奖励待领' : '天命赌局 · 备战时可购买盲盒';
       destinyBtn.classList.toggle('active', !!pendingOffer);
     }
     const transferBtn = $('transferBtn');
     if (transferBtn) {
       const tokCnt = game.transferTokens || 0;
       transferBtn.disabled = isWave || ['won', 'lost'].includes(game.phase);
-      setIconText(transferBtn, tokCnt > 0 ? `✨ 词条转移 (🔮${tokCnt})` : '✨ 词条转移');
+      const badge = $('transferCount');
+      if (badge) { badge.textContent = String(tokCnt); badge.hidden = !tokCnt; }
     }
     const metaBtn = $('metaLegacyBtn');
     if (metaBtn) {
@@ -235,7 +236,7 @@ export function createHudController(runtimeCtx, deps) {
     const soundButton = $('soundBtn');
     setIconText(soundButton, audio.enabled ? '🔊' : '🔇');
     soundButton.setAttribute?.('aria-pressed', String(audio.enabled));
-    setIconText($('heroPanelBtn'), `👑 属性/体检 (${h.gear.length}/${HERO_GEAR_SLOTS}) [C]`);
+    setIconText($('heroPanelBtn'), '👑 角色详情 [C]');
     $('heroPanelBtn').classList.toggle('active', game.inspTarget?.type === 'hero');
     const autoPaused = game.autoWave && game.phase === 'prep' && hasPendingDecision();
     $('autoWaveBtn').textContent = `自动下波：${game.autoWave ? (autoPaused ? '待选' : '开') : '关'}`;

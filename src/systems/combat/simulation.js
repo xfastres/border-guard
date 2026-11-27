@@ -59,6 +59,7 @@ export function createCombatSimulation(ctx, deps) {
     const hx = hitEnemy.x, hy = hitEnemy.y;
     const st = deps.hero.getSealStats(a);
     a.cd = st.cd;
+    ctx.ports.vfx.sealCast?.(a.kind, a.star, hx, hy);
 
     const dmgOpts = {
       tower: a, fromHero: false, critChance: st.crit, critDmg: st.critDmg,

@@ -166,7 +166,7 @@ export function bootBrowserGame({ win = window, doc = win.document } = {}) {
   runtimeCtx.bindPorts({
     storage: { getStorage: () => getMetaStorage(win) },
     audio: { play: AudioKit.play.bind(AudioKit), unlock: AudioKit.unlock.bind(AudioKit) },
-    vfx: { addRing: vfx.addRing, addFloat: vfx.addFloat, update: vfx.updateVfx },
+    vfx: { addRing: vfx.addRing, addFloat: vfx.addFloat, update: vfx.updateVfx, sealCast: battleVfx.sealCast, impact: battleVfx.impact },
     ui: {
       toast: feedback.toast,
       showBanner: feedback.showBanner,

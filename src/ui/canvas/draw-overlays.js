@@ -39,6 +39,16 @@ export function createOverlaysDrawer(runtimeCtx, { ctx, cam, worldToScreen }) {
         ctx.fillStyle = '#eafff5';
         ctx.fillText(z.kind === 'w30SigTelegraph' ? `安全区 (${z.t.toFixed(1)}s)` : '安全区(免疫冲击波)', sx, sy - sr - 10);
         ctx.restore();
+      } else if (z.kind === 'bossSlam') {
+        const x = z.x * CELL, y = z.y * CELL, radius = z.r * CELL;
+        const progress = 1 - clamp(z.t / z.max, 0, 1);
+        ctx.save();
+        ctx.beginPath(); ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = '#370e1b'; ctx.lineWidth = 5; ctx.stroke();
+        ctx.strokeStyle = '#ff6e69'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.beginPath(); ctx.arc(x, y, radius, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * progress);
+        ctx.strokeStyle = '#ffdf9a'; ctx.lineWidth = 3.5; ctx.stroke();
+        ctx.restore();
       } else if (z.kind === 'w30RiftRing') {
         const zx = z.x * CELL, zy = z.y * CELL, zr = z.r * CELL;
         const prog = 1 - clamp(z.t / Math.max(0.01, z.max), 0, 1);

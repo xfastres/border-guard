@@ -24,13 +24,22 @@ export function createInspectorUI(runtimeCtx, deps) {
   function renderInspector(force){
     const panel = $('inspector');
     const game = runtimeCtx.game;
-    if (!game.inspTarget) {
+    const dialog = $('inspectorDialog');
+    if (!game.inspTarget || game.activeModal) {
+      if (dialog?.open) dialog.close();
+
       if (!panel.hidden) { panel.hidden = true; lastInspKey = ''; }
       return;
     }
+    const clock = $('inspectClock');
+    if (clock) {
+      clock.hidden = !game.finalPrep?.started || !game.finalPrep.active;
+      if (!clock.hidden) clock.textContent = '终局整备 ' + Math.ceil(game.finalPrep.timer) + ' 秒';
+    }
+    if (dialog && !dialog.open) dialog.showModal?.();
     if (game.inspTarget.type === 'seal') {
       const a = game.seal;
-      if (!a && !game.subSeals.length) { game.inspTarget = null; panel.hidden = true; lastInspKey = ''; return; }
+      if (!a && !game.subSeals.length) { game.inspTarget = null; if (dialog?.open) dialog.close(); panel.hidden = true; lastInspKey = ''; return; }
       const cap = getSealStarCap();
       const subCap = getSubSealSlotCap();
       const subSig = game.subSeals.map(s => `${s.kind}:${s.star}:${s.prog}`).join(',');
@@ -370,7 +379,7 @@ export function createInspectorUI(runtimeCtx, deps) {
     const rep = getTelemetryReport();
     const telHead = document.createElement('div');
     telHead.className = 'insp-sec-lbl';
-    setIconText(telHead, `📊 心流与难度曲线体检表（已过 ${rep.summary.wavesCleared} 波 · 最低血 ${rep.summary.lowestHpPct}%）`);
+    setIconText(telHead, `📊 近期战况（已过 ${rep.summary.wavesCleared} 波 · 最低血 ${rep.summary.lowestHpPct}%）`);
     sl.append(telHead);
     const telBox = document.createElement('div');
     telBox.className = 'skill-card';

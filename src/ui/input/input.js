@@ -80,11 +80,15 @@ export function createInputController(runtimeCtx, deps) {
       const game = runtimeCtx.game;
       if (!game) return;
       const k = e.key.toLowerCase();
+      if (!game.activeModal && $('inspectorDialog')?.open) {
+        if (k === 'escape' || k === 'c') { e.preventDefault(); $('inspClose').click(); }
+        return;
+      }
       if (!game.activeModal && panels.isOpen()) {
         if (k === 'escape') { e.preventDefault(); panels.close(); }
         return;
       }
-      if (e.target?.closest?.('button') && !game.activeModal && (k === ' ' || k === 'enter')) { e.preventDefault(); e.target.blur?.(); }
+      if (e.target?.closest?.('button, input, select, summary') && (k === ' ' || k === 'enter' || k === 'tab')) return;
       keys.add(k);
       if (k === 'escape') {
         if (game.activeModal?.type === 'shop_confirm') { $('shopConfirmCancelBtn')?.click(); return; }
@@ -142,6 +146,10 @@ export function createInputController(runtimeCtx, deps) {
     $('ultBtn').addEventListener('click', castHeroOverdrive);
     $('rerollBtn').addEventListener('click', () => rollShop(false));
     $('waveBtn').addEventListener('click', startWave);
+    const dialog = $('inspectorDialog');
+    dialog?.addEventListener('cancel', e => { e.preventDefault(); $('inspClose').click(); });
+    dialog?.addEventListener('click', e => { if (e.target === dialog) $('inspClose').click(); });
+    dialog?.addEventListener('focusin', () => { keys.clear(); pointerDown = false; });
     $('inspClose').addEventListener('click', () => { runtimeCtx.game.inspTarget = null; renderAllUI(); });
     $('leftHudHead')?.addEventListener('click', toggleLeftHud);
     $('battleHudHead')?.addEventListener('click', toggleBattleHud);

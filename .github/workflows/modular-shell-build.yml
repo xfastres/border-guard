@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - refactor/modular-v060-phase1
+      - feat/v060-gameplay-balance-overhaul
   pull_request:
     branches:
       - feat/v060-30wave
@@ -71,10 +72,17 @@ jobs:
       - name: Check module boundaries
         run: npm run test:arch
 
+      - name: Verify the committed offline release in Chrome
+        if: github.ref == 'refs/heads/feat/v060-gameplay-balance-overhaul'
+        run: |
+          npm run test:modular-game
+          npm run test:e2e:modular
+
       - name: Build and verify single HTML
         run: npm run build
 
       - name: Compare the modular game with the original in Chrome
+        if: github.ref != 'refs/heads/feat/v060-gameplay-balance-overhaul'
         run: npm run test:parity
 
       - name: Open modular game release via file URL in Chrome

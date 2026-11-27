@@ -102,14 +102,16 @@ test('input port exposes key and pointer state from listeners', async () => {
   const canvas = new EventTarget();
   const win = new EventTarget();
   const noop = () => {};
+  let waveStarts = 0;
+  const inspectorDialog = new EventTarget();
   const input = createInputController(runtimeCtx, {
-    canvas, win, getEl: () => new EventTarget(),
+    canvas, win, getEl: id => id === 'inspectorDialog' ? inspectorDialog : new EventTarget(),
     audio: { unlock: noop },
     viewport: { screenToWorld: (x, y) => ({ x: x / 10, y: y / 10 }) },
     hud: { syncHudResponsiveMode: noop, toggleLeftHud: noop, toggleBattleHud: noop },
     modals: { showIntroModal: noop },
     heroSkills: { castHeroDash: noop, castHeroOverdrive: noop },
-    shop: {}, run: { startWave: noop }, feedback: {}, affixTransfer: {}, destiny: {}, unlock: {}, w20: {},
+    shop: {}, run: { startWave() { waveStarts++; } }, feedback: {}, affixTransfer: {}, destiny: {}, unlock: {}, w20: {},
   });
   const { inputPort } = input;
   const dispatch = (target, type, props) => target.dispatchEvent(Object.assign(new Event(type), props));
@@ -140,6 +142,18 @@ test('input port exposes key and pointer state from listeners', async () => {
   assert.deepEqual([...inputPort.getKeys()], ['w']);
   dispatch(win, 'keyup', { key: 'W' });
   assert.equal(inputPort.getKeys().size, 0);
+  runtimeCtx.game.phase = 'prep';
+  inspectorDialog.open = true;
+  dispatch(win, 'keydown', { key: 'Enter' });
+  assert.equal(waveStarts, 0, 'the inspector owns its own keyboard actions');
+  inspectorDialog.open = false;
+  win.closest = () => win;
+  dispatch(win, 'keydown', { key: 'Enter' });
+  assert.equal(waveStarts, 0, 'activating a focused shop button must not start a wave');
+  win.closest = () => null;
+  dispatch(win, 'keydown', { key: 'Enter' });
+  assert.equal(waveStarts, 1);
+
 });
 
 test('createGameSystems assembles a seeded game, shop, and wave with no DOM', async () => {

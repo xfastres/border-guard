@@ -329,6 +329,7 @@ export function createCombatDamage(ctx, deps) {
     }
 
     const effectiveDmg = actualHpDmg + actualShieldDmg;
+    if (e.boss && actualShieldDmg > 0 && e.shield <= 0) ctx.ports.vfx.impact?.(e.x, e.y, 'ward');
     if (effectiveDmg > 0) {
       ctx.game.stats.dmgTotal += effectiveDmg;
       if (opts.tower) opts.tower.dmgDealt = (opts.tower.dmgDealt || 0) + effectiveDmg;
@@ -557,6 +558,7 @@ export function createCombatDamage(ctx, deps) {
     const gm = deps.hero.aggregateGear(ctx.game?.hero?.gear || []);
     const affixGold = (gm.bonusGoldChance > 0 && ctx.game.rnd() < gm.bonusGoldChance) ? 1 : 0;
     const bonusGold = (opts.bonusGold || 0) + affixGold;
+    if (e.elite || e.boss) ctx.ports.vfx.impact?.(e.x, e.y, e.boss ? 'boss' : 'stone');
     const baseGold = (e.elite || e.boss || e.gold >= 2) ? e.gold : (ctx.game.rnd() < BALANCE.economy.singleGoldDropChance ? e.gold : 0);
     const tel = ctx.game.curWaveTel;
     let killGold = baseGold + bonusGold;
@@ -580,6 +582,7 @@ export function createCombatDamage(ctx, deps) {
       const ownerBoss = ctx.game.enemies.find(o => o.hp > 0 && (o.id === e.totemBossId || o.kind === 'boss4'));
       ctx.ports.vfx.addRing(e.x, e.y, '#7cf2ff', 2.4);
       if (ownerBoss) {
+        if (ownerBoss.shield > 0) ctx.ports.vfx.impact?.(ownerBoss.x, ownerBoss.y, 'ward');
         ownerBoss.shield = 0;
         ownerBoss.vulnT = Math.max(ownerBoss.vulnT || 0, 3.0);
         ctx.ports.vfx.addRing(ownerBoss.x, ownerBoss.y, '#ffe678', 2.6);
@@ -594,6 +597,7 @@ export function createCombatDamage(ctx, deps) {
       const ownerBoss = ctx.game.enemies.find(o => o.hp > 0 && (o.id === e.pillarBossId || o.kind === 'boss6'));
       ctx.ports.vfx.addRing(e.x, e.y, '#ff88dc', 2.6);
       if (ownerBoss) {
+        if (ownerBoss.shield > 0) ctx.ports.vfx.impact?.(ownerBoss.x, ownerBoss.y, 'ward');
         ownerBoss.shield = 0;
         ownerBoss.vulnT = Math.max(ownerBoss.vulnT || 0, 3.5);
         ctx.ports.vfx.addRing(ownerBoss.x, ownerBoss.y, '#ffe678', 2.8);

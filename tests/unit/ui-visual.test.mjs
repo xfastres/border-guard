@@ -132,3 +132,30 @@ test('shop fit predicts the real replacement slot and keeps equipped synergies r
   assert.ok(fit.upgrade.lost.some(link => link.chain === 'blood_rite'));
   assert.equal(JSON.stringify(gear), ownedBefore);
 });
+
+test('all five seals gain star-specific stamps and reuse the same bounded pool', () => {
+  const { game, scene } = makeScene();
+  scene.sample(0, 60);
+  game.rnd = () => assert.fail('seal visuals consumed combat RNG');
+  for (const kind of ['wind', 'fire', 'frost', 'thunder', 'holy']) {
+    for (const rank of [1, 3, 5]) {
+      scene.sealCast(kind, rank, 12, 10);
+      const stamp = scene.stamps.find(e => e.kind === kind && e.star === rank);
+      assert.ok(stamp);
+      assert.equal(stamp.tier, (rank - 1) / 2);
+    }
+  }
+  scene.impact(15, 10, 'ward');
+  assert.equal(scene.impulseX, 1);
+  const firstShake = scene.shake;
+  scene.impact(2, 10, 'boss');
+  assert.equal(scene.impulseX, 1);
+  assert.equal(scene.shake, firstShake);
+  scene.advance(.2);
+  scene.impact(2, 10, 'boss');
+  assert.equal(scene.impulseX, -1);
+  for (let i = 0; i < 3; i++) scene.cycleMode();
+  scene.sealCast('frost', 5, 12, 10);
+  assert.equal(scene.shake, 0);
+  assert.equal(countActive(scene.stamps), 0);
+});

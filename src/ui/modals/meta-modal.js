@@ -1,8 +1,8 @@
+import { downloadSaveBackup } from '../shared/save-backup.js';
 import { withIcons } from '../shared/icons.js';
 export function createMetaModal(runtimeCtx, deps) {
   const { getEl, audio } = deps;
   const { rollShop } = deps.economy;
-  const { toast } = deps.feedback;
   const {
     getMetaConfig, getMetaSave, isMetaLoadoutLocked, getActiveMetaLoadout, getMetaLoadoutBudget,
     buildActiveRunPools, setMetaMainLegacy, toggleMetaAuxLegacy, unlockMetaItem, exportMetaSave,
@@ -110,7 +110,7 @@ export function createMetaModal(runtimeCtx, deps) {
     <div class="meta-milestone-list">${msHtml}</div>
 
     <div class="modal-footer">
-      <button class="btn" id="metaExportBtn" type="button" title="复制本地存档 JSON 备份">💾 备份存档</button>
+      <button class="btn" id="metaExportBtn" type="button" title="下载本地存档 JSON 备份">💾 备份存档</button>
       ${isSettlement ? `<button class="btn" id="metaBackEndBtn" type="button">返回结算摘要</button><button class="btn gold" id="metaStartNewBtn" type="button" style="padding:8px 16px">🔁 保存并开启新局</button>`
           : isPreRun ? `<button class="btn gold" id="metaConfirmPreBtn" type="button" style="padding:8px 18px">⚔️ 锁定配置 · 踏入秘境！</button>`
           : `<button class="btn" id="metaCloseBtn" type="button">关闭</button>`}
@@ -130,14 +130,7 @@ export function createMetaModal(runtimeCtx, deps) {
       });
     });
 
-    box.querySelector('#metaExportBtn')?.addEventListener('click', () => {
-      const json = exportMetaSave();
-      if (navigator?.clipboard?.writeText) {
-        navigator.clipboard.writeText(json).then(() => toast('💾 局外传承存档 JSON 已复制到剪贴板！')).catch(() => toast('💾 存档已就绪（可通过 BG60.exportMetaSave() 获取）'));
-      } else {
-        toast('💾 存档已导出（可在控制台调用 BG60.exportMetaSave() 查看）');
-      }
-    });
+    box.querySelector('#metaExportBtn')?.addEventListener('click', () => downloadSaveBackup(exportMetaSave()));
     box.querySelector('#metaBackEndBtn')?.addEventListener('click', () => deps.introEndModals.showEndModal(runtimeCtx.game.phase === 'won'));
     box.querySelector('#metaStartNewBtn')?.addEventListener('click', () => startNewRun());
     box.querySelector('#metaConfirmPreBtn')?.addEventListener('click', () => {
